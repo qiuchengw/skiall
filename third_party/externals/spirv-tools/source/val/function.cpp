@@ -17,14 +17,15 @@
 #include <cassert>
 
 #include <algorithm>
-#include <unordered_set>
+#include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
+#include "cfa.h"
 #include "val/basic_block.h"
 #include "val/construct.h"
 #include "validate.h"
-#include "cfa.h"
 
 using std::ignore;
 using std::list;
@@ -33,7 +34,8 @@ using std::pair;
 using std::tie;
 using std::vector;
 
-namespace libspirv {
+namespace spvtools {
+namespace val {
 
 // Universal Limit of ResultID + 1
 static const uint32_t kInvalidId = 0x400000;
@@ -274,15 +276,11 @@ void Function::ComputeAugmentedCFG() {
   // the predecessors of the pseudo exit block.
   auto succ_func = [](const BasicBlock* b) { return b->successors(); };
   auto pred_func = [](const BasicBlock* b) { return b->predecessors(); };
-  spvtools::CFA<BasicBlock>::ComputeAugmentedCFG(
-    ordered_blocks_,
-    &pseudo_entry_block_,
-    &pseudo_exit_block_,
-    &augmented_successors_map_,
-    &augmented_predecessors_map_,
-    succ_func,
-    pred_func);
-};
+  CFA<BasicBlock>::ComputeAugmentedCFG(
+      ordered_blocks_, &pseudo_entry_block_, &pseudo_exit_block_,
+      &augmented_successors_map_, &augmented_predecessors_map_, succ_func,
+      pred_func);
+}
 
 Construct& Function::AddConstruct(const Construct& new_construct) {
   cfg_constructs_.push_back(new_construct);
@@ -352,4 +350,42 @@ int Function::GetBlockDepth(BasicBlock* bb) {
   return block_depth_[bb];
 }
 
-}  /// namespace libspirv
+void Function::RegisterExecutionModelLimitation(SpvExecutionModel model,
+                                                const std::string& message) {
+  execution_model_limitations_.push_back(
+      [model, message](SpvExecutionModel in_model, std::string* out_message) {
+        if (model != in_model) {
+          if (out_message) {
+            *out_message = message;
+          }
+          return false;
+        }
+        return true;
+      });
+}
+
+bool Function::IsCompatibleWithExecutionModel(SpvExecutionModel model,
+                                              std::string* reason) const {
+  bool return_value = true;
+  std::stringstream ss_reason;
+
+  for (const auto& is_compatible : execution_model_limitations_) {
+    std::string message;
+    if (!is_compatible(model, &message)) {
+      if (!reason) return false;
+      return_value = false;
+      if (!message.empty()) {
+        ss_reason << message << "\n";
+      }
+    }
+  }
+
+  if (!return_value && reason) {
+    *reason = ss_reason.str();
+  }
+
+  return return_value;
+}
+
+}  // namespace val
+}  // namespace spvtools

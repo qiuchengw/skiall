@@ -1,5 +1,5 @@
-# *   Copyright (C) 1998-2010, International Business Machines
-# *   Corporation and others.  All Rights Reserved.
+# © 2016 and later: Unicode, Inc. and others.
+# License & terms of use: http://www.unicode.org/copyright.html#License
 CURR_CLDR_VERSION = %version%
 # A list of txt's to build
 # The downstream packager may not need this file at all if their package is not
@@ -34,7 +34,7 @@ CURR_SOURCE =\
  de.txt de_CH.txt\
  el.txt\
  en.txt en_001.txt en_150.txt\
- en_AU.txt en_CA.txt en_GB.txt en_IN.txt en_NZ.txt en_ZA.txt\
+ en_AU.txt en_CA.txt en_GB.txt en_HK.txt en_IN.txt en_NG.txt en_NZ.txt en_SG.txt en_ZA.txt\
  es.txt es_419.txt es_AR.txt es_MX.txt es_US.txt\
  et.txt\
  fa.txt\

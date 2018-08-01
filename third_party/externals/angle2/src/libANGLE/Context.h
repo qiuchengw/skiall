@@ -81,6 +81,32 @@ class ErrorSet : angle::NonCopyable
     mutable std::set<GLenum> mErrors;
 };
 
+// Helper class for managing cache variables and state changes.
+class StateCache final : angle::NonCopyable
+{
+  public:
+    StateCache();
+    ~StateCache();
+
+    // Places that can trigger updateActiveAttribsMask:
+    // 1. GLES1: clientActiveTexture.
+    // 2. GLES1: disableClientState/enableClientState.
+    // 3. Context: linkProgram/useProgram/programBinary. Note: should check programBinary bits.
+    // 4. Context: bindVertexArray.
+    // 5. Vertex Array: most any state change.
+    AttributesMask getActiveBufferedAttribsMask() const { return mCachedActiveBufferedAttribsMask; }
+    AttributesMask getActiveClientAttribsMask() const { return mCachedActiveClientAttribsMask; }
+    bool hasAnyEnabledClientAttrib() const { return mCachedHasAnyEnabledClientAttrib; }
+
+    // Cache update functions.
+    void updateActiveAttribsMask(Context *context);
+
+  private:
+    AttributesMask mCachedActiveBufferedAttribsMask;
+    AttributesMask mCachedActiveClientAttribsMask;
+    bool mCachedHasAnyEnabledClientAttrib;
+};
+
 class Context final : public egl::LabeledObject, angle::NonCopyable
 {
   public:
@@ -1458,6 +1484,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable
     const Extensions &getExtensions() const { return mState.getExtensions(); }
     const Limitations &getLimitations() const { return mState.getLimitations(); }
     bool skipValidation() const { return mSkipValidation; }
+    bool isGLES1() const;
 
     // Specific methods needed for validation.
     bool getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *numParams);
@@ -1488,10 +1515,11 @@ class Context final : public egl::LabeledObject, angle::NonCopyable
     // GLES1 emulation: Renderer level (for validation)
     int vertexArrayIndex(ClientVertexArrayType type) const;
     static int TexCoordArrayIndex(unsigned int unit);
-    AttributesMask getVertexArraysAttributeMask() const;
 
     // GL_KHR_parallel_shader_compile
     void maxShaderCompilerThreads(GLuint count);
+
+    const StateCache &getStateCache() const { return mStateCache; }
 
   private:
     void initialize();
@@ -1614,6 +1642,9 @@ class Context final : public egl::LabeledObject, angle::NonCopyable
 
     State::DirtyObjects mDrawDirtyObjects;
     State::DirtyObjects mPathOperationDirtyObjects;
+
+    StateCache mStateCache;
+
     State::DirtyBits mTexImageDirtyBits;
     State::DirtyObjects mTexImageDirtyObjects;
     State::DirtyBits mReadPixelsDirtyBits;

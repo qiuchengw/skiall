@@ -22,13 +22,15 @@
 #include "unit_spirv.h"
 #include "val_fixtures.h"
 
+namespace spvtools {
+namespace val {
 namespace {
 
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
 
-using std::string;
 using std::pair;
+using std::string;
 using std::stringstream;
 
 using ValidateData = spvtest::ValidateBase<pair<string, bool>>;
@@ -224,6 +226,33 @@ TEST_F(ValidateData, int8_bad) {
   EXPECT_THAT(getDiagnosticString(), HasSubstr(missing_int8_cap_error));
 }
 
+TEST_F(ValidateData, int8_with_storage_buffer_8bit_access_good) {
+  string str = HeaderWith(
+                   "StorageBuffer8BitAccess "
+                   "OpExtension \"SPV_KHR_8bit_storage\"") +
+               " %2 = OpTypeInt 8 0";
+  CompileSuccessfully(str.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions()) << getDiagnosticString();
+}
+
+TEST_F(ValidateData, int8_with_uniform_and_storage_buffer_8bit_access_good) {
+  string str = HeaderWith(
+                   "UniformAndStorageBuffer8BitAccess "
+                   "OpExtension \"SPV_KHR_8bit_storage\"") +
+               " %2 = OpTypeInt 8 0";
+  CompileSuccessfully(str.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions()) << getDiagnosticString();
+}
+
+TEST_F(ValidateData, int8_with_storage_push_constant_8_good) {
+  string str = HeaderWith(
+                   "StoragePushConstant8 "
+                   "OpExtension \"SPV_KHR_8bit_storage\"") +
+               " %2 = OpTypeInt 8 0";
+  CompileSuccessfully(str.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions()) << getDiagnosticString();
+}
+
 TEST_F(ValidateData, int16_good) {
   string str = header_with_int16 + "%2 = OpTypeInt 16 1";
   CompileSuccessfully(str.c_str());
@@ -231,9 +260,10 @@ TEST_F(ValidateData, int16_good) {
 }
 
 TEST_F(ValidateData, storage_uniform_buffer_block_16_good) {
-  string str = HeaderWith("StorageUniformBufferBlock16 "
-                          "OpExtension \"SPV_KHR_16bit_storage\"") +
-      "%2 = OpTypeInt 16 1 %3 = OpTypeFloat 16";
+  string str = HeaderWith(
+                   "StorageUniformBufferBlock16 "
+                   "OpExtension \"SPV_KHR_16bit_storage\"") +
+               "%2 = OpTypeInt 16 1 %3 = OpTypeFloat 16";
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
@@ -247,17 +277,19 @@ TEST_F(ValidateData, storage_uniform_16_good) {
 }
 
 TEST_F(ValidateData, storage_push_constant_16_good) {
-  string str = HeaderWith("StoragePushConstant16 "
-                          "OpExtension \"SPV_KHR_16bit_storage\"") +
-      "%2 = OpTypeInt 16 1 %3 = OpTypeFloat 16";
+  string str = HeaderWith(
+                   "StoragePushConstant16 "
+                   "OpExtension \"SPV_KHR_16bit_storage\"") +
+               "%2 = OpTypeInt 16 1 %3 = OpTypeFloat 16";
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
 
 TEST_F(ValidateData, storage_input_output_16_good) {
-  string str = HeaderWith("StorageInputOutput16 "
-                          "OpExtension \"SPV_KHR_16bit_storage\"") +
-      "%2 = OpTypeInt 16 1 %3 = OpTypeFloat 16";
+  string str = HeaderWith(
+                   "StorageInputOutput16 "
+                   "OpExtension \"SPV_KHR_16bit_storage\"") +
+               "%2 = OpTypeInt 16 1 %3 = OpTypeFloat 16";
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
@@ -338,6 +370,16 @@ TEST_F(ValidateData, matrix_data_type_float) {
 )";
   CompileSuccessfully(str.c_str());
   ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+TEST_F(ValidateData, ids_should_be_validated_before_data) {
+  string str = header + R"(
+%f32    =  OpTypeFloat 32
+%mat33  =  OpTypeMatrix %vec3 3
+)";
+  CompileSuccessfully(str.c_str());
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(), HasSubstr("ID 3 has not been defined"));
 }
 
 TEST_F(ValidateData, matrix_bad_column_type) {
@@ -567,20 +609,28 @@ TEST_F(ValidateData, ext_16bit_storage_caps_allow_free_fp_rounding_mode) {
   }
 }
 
-TEST_F(ValidateData, default_disallow_free_fp_rounding_mode) {
-    string str = R"(
+TEST_F(ValidateData, vulkan_disallow_free_fp_rounding_mode) {
+  for (const char* mode : {"RTE", "RTZ"}) {
+    for (const auto env : {SPV_ENV_VULKAN_1_0, SPV_ENV_VULKAN_1_1}) {
+      string str = string(R"(
         OpCapability Shader
-        OpCapability Linkage
         OpMemoryModel Logical GLSL450
-        OpDecorate %2 FPRoundingMode RTZ
+        OpDecorate %2 FPRoundingMode )") +
+                   mode + R"(
         %1 = OpTypeFloat 32
         %2 = OpConstant %1 1.25
-    )";
-    CompileSuccessfully(str.c_str());
-    ASSERT_EQ(SPV_ERROR_INVALID_CAPABILITY, ValidateInstructions());
-    EXPECT_THAT(getDiagnosticString(),
-                HasSubstr("Operand 2 of Decorate requires one of these "
-                          "capabilities: Kernel"));
+      )";
+      CompileSuccessfully(str.c_str());
+      ASSERT_EQ(SPV_ERROR_INVALID_CAPABILITY, ValidateInstructions(env));
+      EXPECT_THAT(
+          getDiagnosticString(),
+          HasSubstr("Operand 2 of Decorate requires one of these capabilities: "
+                    "StorageBuffer16BitAccess StorageUniform16 "
+                    "StoragePushConstant16 StorageInputOutput16"));
+    }
+  }
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace val
+}  // namespace spvtools

@@ -22,14 +22,17 @@
 #include "unit_spirv.h"
 #include "val_fixtures.h"
 
+namespace spvtools {
+namespace val {
+namespace {
+
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
 
-using std::string;
 using std::pair;
+using std::string;
 using std::stringstream;
 
-namespace {
 using ValidateSSA = spvtest::ValidateBase<pair<string, bool>>;
 
 TEST_F(ValidateSSA, Default) {
@@ -119,7 +122,8 @@ TEST_F(ValidateSSA, DominateUsageWithinBlockBad) {
   CompileSuccessfully(str);
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              MatchesRegex("ID .\\[bad\\] has not been defined"));
+              MatchesRegex("ID .\\[bad\\] has not been defined\n"
+                           "  %8 = OpIAdd %uint %uint_1 %bad\n"));
 }
 
 TEST_F(ValidateSSA, DominateUsageSameInstructionBad) {
@@ -141,7 +145,8 @@ TEST_F(ValidateSSA, DominateUsageSameInstructionBad) {
   CompileSuccessfully(str);
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              MatchesRegex("ID .\\[sum\\] has not been defined"));
+              MatchesRegex("ID .\\[sum\\] has not been defined\n"
+                           "  %sum = OpIAdd %uint %uint_1 %sum\n"));
 }
 
 TEST_F(ValidateSSA, ForwardNameGood) {
@@ -611,8 +616,7 @@ TEST_F(ValidateSSA, EnqueueKernelGood) {
                kKernelDefinition + R"(
                 %main   = OpFunction %voidt None %vfunct
                 %mainl  = OpLabel
-                )" +
-               kKernelSetup + R"(
+                )" + kKernelSetup + R"(
                 %err    = OpEnqueueKernel %uintt %dqueue %flags %ndval %nevent
                                         %event %revent %kfunc %firstp %psize
                                         %palign %lsize
@@ -634,8 +638,7 @@ TEST_F(ValidateSSA, ForwardEnqueueKernelGood) {
                                         %palign %lsize
                          OpReturn
                          OpFunctionEnd
-                 )" +
-               kKernelDefinition;
+                 )" + kKernelDefinition;
   CompileSuccessfully(str);
   ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
@@ -645,8 +648,7 @@ TEST_F(ValidateSSA, EnqueueMissingFunctionBad) {
                kKernelTypesAndConstants + R"(
                 %main   = OpFunction %voidt None %vfunct
                 %mainl  = OpLabel
-                )" +
-               kKernelSetup + R"(
+                )" + kKernelSetup + R"(
                 %err    = OpEnqueueKernel %uintt %dqueue %flags %ndval %nevent
                                         %event %revent %kfunc %firstp %psize
                                         %palign %lsize
@@ -1080,7 +1082,7 @@ TEST_F(ValidateSSA, IdDominatesItsUseGood) {
                R"(
 %func      = OpFunction %voidt None %vfunct
 %entry     = OpLabel
-%cond      = OpSLessThan %uintt %one %ten
+%cond      = OpSLessThan %boolt %one %ten
 %eleven    = OpIAdd %uintt %one %ten
              OpSelectionMerge %merge None
              OpBranchConditional %cond %t %f
@@ -1108,7 +1110,7 @@ TEST_F(ValidateSSA, IdDoesNotDominateItsUseBad) {
                R"(
 %func        = OpFunction %voidt None %vfunct
 %entry       = OpLabel
-%cond        = OpSLessThan %uintt %one %ten
+%cond        = OpSLessThan %boolt %one %ten
                OpSelectionMerge %merge None
                OpBranchConditional %cond %true_block %false_block
 %true_block  = OpLabel
@@ -1127,7 +1129,8 @@ TEST_F(ValidateSSA, IdDoesNotDominateItsUseBad) {
   EXPECT_THAT(
       getDiagnosticString(),
       MatchesRegex("ID .\\[eleven\\] defined in block .\\[true_block\\] does "
-                   "not dominate its use in block .\\[false_block\\]"));
+                   "not dominate its use in block .\\[false_block\\]\n"
+                   "  OpFunctionEnd\n"));
 }
 
 TEST_F(ValidateSSA, PhiUseDoesntDominateDefinitionGood) {
@@ -1140,7 +1143,7 @@ TEST_F(ValidateSSA, PhiUseDoesntDominateDefinitionGood) {
                OpBranch %loop
 %loop        = OpLabel
 %i           = OpPhi %uintt %one_val %entry %inew %cont
-%cond        = OpSLessThan %uintt %one %ten
+%cond        = OpSLessThan %boolt %one %ten
                OpLoopMerge %merge %cont None
                OpBranchConditional %cond %body %merge
 %body        = OpLabel
@@ -1169,7 +1172,7 @@ TEST_F(ValidateSSA,
 %loop        = OpLabel
 %i           = OpPhi %uintt %one_val %entry %inew %cont
 %bad         = OpIAdd %uintt %inew %one
-%cond        = OpSLessThan %uintt %one %ten
+%cond        = OpSLessThan %boolt %one %ten
                OpLoopMerge %merge %cont None
                OpBranchConditional %cond %body %merge
 %body        = OpLabel
@@ -1185,7 +1188,8 @@ TEST_F(ValidateSSA,
   CompileSuccessfully(str);
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
-              MatchesRegex("ID .\\[inew\\] has not been defined"));
+              MatchesRegex("ID .\\[inew\\] has not been defined\n"
+                           "  %19 = OpIAdd %uint %inew %uint_1\n"));
 }
 
 TEST_F(ValidateSSA, PhiUseMayComeFromNonDominatingBlockGood) {
@@ -1267,7 +1271,8 @@ TEST_F(ValidateSSA, PhiVariableDefNotDominatedByParentBlockBad) {
   EXPECT_THAT(
       getDiagnosticString(),
       MatchesRegex("In OpPhi instruction .\\[phi\\], ID .\\[true_copy\\] "
-                   "definition does not dominate its parent .\\[if_false\\]"));
+                   "definition does not dominate its parent .\\[if_false\\]\n"
+                   "  OpFunctionEnd\n"));
 }
 
 TEST_F(ValidateSSA, PhiVariableDefDominatesButNotDefinedInParentBlock) {
@@ -1318,6 +1323,35 @@ TEST_F(ValidateSSA,
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions()) << getDiagnosticString();
 }
 
+TEST_F(ValidateSSA, PhiVariableUnreachableDefNotInParentBlock) {
+  string str = kHeader + "OpName %unreachable \"unreachable\"\n" + kBasicTypes +
+               R"(
+%func        = OpFunction %voidt None %vfunct
+%entry       = OpLabel
+               OpBranch %if_false
+
+%unreachable = OpLabel
+%copy        = OpCopyObject %boolt %false
+               OpBranch %if_tnext
+%if_tnext    = OpLabel
+               OpBranch %exit
+
+%if_false    = OpLabel
+%false_copy  = OpCopyObject %boolt %false
+               OpBranch %if_fnext
+%if_fnext    = OpLabel
+               OpBranch %exit
+
+%exit        = OpLabel
+%value       = OpPhi %boolt %copy %if_tnext %false_copy %if_fnext
+               OpReturn
+               OpFunctionEnd
+)";
+
+  CompileSuccessfully(str);
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
 TEST_F(ValidateSSA,
        DominanceCheckIgnoresUsesInUnreachableBlocksDefIsParamGood) {
   string str = kHeader + kBasicTypes +
@@ -1363,7 +1397,8 @@ TEST_F(ValidateSSA, UseFunctionParameterFromOtherFunctionBad) {
   EXPECT_THAT(
       getDiagnosticString(),
       MatchesRegex("ID .\\[first\\] used in function .\\[func2\\] is used "
-                   "outside of it's defining function .\\[func\\]"));
+                   "outside of it's defining function .\\[func\\]\n"
+                   "  OpFunctionEnd\n"));
 }
 
 TEST_F(ValidateSSA, TypeForwardPointerForwardReference) {
@@ -1406,4 +1441,7 @@ TEST_F(ValidateSSA, TypeStructForwardReference) {
 }
 
 // TODO(umar): OpGroupMemberDecorate
+
 }  // namespace
+}  // namespace val
+}  // namespace spvtools

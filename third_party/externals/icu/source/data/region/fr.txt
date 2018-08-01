@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/fr.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 fr{
     Countries{
         001{"Monde"}
@@ -37,6 +31,7 @@ fr{
         151{"Europe de l’Est"}
         154{"Europe septentrionale"}
         155{"Europe occidentale"}
+        202{"Afrique subsaharienne"}
         419{"Amérique latine"}
         AC{"Île de l’Ascension"}
         AD{"Andorre"}
@@ -46,7 +41,6 @@ fr{
         AI{"Anguilla"}
         AL{"Albanie"}
         AM{"Arménie"}
-        AN{"Antilles néerlandaises"}
         AO{"Angola"}
         AQ{"Antarctique"}
         AR{"Argentine"}
@@ -96,7 +90,7 @@ fr{
         CW{"Curaçao"}
         CX{"Île Christmas"}
         CY{"Chypre"}
-        CZ{"République tchèque"}
+        CZ{"Tchéquie"}
         DE{"Allemagne"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -113,9 +107,10 @@ fr{
         ES{"Espagne"}
         ET{"Éthiopie"}
         EU{"Union européenne"}
+        EZ{"zone euro"}
         FI{"Finlande"}
         FJ{"Fidji"}
-        FK{"Îles Malouines"}
+        FK{"Îles Falkland"}
         FM{"États fédérés de Micronésie"}
         FO{"Îles Féroé"}
         FR{"France"}
@@ -188,7 +183,7 @@ fr{
         MF{"Saint-Martin"}
         MG{"Madagascar"}
         MH{"Îles Marshall"}
-        MK{"Macédoine"}
+        MK{"Macédoine (ARYM)"}
         ML{"Mali"}
         MM{"Myanmar (Birmanie)"}
         MN{"Mongolie"}
@@ -255,7 +250,7 @@ fr{
         SR{"Suriname"}
         SS{"Soudan du Sud"}
         ST{"Sao Tomé-et-Principe"}
-        SV{"El Salvador"}
+        SV{"Salvador"}
         SX{"Saint-Martin (partie néerlandaise)"}
         SY{"Syrie"}
         SZ{"Swaziland"}
@@ -279,6 +274,7 @@ fr{
         UA{"Ukraine"}
         UG{"Ouganda"}
         UM{"Îles mineures éloignées des États-Unis"}
+        UN{"Nations Unies"}
         US{"États-Unis"}
         UY{"Uruguay"}
         UZ{"Ouzbékistan"}
@@ -301,14 +297,15 @@ fr{
     }
     Countries%short{
         GB{"R.-U."}
+        UN{"NU"}
         US{"É.-U."}
     }
     Countries%variant{
         CD{"Congo (RDC)"}
         CG{"République du Congo"}
-        FK{"Îles Falkland"}
-        MK{"Macédoine (ARYM)"}
+        CI{"​​République de Côte d’Ivoire"}
+        CZ{"République tchèque"}
         TL{"Timor-Oriental"}
     }
-    Version{"2.1.20.4"}
+    Version{"2.1.41.97"}
 }

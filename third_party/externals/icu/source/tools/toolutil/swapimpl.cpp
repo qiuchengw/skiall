@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -6,7 +8,7 @@
 *
 *******************************************************************************
 *   file name:  swapimpl.cpp
-*   encoding:   US-ASCII
+*   encoding:   UTF-8
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -54,6 +56,7 @@
 #include "sprpimpl.h"
 #include "propname.h"
 #include "rbbidata.h"
+#include "utrie.h"
 #include "utrie2.h"
 #include "dictionarydata.h"
 
@@ -230,7 +233,7 @@ uprops_swap(const UDataSwapper *ds,
 
         /* copy everything for inaccessible data (padding) */
         if(inData32!=outData32) {
-            uprv_memcpy(outData32, inData32, 4*dataTop);
+            uprv_memcpy(outData32, inData32, 4*(size_t)dataTop);
         }
 
         /* swap the indexes[16] */
@@ -333,7 +336,7 @@ ucase_swap(const UDataSwapper *ds,
         ((pInfo->formatVersion[0]==1 &&
           pInfo->formatVersion[2]==UTRIE_SHIFT &&
           pInfo->formatVersion[3]==UTRIE_INDEX_SHIFT) ||
-         pInfo->formatVersion[0]==2 || pInfo->formatVersion[0]==3)
+         2<=pInfo->formatVersion[0] || pInfo->formatVersion[0]<=4)
     )) {
         udata_printError(ds, "ucase_swap(): data format %02x.%02x.%02x.%02x (format version %02x) is not recognized as case mapping data\n",
                          pInfo->dataFormat[0], pInfo->dataFormat[1],

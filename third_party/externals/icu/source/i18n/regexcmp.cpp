@@ -1,7 +1,9 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 //
 //  file:  regexcmp.cpp
 //
-//  Copyright (C) 2002-2015 International Business Machines Corporation and others.
+//  Copyright (C) 2002-2016 International Business Machines Corporation and others.
 //  All Rights Reserved.
 //
 //  This file contains the ICU regular expression compiler, which is responsible
@@ -1753,8 +1755,6 @@ UBool RegexCompile::doParseActions(int32_t action)
     case doSetNamedRange:
         // We have scanned literal-\N{CHAR NAME}.  Add the range to the set.
         // The left character is already in the set, and is saved in fLastSetLiteral.
-        // Nonetheless, check if |fLastSetLiteral| is indeed set because it's
-        // not set in some edge cases.
         // The right side needs to be picked up, the scan is at the 'N'.
         // Lower Limit > Upper limit being an error matches both Java
         //        and ICU UnicodeSet behavior.
@@ -1825,12 +1825,11 @@ UBool RegexCompile::doParseActions(int32_t action)
     case doSetRange:
         // We have scanned literal-literal.  Add the range to the set.
         // The left character is already in the set, and is saved in fLastSetLiteral.
-        // Nonetheless, check if |fLastSetLiteral| is indeed set because it's
-        // not set in some edge cases.
         // The right side is the current character.
         // Lower Limit > Upper limit being an error matches both Java
         //        and ICU UnicodeSet behavior.
         {
+
         if (fLastSetLiteral == U_SENTINEL || fLastSetLiteral > fC.fChar) {
             error(U_REGEX_INVALID_RANGE);
         }
@@ -2606,7 +2605,11 @@ void  RegexCompile::findCaseInsensitiveStarters(UChar32 c, UnicodeSet *starterCh
 
 // End of machine generated data.
 
-    if (u_hasBinaryProperty(c, UCHAR_CASE_SENSITIVE)) {
+    if (c < UCHAR_MIN_VALUE || c > UCHAR_MAX_VALUE) {
+        // This function should never be called with an invalid input character.
+        U_ASSERT(FALSE);
+        starterChars->clear();
+    } else if (u_hasBinaryProperty(c, UCHAR_CASE_SENSITIVE)) {
         UChar32 caseFoldedC  = u_foldCase(c, U_FOLD_CASE_DEFAULT);
         starterChars->set(caseFoldedC, caseFoldedC);
 
@@ -2634,6 +2637,16 @@ void  RegexCompile::findCaseInsensitiveStarters(UChar32 c, UnicodeSet *starterCh
 }
 
 
+// Increment with overflow check.
+// val and delta will both be positive.
+
+static int32_t safeIncrement(int32_t val, int32_t delta) {
+    if (INT32_MAX - val > delta) {
+        return val + delta;
+    } else {
+        return INT32_MAX;
+    }
+}
 
 
 //------------------------------------------------------------------------------
@@ -2734,7 +2747,7 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->add(URX_VAL(op));
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2747,7 +2760,7 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->addAll(*s);
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2784,7 +2797,7 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->addAll(*s);
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2799,7 +2812,7 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->addAll(sc);
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2816,7 +2829,7 @@ void   RegexCompile::matchStartType() {
                  fRXPat->fInitialChars->addAll(s);
                  numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2833,7 +2846,7 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->addAll(s);
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2852,7 +2865,7 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->addAll(s);
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2876,7 +2889,7 @@ void   RegexCompile::matchStartType() {
                 }
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
@@ -2892,13 +2905,14 @@ void   RegexCompile::matchStartType() {
                 fRXPat->fInitialChars->complement();
                 numInitialStrings += 2;
             }
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             atStart = FALSE;
             break;
 
 
         case URX_JMPX:
             loc++;             // Except for extra operand on URX_JMPX, same as URX_JMP.
+            U_FALLTHROUGH;
         case URX_JMP:
             {
                 int32_t  jmpDest = URX_VAL(op);
@@ -2971,7 +2985,7 @@ void   RegexCompile::matchStartType() {
                     fRXPat->fInitialStringLen = stringLen;
                 }
 
-                currentLen += stringLen;
+                currentLen = safeIncrement(currentLen, stringLen);
                 atStart = FALSE;
             }
             break;
@@ -2996,7 +3010,7 @@ void   RegexCompile::matchStartType() {
                     fRXPat->fInitialChars->addAll(s);
                     numInitialStrings += 2;  // Matching on an initial string not possible.
                 }
-                currentLen += stringLen;
+                currentLen = safeIncrement(currentLen, stringLen);
                 atStart = FALSE;
             }
             break;
@@ -3254,13 +3268,14 @@ int32_t   RegexCompile::minMatchLength(int32_t start, int32_t end) {
         case URX_DOTANY_ALL:    // . matches one or two.
         case URX_DOTANY:
         case URX_DOTANY_UNIX:
-            currentLen++;
+            currentLen = safeIncrement(currentLen, 1);
             break;
 
 
         case URX_JMPX:
             loc++;              // URX_JMPX has an extra operand, ignored here,
                                 //   otherwise processed identically to URX_JMP.
+            U_FALLTHROUGH;
         case URX_JMP:
             {
                 int32_t  jmpDest = URX_VAL(op);
@@ -3305,7 +3320,7 @@ int32_t   RegexCompile::minMatchLength(int32_t start, int32_t end) {
             {
                 loc++;
                 int32_t stringLenOp = (int32_t)fRXPat->fCompiledPat->elementAti(loc);
-                currentLen += URX_VAL(stringLenOp);
+                currentLen = safeIncrement(currentLen, URX_VAL(stringLenOp));
             }
             break;
 
@@ -3318,7 +3333,7 @@ int32_t   RegexCompile::minMatchLength(int32_t start, int32_t end) {
                 //       Assume a min length of one for now.  A min length of zero causes
                 //        optimization failures for a pattern like "string"+
                 // currentLen += URX_VAL(stringLenOp);
-                currentLen += 1;
+                currentLen = safeIncrement(currentLen, 1);
             }
             break;
 
@@ -3427,18 +3442,6 @@ int32_t   RegexCompile::minMatchLength(int32_t start, int32_t end) {
 
     return currentLen;
 }
-
-// Increment with overflow check.
-// val and delta will both be positive.
-
-static int32_t safeIncrement(int32_t val, int32_t delta) {
-    if (INT32_MAX - val > delta) {
-        return val + delta;
-    } else {
-        return INT32_MAX;
-    }
-}
-
 
 //------------------------------------------------------------------------------
 //
@@ -4447,11 +4450,9 @@ UnicodeSet *RegexCompile::createSetForProperty(const UnicodeString &propName, UB
     //    See if the property looks like a Java "InBlockName", which
     //    we will recast as "Block=BlockName"
     //
-    static const UChar IN[] = {0x49, 0x6E, 0};  // "In"
-    static const UChar BLOCK[] = {0x42, 0x6C, 0x6f, 0x63, 0x6b, 0x3d, 00};  // "Block="
-    if (mPropName.startsWith(IN, 2) && propName.length()>=3) {
+    if (mPropName.startsWith(u"In", 2) && propName.length()>=3) {
         setExpr.truncate(4);   // Leaves "[\p{", or "[\P{"
-        setExpr.append(BLOCK, -1);
+        setExpr.append(u"Block=", -1);
         setExpr.append(UnicodeString(mPropName, 2));  // Property with the leading "In" removed.
         setExpr.append(chRBrace);
         setExpr.append(chRBracket);

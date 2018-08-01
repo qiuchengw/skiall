@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/cy.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 cy{
     Countries{
         001{"Y Byd"}
@@ -37,6 +31,7 @@ cy{
         151{"Dwyrain Ewrop"}
         154{"Gogledd Ewrop"}
         155{"Gorllewin Ewrop"}
+        202{"Affrica Is-Sahara"}
         419{"America Ladin"}
         AC{"Ynys Ascension"}
         AD{"Andorra"}
@@ -46,7 +41,6 @@ cy{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
-        AN{"Ynysoedd Caribî yr Iseldiroedd"}
         AO{"Angola"}
         AQ{"Antarctica"}
         AR{"Yr Ariannin"}
@@ -56,7 +50,7 @@ cy{
         AW{"Aruba"}
         AX{"Ynysoedd Åland"}
         AZ{"Azerbaijan"}
-        BA{"Bosnia a Hercegovina"}
+        BA{"Bosnia & Herzegovina"}
         BB{"Barbados"}
         BD{"Bangladesh"}
         BE{"Gwlad Belg"}
@@ -96,7 +90,7 @@ cy{
         CW{"Curaçao"}
         CX{"Ynys y Nadolig"}
         CY{"Cyprus"}
-        CZ{"Gweriniaeth Tsiec"}
+        CZ{"Tsiecia"}
         DE{"Yr Almaen"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -113,9 +107,10 @@ cy{
         ES{"Sbaen"}
         ET{"Ethiopia"}
         EU{"Yr Undeb Ewropeaidd"}
+        EZ{"Ardal yr Ewro"}
         FI{"Y Ffindir"}
         FJ{"Fiji"}
-        FK{"Ynysoedd y Falkland/Malvinas"}
+        FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
         FM{"Micronesia"}
         FO{"Ynysoedd Ffaro"}
         FR{"Ffrainc"}
@@ -188,7 +183,7 @@ cy{
         MF{"Saint Martin"}
         MG{"Madagascar"}
         MH{"Ynysoedd Marshall"}
-        MK{"Macedonia"}
+        MK{"Macedonia (CWIM)"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
@@ -279,6 +274,7 @@ cy{
         UA{"Wcráin"}
         UG{"Uganda"}
         UM{"Ynysoedd Pellennig UDA"}
+        UN{"y Cenhedloedd Unedig"}
         US{"Yr Unol Daleithiau"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -301,15 +297,15 @@ cy{
     }
     Countries%short{
         GB{"DU"}
+        UN{"UN"}
         US{"UDA"}
     }
     Countries%variant{
-        CD{"y Congo (G.Dd.C.)"}
+        CD{"Y Congo (G.Dd.C.)"}
         CG{"Y Congo (Gweriniaeth)"}
         CI{"Arfordir Ifori"}
-        FK{"Ynysoedd y Falkland (Ynysoedd y Malfinas)"}
-        MK{"Macedonia (CWIM)"}
+        CZ{"Gweriniaeth Tsiec"}
         TL{"Dwyrain Timor"}
     }
-    Version{"2.1.20.4"}
+    Version{"2.1.41.97"}
 }

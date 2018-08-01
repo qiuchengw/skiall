@@ -14,11 +14,12 @@
 
 #include "unit_spirv.h"
 
+namespace spvtools {
 namespace {
 
 using GetTargetTest = ::testing::TestWithParam<spv_target_env>;
-using ::testing::ValuesIn;
 using std::vector;
+using ::testing::ValuesIn;
 
 TEST_P(GetTargetTest, Default) {
   spv_operand_table table;
@@ -69,4 +70,5 @@ TEST(OperandIsConcreteMask, Sample) {
       spvOperandIsConcreteMask(SPV_OPERAND_TYPE_OPTIONAL_MEMORY_ACCESS));
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace spvtools

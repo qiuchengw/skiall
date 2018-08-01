@@ -31,7 +31,7 @@
 #include "memorypool.h"
 #include "response.h"
 #include "reason_phrase.h"
-#include <gnutls/gnutls.h>
+#include <openssl/ssl.h>
 
 
 /**
@@ -46,19 +46,19 @@ static int
 run_tls_handshake (struct MHD_Connection *connection)
 {
   int ret;
-
   connection->last_activity = MHD_monotonic_time();
   if (connection->state == MHD_TLS_CONNECTION_INIT)
     {
-      ret = gnutls_handshake (connection->tls_session);
-      if (ret == GNUTLS_E_SUCCESS)
+      ret = SSL_accept (connection->tls_session);
+      if (ret == 1)
 	{
 	  /* set connection state to enable HTTP processing */
 	  connection->state = MHD_CONNECTION_INIT;
 	  return MHD_YES;
 	}
-      if ( (ret == GNUTLS_E_AGAIN) ||
-	   (ret == GNUTLS_E_INTERRUPTED) )
+      int error = SSL_get_error (connection->tls_session, ret);
+      if ( (error == SSL_ERROR_WANT_READ) ||
+	   (error == SSL_ERROR_WANT_WRITE) )
 	{
 	  /* handshake not done */
 	  return MHD_YES;
@@ -150,10 +150,10 @@ MHD_tls_connection_handle_idle (struct MHD_Connection *connection)
       break;
       /* close connection if necessary */
     case MHD_CONNECTION_CLOSED:
-      gnutls_bye (connection->tls_session, GNUTLS_SHUT_RDWR);
+      SSL_shutdown (connection->tls_session);
       return MHD_connection_handle_idle (connection);
     default:
-      if ( (0 != gnutls_record_check_pending (connection->tls_session)) &&
+      if ( (0 != SSL_pending (connection->tls_session)) &&
 	   (MHD_YES != MHD_tls_connection_handle_read (connection)) )
 	return MHD_YES;
       return MHD_connection_handle_idle (connection);

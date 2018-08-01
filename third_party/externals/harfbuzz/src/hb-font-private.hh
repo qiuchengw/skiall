@@ -31,7 +31,6 @@
 
 #include "hb-private.hh"
 
-#include "hb-object-private.hh"
 #include "hb-face-private.hh"
 #include "hb-shaper-private.hh"
 
@@ -83,7 +82,11 @@ struct hb_font_funcs_t {
       HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
     } f;
-    void (*array[VAR]) (void);
+    void (*array[0
+#define HB_FONT_FUNC_IMPLEMENT(name) +1
+      HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
+#undef HB_FONT_FUNC_IMPLEMENT
+		]) (void);
   } get;
 };
 
@@ -108,6 +111,8 @@ struct hb_font_t {
   unsigned int x_ppem;
   unsigned int y_ppem;
 
+  float ptem;
+
   /* Font variation coordinates. */
   unsigned int num_coords;
   int *coords;
@@ -126,6 +131,8 @@ struct hb_font_t {
   inline hb_position_t em_scale_y (int16_t v) { return em_scale (v, y_scale); }
   inline hb_position_t em_scalef_x (float v) { return em_scalef (v, this->x_scale); }
   inline hb_position_t em_scalef_y (float v) { return em_scalef (v, this->y_scale); }
+  inline float em_fscale_x (int16_t v) { return em_fscale (v, x_scale); }
+  inline float em_fscale_y (int16_t v) { return em_fscale (v, y_scale); }
   inline hb_position_t em_scale_dir (int16_t v, hb_direction_t direction)
   { return em_scale (v, dir_scale (direction)); }
 
@@ -539,7 +546,11 @@ struct hb_font_t {
   }
   inline hb_position_t em_scalef (float v, int scale)
   {
-    return (hb_position_t) (v * scale / face->get_upem ());
+    return (hb_position_t) round (v * scale / face->get_upem ());
+  }
+  inline float em_fscale (int16_t v, int scale)
+  {
+    return (float) v * scale / face->get_upem ();
   }
 };
 

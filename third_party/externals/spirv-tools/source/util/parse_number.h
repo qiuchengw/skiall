@@ -22,7 +22,8 @@
 #include "spirv-tools/libspirv.h"
 #include "util/hex_float.h"
 
-namespace spvutils {
+namespace spvtools {
+namespace utils {
 
 // A struct to hold the expected type information for the number in text to be
 // parsed.
@@ -171,7 +172,7 @@ bool ParseNumber(const char* text, T* value_pointer) {
   static_assert(sizeof(T) > 1,
                 "Single-byte types are not supported in this parse method");
 
-  if (!text)  return false;
+  if (!text) return false;
   std::istringstream text_stream(text);
   // Allow both decimal and hex input for integers.
   // It also allows octal input, but we don't care about that case.
@@ -245,6 +246,7 @@ EncodeNumberStatus ParseAndEncodeNumber(const char* text,
                                         std::function<void(uint32_t)> emit,
                                         std::string* error_msg);
 
-}  // namespace spvutils
+}  // namespace utils
+}  // namespace spvtools
 
 #endif  // LIBSPIRV_UTIL_PARSE_NUMBER_H_

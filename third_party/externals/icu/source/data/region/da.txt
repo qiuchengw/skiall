@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/da.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 da{
     Countries{
         001{"Verden"}
@@ -28,7 +22,7 @@ da{
         039{"Sydeuropa"}
         053{"Australasien"}
         054{"Melanesien"}
-        057{"Mikronesien"}
+        057{"Mikronesiske område"}
         061{"Polynesien"}
         142{"Asien"}
         143{"Centralasien"}
@@ -37,6 +31,7 @@ da{
         151{"Østeuropa"}
         154{"Nordeuropa"}
         155{"Vesteuropa"}
+        202{"Afrika syd for Sahara"}
         419{"Latinamerika"}
         AC{"Ascensionøen"}
         AD{"Andorra"}
@@ -46,7 +41,6 @@ da{
         AI{"Anguilla"}
         AL{"Albanien"}
         AM{"Armenien"}
-        AN{"Hollandske Antiller"}
         AO{"Angola"}
         AQ{"Antarktis"}
         AR{"Argentina"}
@@ -69,7 +63,7 @@ da{
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
-        BQ{"De Nederlandske Antiller"}
+        BQ{"De tidligere Nederlandske Antiller"}
         BR{"Brasilien"}
         BS{"Bahamas"}
         BT{"Bhutan"}
@@ -113,10 +107,11 @@ da{
         ES{"Spanien"}
         ET{"Etiopien"}
         EU{"Den Europæiske Union"}
+        EZ{"eurozonen"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"Falklandsøerne"}
-        FM{"Mikronesiens Forenede Stater"}
+        FK{"Falklandsøerne (Islas Malvinas)"}
+        FM{"Mikronesien"}
         FO{"Færøerne"}
         FR{"Frankrig"}
         GA{"Gabon"}
@@ -133,7 +128,7 @@ da{
         GP{"Guadeloupe"}
         GQ{"Ækvatorialguinea"}
         GR{"Grækenland"}
-        GS{"South Georgia og South Sandwich Islands"}
+        GS{"South Georgia og De Sydlige Sandwichøer"}
         GT{"Guatemala"}
         GU{"Guam"}
         GW{"Guinea-Bissau"}
@@ -188,7 +183,7 @@ da{
         MF{"Saint Martin"}
         MG{"Madagaskar"}
         MH{"Marshalløerne"}
-        MK{"Makedonien"}
+        MK{"Den tidligere jugoslaviske republik Makedonien"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongoliet"}
@@ -210,7 +205,7 @@ da{
         NF{"Norfolk Island"}
         NG{"Nigeria"}
         NI{"Nicaragua"}
-        NL{"Nederlandene"}
+        NL{"Holland"}
         NO{"Norge"}
         NP{"Nepal"}
         NR{"Nauru"}
@@ -279,6 +274,7 @@ da{
         UA{"Ukraine"}
         UG{"Uganda"}
         UM{"Amerikanske oversøiske øer"}
+        UN{"De Forenede Nationer"}
         US{"USA"}
         UY{"Uruguay"}
         UZ{"Usbekistan"}
@@ -301,14 +297,14 @@ da{
     }
     Countries%short{
         GB{"UK"}
+        UN{"FN"}
         US{"USA"}
     }
     Countries%variant{
-        CD{"Den Demokratiske Republik Congo"}
+        CD{"Den Demokratiske Republik Congo (DRC)"}
         CG{"Republikken Congo"}
-        FK{"Falklandsøerne (Islas Malvinas)"}
-        MK{"Den tidligere jugoslaviske republik Makedonien"}
+        CZ{"Den Tjekkiske Republik"}
         TL{"Østtimor"}
     }
-    Version{"2.1.19.44"}
+    Version{"2.1.41.97"}
 }

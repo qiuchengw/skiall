@@ -17,6 +17,7 @@
 #ifndef LIBSPIRV_OPT_AGGRESSIVE_DCE_PASS_H_
 #define LIBSPIRV_OPT_AGGRESSIVE_DCE_PASS_H_
 
+#include <util/bit_vector.h>
 #include <algorithm>
 #include <map>
 #include <queue>
@@ -26,118 +27,163 @@
 
 #include "basic_block.h"
 #include "def_use_manager.h"
+#include "mem_pass.h"
 #include "module.h"
-#include "pass.h"
 
 namespace spvtools {
 namespace opt {
 
 // See optimizer.hpp for documentation.
-class AggressiveDCEPass : public Pass {
-
-  using cbb_ptr = const ir::BasicBlock*;
+class AggressiveDCEPass : public MemPass {
+  using cbb_ptr = const BasicBlock*;
 
  public:
-   using GetBlocksFunction =
-     std::function<std::vector<ir::BasicBlock*>*(const ir::BasicBlock*)>;
+  using GetBlocksFunction =
+      std::function<std::vector<BasicBlock*>*(const BasicBlock*)>;
 
   AggressiveDCEPass();
-  const char* name() const override { return "aggressive-dce"; }
-  Status Process(ir::Module*) override;
+  const char* name() const override { return "eliminate-dead-code-aggressive"; }
+  Status Process() override;
+
+  IRContext::Analysis GetPreservedAnalyses() override {
+    return IRContext::kAnalysisDefUse | IRContext::kAnalysisInstrToBlockMapping;
+  }
 
  private:
-  // Returns true if |opcode| is a non-ptr access chain op
-  bool IsNonPtrAccessChain(const SpvOp opcode) const;
+  // Return true if |varId| is a variable of |storageClass|. |varId| must either
+  // be 0 or the result of an instruction.
+  bool IsVarOfStorage(uint32_t varId, uint32_t storageClass);
 
-  // Given a load or store |ip|, return the pointer instruction.
-  // Also return the base variable's id in |varId|.
-  ir::Instruction* GetPtr(ir::Instruction* ip, uint32_t* varId);
+  // Return true if |varId| is variable of function storage class or is
+  // private variable and privates can be optimized like locals (see
+  // privates_like_local_).
+  bool IsLocalVar(uint32_t varId);
+
+  // Return true if |inst| is marked live.
+  bool IsLive(const Instruction* inst) const {
+    return live_insts_.Get(inst->unique_id());
+  }
+
+  // Returns true if |inst| is dead.
+  bool IsDead(Instruction* inst);
+
+  // Adds entry points, execution modes and workgroup size decorations to the
+  // worklist for processing with the first function.
+  void InitializeModuleScopeLiveInstructions();
+
+  // Add |inst| to worklist_ and live_insts_.
+  void AddToWorklist(Instruction* inst) {
+    if (!live_insts_.Set(inst->unique_id())) {
+      worklist_.push(inst);
+    }
+  }
 
   // Add all store instruction which use |ptrId|, directly or indirectly,
   // to the live instruction worklist.
   void AddStores(uint32_t ptrId);
 
-  // Return true if variable with |varId| is function scope
-  bool IsLocalVar(uint32_t varId);
-
-  // Initialize combinator data structures
-  void InitCombinatorSets();
-
-  // Return true if core operator |op| has no side-effects. Currently returns
-  // true only for shader capability operations.
-  // TODO(greg-lunarg): Add kernel and other operators
-  bool IsCombinator(uint32_t op) const;
-
-  // Return true if OpExtInst |inst| has no side-effects. Currently returns
-  // true only for std.GLSL.450 extensions
-  // TODO(greg-lunarg): Add support for other extensions
-  bool IsCombinatorExt(ir::Instruction* inst) const;
+  // Initialize extensions whitelist
+  void InitExtensions();
 
   // Return true if all extensions in this module are supported by this pass.
-  // Currently, no extensions are supported. glsl_std_450 extended instructions
-  // are allowed.
-  bool AllExtensionsSupported();
+  bool AllExtensionsSupported() const;
 
-  // Kill debug or annotation |inst| if target operand is dead.
-  void KillInstIfTargetDead(ir::Instruction* inst);
+  // Returns true if the target of |inst| is dead.  An instruction is dead if
+  // its result id is used in decoration or debug instructions only. |inst| is
+  // assumed to be OpName, OpMemberName or an annotation instruction.
+  bool IsTargetDead(Instruction* inst);
+
+  // If |varId| is local, mark all stores of varId as live.
+  void ProcessLoad(uint32_t varId);
+
+  // If |bp| is structured header block, returns true and sets |mergeInst| to
+  // the merge instruction, |branchInst| to the branch and |mergeBlockId| to the
+  // merge block if they are not nullptr.  Any of |mergeInst|, |branchInst| or
+  // |mergeBlockId| may be a null pointer.  Returns false if |bp| is a null
+  // pointer.
+  bool IsStructuredHeader(BasicBlock* bp, Instruction** mergeInst,
+                          Instruction** branchInst, uint32_t* mergeBlockId);
+
+  // Initialize block2headerBranch_ and branch2merge_ using |structuredOrder|
+  // to order blocks.
+  void ComputeBlock2HeaderMaps(std::list<BasicBlock*>& structuredOrder);
+
+  // Add branch to |labelId| to end of block |bp|.
+  void AddBranch(uint32_t labelId, BasicBlock* bp);
+
+  // Add all break and continue branches in the loop associated with
+  // |mergeInst| to worklist if not already live
+  void AddBreaksAndContinuesToWorklist(Instruction* mergeInst);
+
+  // Eliminates dead debug2 and annotation instructions. Marks dead globals for
+  // removal (e.g. types, constants and variables).
+  bool ProcessGlobalValues();
+
+  // Erases functions that are unreachable from the entry points of the module.
+  bool EliminateDeadFunctions();
+
+  // Removes |func| from the module and deletes all its instructions.
+  void EliminateFunction(Function* func);
 
   // For function |func|, mark all Stores to non-function-scope variables
   // and block terminating instructions as live. Recursively mark the values
-  // they use. When complete, delete any non-live instructions. Return true
-  // if the function has been modified.
-  // 
+  // they use. When complete, mark any non-live instructions to be deleted.
+  // Returns true if the function has been modified.
+  //
   // Note: This function does not delete useless control structures. All
   // existing control structures will remain. This can leave not-insignificant
   // sequences of ultimately useless code.
   // TODO(): Remove useless control constructs.
-  bool AggressiveDCE(ir::Function* func);
+  bool AggressiveDCE(Function* func);
 
-  void Initialize(ir::Module* module);
   Pass::Status ProcessImpl();
 
-  // Module this pass is processing
-  ir::Module* module_;
+  // True if current function has a call instruction contained in it
+  bool call_in_func_;
 
-  // Def-Uses for the module we are processing
-  std::unique_ptr<analysis::DefUseManager> def_use_mgr_;
+  // True if current function is an entry point
+  bool func_is_entry_point_;
 
-  // Map from function's result id to function
-  std::unordered_map<uint32_t, ir::Function*> id2function_;
+  // True if current function is entry point and has no function calls.
+  bool private_like_local_;
 
   // Live Instruction Worklist.  An instruction is added to this list
   // if it might have a side effect, either directly or indirectly.
   // If we don't know, then add it to this list.  Instructions are
   // removed from this list as the algorithm traces side effects,
   // building up the live instructions set |live_insts_|.
-  std::queue<ir::Instruction*> worklist_;
+  std::queue<Instruction*> worklist_;
+
+  // Map from block to the branch instruction in the header of the most
+  // immediate controlling structured if or loop.  A loop header block points
+  // to its own branch instruction.  An if-selection block points to the branch
+  // of an enclosing construct's header, if one exists.
+  std::unordered_map<BasicBlock*, Instruction*> block2headerBranch_;
+
+  // Maps basic block to their index in the structured order traversal.
+  std::unordered_map<BasicBlock*, uint32_t> structured_order_index_;
+
+  // Map from branch to its associated merge instruction, if any
+  std::unordered_map<Instruction*, Instruction*> branch2merge_;
+
+  // Store instructions to variables of private storage
+  std::vector<Instruction*> private_stores_;
 
   // Live Instructions
-  std::unordered_set<const ir::Instruction*> live_insts_;
+  utils::BitVector live_insts_;
 
   // Live Local Variables
   std::unordered_set<uint32_t> live_local_vars_;
 
-  // Dead instructions. Use for debug cleanup.
-  std::unordered_set<const ir::Instruction*> dead_insts_;
+  // List of instructions to delete. Deletion is delayed until debug and
+  // annotation instructions are processed.
+  std::vector<Instruction*> to_kill_;
 
-  // Opcodes of shader capability core executable instructions
-  // without side-effect. This is a whitelist of operators
-  // that can safely be left unmarked as live at the beginning of
-  // aggressive DCE.
-  std::unordered_set<uint32_t> combinator_ops_shader_;
-
-  // Opcodes of GLSL_std_450 extension executable instructions
-  // without side-effect. This is a whitelist of operators
-  // that can safely be left unmarked as live at the beginning of
-  // aggressive DCE.
-  std::unordered_set<uint32_t> combinator_ops_glsl_std_450_;
-
-  // Set id for glsl_std_450 extension instructions
-  uint32_t glsl_std_450_id_;
+  // Extensions supported by this pass.
+  std::unordered_set<std::string> extensions_whitelist_;
 };
 
 }  // namespace opt
 }  // namespace spvtools
 
 #endif  // LIBSPIRV_OPT_AGGRESSIVE_DCE_PASS_H_
-

@@ -22,11 +22,13 @@
 #include "unit_spirv.h"
 #include "val_fixtures.h"
 
+namespace spvtools {
+namespace val {
 namespace {
 
+using std::string;
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
-using std::string;
 
 using ValidateLimits = spvtest::ValidateBase<bool>;
 
@@ -302,8 +304,8 @@ TEST_F(ValidateLimits, CustomizedOpTypeFunctionGood) {
   for (int i = 0; i < num_args; ++i) {
     spirv << " %1";
   }
-  spvValidatorOptionsSetUniversalLimit(options_,
-                                       spv_validator_limit_max_function_args, 100u);
+  spvValidatorOptionsSetUniversalLimit(
+      options_, spv_validator_limit_max_function_args, 100u);
   CompileSuccessfully(spirv.str());
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
@@ -318,8 +320,8 @@ TEST_F(ValidateLimits, CustomizedOpTypeFunctionBad) {
   for (int i = 0; i < num_args; ++i) {
     spirv << " %1";
   }
-  spvValidatorOptionsSetUniversalLimit(options_,
-                                       spv_validator_limit_max_function_args, 100u);
+  spvValidatorOptionsSetUniversalLimit(
+      options_, spv_validator_limit_max_function_args, 100u);
   CompileSuccessfully(spirv.str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
@@ -406,8 +408,11 @@ TEST_F(ValidateLimits, CustomizedNumGlobalVarsBad) {
 }
 
 // Valid: module has 524,287 local variables.
-TEST_F(ValidateLimits, NumLocalVarsGood) {
-  int num_locals = 524287;
+// Note: AppVeyor limits process time to 300s.  For a VisualStudio Debug
+// build, going up to 524287 local variables gets too close to that
+// limit.  So test with an artificially lowered limit.
+TEST_F(ValidateLimits, NumLocalVarsGoodArtificiallyLowLimit5K) {
+  int num_locals = 5000;
   std::ostringstream spirv;
   spirv << header << R"(
  %int      = OpTypeInt 32 0
@@ -428,12 +433,16 @@ TEST_F(ValidateLimits, NumLocalVarsGood) {
   )";
 
   CompileSuccessfully(spirv.str());
+  // Artificially limit it.
+  spvValidatorOptionsSetUniversalLimit(
+      options_, spv_validator_limit_max_local_variables, num_locals);
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
 
 // Invalid: module has 524,288 local variables (limit is 524,287).
-TEST_F(ValidateLimits, NumLocalVarsBad) {
-  int num_locals = 524288;
+// Artificially limit the check to 5001.
+TEST_F(ValidateLimits, NumLocalVarsBadArtificiallyLowLimit5K) {
+  int num_locals = 5001;
   std::ostringstream spirv;
   spirv << header << R"(
  %int      = OpTypeInt 32 0
@@ -454,10 +463,12 @@ TEST_F(ValidateLimits, NumLocalVarsBad) {
   )";
 
   CompileSuccessfully(spirv.str());
+  spvValidatorOptionsSetUniversalLimit(
+      options_, spv_validator_limit_max_local_variables, 5000u);
   EXPECT_EQ(SPV_ERROR_INVALID_BINARY, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("Number of local variables ('Function' Storage Class) "
-                        "exceeded the valid limit (524287)."));
+                        "exceeded the valid limit (5000)."));
 }
 
 // Valid: module has 100 local variables (limit is 100).
@@ -526,8 +537,8 @@ TEST_F(ValidateLimits, StructNestingDepthGood) {
     %int = OpTypeInt 32 0
     %s_depth_1  = OpTypeStruct %int
   )";
-  for(auto i=2; i<=255; ++i) {
-    spirv << "%s_depth_" << i << " = OpTypeStruct %int %s_depth_" << i-1;
+  for (auto i = 2; i <= 255; ++i) {
+    spirv << "%s_depth_" << i << " = OpTypeStruct %int %s_depth_" << i - 1;
     spirv << "\n";
   }
   CompileSuccessfully(spirv.str());
@@ -541,8 +552,8 @@ TEST_F(ValidateLimits, StructNestingDepthBad) {
     %int = OpTypeInt 32 0
     %s_depth_1  = OpTypeStruct %int
   )";
-  for(auto i=2; i<=256; ++i) {
-    spirv << "%s_depth_" << i << " = OpTypeStruct %int %s_depth_" << i-1;
+  for (auto i = 2; i <= 256; ++i) {
+    spirv << "%s_depth_" << i << " = OpTypeStruct %int %s_depth_" << i - 1;
     spirv << "\n";
   }
   CompileSuccessfully(spirv.str());
@@ -703,4 +714,6 @@ TEST_F(ValidateLimits, ControlFlowNoEntryToLoopGood) {
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace val
+}  // namespace spvtools

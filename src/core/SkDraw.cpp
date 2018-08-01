@@ -1579,7 +1579,7 @@ SkGlyphRunListDrawer::PerMask SkDraw::drawOneMaskCreator(
     auto useRegion = fRC->isBW() && !fRC->isRect();
 
     if (useRegion) {
-        return [this, blitter, &paint](const SkMask& mask) {
+        return [this, blitter, &paint](const SkMask& mask, const SkGlyph&, SkPoint) {
             SkRegion::Cliperator clipper(fRC->bwRgn(), mask.fBounds);
 
             if (!clipper.done()) {
@@ -1597,7 +1597,7 @@ SkGlyphRunListDrawer::PerMask SkDraw::drawOneMaskCreator(
     } else {
         SkIRect clipBounds = fRC->isBW() ? fRC->bwRgn().getBounds()
                                          : fRC->aaRgn().getBounds();
-        return [this, blitter, clipBounds, &paint](const SkMask& mask) {
+        return [this, blitter, clipBounds, &paint](const SkMask& mask, const SkGlyph&, SkPoint) {
             SkIRect  storage;
             const SkIRect* bounds = &mask.fBounds;
 
@@ -1628,9 +1628,18 @@ void SkDraw::drawGlyphRunList(
         return;
     }
 
-    auto perPathBuilder = [this](const SkPaint& paint, SkArenaAlloc*) {
-        auto perPath = [this, &paint](const SkPath& path, const SkMatrix& matrix) {
-            this->drawPath(path, paint, &matrix, false);
+    SkMatrix renderMatrix{*fMatrix};
+    auto perPathBuilder = [this, &renderMatrix]
+            (const SkPaint& paint, SkScalar scaleMatrix, SkArenaAlloc*) {
+        renderMatrix.setScale(scaleMatrix, scaleMatrix);
+        auto perPath =
+                [this, &renderMatrix, &paint]
+                (const SkPath* path, const SkGlyph&, SkPoint position) {
+            if (path != nullptr) {
+                renderMatrix[SkMatrix::kMTransX] = position.fX;
+                renderMatrix[SkMatrix::kMTransY] = position.fY;
+                this->drawPath(*path, paint, &renderMatrix, false);
+            }
         };
         return perPath;
     };
@@ -1639,7 +1648,7 @@ void SkDraw::drawGlyphRunList(
         return this->drawOneMaskCreator(paint, alloc);
     };
 
-    glyphDraw->drawForBitmap(glyphRunList, *fMatrix, perMaskBuilder, perPathBuilder);
+    glyphDraw->drawForBitmapDevice(glyphRunList, *fMatrix, perMaskBuilder, perPathBuilder);
 }
 
 #if defined _WIN32

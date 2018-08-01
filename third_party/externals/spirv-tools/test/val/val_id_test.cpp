@@ -26,18 +26,20 @@
 // in stages, ID validation is only one of these stages. All validation stages
 // are stand alone.
 
+namespace spvtools {
+namespace val {
 namespace {
 
-using ::testing::ValuesIn;
-using ::testing::HasSubstr;
 using spvtest::ScopedContext;
 using std::ostringstream;
 using std::string;
 using std::vector;
+using ::testing::HasSubstr;
+using ::testing::ValuesIn;
 
 using ValidateIdWithMessage = spvtest::ValidateBase<bool>;
 
-string kGLSL450MemoryModel = R"(
+string kOpCapabilitySetup = R"(
      OpCapability Shader
      OpCapability Linkage
      OpCapability Addresses
@@ -49,6 +51,9 @@ string kGLSL450MemoryModel = R"(
      OpCapability Int16
      OpCapability Int64
      OpCapability Float64
+)";
+
+string kGLSL450MemoryModel = kOpCapabilitySetup + R"(
      OpMemoryModel Logical GLSL450
 )";
 
@@ -94,6 +99,50 @@ string sampledImageSetup = R"(
             %sampler_inst = OpLoad %sampler_type %s
 )";
 
+string BranchConditionalSetup = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %main "main"
+               OpExecutionMode %main OriginUpperLeft
+               OpSource GLSL 140
+               OpName %main "main"
+
+             ; type definitions
+       %bool = OpTypeBool
+       %uint = OpTypeInt 32 0
+        %int = OpTypeInt 32 1
+      %float = OpTypeFloat 32
+    %v4float = OpTypeVector %float 4
+
+             ; constants
+         %i0 = OpConstant %int 0
+         %i1 = OpConstant %int 1
+         %f0 = OpConstant %float 0
+         %f1 = OpConstant %float 1
+
+
+             ; main function header
+       %void = OpTypeVoid
+   %voidfunc = OpTypeFunction %void
+       %main = OpFunction %void None %voidfunc
+      %lmain = OpLabel
+)";
+
+string BranchConditionalTail = R"(
+   %target_t = OpLabel
+               OpNop
+               OpBranch %end
+   %target_f = OpLabel
+               OpNop
+               OpBranch %end
+
+        %end = OpLabel
+
+               OpReturn
+               OpFunctionEnd
+)";
+
 // TODO: OpUndef
 
 TEST_F(ValidateIdWithMessage, OpName) {
@@ -120,8 +169,9 @@ TEST_F(ValidateIdWithMessage, OpMemberNameTypeBad) {
 %1 = OpTypeInt 32 0)";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpMemberName Type <id> '1' is not a struct type."));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpMemberName Type <id> '1[foo]' is not a struct type."));
 }
 TEST_F(ValidateIdWithMessage, OpMemberNameMemberBad) {
   string spirv = kGLSL450MemoryModel + R"(
@@ -130,9 +180,10 @@ TEST_F(ValidateIdWithMessage, OpMemberNameMemberBad) {
 %1 = OpTypeStruct %2)";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpMemberName Member <id> '1' index is larger than "
-                        "Type <id> '1's member count."));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpMemberName Member <id> '1[foo]' index is larger than "
+                "Type <id> '1[foo]'s member count."));
 }
 
 TEST_F(ValidateIdWithMessage, OpLineGood) {
@@ -217,6 +268,20 @@ TEST_F(ValidateIdWithMessage, OpGroupDecorateGood) {
 %4 = OpConstant %2 23)";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+TEST_F(ValidateIdWithMessage, OpDecorationGroupBad) {
+  string spirv = kGLSL450MemoryModel + R"(
+%1 = OpDecorationGroup
+     OpDecorate %1 Uniform
+     OpDecorate %1 GLSLShared
+     OpMemberDecorate %1 0 Constant
+    )";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Result id of OpDecorationGroup can only "
+                        "be targeted by OpName, OpGroupDecorate, "
+                        "OpDecorate, and OpGroupMemberDecorate"));
 }
 TEST_F(ValidateIdWithMessage, OpGroupDecorateDecorationGroupBad) {
   string spirv = R"(
@@ -330,10 +395,11 @@ TEST_F(ValidateIdWithMessage, OpEntryPointReturnTypeBad) {
   string spirv = kGLSL450MemoryModel + R"(
      OpEntryPoint GLCompute %3 ""
 %1 = OpTypeInt 32 0
+%ret = OpConstant %1 0
 %2 = OpTypeFunction %1
 %3 = OpFunction %1 None %2
 %4 = OpLabel
-     OpReturn
+     OpReturnValue %ret
      OpFunctionEnd)";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
@@ -365,7 +431,6 @@ TEST_F(ValidateIdWithMessage, OpEntryPointInterfaceIsNotVariableTypeBad) {
               HasSubstr("Interfaces passed to OpEntryPoint must be of type "
                         "OpTypeVariable. Found OpTypePointer."));
 }
-
 
 TEST_F(ValidateIdWithMessage, OpEntryPointInterfaceStorageClassBad) {
   string spirv = R"(
@@ -563,7 +628,7 @@ class OpTypeArrayLengthTest
   ~OpTypeArrayLengthTest() { spvDiagnosticDestroy(diagnostic_); }
 
   // Runs spvValidate() on v, printing any errors via spvDiagnosticPrint().
-  spv_result_t Val(const SpirvVector& v, const std::string &expected_err = "") {
+  spv_result_t Val(const SpirvVector& v, const std::string& expected_err = "") {
     spv_const_binary_t cbinary{v.data(), v.size()};
     const auto status =
         spvValidate(ScopedContext().context, &cbinary, &diagnostic_);
@@ -1878,7 +1943,9 @@ TEST_F(ValidateIdWithMessage, OpLoadVarPtrOpSelectGood) {
 
 // Without the VariablePointers Capability, OpLoad will not allow loading
 // through a variable pointer.
-TEST_F(ValidateIdWithMessage, OpLoadVarPtrOpSelectBad) {
+// Disabled since using OpSelect with pointers without VariablePointers will
+// fail LogicalsPass.
+TEST_F(ValidateIdWithMessage, DISABLED_OpLoadVarPtrOpSelectBad) {
   std::string result_strategy = R"(
     %isneg     = OpSLessThan %bool %i %zero
     %varptr    = OpSelect %f32ptr %isneg %ptr1 %ptr2
@@ -1954,8 +2021,7 @@ TEST_F(ValidateIdWithMessage, OpLoadVarPtrOpFunctionCallGood) {
     %result    = OpLoad %f32 %varptr
   )";
 
-  createVariablePointerSpirvProgram(&spirv,
-                                    result_strategy,
+  createVariablePointerSpirvProgram(&spirv, result_strategy,
                                     true /* Add VariablePointers Capability?*/,
                                     true /* Use Helper Function? */);
   CompileSuccessfully(spirv.str());
@@ -1998,11 +2064,11 @@ TEST_F(ValidateIdWithMessage, OpLoadPointerBad) {
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   // Prove that SSA checks trigger for a bad Id value.
   // The next test case show the not-a-logical-pointer case.
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("ID 8 has not been defined"));
+  EXPECT_THAT(getDiagnosticString(), HasSubstr("ID 8 has not been defined"));
 }
 
-TEST_F(ValidateIdWithMessage, OpLoadLogicalPointerBad) {
+// Disabled as bitcasting type to object is now not valid.
+TEST_F(ValidateIdWithMessage, DISABLED_OpLoadLogicalPointerBad) {
   string spirv = kGLSL450MemoryModel + R"(
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
@@ -2031,7 +2097,7 @@ TEST_F(ValidateIdWithMessage, OpStoreGood) {
   string spirv = kGLSL450MemoryModel + R"(
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
-%3 = OpTypePointer UniformConstant %2
+%3 = OpTypePointer Uniform %2
 %4 = OpTypeFunction %1
 %5 = OpConstant %2 42
 %6 = OpVariable %3 UniformConstant
@@ -2062,7 +2128,8 @@ TEST_F(ValidateIdWithMessage, OpStorePointerBad) {
               HasSubstr("OpStore Pointer <id> '3' is not a logical pointer."));
 }
 
-TEST_F(ValidateIdWithMessage, OpStoreLogicalPointerBad) {
+// Disabled as bitcasting type to object is now not valid.
+TEST_F(ValidateIdWithMessage, DISABLED_OpStoreLogicalPointerBad) {
   string spirv = kGLSL450MemoryModel + R"(
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
@@ -2086,7 +2153,9 @@ TEST_F(ValidateIdWithMessage, OpStoreLogicalPointerBad) {
 
 // Without the VariablePointer Capability, OpStore should may not store
 // through a variable pointer.
-TEST_F(ValidateIdWithMessage, OpStoreVarPtrBad) {
+// Disabled since using OpSelect with pointers without VariablePointers will
+// fail LogicalsPass.
+TEST_F(ValidateIdWithMessage, DISABLED_OpStoreVarPtrBad) {
   std::string result_strategy = R"(
     %isneg     = OpSLessThan %bool %i %zero
     %varptr    = OpSelect %f32ptr %isneg %ptr1 %ptr2
@@ -2123,7 +2192,7 @@ TEST_F(ValidateIdWithMessage, OpStoreObjectGood) {
   string spirv = kGLSL450MemoryModel + R"(
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
-%3 = OpTypePointer UniformConstant %2
+%3 = OpTypePointer Uniform %2
 %4 = OpTypeFunction %1
 %5 = OpConstant %2 42
 %6 = OpVariable %3 UniformConstant
@@ -2142,7 +2211,7 @@ TEST_F(ValidateIdWithMessage, OpStoreTypeBad) {
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
 %9 = OpTypeFloat 32
-%3 = OpTypePointer UniformConstant %2
+%3 = OpTypePointer Uniform %2
 %4 = OpTypeFunction %1
 %5 = OpConstant %9 3.14
 %6 = OpVariable %3 UniformConstant
@@ -2155,14 +2224,260 @@ TEST_F(ValidateIdWithMessage, OpStoreTypeBad) {
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("OpStore Pointer <id> '7's type does not match Object "
-                        "<id> '3's type."));
+                        "<id> '6's type."));
+}
+
+// The next series of test check test a relaxation of the rules for stores to
+// structs.  The first test checks that we get a failure when the option is not
+// set to relax the rule.
+// TODO: Add tests for layout compatible arrays and matricies when the validator
+//       relaxes the rules for them as well.  Also need test to check for layout
+//       decorations specific to those types.
+TEST_F(ValidateIdWithMessage, OpStoreTypeBadStruct) {
+  string spirv = kGLSL450MemoryModel + R"(
+     OpMemberDecorate %1 0 Offset 0
+     OpMemberDecorate %1 1 Offset 4
+     OpMemberDecorate %2 0 Offset 0
+     OpMemberDecorate %2 1 Offset 4
+%3 = OpTypeVoid
+%4 = OpTypeFloat 32
+%1 = OpTypeStruct %4 %4
+%5 = OpTypePointer Uniform %1
+%2 = OpTypeStruct %4 %4
+%6 = OpTypeFunction %3
+%7 = OpConstant %4 3.14
+%8 = OpVariable %5 Uniform
+%9 = OpFunction %3 None %6
+%10 = OpLabel
+%11 = OpCompositeConstruct %2 %7 %7
+      OpStore %8 %11
+      OpReturn
+      OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpStore Pointer <id> '8's type does not match Object "
+                        "<id> '11's type."));
+}
+
+// Same code as the last test.  The difference is that we relax the rule.
+// Because the structs %3 and %5 are defined the same way.
+TEST_F(ValidateIdWithMessage, OpStoreTypeRelaxedStruct) {
+  string spirv = kGLSL450MemoryModel + R"(
+     OpMemberDecorate %1 0 Offset 0
+     OpMemberDecorate %1 1 Offset 4
+     OpMemberDecorate %2 0 Offset 0
+     OpMemberDecorate %2 1 Offset 4
+%3 = OpTypeVoid
+%4 = OpTypeFloat 32
+%1 = OpTypeStruct %4 %4
+%5 = OpTypePointer Uniform %1
+%2 = OpTypeStruct %4 %4
+%6 = OpTypeFunction %3
+%7 = OpConstant %4 3.14
+%8 = OpVariable %5 Uniform
+%9 = OpFunction %3 None %6
+%10 = OpLabel
+%11 = OpCompositeConstruct %2 %7 %7
+      OpStore %8 %11
+      OpReturn
+      OpFunctionEnd)";
+  spvValidatorOptionsSetRelaxStoreStruct(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+// Same code as the last test excect for an extra decoration on one of the
+// members. With the relaxed rules, the code is still valid.
+TEST_F(ValidateIdWithMessage, OpStoreTypeRelaxedStructWithExtraDecoration) {
+  string spirv = kGLSL450MemoryModel + R"(
+     OpMemberDecorate %1 0 Offset 0
+     OpMemberDecorate %1 1 Offset 4
+     OpMemberDecorate %1 0 RelaxedPrecision
+     OpMemberDecorate %2 0 Offset 0
+     OpMemberDecorate %2 1 Offset 4
+%3 = OpTypeVoid
+%4 = OpTypeFloat 32
+%1 = OpTypeStruct %4 %4
+%5 = OpTypePointer Uniform %1
+%2 = OpTypeStruct %4 %4
+%6 = OpTypeFunction %3
+%7 = OpConstant %4 3.14
+%8 = OpVariable %5 Uniform
+%9 = OpFunction %3 None %6
+%10 = OpLabel
+%11 = OpCompositeConstruct %2 %7 %7
+      OpStore %8 %11
+      OpReturn
+      OpFunctionEnd)";
+  spvValidatorOptionsSetRelaxStoreStruct(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+// This test check that we recursively traverse the struct to check if they are
+// interchangable.
+TEST_F(ValidateIdWithMessage, OpStoreTypeRelaxedNestedStruct) {
+  string spirv = kGLSL450MemoryModel + R"(
+     OpMemberDecorate %1 0 Offset 0
+     OpMemberDecorate %1 1 Offset 4
+     OpMemberDecorate %2 0 Offset 0
+     OpMemberDecorate %2 1 Offset 8
+     OpMemberDecorate %3 0 Offset 0
+     OpMemberDecorate %3 1 Offset 4
+     OpMemberDecorate %4 0 Offset 0
+     OpMemberDecorate %4 1 Offset 8
+%5 = OpTypeVoid
+%6 = OpTypeInt 32 0
+%7 = OpTypeFloat 32
+%1 = OpTypeStruct %7 %6
+%2 = OpTypeStruct %1 %1
+%8 = OpTypePointer Uniform %2
+%3 = OpTypeStruct %7 %6
+%4 = OpTypeStruct %3 %3
+%9 = OpTypeFunction %5
+%10 = OpConstant %6 7
+%11 = OpConstant %7 3.14
+%12 = OpConstantComposite %3 %11 %10
+%13 = OpVariable %8 Uniform
+%14 = OpFunction %5 None %9
+%15 = OpLabel
+%16 = OpCompositeConstruct %4 %12 %12
+      OpStore %13 %16
+      OpReturn
+      OpFunctionEnd)";
+  spvValidatorOptionsSetRelaxStoreStruct(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+// This test check that the even with the relaxed rules an error is identified
+// if the members of the struct are in a different order.
+TEST_F(ValidateIdWithMessage, OpStoreTypeBadRelaxedStruct1) {
+  string spirv = kGLSL450MemoryModel + R"(
+     OpMemberDecorate %1 0 Offset 0
+     OpMemberDecorate %1 1 Offset 4
+     OpMemberDecorate %2 0 Offset 0
+     OpMemberDecorate %2 1 Offset 8
+     OpMemberDecorate %3 0 Offset 0
+     OpMemberDecorate %3 1 Offset 4
+     OpMemberDecorate %4 0 Offset 0
+     OpMemberDecorate %4 1 Offset 8
+%5 = OpTypeVoid
+%6 = OpTypeInt 32 0
+%7 = OpTypeFloat 32
+%1 = OpTypeStruct %6 %7
+%2 = OpTypeStruct %1 %1
+%8 = OpTypePointer Uniform %2
+%3 = OpTypeStruct %7 %6
+%4 = OpTypeStruct %3 %3
+%9 = OpTypeFunction %5
+%10 = OpConstant %6 7
+%11 = OpConstant %7 3.14
+%12 = OpConstantComposite %3 %11 %10
+%13 = OpVariable %8 Uniform
+%14 = OpFunction %5 None %9
+%15 = OpLabel
+%16 = OpCompositeConstruct %4 %12 %12
+      OpStore %13 %16
+      OpReturn
+      OpFunctionEnd)";
+  spvValidatorOptionsSetRelaxStoreStruct(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpStore Pointer <id> '13's layout does not match Object "
+                "<id> '16's layout."));
+}
+
+// This test check that the even with the relaxed rules an error is identified
+// if the members of the struct are at different offsets.
+TEST_F(ValidateIdWithMessage, OpStoreTypeBadRelaxedStruct2) {
+  string spirv = kGLSL450MemoryModel + R"(
+     OpMemberDecorate %1 0 Offset 4
+     OpMemberDecorate %1 1 Offset 0
+     OpMemberDecorate %2 0 Offset 0
+     OpMemberDecorate %2 1 Offset 8
+     OpMemberDecorate %3 0 Offset 0
+     OpMemberDecorate %3 1 Offset 4
+     OpMemberDecorate %4 0 Offset 0
+     OpMemberDecorate %4 1 Offset 8
+%5 = OpTypeVoid
+%6 = OpTypeInt 32 0
+%7 = OpTypeFloat 32
+%1 = OpTypeStruct %7 %6
+%2 = OpTypeStruct %1 %1
+%8 = OpTypePointer Uniform %2
+%3 = OpTypeStruct %7 %6
+%4 = OpTypeStruct %3 %3
+%9 = OpTypeFunction %5
+%10 = OpConstant %6 7
+%11 = OpConstant %7 3.14
+%12 = OpConstantComposite %3 %11 %10
+%13 = OpVariable %8 Uniform
+%14 = OpFunction %5 None %9
+%15 = OpLabel
+%16 = OpCompositeConstruct %4 %12 %12
+      OpStore %13 %16
+      OpReturn
+      OpFunctionEnd)";
+  spvValidatorOptionsSetRelaxStoreStruct(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpStore Pointer <id> '13's layout does not match Object "
+                "<id> '16's layout."));
+}
+
+TEST_F(ValidateIdWithMessage, OpStoreTypeRelaxedLogicalPointerReturnPointer) {
+  const string spirv = R"(
+     OpCapability Shader
+     OpCapability Linkage
+     OpMemoryModel Logical GLSL450
+%1 = OpTypeInt 32 1
+%2 = OpTypePointer Function %1
+%3 = OpTypeFunction %2 %2
+%4 = OpFunction %2 None %3
+%5 = OpFunctionParameter %2
+%6 = OpLabel
+     OpReturnValue %5
+     OpFunctionEnd)";
+
+  spvValidatorOptionsSetRelaxLogicalPointer(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+TEST_F(ValidateIdWithMessage, OpStoreTypeRelaxedLogicalPointerAllocPointer) {
+  const string spirv = R"(
+      OpCapability Shader
+      OpCapability Linkage
+      OpMemoryModel Logical GLSL450
+ %1 = OpTypeVoid
+ %2 = OpTypeInt 32 1
+ %3 = OpTypeFunction %1          ; void(void)
+ %4 = OpTypePointer Uniform %2   ; int*
+ %5 = OpTypePointer Private %4   ; int** (Private)
+ %6 = OpTypePointer Function %4  ; int** (Function)
+ %7 = OpVariable %5 Private
+ %8 = OpFunction %1 None %3
+ %9 = OpLabel
+%10 = OpVariable %6 Function
+      OpReturn
+      OpFunctionEnd)";
+
+  spvValidatorOptionsSetRelaxLogicalPointer(options_, true);
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
 
 TEST_F(ValidateIdWithMessage, OpStoreVoid) {
   string spirv = kGLSL450MemoryModel + R"(
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
-%3 = OpTypePointer UniformConstant %2
+%3 = OpTypePointer Uniform %2
 %4 = OpTypeFunction %1
 %6 = OpVariable %3 UniformConstant
 %7 = OpFunction %1 None %4
@@ -2181,7 +2496,7 @@ TEST_F(ValidateIdWithMessage, OpStoreLabel) {
   string spirv = kGLSL450MemoryModel + R"(
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
-%3 = OpTypePointer UniformConstant %2
+%3 = OpTypePointer Uniform %2
 %4 = OpTypeFunction %1
 %6 = OpVariable %3 UniformConstant
 %7 = OpFunction %1 None %4
@@ -2211,6 +2526,44 @@ TEST_F(ValidateIdWithMessage, DISABLED_OpStoreFunction) {
      OpFunctionEnd)";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+}
+
+TEST_F(ValidateIdWithMessage, OpStoreBuiltin) {
+  string spirv = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main" %gl_GlobalInvocationID
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpName %main "main"
+
+               OpName %gl_GlobalInvocationID "gl_GlobalInvocationID"
+               OpDecorate %gl_GlobalInvocationID BuiltIn GlobalInvocationId
+
+        %int = OpTypeInt 32 1
+       %uint = OpTypeInt 32 0
+     %v3uint = OpTypeVector %uint 3
+%_ptr_Input_v3uint = OpTypePointer Input %v3uint
+%gl_GlobalInvocationID = OpVariable %_ptr_Input_v3uint Input
+
+       %zero = OpConstant %uint 0
+ %v3uint_000 = OpConstantComposite %v3uint %zero %zero %zero
+
+       %void = OpTypeVoid
+   %voidfunc = OpTypeFunction %void
+       %main = OpFunction %void None %voidfunc
+      %lmain = OpLabel
+
+               OpStore %gl_GlobalInvocationID %v3uint_000
+
+               OpReturn
+               OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(), HasSubstr("storage class is read-only"));
 }
 
 TEST_F(ValidateIdWithMessage, OpCopyMemoryGood) {
@@ -2429,7 +2782,8 @@ TEST_P(AccessChainInstructionTest, AccessChainGood) {
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup +
                  "%float_entry = " + instr +
-                 R"( %_ptr_Private_float %my_matrix )" + elem + R"(%int_0 %int_1
+                 R"( %_ptr_Private_float %my_matrix )" + elem +
+                 R"(%int_0 %int_1
               OpReturn
               OpFunctionEnd
           )";
@@ -2462,7 +2816,8 @@ TEST_P(AccessChainInstructionTest, AccessChainBaseTypeVoidBad) {
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
 %float_entry = )" +
-                 instr + " %_ptr_Private_float %void " + elem + R"(%int_0 %int_1
+                 instr + " %_ptr_Private_float %void " + elem +
+                 R"(%int_0 %int_1
 OpReturn
 OpFunctionEnd
   )";
@@ -2479,7 +2834,8 @@ TEST_P(AccessChainInstructionTest, AccessChainBaseTypeNonPtrVariableBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Private_float %_ptr_Private_float )" + elem +
                  R"(%int_0 %int_1
 OpReturn
@@ -2499,7 +2855,8 @@ TEST_P(AccessChainInstructionTest,
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Function_float %my_matrix )" + elem +
                  R"(%int_0 %int_1
 OpReturn
@@ -2520,7 +2877,8 @@ TEST_P(AccessChainInstructionTest,
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Private_float %my_float_var )" + elem + R"(%int_0
 OpReturn
 OpFunctionEnd
@@ -2539,7 +2897,8 @@ TEST_P(AccessChainInstructionTest, AccessChainNoIndexesGood) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Private_float %my_float_var )" + elem + R"(
 OpReturn
 OpFunctionEnd
@@ -2554,7 +2913,8 @@ TEST_P(AccessChainInstructionTest, AccessChainNoIndexesBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Private_mat4x3 %my_float_var )" + elem + R"(
 OpReturn
 OpFunctionEnd
@@ -2703,9 +3063,10 @@ TEST_P(AccessChainInstructionTest, CustomizedAccessChainTooManyIndexesBad) {
 TEST_P(AccessChainInstructionTest, AccessChainUndefinedIndexBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
-  string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
+  string spirv =
+      kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
 %entry = )" + instr +
-                 R"( %_ptr_Private_float %my_matrix )" + elem + R"(%float %int_1
+      R"( %_ptr_Private_float %my_matrix )" + elem + R"(%float %int_1
 OpReturn
 OpFunctionEnd
   )";
@@ -2722,8 +3083,9 @@ TEST_P(AccessChainInstructionTest, AccessChainStructIndexNotConstantBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%f = )" + instr + R"( %_ptr_Uniform_float %blockName_var )" +
-                 elem + R"(%int_0 %spec_int %int_2
+%f = )" +
+                 instr + R"( %_ptr_Uniform_float %blockName_var )" + elem +
+                 R"(%int_0 %spec_int %int_2
 OpReturn
 OpFunctionEnd
   )";
@@ -2741,7 +3103,8 @@ TEST_P(AccessChainInstructionTest,
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Uniform_float %blockName_var )" + elem +
                  R"(%int_0 %int_1 %int_2
 OpReturn
@@ -2761,7 +3124,8 @@ TEST_P(AccessChainInstructionTest, AccessChainStructTooManyIndexesBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Uniform_float %blockName_var )" + elem +
                  R"(%int_0 %int_2 %int_2
 OpReturn
@@ -2780,7 +3144,8 @@ TEST_P(AccessChainInstructionTest, AccessChainStructIndexOutOfBoundBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Uniform_float %blockName_var )" + elem +
                  R"(%int_3 %int_2 %int_2
 OpReturn
@@ -2867,7 +3232,8 @@ TEST_P(AccessChainInstructionTest, AccessChainMatrixMoreArgsThanNeededBad) {
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Private_float %my_matrix )" + elem +
                  R"(%int_0 %int_1 %int_0
 OpReturn
@@ -2887,7 +3253,8 @@ TEST_P(AccessChainInstructionTest,
   const std::string instr = GetParam();
   const std::string elem = AccessChainRequiresElemId(instr) ? "%int_0 " : "";
   string spirv = kGLSL450MemoryModel + kDeeplyNestedStructureSetup + R"(
-%entry = )" + instr +
+%entry = )" +
+                 instr +
                  R"( %_ptr_Private_mat4x3 %my_matrix )" + elem +
                  R"(%int_0 %int_1
 OpReturn
@@ -2932,13 +3299,29 @@ TEST_F(ValidateIdWithMessage, OpFunctionResultTypeBad) {
 %4 = OpTypeFunction %1 %2 %2
 %5 = OpFunction %2 None %4
 %6 = OpLabel
-     OpReturn
+     OpReturnValue %3
      OpFunctionEnd)";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("OpFunction Result Type <id> '2' does not match the "
                         "Function Type <id> '2's return type."));
+}
+TEST_F(ValidateIdWithMessage, OpReturnValueTypeBad) {
+  string spirv = kGLSL450MemoryModel + R"(
+%1 = OpTypeInt 32 0
+%2 = OpTypeFloat 32
+%3 = OpConstant %2 0
+%4 = OpTypeFunction %1
+%5 = OpFunction %1 None %4
+%6 = OpLabel
+     OpReturnValue %3
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpReturnValue Value <id> '3's type does not match "
+                        "OpFunction's return type."));
 }
 TEST_F(ValidateIdWithMessage, OpFunctionFunctionTypeBad) {
   string spirv = kGLSL450MemoryModel + R"(
@@ -3134,7 +3517,9 @@ OpFunctionEnd)";
 // However, the OpSelect validation does not catch this today. Therefore, it is
 // caught by the OpSampledImage validation. If the OpSelect validation code is
 // updated, the error message for this test may change.
-TEST_F(ValidateIdWithMessage, OpSampledImageUsedInOpSelectBad) {
+//
+// Disabled since OpSelect catches this now.
+TEST_F(ValidateIdWithMessage, DISABLED_OpSampledImageUsedInOpSelectBad) {
   string spirv = kGLSL450MemoryModel + sampledImageSetup + R"(
 %smpld_img  = OpSampledImage %sampled_image_type %image_inst %sampler_inst
 %select_img = OpSelect %sampled_image_type %spec_true %smpld_img %smpld_img
@@ -3146,21 +3531,6 @@ OpFunctionEnd)";
               HasSubstr("Result <id> from OpSampledImage instruction must not "
                         "appear as operands of OpSelect. Found result <id> "
                         "'23' as an operand of <id> '24'."));
-}
-
-// Invalid: OpSampledImage result <id> is used by OpPhi
-TEST_F(ValidateIdWithMessage, OpSampledImageUsedInOpPhiBad) {
-  string spirv = kGLSL450MemoryModel + sampledImageSetup + R"(
-%smpld_img  = OpSampledImage %sampled_image_type %image_inst %sampler_inst
-%phi_result = OpPhi %sampled_image_type %smpld_img %label_1
-OpReturn
-OpFunctionEnd)";
-  CompileSuccessfully(spirv.c_str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Result <id> from OpSampledImage instruction must not "
-                        "appear as operands of OpPhi. Found result <id> '23' "
-                        "as an operand of <id> '24'."));
 }
 
 // Valid: Get a float in a matrix using CompositeExtract.
@@ -3178,345 +3548,6 @@ TEST_F(ValidateIdWithMessage, CompositeExtractInsertGood) {
               OpFunctionEnd)";
   CompileSuccessfully(spirv.str());
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
-}
-
-// Valid. Tests both CompositeExtract and CompositeInsert with 255 indexes.
-TEST_F(ValidateIdWithMessage, CompositeExtractInsertLimitsGood) {
-  int depth = 255;
-  std::string header = kGLSL450MemoryModel + kDeeplyNestedStructureSetup;
-  header.erase(header.find("%func"));
-  std::ostringstream spirv;
-  spirv << header << std::endl;
-
-  // Build nested structures. Struct 'i' contains struct 'i-1'
-  spirv << "%s_depth_1 = OpTypeStruct %float\n";
-  for (int i = 2; i <= depth; ++i) {
-    spirv << "%s_depth_" << i << " = OpTypeStruct %s_depth_" << i - 1 << "\n";
-  }
-
-  // Define Pointer and Variable to use for CompositeExtract/Insert.
-  spirv << "%_ptr_Uniform_deep_struct = OpTypePointer Uniform %s_depth_"
-        << depth << "\n";
-  spirv << "%deep_var = OpVariable %_ptr_Uniform_deep_struct Uniform\n";
-
-  // Function Start
-  spirv << R"(
-  %func = OpFunction %void None %void_f
-  %my_label = OpLabel
-  )";
-
-  // OpCompositeExtract/Insert with 'n' indexes (n = depth)
-  spirv << "%deep = OpLoad %s_depth_" << depth << " %deep_var" << std::endl;
-  spirv << "%entry = OpCompositeExtract  %float %deep";
-  for (int i = 0; i < depth; ++i) {
-    spirv << " 0";
-  }
-  spirv << std::endl;
-  spirv << "%new_composite = OpCompositeInsert %s_depth_" << depth
-        << " %entry %deep";
-  for (int i = 0; i < depth; ++i) {
-    spirv << " 0";
-  }
-  spirv << std::endl;
-
-  // Function end
-  spirv << R"(
-    OpReturn
-    OpFunctionEnd
-  )";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
-}
-
-// Invalid: 256 indexes passed to OpCompositeExtract. Limit is 255.
-TEST_F(ValidateIdWithMessage, CompositeExtractArgCountExceededLimitBad) {
-  std::ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup;
-  spirv << "%matrix = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%entry = OpCompositeExtract %float %matrix";
-  for (int i = 0; i < 256; ++i) {
-    spirv << " 0";
-  }
-  spirv << R"(
-    OpReturn
-    OpFunctionEnd
-  )";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("The number of indexes in OpCompositeExtract may not "
-                        "exceed 255. Found 256 indexes."));
-}
-
-// Invalid: 256 indexes passed to OpCompositeInsert. Limit is 255.
-TEST_F(ValidateIdWithMessage, CompositeInsertArgCountExceededLimitBad) {
-  std::ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup;
-  spirv << "%matrix = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%new_composite = OpCompositeInsert %mat4x3 %int_0 %matrix";
-  for (int i = 0; i < 256; ++i) {
-    spirv << " 0";
-  }
-  spirv << R"(
-    OpReturn
-    OpFunctionEnd
-  )";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("The number of indexes in OpCompositeInsert may not "
-                        "exceed 255. Found 256 indexes."));
-}
-
-// Invalid: In OpCompositeInsert, result type must be the same as composite type
-TEST_F(ValidateIdWithMessage, CompositeInsertWrongResultTypeBad) {
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << std::endl;
-  spirv << "%matrix = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%float_entry = OpCompositeExtract  %float %matrix 0 1" << std::endl;
-  spirv << "%new_composite = OpCompositeInsert %float %float_entry %matrix 0 1"
-        << std::endl;
-  spirv << R"(OpReturn
-              OpFunctionEnd)";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("The Result Type must be the same as Composite type"));
-}
-
-// Valid: No Indexes were passed to OpCompositeExtract, and the Result Type is
-// the same as the Base Composite type.
-TEST_F(ValidateIdWithMessage, CompositeExtractNoIndexesGood) {
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << std::endl;
-  spirv << "%matrix = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%float_entry = OpCompositeExtract  %mat4x3 %matrix" << std::endl;
-  spirv << R"(OpReturn
-              OpFunctionEnd)";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
-}
-
-// Invalid: No Indexes were passed to OpCompositeExtract, but the Result Type is
-// different from the Base Composite type.
-TEST_F(ValidateIdWithMessage, CompositeExtractNoIndexesBad) {
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << std::endl;
-  spirv << "%matrix = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%float_entry = OpCompositeExtract  %float %matrix" << std::endl;
-  spirv << R"(OpReturn
-              OpFunctionEnd)";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpCompositeExtract result type (OpTypeFloat) does not "
-                        "match the type that results from indexing into the "
-                        "composite (OpTypeMatrix)."));
-}
-
-// Valid: No Indexes were passed to OpCompositeInsert, and the type of the
-// Object<id> argument matches the Composite type.
-TEST_F(ValidateIdWithMessage, CompositeInsertMissingIndexesGood) {
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << std::endl;
-  spirv << "%matrix   = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%matrix_2 = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%new_composite = OpCompositeInsert %mat4x3 %matrix_2 %matrix";
-  spirv << R"(
-              OpReturn
-              OpFunctionEnd)";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
-}
-
-// Invalid: No Indexes were passed to OpCompositeInsert, but the type of the
-// Object<id> argument does not match the Composite type.
-TEST_F(ValidateIdWithMessage, CompositeInsertMissingIndexesBad) {
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << std::endl;
-  spirv << "%matrix = OpLoad %mat4x3 %my_matrix" << std::endl;
-  spirv << "%new_composite = OpCompositeInsert %mat4x3 %int_0 %matrix";
-  spirv << R"(
-              OpReturn
-              OpFunctionEnd)";
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("The Object type (OpTypeInt) in OpCompositeInsert does "
-                        "not match the type that results from indexing into "
-                        "the Composite (OpTypeMatrix)."));
-}
-
-// Valid: Tests that we can index into Struct, Array, Matrix, and Vector!
-TEST_F(ValidateIdWithMessage, CompositeExtractInsertIndexIntoAllTypesGood) {
-  // indexes that we are passing are: 0, 3, 1, 2, 0
-  // 0 will select the struct_s within the base struct (blockName)
-  // 3 will select the Array that contains 5 matrices
-  // 1 will select the Matrix that is at index 1 of the array
-  // 2 will select the column (which is a vector) within the matrix at index 2
-  // 0 will select the element at the index 0 of the vector. (which is a float).
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %ss = OpCompositeExtract %struct_s %myblock 0
-    %sa = OpCompositeExtract %array5_mat4x3 %myblock 0 3
-    %sm = OpCompositeExtract %mat4x3 %myblock 0 3 1
-    %sc = OpCompositeExtract %v3float %myblock 0 3 1 2
-    %fl = OpCompositeExtract %float %myblock 0 3 1 2 0
-    ;
-    ; Now let's insert back at different levels...
-    ;
-    %b1 = OpCompositeInsert %struct_blockName %ss %myblock 0
-    %b2 = OpCompositeInsert %struct_blockName %sa %myblock 0 3
-    %b3 = OpCompositeInsert %struct_blockName %sm %myblock 0 3 1
-    %b4 = OpCompositeInsert %struct_blockName %sc %myblock 0 3 1 2
-    %b5 = OpCompositeInsert %struct_blockName %fl %myblock 0 3 1 2 0
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
-}
-
-// Invalid. More indexes are provided than needed for OpCompositeExtract.
-TEST_F(ValidateIdWithMessage, CompositeExtractReachedScalarBad) {
-  // indexes that we are passing are: 0, 3, 1, 2, 0
-  // 0 will select the struct_s within the base struct (blockName)
-  // 3 will select the Array that contains 5 matrices
-  // 1 will select the Matrix that is at index 1 of the array
-  // 2 will select the column (which is a vector) within the matrix at index 2
-  // 0 will select the element at the index 0 of the vector. (which is a float).
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %fl = OpCompositeExtract %float %myblock 0 3 1 2 0 1
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpCompositeExtract reached non-composite type while "
-                        "indexes still remain to be traversed."));
-}
-
-// Invalid. More indexes are provided than needed for OpCompositeInsert.
-TEST_F(ValidateIdWithMessage, CompositeInsertReachedScalarBad) {
-  // indexes that we are passing are: 0, 3, 1, 2, 0
-  // 0 will select the struct_s within the base struct (blockName)
-  // 3 will select the Array that contains 5 matrices
-  // 1 will select the Matrix that is at index 1 of the array
-  // 2 will select the column (which is a vector) within the matrix at index 2
-  // 0 will select the element at the index 0 of the vector. (which is a float).
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %fl = OpCompositeExtract %float %myblock 0 3 1 2 0
-    %b5 = OpCompositeInsert %struct_blockName %fl %myblock 0 3 1 2 0 1
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpCompositeInsert reached non-composite type while "
-                        "indexes still remain to be traversed."));
-}
-
-// Invalid. Result type doesn't match the type we get from indexing into
-// the composite.
-TEST_F(ValidateIdWithMessage,
-       CompositeExtractResultTypeDoesntMatchIndexedTypeBad) {
-  // indexes that we are passing are: 0, 3, 1, 2, 0
-  // 0 will select the struct_s within the base struct (blockName)
-  // 3 will select the Array that contains 5 matrices
-  // 1 will select the Matrix that is at index 1 of the array
-  // 2 will select the column (which is a vector) within the matrix at index 2
-  // 0 will select the element at the index 0 of the vector. (which is a float).
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %fl = OpCompositeExtract %int %myblock 0 3 1 2 0
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("OpCompositeExtract result type (OpTypeInt) does not "
-                        "match the type that results from indexing into the "
-                        "composite (OpTypeFloat)."));
-}
-
-// Invalid. Given object type doesn't match the type we get from indexing into
-// the composite.
-TEST_F(ValidateIdWithMessage,
-       CompositeInsertObjectTypeDoesntMatchIndexedTypeBad) {
-  // indexes that we are passing are: 0, 3, 1, 2, 0
-  // 0 will select the struct_s within the base struct (blockName)
-  // 3 will select the Array that contains 5 matrices
-  // 1 will select the Matrix that is at index 1 of the array
-  // 2 will select the column (which is a vector) within the matrix at index 2
-  // 0 will select the element at the index 0 of the vector. (which is a float).
-  // We are trying to insert an integer where we should be inserting a float.
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %b5 = OpCompositeInsert %struct_blockName %int_0 %myblock 0 3 1 2 0
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("he Object type (OpTypeInt) in OpCompositeInsert does "
-                        "not match the type that results from indexing into "
-                        "the Composite (OpTypeFloat)."));
-}
-
-// Invalid. Index into a struct is larger than the number of struct members.
-TEST_F(ValidateIdWithMessage, CompositeExtractStructIndexOutOfBoundBad) {
-  // struct_blockName has 3 members (index 0,1,2). We'll try to access index 3.
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %ss = OpCompositeExtract %struct_s %myblock 3
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Index is out of bounds: OpCompositeExtract can not "
-                        "find index 3 into the structure <id> '26'. This "
-                        "structure has 3 members. Largest valid index is 2."));
-}
-
-// Invalid. Index into a struct is larger than the number of struct members.
-TEST_F(ValidateIdWithMessage, CompositeInsertStructIndexOutOfBoundBad) {
-  // struct_blockName has 3 members (index 0,1,2). We'll try to access index 3.
-  ostringstream spirv;
-  spirv << kGLSL450MemoryModel << kDeeplyNestedStructureSetup << R"(
-    %myblock = OpLoad %struct_blockName %blockName_var
-    %ss = OpCompositeExtract %struct_s %myblock 0
-    %new_composite = OpCompositeInsert %struct_blockName %ss %myblock 3
-    OpReturn
-    OpFunctionEnd
-  )";
-
-  CompileSuccessfully(spirv.str());
-  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(
-      getDiagnosticString(),
-      HasSubstr("Index is out of bounds: OpCompositeInsert can not find "
-                "index 3 into the structure <id> '26'. This structure "
-                "has 3 members. Largest valid index is 2."));
 }
 
 #if 0
@@ -3586,7 +3617,244 @@ TEST_F(ValidateIdWithMessage, OpFunctionCallArgumentCountBar) {
 // TODO: OpSatConvertUToS
 // TODO: OpVectorExtractDynamic
 // TODO: OpVectorInsertDynamic
-// TODO: OpVectorShuffle
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleIntGood) {
+  string spirv = kGLSL450MemoryModel + R"(
+%int = OpTypeInt 32 0
+%ivec3 = OpTypeVector %int 3
+%ivec4 = OpTypeVector %int 4
+%ptr_ivec3 = OpTypePointer Function %ivec3
+%undef = OpUndef %ivec4
+%int_42 = OpConstant %int 42
+%int_0 = OpConstant %int 0
+%int_2 = OpConstant %int 2
+%1 = OpConstantComposite %ivec3 %int_42 %int_0 %int_2
+%2 = OpTypeFunction %ivec3
+%3 = OpFunction %ivec3 None %2
+%4 = OpLabel
+%var = OpVariable %ptr_ivec3 Function %1
+%5 = OpLoad %ivec3 %var
+%6 = OpVectorShuffle %ivec3 %5 %undef 2 1 0
+     OpReturnValue %6
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleFloatGood) {
+  string spirv = kGLSL450MemoryModel + R"(
+%float = OpTypeFloat 32
+%vec2 = OpTypeVector %float 2
+%vec3 = OpTypeVector %float 3
+%vec4 = OpTypeVector %float 4
+%ptr_vec2 = OpTypePointer Function %vec2
+%ptr_vec3 = OpTypePointer Function %vec3
+%float_1 = OpConstant %float 1
+%float_2 = OpConstant %float 2
+%1 = OpConstantComposite %vec2 %float_2 %float_1
+%2 = OpConstantComposite %vec3 %float_1 %float_2 %float_2
+%3 = OpTypeFunction %vec4
+%4 = OpFunction %vec4 None %3
+%5 = OpLabel
+%var = OpVariable %ptr_vec2 Function %1
+%var2 = OpVariable %ptr_vec3 Function %2
+%6 = OpLoad %vec2 %var
+%7 = OpLoad %vec3 %var2
+%8 = OpVectorShuffle %vec4 %6 %7 4 3 1 0xffffffff
+     OpReturnValue %8
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleScalarResultType) {
+  string spirv = kGLSL450MemoryModel + R"(
+%float = OpTypeFloat 32
+%vec2 = OpTypeVector %float 2
+%ptr_vec2 = OpTypePointer Function %vec2
+%float_1 = OpConstant %float 1
+%float_2 = OpConstant %float 2
+%1 = OpConstantComposite %vec2 %float_2 %float_1
+%2 = OpTypeFunction %float
+%3 = OpFunction %float None %2
+%4 = OpLabel
+%var = OpVariable %ptr_vec2 Function %1
+%5 = OpLoad %vec2 %var
+%6 = OpVectorShuffle %float %5 %5 0
+     OpReturnValue %6
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("Result Type of OpVectorShuffle must be OpTypeVector."));
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleComponentCount) {
+  string spirv = kGLSL450MemoryModel + R"(
+%int = OpTypeInt 32 0
+%ivec3 = OpTypeVector %int 3
+%ptr_ivec3 = OpTypePointer Function %ivec3
+%int_42 = OpConstant %int 42
+%int_0 = OpConstant %int 0
+%int_2 = OpConstant %int 2
+%1 = OpConstantComposite %ivec3 %int_42 %int_0 %int_2
+%2 = OpTypeFunction %ivec3
+%3 = OpFunction %ivec3 None %2
+%4 = OpLabel
+%var = OpVariable %ptr_ivec3 Function %1
+%5 = OpLoad %ivec3 %var
+%6 = OpVectorShuffle %ivec3 %5 %5 0 1
+     OpReturnValue %6
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpVectorShuffle component literals count does not match "
+                "Result Type <id> '2's vector component count."));
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleVector1Type) {
+  string spirv = kGLSL450MemoryModel + R"(
+%int = OpTypeInt 32 0
+%ivec2 = OpTypeVector %int 2
+%ptr_int = OpTypePointer Function %int
+%undef = OpUndef %ivec2
+%int_42 = OpConstant %int 42
+%2 = OpTypeFunction %ivec2
+%3 = OpFunction %ivec2 None %2
+%4 = OpLabel
+%var = OpVariable %ptr_int Function %int_42
+%5 = OpLoad %int %var
+%6 = OpVectorShuffle %ivec2 %5 %undef 0 0
+     OpReturnValue %6
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("The type of Vector 1 must be OpTypeVector."));
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleVector2Type) {
+  string spirv = kGLSL450MemoryModel + R"(
+%int = OpTypeInt 32 0
+%ivec2 = OpTypeVector %int 2
+%ptr_ivec2 = OpTypePointer Function %ivec2
+%undef = OpUndef %int
+%int_42 = OpConstant %int 42
+%1 = OpConstantComposite %ivec2 %int_42 %int_42
+%2 = OpTypeFunction %ivec2
+%3 = OpFunction %ivec2 None %2
+%4 = OpLabel
+%var = OpVariable %ptr_ivec2 Function %1
+%5 = OpLoad %ivec2 %var
+%6 = OpVectorShuffle %ivec2 %5 %undef 0 1
+     OpReturnValue %6
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("The type of Vector 2 must be OpTypeVector."));
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleVector1ComponentType) {
+  string spirv = kGLSL450MemoryModel + R"(
+%int = OpTypeInt 32 0
+%ivec3 = OpTypeVector %int 3
+%ptr_ivec3 = OpTypePointer Function %ivec3
+%int_42 = OpConstant %int 42
+%int_0 = OpConstant %int 0
+%int_2 = OpConstant %int 2
+%float = OpTypeFloat 32
+%vec3 = OpTypeVector %float 3
+%vec4 = OpTypeVector %float 4
+%ptr_vec3 = OpTypePointer Function %vec3
+%float_1 = OpConstant %float 1
+%float_2 = OpConstant %float 2
+%1 = OpConstantComposite %ivec3 %int_42 %int_0 %int_2
+%2 = OpConstantComposite %vec3 %float_1 %float_2 %float_2
+%3 = OpTypeFunction %vec4
+%4 = OpFunction %vec4 None %3
+%5 = OpLabel
+%var = OpVariable %ptr_ivec3 Function %1
+%var2 = OpVariable %ptr_vec3 Function %2
+%6 = OpLoad %ivec3 %var
+%7 = OpLoad %vec3 %var2
+%8 = OpVectorShuffle %vec4 %6 %7 4 3 1 0
+     OpReturnValue %8
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("The Component Type of Vector 1 must be the same as "
+                        "ResultType."));
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleVector2ComponentType) {
+  string spirv = kGLSL450MemoryModel + R"(
+%int = OpTypeInt 32 0
+%ivec3 = OpTypeVector %int 3
+%ptr_ivec3 = OpTypePointer Function %ivec3
+%int_42 = OpConstant %int 42
+%int_0 = OpConstant %int 0
+%int_2 = OpConstant %int 2
+%float = OpTypeFloat 32
+%vec3 = OpTypeVector %float 3
+%vec4 = OpTypeVector %float 4
+%ptr_vec3 = OpTypePointer Function %vec3
+%float_1 = OpConstant %float 1
+%float_2 = OpConstant %float 2
+%1 = OpConstantComposite %ivec3 %int_42 %int_0 %int_2
+%2 = OpConstantComposite %vec3 %float_1 %float_2 %float_2
+%3 = OpTypeFunction %vec4
+%4 = OpFunction %vec4 None %3
+%5 = OpLabel
+%var = OpVariable %ptr_ivec3 Function %1
+%var2 = OpVariable %ptr_vec3 Function %2
+%6 = OpLoad %vec3 %var2
+%7 = OpLoad %ivec3 %var
+%8 = OpVectorShuffle %vec4 %6 %7 4 3 1 0
+     OpReturnValue %8
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("The Component Type of Vector 2 must be the same as "
+                        "ResultType."));
+}
+
+TEST_F(ValidateIdWithMessage, OpVectorShuffleLiterals) {
+  string spirv = kGLSL450MemoryModel + R"(
+%float = OpTypeFloat 32
+%vec2 = OpTypeVector %float 2
+%vec3 = OpTypeVector %float 3
+%vec4 = OpTypeVector %float 4
+%ptr_vec2 = OpTypePointer Function %vec2
+%ptr_vec3 = OpTypePointer Function %vec3
+%float_1 = OpConstant %float 1
+%float_2 = OpConstant %float 2
+%1 = OpConstantComposite %vec2 %float_2 %float_1
+%2 = OpConstantComposite %vec3 %float_1 %float_2 %float_2
+%3 = OpTypeFunction %vec4
+%4 = OpFunction %vec4 None %3
+%5 = OpLabel
+%var = OpVariable %ptr_vec2 Function %1
+%var2 = OpVariable %ptr_vec3 Function %2
+%6 = OpLoad %vec2 %var
+%7 = OpLoad %vec3 %var2
+%8 = OpVectorShuffle %vec4 %6 %7 0 8 2 6
+     OpReturnValue %8
+     OpFunctionEnd)";
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Component index 8 is out of bounds for combined (Vector1 + Vector2) "
+          "size of 5."));
+}
+
 // TODO: OpCompositeConstruct
 // TODO: OpCompositeExtract
 // TODO: OpCompositeInsert
@@ -3667,11 +3935,298 @@ TEST_F(ValidateIdWithMessage, OpFunctionCallArgumentCountBar) {
 // TODO: OpDPdxCoarse
 // TODO: OpDPdyCoarse
 // TODO: OpFwidthCoarse
-// TODO: OpPhi
 // TODO: OpLoopMerge
 // TODO: OpSelectionMerge
 // TODO: OpBranch
-// TODO: OpBranchConditional
+
+TEST_F(ValidateIdWithMessage, OpPhiNotAType) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranch %8
+%8 = OpLabel
+%9 = OpPhi %3 %3 %7
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpPhi's type <id> 3 is not a type instruction."));
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiSamePredecessor) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranchConditional %3 %8 %8
+%8 = OpLabel
+%9 = OpPhi %2 %3 %7
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiOddArgumentNumber) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranch %8
+%8 = OpLabel
+%9 = OpPhi %2 %3
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpPhi does not have an equal number of incoming "
+                        "values and basic blocks."));
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiTooFewPredecessors) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranch %8
+%8 = OpLabel
+%9 = OpPhi %2
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpPhi's number of incoming blocks (0) does not match "
+                        "block's predecessor count (1)."));
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiTooManyPredecessors) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranch %8
+%9 = OpLabel
+OpReturn
+%8 = OpLabel
+%10 = OpPhi %2 %3 %7 %3 %9
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpPhi's number of incoming blocks (2) does not match "
+                        "block's predecessor count (1)."));
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiMismatchedTypes) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeInt 32 0
+%6 = OpConstant %5 0
+%7 = OpTypeFunction %4
+%8 = OpFunction %4 None %7
+%9 = OpLabel
+OpBranchConditional %3 %10 %11
+%11 = OpLabel
+OpBranch %10
+%10 = OpLabel
+%12 = OpPhi %2 %3 %9 %6 %11
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpPhi's result type <id> 2 does not match incoming "
+                        "value <id> 6 type <id> 5."));
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiPredecessorNotABlock) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranchConditional %3 %8 %9
+%9 = OpLabel
+OpBranch %11
+%11 = OpLabel
+OpBranch %8
+%8 = OpLabel
+%10 = OpPhi %2 %3 %7 %3 %3
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpPhi's incoming basic block <id> 3 is not an OpLabel."));
+}
+
+TEST_F(ValidateIdWithMessage, OpPhiNotAPredecessor) {
+  string spirv = kOpenCLMemoryModel32 + R"(
+%2 = OpTypeBool
+%3 = OpConstantTrue %2
+%4 = OpTypeVoid
+%5 = OpTypeFunction %4
+%6 = OpFunction %4 None %5
+%7 = OpLabel
+OpBranchConditional %3 %8 %9
+%9 = OpLabel
+OpBranch %11
+%11 = OpLabel
+OpBranch %8
+%8 = OpLabel
+%10 = OpPhi %2 %3 %7 %3 %9
+OpReturn
+OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("OpPhi's incoming basic block <id> 9 is not a "
+                        "predecessor of <id> 8."));
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditionalGood) {
+  string spirv = BranchConditionalSetup + R"(
+    %branch_cond = OpINotEqual %bool %i0 %i1
+                   OpSelectionMerge %end None
+                   OpBranchConditional %branch_cond %target_t %target_f
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditionalWithWeightsGood) {
+  string spirv = BranchConditionalSetup + R"(
+    %branch_cond = OpINotEqual %bool %i0 %i1
+                   OpSelectionMerge %end None
+                   OpBranchConditional %branch_cond %target_t %target_f 1 1
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditional_CondIsScalarInt) {
+  string spirv = BranchConditionalSetup + R"(
+                   OpSelectionMerge %end None
+                   OpBranchConditional %i0 %target_t %target_f
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Condition operand for OpBranchConditional must be of boolean type"));
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditional_TrueTargetIsNotLabel) {
+  string spirv = BranchConditionalSetup + R"(
+                   OpSelectionMerge %end None
+                   OpBranchConditional %i0 %i0 %target_f
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  // EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  // EXPECT_THAT(
+  //     getDiagnosticString(),
+  //     HasSubstr("The 'True Label' operand for OpBranchConditional must be the
+  //     ID of an OpLabel instruction"));
+
+  // xxxnsubtil: this is actually caught by the ID validation instead
+  EXPECT_EQ(SPV_ERROR_INVALID_CFG, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("are referenced but not defined in function"));
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditional_FalseTargetIsNotLabel) {
+  string spirv = BranchConditionalSetup + R"(
+                   OpSelectionMerge %end None
+                   OpBranchConditional %i0 %target_t %i0
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  // EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  // EXPECT_THAT(
+  //     getDiagnosticString(),
+  //     HasSubstr("The 'False Label' operand for OpBranchConditional must be
+  //     the ID of an OpLabel instruction"));
+
+  // xxxnsubtil: this is actually caught by the ID validation
+  EXPECT_EQ(SPV_ERROR_INVALID_CFG, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("are referenced but not defined in function"));
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditional_NotEnoughWeights) {
+  string spirv = BranchConditionalSetup + R"(
+    %branch_cond = OpINotEqual %bool %i0 %i1
+                   OpSelectionMerge %end None
+                   OpBranchConditional %branch_cond %target_t %target_f 1
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpBranchConditional requires either 3 or 5 parameters"));
+}
+
+TEST_F(ValidateIdWithMessage, OpBranchConditional_TooManyWeights) {
+  string spirv = BranchConditionalSetup + R"(
+    %branch_cond = OpINotEqual %bool %i0 %i1
+                   OpSelectionMerge %end None
+                   OpBranchConditional %branch_cond %target_t %target_f 1 2 3
+  )" + BranchConditionalTail;
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpBranchConditional requires either 3 or 5 parameters"));
+}
+
 // TODO: OpSwitch
 
 TEST_F(ValidateIdWithMessage, OpReturnValueConstantGood) {
@@ -3771,7 +4326,7 @@ TEST_F(ValidateIdWithMessage, OpReturnValueIsVoid) {
 
 TEST_F(ValidateIdWithMessage, OpReturnValueIsVariableInPhysical) {
   // It's valid to return a pointer in a physical addressing model.
-  string spirv = kGLSL450MemoryModel + R"(
+  string spirv = kOpCapabilitySetup + R"(
      OpMemoryModel Physical32 OpenCL
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
@@ -3788,7 +4343,7 @@ TEST_F(ValidateIdWithMessage, OpReturnValueIsVariableInPhysical) {
 
 TEST_F(ValidateIdWithMessage, OpReturnValueIsVariableInLogical) {
   // It's invalid to return a pointer in a physical addressing model.
-  string spirv = kGLSL450MemoryModel + R"(
+  string spirv = kOpCapabilitySetup + R"(
      OpMemoryModel Logical GLSL450
 %1 = OpTypeVoid
 %2 = OpTypeInt 32 0
@@ -3811,7 +4366,7 @@ TEST_F(ValidateIdWithMessage, OpReturnValueIsVariableInLogical) {
 TEST_F(ValidateIdWithMessage, OpReturnValueVarPtrGood) {
   std::ostringstream spirv;
   createVariablePointerSpirvProgram(&spirv,
-                                    ""   /* Instructions to add to "main" */,
+                                    "" /* Instructions to add to "main" */,
                                     true /* Add VariablePointers Capability?*/,
                                     true /* Use Helper Function? */);
   CompileSuccessfully(spirv.str());
@@ -3820,12 +4375,14 @@ TEST_F(ValidateIdWithMessage, OpReturnValueVarPtrGood) {
 
 // Without the VariablePointer Capability, the return value of a function is
 // *not* allowed to be a pointer.
-TEST_F(ValidateIdWithMessage, OpReturnValueVarPtrBad) {
+// Disabled since using OpSelect with pointers without VariablePointers will
+// fail LogicalsPass.
+TEST_F(ValidateIdWithMessage, DISABLED_OpReturnValueVarPtrBad) {
   std::ostringstream spirv;
   createVariablePointerSpirvProgram(&spirv,
-                                    ""    /* Instructions to add to "main" */,
+                                    "" /* Instructions to add to "main" */,
                                     false /* Add VariablePointers Capability?*/,
-                                    true  /* Use Helper Function? */);
+                                    true /* Use Helper Function? */);
   CompileSuccessfully(spirv.str());
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   EXPECT_THAT(getDiagnosticString(),
@@ -4077,7 +4634,7 @@ OpDecorate %1 SpecId 200
 %1 = OpConstant %int 3
 %main = OpFunction %1 None %2
 %4 = OpLabel
-OpReturn
+OpReturnValue %1
 OpFunctionEnd
   )";
   CompileSuccessfully(spirv.c_str());
@@ -4099,7 +4656,7 @@ OpDecorate %1 SpecId 200
 %1 = OpSpecConstantOp %int IAdd %3 %4
 %main = OpFunction %1 None %2
 %6 = OpLabel
-OpReturn
+OpReturnValue %3
 OpFunctionEnd
   )";
   CompileSuccessfully(spirv.c_str());
@@ -4116,10 +4673,11 @@ OpDecorate %1 SpecId 200
 %void = OpTypeVoid
 %2 = OpTypeFunction %void
 %int = OpTypeInt 32 0
+%3 = OpConstant %int 1
 %1 = OpSpecConstantComposite %int
 %main = OpFunction %1 None %2
 %4 = OpLabel
-OpReturn
+OpReturnValue %3
 OpFunctionEnd
   )";
   CompileSuccessfully(spirv.c_str());
@@ -4149,6 +4707,33 @@ OpFunctionEnd
   )";
   CompileSuccessfully(spirv.c_str());
   EXPECT_EQ(SPV_SUCCESS, ValidateAndRetrieveValidationState());
+}
+
+TEST_F(ValidateIdWithMessage, CorrectErrorForShuffle) {
+  string spirv = kGLSL450MemoryModel + R"(
+   %uint = OpTypeInt 32 0
+  %float = OpTypeFloat 32
+%v4float = OpTypeVector %float 4
+%v2float = OpTypeVector %float 2
+   %void = OpTypeVoid
+    %548 = OpTypeFunction %void
+     %CS = OpFunction %void None %548
+    %550 = OpLabel
+   %6275 = OpUndef %v2float
+   %6280 = OpUndef %v2float
+   %6282 = OpVectorShuffle %v4float %6275 %6280 0 1 4 5
+           OpReturn
+           OpFunctionEnd
+  )";
+
+  CompileSuccessfully(spirv.c_str());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Component index 4 is out of bounds for combined (Vector1 + Vector2) "
+          "size of 4."));
+  EXPECT_EQ(23, getErrorPosition().index);
 }
 
 // TODO: OpLifetimeStart
@@ -4215,4 +4800,6 @@ OpFunctionEnd
 // TODO: OpGroupCommitReadPipe
 // TODO: OpGroupCommitWritePipe
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace val
+}  // namespace spvtools

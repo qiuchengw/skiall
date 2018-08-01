@@ -57,6 +57,12 @@ registry = {
         'supporters' : { 'NVIDIA', 'TransGaming' },
         'url' : 'extensions/AMD/AMD_draw_buffers_blend.txt',
     },
+    'GL_AMD_framebuffer_multisample_advanced' : {
+        'number' : 523,
+        'esnumber' : 303,
+        'flags' : { 'public' },
+        'url' : 'extensions/AMD/AMD_framebuffer_multisample_advanced.txt',
+    },
     'GL_AMD_framebuffer_sample_positions' : {
         'number' : 454,
         'flags' : { 'public' },
@@ -2909,6 +2915,12 @@ registry = {
         'flags' : { 'public' },
         'supporters' : { 'MESA' },
         'url' : 'extensions/MESA/GLX_MESA_copy_sub_buffer.txt',
+    },
+    'GL_MESA_framebuffer_flip_y' : {
+        'esnumber' : 302,
+        'flags' : { 'public' },
+        'supporters' : { 'MESA' },
+        'url' : 'extensions/MESA/MESA_framebuffer_flip_y.txt',
     },
     'GL_MESA_pack_invert' : {
         'number' : 300,

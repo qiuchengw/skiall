@@ -121,6 +121,11 @@ int ActorImage::boneInfluenceMatricesLength()
 }
 float* ActorImage::boneInfluenceMatrices()
 {
+	if(m_NumConnectedBones == 0)
+	{
+		return nullptr;
+	}
+	
 	if (m_BoneMatrices == nullptr)
 	{
 		m_BoneMatrices = new float[boneInfluenceMatricesLength()];

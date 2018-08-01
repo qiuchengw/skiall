@@ -17,7 +17,6 @@
 #ifndef LIBSPIRV_OPT_DEAD_BRANCH_ELIM_PASS_H_
 #define LIBSPIRV_OPT_DEAD_BRANCH_ELIM_PASS_H_
 
-
 #include <algorithm>
 #include <map>
 #include <queue>
@@ -27,107 +26,112 @@
 
 #include "basic_block.h"
 #include "def_use_manager.h"
+#include "mem_pass.h"
 #include "module.h"
-#include "pass.h"
 
 namespace spvtools {
 namespace opt {
 
 // See optimizer.hpp for documentation.
-class DeadBranchElimPass : public Pass {
-
-  using cbb_ptr = const ir::BasicBlock*;
+class DeadBranchElimPass : public MemPass {
+  using cbb_ptr = const BasicBlock*;
 
  public:
-   using GetBlocksFunction =
-     std::function<std::vector<ir::BasicBlock*>*(const ir::BasicBlock*)>;
+  DeadBranchElimPass() = default;
 
-  DeadBranchElimPass();
-  const char* name() const override { return "dead-branch-elim"; }
-  Status Process(ir::Module*) override;
+  const char* name() const override { return "eliminate-dead-branches"; }
+  Status Process() override;
+
+  IRContext::Analysis GetPreservedAnalyses() override {
+    return IRContext::kAnalysisDefUse | IRContext::kAnalysisInstrToBlockMapping;
+  }
 
  private:
-  // Returns the id of the merge block declared by a merge instruction in 
-  // this block |blk|, if any. If none, returns zero. If loop merge, returns
-  // the continue target id in |cbid|. Otherwise sets to zero.
-  uint32_t MergeBlockIdIfAny(const ir::BasicBlock& blk, uint32_t* cbid) const;
+  // If |condId| is boolean constant, return conditional value in |condVal| and
+  // return true, otherwise return false.
+  bool GetConstCondition(uint32_t condId, bool* condVal);
 
-  // Compute structured successors for function |func|.
-  // A block's structured successors are the blocks it branches to
-  // together with its declared merge block if it has one.
-  // When order matters, the merge block always appears first and if
-  // a loop merge block, the continue target always appears second.
-  // This assures correct depth first search in the presence of early 
-  // returns and kills. If the successor vector contain duplicates
-  // of the merge and continue blocks, they are safely ignored by DFS.
-  void ComputeStructuredSuccessors(ir::Function* func);
-
-  // Compute structured block order |order| for function |func|. This order
-  // has the property that dominators are before all blocks they dominate and
-  // merge blocks are after all blocks that are in the control constructs of
-  // their header.
-  void ComputeStructuredOrder(
-    ir::Function* func, std::list<ir::BasicBlock*>* order);
-
-  // If |condId| is boolean constant, return value in |condVal| and
-  // |condIsConst| as true, otherwise return |condIsConst| as false.
-  void GetConstCondition(uint32_t condId, bool* condVal, bool* condIsConst);
+  // If |valId| is a 32-bit integer constant, return value via |value| and
+  // return true, otherwise return false.
+  bool GetConstInteger(uint32_t valId, uint32_t* value);
 
   // Add branch to |labelId| to end of block |bp|.
-  void AddBranch(uint32_t labelId, ir::BasicBlock* bp);
-
-  // Add selction merge of |labelId| to end of block |bp|.
-  void AddSelectionMerge(uint32_t labelId, ir::BasicBlock* bp);
-
-  // Add conditional branch of |condId|, |trueLabId| and |falseLabId| to end
-  // of block |bp|.
-  void AddBranchConditional(uint32_t condId, uint32_t trueLabId,
-      uint32_t falseLabId, ir::BasicBlock* bp);
-
-  // Kill all instructions in block |bp|.
-  void KillAllInsts(ir::BasicBlock* bp);
-
-  // If block |bp| contains constant conditional branch preceeded by an
-  // OpSelctionMerge, return true and return branch and merge instructions
-  // in |branchInst| and |mergeInst| and the boolean constant in |condVal|. 
-  bool GetConstConditionalSelectionBranch(ir::BasicBlock* bp,
-    ir::Instruction** branchInst, ir::Instruction** mergeInst,
-    uint32_t *condId, bool *condVal);
-
-  // Return true if |labelId| has any non-phi references
-  bool HasNonPhiRef(uint32_t labelId);
+  void AddBranch(uint32_t labelId, BasicBlock* bp);
 
   // For function |func|, look for BranchConditionals with constant condition
   // and convert to a Branch to the indicated label. Delete resulting dead
-  // blocks. Assumes only structured control flow in shader. Note some such
-  // branches and blocks may be left to avoid creating invalid control flow.
-  // TODO(greg-lunarg): Remove remaining constant conditional branches and
-  // dead blocks.
-  bool EliminateDeadBranches(ir::Function* func);
+  // blocks. Note some such branches and blocks may be left to avoid creating
+  // invalid control flow.
+  // TODO(greg-lunarg): Remove remaining constant conditional branches and dead
+  // blocks.
+  bool EliminateDeadBranches(Function* func);
 
-  void Initialize(ir::Module* module);
-  Pass::Status ProcessImpl();
+  // Returns the basic block containing |id|.
+  // Note: this pass only requires correct instruction block mappings for the
+  // input. This pass does not preserve the block mapping, so it is not kept
+  // up-to-date during processing.
+  BasicBlock* GetParentBlock(uint32_t id);
 
-  // Module this pass is processing
-  ir::Module* module_;
+  // Marks live blocks reachable from the entry of |func|. Simplifies constant
+  // branches and switches as it proceeds, to limit the number of live blocks.
+  // It is careful not to eliminate backedges even if they are dead, but the
+  // header is live. Likewise, unreachable merge blocks named in live merge
+  // instruction must be retained (though they may be clobbered).
+  bool MarkLiveBlocks(Function* func,
+                      std::unordered_set<BasicBlock*>* live_blocks);
 
-  // Def-Uses for the module we are processing
-  std::unique_ptr<analysis::DefUseManager> def_use_mgr_;
+  // Checks for unreachable merge and continue blocks with live headers; those
+  // blocks must be retained. Continues are tracked separately so that a live
+  // phi can be updated to take an undef value from any of its predecessors
+  // that are unreachable continues.
+  //
+  // |unreachable_continues| maps the id of an unreachable continue target to
+  // the header block that declares it.
+  void MarkUnreachableStructuredTargets(
+      const std::unordered_set<BasicBlock*>& live_blocks,
+      std::unordered_set<BasicBlock*>* unreachable_merges,
+      std::unordered_map<BasicBlock*, BasicBlock*>* unreachable_continues);
 
-  // Map from function's result id to function
-  std::unordered_map<uint32_t, ir::Function*> id2function_;
+  // Fix phis in reachable blocks so that only live (or unremovable) incoming
+  // edges are present. If the block now only has a single live incoming edge,
+  // remove the phi and replace its uses with its data input. If the single
+  // remaining incoming edge is from the phi itself, the the phi is in an
+  // unreachable single block loop. Either the block is dead and will be
+  // removed, or it's reachable from an unreachable continue target. In the
+  // latter case that continue target block will be collapsed into a block that
+  // only branches back to its header and we'll eliminate the block with the
+  // phi.
+  //
+  // |unreachable_continues| maps continue targets that cannot be reached to
+  // merge instruction that declares them.
+  bool FixPhiNodesInLiveBlocks(
+      Function* func, const std::unordered_set<BasicBlock*>& live_blocks,
+      const std::unordered_map<BasicBlock*, BasicBlock*>&
+          unreachable_continues);
 
-  // Map from block's label id to block.
-  std::unordered_map<uint32_t, ir::BasicBlock*> id2block_;
+  // Erases dead blocks. Any block captured in |unreachable_merges| or
+  // |unreachable_continues| is a dead block that is required to remain due to
+  // a live merge instruction in the corresponding header. These blocks will
+  // have their instructions clobbered and will become a label and terminator.
+  // Unreachable merge blocks are terminated by OpUnreachable, while
+  // unreachable continue blocks are terminated by an unconditional branch to
+  // the header. Otherwise, blocks are dead if not explicitly captured in
+  // |live_blocks| and are totally removed.
+  //
+  // |unreachable_continues| maps continue targets that cannot be reached to
+  // corresponding header block that declares them.
+  bool EraseDeadBlocks(
+      Function* func, const std::unordered_set<BasicBlock*>& live_blocks,
+      const std::unordered_set<BasicBlock*>& unreachable_merges,
+      const std::unordered_map<BasicBlock*, BasicBlock*>&
+          unreachable_continues);
 
-  // Map from block to its structured successor blocks. See 
-  // ComputeStructuredSuccessors() for definition.
-  std::unordered_map<const ir::BasicBlock*, std::vector<ir::BasicBlock*>>
-      block2structured_succs_;
+  // Reorders blocks in reachable functions so that they satisfy dominator
+  // block ordering rules.
+  void FixBlockOrder();
 };
 
 }  // namespace opt
 }  // namespace spvtools
 
 #endif  // LIBSPIRV_OPT_DEAD_BRANCH_ELIM_PASS_H_
-

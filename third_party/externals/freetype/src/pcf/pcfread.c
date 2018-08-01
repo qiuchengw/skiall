@@ -933,6 +933,10 @@ THE SOFTWARE.
   }
 
 
+  /*
+   * This file uses X11 terminology for PCF data; an `encoding' in X11 speak
+   * is the same as a character code in FreeType speak.
+   */
   static FT_Error
   pcf_get_encodings( FT_Stream  stream,
                      PCF_Face   face )
@@ -943,8 +947,10 @@ THE SOFTWARE.
     int           firstCol, lastCol;
     int           firstRow, lastRow;
     FT_ULong      nencoding;
-    FT_UShort     encodingOffset;
+    FT_UShort     defaultCharRow, defaultCharCol;
+    FT_UShort     encodingOffset, defaultCharEncodingOffset;
     int           i, j;
+    FT_Byte*      pos;
     FT_ULong      k;
     PCF_Encoding  encoding = NULL;
 
@@ -964,13 +970,16 @@ THE SOFTWARE.
 
     format = FT_GET_ULONG_LE();
 
+    /* X11's reference implementation uses the equivalent to  */
+    /* `FT_GET_SHORT' for `defaultChar', however this doesn't */
+    /* make sense for most encodings.                         */
     if ( PCF_BYTE_ORDER( format ) == MSBFirst )
     {
       firstCol          = FT_GET_SHORT();
       lastCol           = FT_GET_SHORT();
       firstRow          = FT_GET_SHORT();
       lastRow           = FT_GET_SHORT();
-      face->defaultChar = FT_GET_SHORT();
+      face->defaultChar = FT_GET_USHORT();
     }
     else
     {
@@ -978,7 +987,7 @@ THE SOFTWARE.
       lastCol           = FT_GET_SHORT_LE();
       firstRow          = FT_GET_SHORT_LE();
       lastRow           = FT_GET_SHORT_LE();
-      face->defaultChar = FT_GET_SHORT_LE();
+      face->defaultChar = FT_GET_USHORT_LE();
     }
 
     FT_Stream_ExitFrame( stream );
@@ -992,9 +1001,11 @@ THE SOFTWARE.
       return FT_THROW( Invalid_File_Format );
 
     FT_TRACE4(( "  firstCol 0x%X, lastCol 0x%X\n"
-                "  firstRow 0x%X, lastRow 0x%X\n",
+                "  firstRow 0x%X, lastRow 0x%X\n"
+                "  defaultChar 0x%X\n",
                 firstCol, lastCol,
-                firstRow, lastRow ));
+                firstRow, lastRow,
+                face->defaultChar ));
 
     /* sanity checks; we limit numbers of rows and columns to 256 */
     if ( firstCol < 0       ||
@@ -1017,6 +1028,59 @@ THE SOFTWARE.
 
     FT_TRACE5(( "\n" ));
 
+    defaultCharRow = face->defaultChar >> 8;
+    defaultCharCol = face->defaultChar & 0xFF;
+
+    /* validate default character */
+    if ( defaultCharRow < (FT_UShort)firstRow ||
+         defaultCharRow > (FT_UShort)lastRow  ||
+         defaultCharCol < (FT_UShort)firstCol ||
+         defaultCharCol > (FT_UShort)lastCol  )
+    {
+      face->defaultChar = firstRow * 256 + firstCol;
+      FT_TRACE0(( "pcf_get_encodings:"
+                  " Invalid default character set to %d\n",
+                  face->defaultChar ));
+
+      defaultCharRow = face->defaultChar >> 8;
+      defaultCharCol = face->defaultChar & 0xFF;
+    }
+
+    /* FreeType mandates that glyph index 0 is the `undefined glyph',  */
+    /* which PCF calls the `default character'.  For this reason, we   */
+    /* swap the positions of glyph index 0 and the index corresponding */
+    /* to `defaultChar' in case they are different.                    */
+
+    /* `stream->cursor' still points at the beginning of the frame; */
+    /* we can thus easily get the offset to the default character   */
+    pos = stream->cursor +
+            2 * ( ( defaultCharRow - (FT_UShort)firstRow ) *
+                    ( lastCol - firstCol + 1 ) +
+                  defaultCharCol - (FT_UShort)firstCol );
+
+    if ( PCF_BYTE_ORDER( format ) == MSBFirst )
+      defaultCharEncodingOffset = FT_PEEK_USHORT( pos );
+    else
+      defaultCharEncodingOffset = FT_PEEK_USHORT_LE( pos );
+
+    if ( defaultCharEncodingOffset >= face->nmetrics )
+    {
+      FT_TRACE0(( "pcf_get_encodings:"
+                  " Invalid glyph index for default character,"
+                  " setting to zero\n" ));
+      defaultCharEncodingOffset = 0;
+    }
+
+    if ( defaultCharEncodingOffset )
+    {
+      /* do the swapping */
+      PCF_MetricRec  tmp = face->metrics[defaultCharEncodingOffset];
+
+
+      face->metrics[defaultCharEncodingOffset] = face->metrics[0];
+      face->metrics[0]                         = tmp;
+    }
+
     k = 0;
     for ( i = firstRow; i <= lastRow; i++ )
     {
@@ -1024,7 +1088,7 @@ THE SOFTWARE.
       {
         /* X11's reference implementation uses the equivalent to  */
         /* `FT_GET_SHORT', however PCF fonts with more than 32768 */
-        /* characters (e.g. `unifont.pcf') clearly show that an   */
+        /* characters (e.g., `unifont.pcf') clearly show that an  */
         /* unsigned value is needed.                              */
         if ( PCF_BYTE_ORDER( format ) == MSBFirst )
           encodingOffset = FT_GET_USHORT();
@@ -1033,6 +1097,11 @@ THE SOFTWARE.
 
         if ( encodingOffset != 0xFFFFU )
         {
+          if ( encodingOffset == defaultCharEncodingOffset )
+            encodingOffset = 0;
+          else if ( encodingOffset == 0 )
+            encodingOffset = defaultCharEncodingOffset;
+
           encoding[k].enc   = i * 256 + j;
           encoding[k].glyph = encodingOffset;
 
@@ -1481,14 +1550,7 @@ THE SOFTWARE.
       else
         root->family_name = NULL;
 
-      /*
-       * Note: We shift all glyph indices by +1 since we must
-       * respect the convention that glyph 0 always corresponds
-       * to the `missing glyph'.
-       *
-       * This implies bumping the number of `available' glyphs by 1.
-       */
-      root->num_glyphs = (FT_Long)( face->nmetrics + 1 );
+      root->num_glyphs = (FT_Long)face->nmetrics;
 
       root->num_fixed_sizes = 1;
       if ( FT_NEW_ARRAY( root->available_sizes, 1 ) )

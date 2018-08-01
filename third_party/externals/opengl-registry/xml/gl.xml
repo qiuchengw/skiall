@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <registry>
     <comment>
-Copyright (c) 2013-2017 The Khronos Group Inc.
+Copyright (c) 2013-2018 The Khronos Group Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -95,8 +95,8 @@ typedef unsigned int GLhandleARB;
         <type>typedef unsigned short <name>GLhalfARB</name>;</type>
         <type>typedef unsigned short <name>GLhalf</name>;</type>
         <type comment="Must be 32 bits">typedef GLint <name>GLfixed</name>;</type>
-        <type requires="stddef">typedef ptrdiff_t <name>GLintptr</name>;</type>
-        <type requires="stddef">typedef ptrdiff_t <name>GLsizeiptr</name>;</type>
+        <type requires="khrplatform">typedef khronos_intptr_t <name>GLintptr</name>;</type>
+        <type requires="khrplatform">typedef khronos_ssize_t <name>GLsizeiptr</name>;</type>
         <type requires="inttypes">typedef int64_t <name>GLint64</name>;</type>
         <type requires="inttypes">typedef uint64_t <name>GLuint64</name>;</type>
         <type requires="stddef">typedef ptrdiff_t <name>GLintptrARB</name>;</type>
@@ -778,6 +778,7 @@ typedef unsigned int GLhandleARB;
             <enum name="GL_ACCUM_CLEAR_VALUE"/>
             <enum name="GL_ACCUM_GREEN_BITS"/>
             <enum name="GL_ACCUM_RED_BITS"/>
+            <enum name="GL_ACTIVE_TEXTURE"/>
             <enum name="GL_ALIASED_LINE_WIDTH_RANGE"/>
             <enum name="GL_ALIASED_POINT_SIZE_RANGE"/>
             <enum name="GL_ALPHA_BIAS"/>
@@ -975,6 +976,7 @@ typedef unsigned int GLhandleARB;
             <enum name="GL_MAX_CLIP_DISTANCES"/>
             <enum name="GL_MAX_CLIP_PLANES"/>
             <enum name="GL_MAX_COLOR_MATRIX_STACK_DEPTH_SGI"/>
+            <enum name="GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS"/>
             <enum name="GL_MAX_EVAL_ORDER"/>
             <enum name="GL_MAX_FOG_FUNC_POINTS_SGIS"/>
             <enum name="GL_MAX_FRAGMENT_LIGHTS_SGIX"/>
@@ -7833,6 +7835,7 @@ typedef unsigned int GLhandleARB;
         <enum value="0x8BB8" name="GL_TILE_RASTER_ORDER_FIXED_MESA"/>
         <enum value="0x8BB9" name="GL_TILE_RASTER_ORDER_INCREASING_X_MESA"/>
         <enum value="0x8BBA" name="GL_TILE_RASTER_ORDER_INCREASING_Y_MESA"/>
+        <enum value="0x8BBB" name="GL_FRAMEBUFFER_FLIP_Y_MESA" />
     </enums>
 
     <enums namespace="GL" start="0x8BC0" end="0x8BFF" vendor="QCOM" comment="Reassigned from AMD to QCOM">
@@ -9461,7 +9464,13 @@ typedef unsigned int GLhandleARB;
         <enum value="0x91B0" name="GL_MAX_SHADER_COMPILER_THREADS_ARB" alias="GL_MAX_SHADER_COMPILER_THREADS_KHR"/>
         <enum value="0x91B1" name="GL_COMPLETION_STATUS_KHR"/>
         <enum value="0x91B1" name="GL_COMPLETION_STATUS_ARB" alias="GL_COMPLETION_STATUS_KHR"/>
-            <unused start="0x91B2" end="0x91B8" vendor="AMD"/>
+        <enum value="0x91B2" name="GL_RENDERBUFFER_STORAGE_SAMPLES_AMD"/>
+        <enum value="0x91B3" name="GL_MAX_COLOR_FRAMEBUFFER_SAMPLES_AMD"/>
+        <enum value="0x91B4" name="GL_MAX_COLOR_FRAMEBUFFER_STORAGE_SAMPLES_AMD"/>
+        <enum value="0x91B5" name="GL_MAX_DEPTH_STENCIL_FRAMEBUFFER_SAMPLES_AMD"/>
+        <enum value="0x91B6" name="GL_NUM_SUPPORTED_MULTISAMPLE_MODES_AMD"/>
+        <enum value="0x91B7" name="GL_SUPPORTED_MULTISAMPLE_MODES_AMD"/>
+            <unused start="0x91B8" end="0x91B8" vendor="AMD"/>
         <enum value="0x91B9" name="GL_COMPUTE_SHADER"/>
             <unused start="0x91BA" vendor="AMD"/>
         <enum value="0x91BB" name="GL_MAX_COMPUTE_UNIFORM_BLOCKS"/>
@@ -16572,6 +16581,7 @@ typedef unsigned int GLhandleARB;
         </command>
         <command>
             <proto group="GraphicsResetStatus"><ptype>GLenum</ptype> <name>glGetGraphicsResetStatusEXT</name></proto>
+            <alias name="glGetGraphicsResetStatus"/>
         </command>
         <command>
             <proto group="GraphicsResetStatus"><ptype>GLenum</ptype> <name>glGetGraphicsResetStatusKHR</name></proto>
@@ -22302,6 +22312,15 @@ typedef unsigned int GLhandleARB;
             <param><ptype>GLsizei</ptype> <name>height</name></param>
         </command>
         <command>
+            <proto>void <name>glNamedRenderbufferStorageMultisampleAdvancedAMD</name></proto>
+            <param group="Renderbuffer"><ptype>GLuint</ptype> <name>renderbuffer</name></param>
+            <param><ptype>GLsizei</ptype> <name>samples</name></param>
+            <param><ptype>GLsizei</ptype> <name>storageSamples</name></param>
+            <param group="InternalFormat"><ptype>GLenum</ptype> <name>internalformat</name></param>
+            <param><ptype>GLsizei</ptype> <name>width</name></param>
+            <param><ptype>GLsizei</ptype> <name>height</name></param>
+        </command>
+        <command>
             <proto>void <name>glNamedRenderbufferStorageMultisampleCoverageEXT</name></proto>
             <param group="Renderbuffer"><ptype>GLuint</ptype> <name>renderbuffer</name></param>
             <param><ptype>GLsizei</ptype> <name>coverageSamples</name></param>
@@ -25187,6 +25206,15 @@ typedef unsigned int GLhandleARB;
             <proto>void <name>glRenderbufferStorageMultisampleAPPLE</name></proto>
             <param group="RenderbufferTarget"><ptype>GLenum</ptype> <name>target</name></param>
             <param><ptype>GLsizei</ptype> <name>samples</name></param>
+            <param group="InternalFormat"><ptype>GLenum</ptype> <name>internalformat</name></param>
+            <param><ptype>GLsizei</ptype> <name>width</name></param>
+            <param><ptype>GLsizei</ptype> <name>height</name></param>
+        </command>
+        <command>
+            <proto>void <name>glRenderbufferStorageMultisampleAdvancedAMD</name></proto>
+            <param group="RenderbufferTarget"><ptype>GLenum</ptype> <name>target</name></param>
+            <param><ptype>GLsizei</ptype> <name>samples</name></param>
+            <param><ptype>GLsizei</ptype> <name>storageSamples</name></param>
             <param group="InternalFormat"><ptype>GLenum</ptype> <name>internalformat</name></param>
             <param><ptype>GLsizei</ptype> <name>width</name></param>
             <param><ptype>GLsizei</ptype> <name>height</name></param>
@@ -33911,6 +33939,7 @@ typedef unsigned int GLhandleARB;
             <enum name="GL_RENDERBUFFER_STENCIL_SIZE"/>
             <enum name="GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE"/>
             <enum name="GL_MAX_SAMPLES"/>
+            <enum name="GL_INDEX"/>
             <command name="glIsRenderbuffer"/>
             <command name="glBindRenderbuffer"/>
             <command name="glDeleteRenderbuffers"/>
@@ -33932,8 +33961,7 @@ typedef unsigned int GLhandleARB;
             <command name="glRenderbufferStorageMultisample"/>
             <command name="glFramebufferTextureLayer"/>
         </require>
-        <require profile="compatibility" comment="Reuse ARB_framebuffer_object compatibility profile">
-            <enum name="GL_INDEX"/>
+        <require comment="Reuse ARB_texture_float">
             <enum name="GL_TEXTURE_LUMINANCE_TYPE"/>
             <enum name="GL_TEXTURE_INTENSITY_TYPE"/>
         </require>
@@ -34981,6 +35009,7 @@ typedef unsigned int GLhandleARB;
             <enum name="GL_CLAMP_VERTEX_COLOR"/>
             <enum name="GL_CLAMP_FRAGMENT_COLOR"/>
             <enum name="GL_ALPHA_INTEGER"/>
+            <enum name="GL_INDEX"/>
             <enum name="GL_TEXTURE_LUMINANCE_TYPE"/>
             <enum name="GL_TEXTURE_INTENSITY_TYPE"/>
         </remove>
@@ -38751,6 +38780,18 @@ typedef unsigned int GLhandleARB;
                 <command name="glBlendFuncSeparateIndexedAMD"/>
                 <command name="glBlendEquationIndexedAMD"/>
                 <command name="glBlendEquationSeparateIndexedAMD"/>
+            </require>
+        </extension>
+        <extension name="GL_AMD_framebuffer_multisample_advanced" supported="gl|glcore|gles2">
+            <require>
+                <enum name="GL_RENDERBUFFER_STORAGE_SAMPLES_AMD"/>
+                <enum name="GL_MAX_COLOR_FRAMEBUFFER_SAMPLES_AMD"/>
+                <enum name="GL_MAX_COLOR_FRAMEBUFFER_STORAGE_SAMPLES_AMD"/>
+                <enum name="GL_MAX_DEPTH_STENCIL_FRAMEBUFFER_SAMPLES_AMD"/>
+                <enum name="GL_NUM_SUPPORTED_MULTISAMPLE_MODES_AMD"/>
+                <enum name="GL_SUPPORTED_MULTISAMPLE_MODES_AMD"/>
+                <command name="glRenderbufferStorageMultisampleAdvancedAMD"/>
+                <command name="glNamedRenderbufferStorageMultisampleAdvancedAMD"/>
             </require>
         </extension>
         <extension name="GL_AMD_framebuffer_sample_positions" supported="gl">
@@ -45794,6 +45835,11 @@ typedef unsigned int GLhandleARB;
                 <enum name="GL_PROXY_TEXTURE_2D_STACK_MESAX"/>
                 <enum name="GL_TEXTURE_1D_STACK_BINDING_MESAX"/>
                 <enum name="GL_TEXTURE_2D_STACK_BINDING_MESAX"/>
+            </require>
+        </extension>
+        <extension name="GL_MESA_framebuffer_flip_y" supported="gles2">
+            <require>
+                <enum name="GL_FRAMEBUFFER_FLIP_Y_MESA"/>
             </require>
         </extension>
         <extension name="GL_MESA_pack_invert" supported="gl">

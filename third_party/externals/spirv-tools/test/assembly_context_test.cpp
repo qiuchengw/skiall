@@ -14,17 +14,17 @@
 
 #include "unit_spirv.h"
 
-#include <vector>
 #include <gmock/gmock.h>
+#include <vector>
 
 #include "source/instruction.h"
 
-using libspirv::AssemblyContext;
+namespace spvtools {
+namespace {
+
 using spvtest::AutoText;
 using spvtest::Concatenate;
 using ::testing::Eq;
-
-namespace {
 
 struct EncodeStringCase {
   std::string str;
@@ -73,4 +73,5 @@ INSTANTIATE_TEST_CASE_P(
     }),);
 // clang-format on
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace spvtools

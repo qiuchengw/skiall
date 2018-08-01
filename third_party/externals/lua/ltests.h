@@ -1,5 +1,5 @@
 /*
-** $Id: ltests.h,v 2.49 2015/09/22 14:18:24 roberto Exp roberto $
+** $Id: ltests.h,v 2.58 2018/04/19 15:42:41 roberto Exp roberto $
 ** Internal Header for Debugging of the Lua Implementation
 ** See Copyright Notice in lua.h
 */
@@ -8,20 +8,11 @@
 #define ltests_h
 
 
+#include <stdio.h>
 #include <stdlib.h>
 
-/* test Lua with no compatibility code */
-#undef LUA_COMPAT_MATHLIB
-#undef LUA_COMPAT_IPAIRS
-#undef LUA_COMPAT_BITLIB
-#undef LUA_COMPAT_APIINTCASTS
-#undef LUA_COMPAT_FLOATSTRING
-#undef LUA_COMPAT_UNPACK
-#undef LUA_COMPAT_LOADERS
-#undef LUA_COMPAT_LOG10
-#undef LUA_COMPAT_LOADSTRING
-#undef LUA_COMPAT_MAXN
-#undef LUA_COMPAT_MODULE
+/* test Lua with compatibility code */
+#define LUA_COMPAT_MATHLIB
 
 
 #define LUA_DEBUG
@@ -32,6 +23,14 @@
 #include <assert.h>
 #define lua_assert(c)           assert(c)
 
+
+/* include opcode names */
+#define LUAI_DEFOPNAMES
+
+
+/* compiled with -O0, Lua uses a lot of C stack space... */
+#undef LUAI_MAXCCALLS
+#define LUAI_MAXCCALLS	200
 
 /* to avoid warnings, and to make sure value is really unused */
 #define UNUSED(x)       (x=0, (void)(x))
@@ -46,12 +45,21 @@
 #endif
 
 
+/* get a chance to test code without jump tables */
+#define LUA_USE_JUMPTABLE	0
+
+
+/* use 32-bit integers in random generator */
+#define LUA_RAND32
+
+
 /* memory-allocator control variables */
 typedef struct Memcontrol {
   unsigned long numblocks;
   unsigned long total;
   unsigned long maxmem;
   unsigned long memlimit;
+  unsigned long countlimit;
   unsigned long objcount[LUA_NUMTAGS];
 } Memcontrol;
 
@@ -111,6 +119,7 @@ LUA_API void *debug_realloc (void *ud, void *block,
 #define LUAL_BUFFERSIZE		23
 #define MINSTRTABSIZE		2
 #define MAXINDEXRK		1
+#define MAXIWTHABS		3
 
 
 /* make stack-overflow tests run faster */

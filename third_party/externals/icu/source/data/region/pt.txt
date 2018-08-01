@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/pt.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 pt{
     Countries{
         001{"Mundo"}
@@ -18,14 +12,14 @@ pt{
         014{"África Oriental"}
         015{"África do Norte"}
         017{"África Central"}
-        018{"África Austral"}
+        018{"África Meridional"}
         019{"Américas"}
         021{"América Setentrional"}
         029{"Caribe"}
         030{"Ásia Oriental"}
-        034{"Ásia do Sul"}
+        034{"Ásia Meridional"}
         035{"Sudeste Asiático"}
-        039{"Europa do Sul"}
+        039{"Europa Meridional"}
         053{"Australásia"}
         054{"Melanésia"}
         057{"Região da Micronésia"}
@@ -46,7 +40,6 @@ pt{
         AI{"Anguilla"}
         AL{"Albânia"}
         AM{"Armênia"}
-        AN{"Antilhas Holandesas"}
         AO{"Angola"}
         AQ{"Antártida"}
         AR{"Argentina"}
@@ -54,7 +47,7 @@ pt{
         AT{"Áustria"}
         AU{"Austrália"}
         AW{"Aruba"}
-        AX{"Ilhas Åland"}
+        AX{"Ilhas Aland"}
         AZ{"Azerbaijão"}
         BA{"Bósnia e Herzegovina"}
         BB{"Barbados"}
@@ -86,7 +79,7 @@ pt{
         CI{"Costa do Marfim"}
         CK{"Ilhas Cook"}
         CL{"Chile"}
-        CM{"República dos Camarões"}
+        CM{"Camarões"}
         CN{"China"}
         CO{"Colômbia"}
         CP{"Ilha de Clipperton"}
@@ -96,7 +89,7 @@ pt{
         CW{"Curaçao"}
         CX{"Ilha Christmas"}
         CY{"Chipre"}
-        CZ{"República Tcheca"}
+        CZ{"Tchéquia"}
         DE{"Alemanha"}
         DG{"Diego Garcia"}
         DJ{"Djibuti"}
@@ -113,9 +106,10 @@ pt{
         ES{"Espanha"}
         ET{"Etiópia"}
         EU{"União Europeia"}
+        EZ{"zona do euro"}
         FI{"Finlândia"}
         FJ{"Fiji"}
-        FK{"Ilhas Malvinas"}
+        FK{"Ilhas Falkland (Ilhas Malvinas)"}
         FM{"Micronésia"}
         FO{"Ilhas Faroe"}
         FR{"França"}
@@ -164,7 +158,7 @@ pt{
         KH{"Camboja"}
         KI{"Quiribati"}
         KM{"Comores"}
-        KN{"São Cristóvão e Nevis"}
+        KN{"São Cristóvão e Névis"}
         KP{"Coreia do Norte"}
         KR{"Coreia do Sul"}
         KW{"Kuwait"}
@@ -188,7 +182,7 @@ pt{
         MF{"São Martinho"}
         MG{"Madagascar"}
         MH{"Ilhas Marshall"}
-        MK{"Macedônia"}
+        MK{"Macedônia (ARIM)"}
         ML{"Mali"}
         MM{"Mianmar (Birmânia)"}
         MN{"Mongólia"}
@@ -200,7 +194,7 @@ pt{
         MT{"Malta"}
         MU{"Maurício"}
         MV{"Maldivas"}
-        MW{"Malawi"}
+        MW{"Malaui"}
         MX{"México"}
         MY{"Malásia"}
         MZ{"Moçambique"}
@@ -224,7 +218,7 @@ pt{
         PH{"Filipinas"}
         PK{"Paquistão"}
         PL{"Polônia"}
-        PM{"Saint Pierre e Miquelon"}
+        PM{"São Pedro e Miquelão"}
         PN{"Ilhas Pitcairn"}
         PR{"Porto Rico"}
         PS{"Palestina"}
@@ -240,10 +234,10 @@ pt{
         RW{"Ruanda"}
         SA{"Arábia Saudita"}
         SB{"Ilhas Salomão"}
-        SC{"Seychelles"}
+        SC{"Seicheles"}
         SD{"Sudão"}
         SE{"Suécia"}
-        SG{"Cingapura"}
+        SG{"Singapura"}
         SH{"Santa Helena"}
         SI{"Eslovênia"}
         SJ{"Svalbard e Jan Mayen"}
@@ -265,7 +259,7 @@ pt{
         TF{"Territórios Franceses do Sul"}
         TG{"Togo"}
         TH{"Tailândia"}
-        TJ{"Tajiquistão"}
+        TJ{"Tadjiquistão"}
         TK{"Tokelau"}
         TL{"Timor-Leste"}
         TM{"Turcomenistão"}
@@ -279,6 +273,7 @@ pt{
         UA{"Ucrânia"}
         UG{"Uganda"}
         UM{"Ilhas Menores Distantes dos EUA"}
+        UN{"Nações Unidas"}
         US{"Estados Unidos"}
         UY{"Uruguai"}
         UZ{"Uzbequistão"}
@@ -286,7 +281,7 @@ pt{
         VC{"São Vicente e Granadinas"}
         VE{"Venezuela"}
         VG{"Ilhas Virgens Britânicas"}
-        VI{"Ilhas Virgens dos EUA"}
+        VI{"Ilhas Virgens Americanas"}
         VN{"Vietnã"}
         VU{"Vanuatu"}
         WF{"Wallis e Futuna"}
@@ -301,14 +296,15 @@ pt{
     }
     Countries%short{
         GB{"Reino Unido"}
+        UN{"ONU"}
         US{"EUA"}
     }
     Countries%variant{
         CD{"República Democrática do Congo"}
         CG{"Congo"}
-        FK{"Ilhas Falkland (Ilhas Malvinas)"}
-        MK{"Macedônia (Antiga República Iugoslava da Macedônia - ARIM)"}
+        CI{"Côte d’Ivoire"}
+        CZ{"República Tcheca"}
         TL{"República Democrática de Timor-Leste"}
     }
-    Version{"2.1.19.17"}
+    Version{"2.1.41.97"}
 }

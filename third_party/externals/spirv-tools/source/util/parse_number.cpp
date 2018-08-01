@@ -23,9 +23,10 @@
 
 #include "util/hex_float.h"
 
-namespace spvutils {
-
+namespace spvtools {
+namespace utils {
 namespace {
+
 // A helper class that temporarily stores error messages and dump the messages
 // to a string which given as as pointer when it is destructed. If the given
 // pointer is a nullptr, this class does not store error message.
@@ -50,7 +51,7 @@ class ErrorMsgStream {
   // destructor is called.
   std::string* error_msg_sink_;
 };
-}
+}  // namespace
 
 EncodeNumberStatus ParseAndEncodeIntegerNumber(
     const char* text, const NumberType& type,
@@ -68,8 +69,8 @@ EncodeNumberStatus ParseAndEncodeIntegerNumber(
   const uint32_t bit_width = AssumedBitWidth(type);
 
   if (bit_width > 64) {
-    ErrorMsgStream(error_msg) << "Unsupported " << bit_width
-                              << "-bit integer literals";
+    ErrorMsgStream(error_msg)
+        << "Unsupported " << bit_width << "-bit integer literals";
     return EncodeNumberStatus::kUnsupported;
   }
 
@@ -145,12 +146,12 @@ EncodeNumberStatus ParseAndEncodeFloatingPointNumber(
   const auto bit_width = AssumedBitWidth(type);
   switch (bit_width) {
     case 16: {
-      HexFloat<FloatProxy<spvutils::Float16>> hVal(0);
+      HexFloat<FloatProxy<Float16>> hVal(0);
       if (!ParseNumber(text, &hVal)) {
         ErrorMsgStream(error_msg) << "Invalid 16-bit float literal: " << text;
         return EncodeNumberStatus::kInvalidText;
       }
-      // getAsFloat will return the spvutils::Float16 value, and get_value
+      // getAsFloat will return the Float16 value, and get_value
       // will return a uint16_t representing the bits of the float.
       // The encoding is therefore correct from the perspective of the SPIR-V
       // spec since the top 16 bits will be 0.
@@ -182,8 +183,8 @@ EncodeNumberStatus ParseAndEncodeFloatingPointNumber(
     default:
       break;
   }
-  ErrorMsgStream(error_msg) << "Unsupported " << bit_width
-                            << "-bit float literals";
+  ErrorMsgStream(error_msg)
+      << "Unsupported " << bit_width << "-bit float literals";
   return EncodeNumberStatus::kUnsupported;
 }
 
@@ -211,4 +212,5 @@ EncodeNumberStatus ParseAndEncodeNumber(const char* text,
   return ParseAndEncodeIntegerNumber(text, type, emit, error_msg);
 }
 
-}  // namespace spvutils
+}  // namespace utils
+}  // namespace spvtools

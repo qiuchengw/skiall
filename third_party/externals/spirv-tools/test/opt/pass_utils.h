@@ -16,10 +16,12 @@
 #define LIBSPIRV_TEST_OPT_PASS_UTILS_H_
 
 #include <functional>
+#include <iterator>
 #include <string>
 #include <vector>
 
 namespace spvtools {
+namespace opt {
 
 // In-place substring replacement. Finds the |find_str| in the |process_str|
 // and replaces the found substring with |replace_str|. Returns true if at
@@ -49,6 +51,17 @@ std::string JoinAllInsts(const std::vector<const char*>& insts);
 // will be ignored.
 std::string JoinNonDebugInsts(const std::vector<const char*>& insts);
 
+// Returns a vector that contains the contents of |a| followed by the contents
+// of |b|.
+template <typename T>
+std::vector<T> Concat(const std::vector<T>& a, const std::vector<T>& b) {
+  std::vector<T> ret;
+  std::copy(a.begin(), a.end(), back_inserter(ret));
+  std::copy(b.begin(), b.end(), back_inserter(ret));
+  return ret;
+}
+
+}  // namespace opt
 }  // namespace spvtools
 
 #endif  // LIBSPIRV_TEST_OPT_PASS_UTILS_H_

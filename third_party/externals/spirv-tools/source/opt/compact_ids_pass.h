@@ -15,6 +15,7 @@
 #ifndef LIBSPIRV_OPT_COMPACT_IDS_PASS_H_
 #define LIBSPIRV_OPT_COMPACT_IDS_PASS_H_
 
+#include "ir_context.h"
 #include "module.h"
 #include "pass.h"
 
@@ -25,7 +26,14 @@ namespace opt {
 class CompactIdsPass : public Pass {
  public:
   const char* name() const override { return "compact-ids"; }
-  Status Process(ir::Module*) override;
+  Status Process() override;
+
+  // Return the mask of preserved Analyses.
+  IRContext::Analysis GetPreservedAnalyses() override {
+    return IRContext::kAnalysisInstrToBlockMapping |
+           IRContext::kAnalysisDominatorAnalysis |
+           IRContext::kAnalysisLoopAnalysis;
+  }
 };
 
 }  // namespace opt

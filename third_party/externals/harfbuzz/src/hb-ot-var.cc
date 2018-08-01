@@ -29,9 +29,8 @@
 #include "hb-ot-layout-private.hh"
 #include "hb-ot-var-avar-table.hh"
 #include "hb-ot-var-fvar-table.hh"
+#include "hb-ot-var-mvar-table.hh"
 #include "hb-ot-var.h"
-
-HB_SHAPER_DATA_ENSURE_DECLARE(ot, face)
 
 /*
  * fvar/avar
@@ -40,14 +39,14 @@ HB_SHAPER_DATA_ENSURE_DECLARE(ot, face)
 static inline const OT::fvar&
 _get_fvar (hb_face_t *face)
 {
-  if (unlikely (!hb_ot_shaper_face_data_ensure (face))) return OT::Null(OT::fvar);
+  if (unlikely (!hb_ot_shaper_face_data_ensure (face))) return Null(OT::fvar);
   hb_ot_layout_t * layout = hb_ot_layout_from_face (face);
   return *(layout->fvar.get ());
 }
 static inline const OT::avar&
 _get_avar (hb_face_t *face)
 {
-  if (unlikely (!hb_ot_shaper_face_data_ensure (face))) return OT::Null(OT::avar);
+  if (unlikely (!hb_ot_shaper_face_data_ensure (face))) return Null(OT::avar);
   hb_ot_layout_t * layout = hb_ot_layout_from_face (face);
   return *(layout->avar.get ());
 }
@@ -66,7 +65,7 @@ _get_avar (hb_face_t *face)
 hb_bool_t
 hb_ot_var_has_data (hb_face_t *face)
 {
-  return &_get_fvar (face) != &OT::Null(OT::fvar);
+  return &_get_fvar (face) != &Null(OT::fvar);
 }
 
 /**
@@ -131,7 +130,7 @@ hb_ot_var_normalize_variations (hb_face_t            *face,
   for (unsigned int i = 0; i < variations_length; i++)
   {
     unsigned int axis_index;
-    if (hb_ot_var_find_axis (face, variations[i].tag, &axis_index, NULL) &&
+    if (hb_ot_var_find_axis (face, variations[i].tag, &axis_index, nullptr) &&
 	axis_index < coords_length)
       coords[axis_index] = fvar.normalize_axis_value (axis_index, variations[i].value);
   }

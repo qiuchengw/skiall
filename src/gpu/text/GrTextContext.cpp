@@ -92,7 +92,8 @@ void GrTextContext::regenerateGlyphRunList(GrTextBlob* cacheBlob,
                                            SkScalerContextFlags scalerContextFlags,
                                            const SkMatrix& viewMatrix,
                                            const SkSurfaceProps& props,
-                                           const SkGlyphRunList& glyphRunList) const {
+                                           const SkGlyphRunList& glyphRunList,
+                                           SkGlyphRunListDrawer* glyphDrawer) {
     SkPoint origin = glyphRunList.origin();
     cacheBlob->initReusableBlob(paint.luminanceColor(), viewMatrix, origin.x(), origin.y());
 
@@ -168,21 +169,20 @@ void GrTextContext::regenerateGlyphRunList(GrTextBlob* cacheBlob,
             auto cache = SkStrikeCache::FindOrCreateStrikeExclusive(
                     pathPaint, &props, SkScalerContextFlags::kFakeGammaAndBoostContrast, nullptr);
 
-            const SkPoint* positionCursor = glyphRun.positions().data();
-            for (auto glyphID : glyphRun.shuntGlyphsIDs()) {
-                const SkGlyph& glyph = cache->getGlyphIDMetrics(glyphID);
-                SkPoint loc = origin + *positionCursor++;
-                if (glyph.fWidth > 0) {
-                    if (glyph.fMaskFormat == SkMask::kARGB32_Format) {
-                        fallbackTextHelper.appendText(glyph, glyphID, loc);
-                    } else {
-                        const SkPath* path = cache->findPath(glyph);
-                        if (path != nullptr) {
-                            cacheBlob->appendPathGlyph(runIndex, *path, loc.fX, loc.fY, matrixScale, false);
-                        }
+            auto drawOnePath =
+                    [&fallbackTextHelper, matrixScale, runIndex, cacheBlob]
+                    (const SkPath* path, const SkGlyph& glyph, SkPoint position) {
+                if (glyph.fMaskFormat == SkMask::kARGB32_Format) {
+                    fallbackTextHelper.appendText(glyph, glyph.getGlyphID(), position);
+                } else {
+                    if (path != nullptr) {
+                        cacheBlob->appendPathGlyph(
+                                runIndex, *path, position.fX, position.fY, matrixScale, false);
                     }
                 }
-            }
+            };
+
+            glyphDrawer->drawUsingPaths(glyphRun, origin, cache.get(), drawOnePath);
 
             fallbackTextHelper.drawText(
                     cacheBlob, runIndex, glyphCache, props, runPaint, scalerContextFlags);
@@ -193,19 +193,17 @@ void GrTextContext::regenerateGlyphRunList(GrTextBlob* cacheBlob,
             sk_sp<GrTextStrike> currStrike;
             auto cache = cacheBlob->setupCache(
                     runIndex, props, scalerContextFlags, runPaint, &viewMatrix);
-            SkFindAndPlaceGlyph::ProcessPosText(
-                SkPaint::kGlyphID_TextEncoding,
-                (const char*) glyphRun.shuntGlyphsIDs().data(),
-                glyphRun.shuntGlyphsIDs().size() * sizeof(SkGlyphID),
-                origin, viewMatrix, (const SkScalar*) glyphRun.positions().data(), 2, cache.get(),
-                [&](const SkGlyph& glyph, SkPoint position, SkPoint rounding) {
-                    position += rounding;
-                    BmpAppendGlyph(cacheBlob, runIndex, glyphCache, &currStrike, glyph,
-                                   SkScalarFloorToScalar(position.fX),
-                                   SkScalarFloorToScalar(position.fY),
-                                   runPaint.filteredPremulColor(), cache.get(), SK_Scalar1, false);
-                }
-            );
+
+            auto drawOneGlyph =
+                    [cacheBlob, runIndex, glyphCache, &currStrike, runPaint, cache{cache.get()}]
+                    (const SkMask& mask, const SkGlyph& glyph, SkPoint position) {
+                BmpAppendGlyph(cacheBlob, runIndex, glyphCache, &currStrike, glyph,
+                               SkScalarFloorToScalar(position.fX),
+                               SkScalarFloorToScalar(position.fY),
+                               runPaint.filteredPremulColor(), cache, SK_Scalar1, false);
+            };
+
+            glyphDrawer->drawUsingMasks(cache.get(), glyphRun, origin, viewMatrix, drawOneGlyph);
         }
         runIndex += 1;
     }
@@ -270,7 +268,8 @@ void GrTextContext::drawGlyphRunList(
             cacheBlob = textBlobCache->makeCachedBlob(glyphRunList, key, blurRec, skPaint);
             this->regenerateGlyphRunList(cacheBlob.get(), glyphCache,
                                      *context->contextPriv().caps()->shaderCaps(), paint,
-                                     scalerContextFlags, viewMatrix, props, glyphRunList);
+                                     scalerContextFlags, viewMatrix, props, glyphRunList,
+                                     target->glyphDrawer());
         } else {
             textBlobCache->makeMRU(cacheBlob.get());
 
@@ -281,7 +280,8 @@ void GrTextContext::drawGlyphRunList(
                 sanityBlob->setupKey(key, blurRec, skPaint);
                 this->regenerateGlyphRunList(
                         sanityBlob.get(), glyphCache, *context->contextPriv().caps()->shaderCaps(),
-                        paint, scalerContextFlags, viewMatrix, props, glyphRunList);
+                        paint, scalerContextFlags, viewMatrix, props, glyphRunList,
+                        target->glyphDrawer());
                 GrTextBlob::AssertEqual(*sanityBlob, *cacheBlob);
             }
         }
@@ -293,7 +293,8 @@ void GrTextContext::drawGlyphRunList(
         }
         this->regenerateGlyphRunList(cacheBlob.get(), glyphCache,
                                  *context->contextPriv().caps()->shaderCaps(), paint,
-                                 scalerContextFlags, viewMatrix, props, glyphRunList);
+                                 scalerContextFlags, viewMatrix, props, glyphRunList,
+                                 target->glyphDrawer());
     }
 
     cacheBlob->flush(target, props, fDistanceAdjustTable.get(), paint,

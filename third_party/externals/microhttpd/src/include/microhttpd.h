@@ -1048,14 +1048,14 @@ union MHD_ConnectionInfo
 {
 
   /**
-   * Cipher algorithm used, of type "enum gnutls_cipher_algorithm".
+   * Cipher algorithm used, as a string.
    */
-  int /* enum gnutls_cipher_algorithm */ cipher_algorithm;
+  const char* cipher_algorithm;
 
   /**
-   * Protocol used, of type "enum gnutls_protocol".
+   * Protocol used, as a string.
    */
-  int /* enum gnutls_protocol */ protocol;
+  const char* protocol;
 
   /**
    * Connect socket
@@ -1063,14 +1063,14 @@ union MHD_ConnectionInfo
   MHD_socket connect_fd;
 
   /**
-   * GNUtls session handle, of type "gnutls_session_t".
+   * TLS session handle, of type "SSL".
    */
-  void * /* gnutls_session_t */ tls_session;
+  void * /* SSL */ tls_session;
 
   /**
-   * GNUtls client certificate handle, of type "gnutls_x509_crt_t".
+   * TLS client certificate handle, of type "X509".
    */
-  void * /* gnutls_x509_crt_t */ client_cert;
+  void * /* X509 */ client_cert;
 
   /**
    * Address information for the client.
@@ -1122,18 +1122,18 @@ enum MHD_ConnectionInfoType
   MHD_CONNECTION_INFO_CLIENT_ADDRESS,
 
   /**
-   * Get the gnuTLS session handle.
+   * Get the TLS session handle.
    * @ingroup request
    */
-  MHD_CONNECTION_INFO_GNUTLS_SESSION,
+  MHD_CONNECTION_INFO_TLS_SESSION,
 
   /**
    * Get the gnuTLS client certificate handle.  Dysfunctional (never
-   * implemented, deprecated).  Use #MHD_CONNECTION_INFO_GNUTLS_SESSION
-   * to get the `gnutls_session_t` and then call
-   * gnutls_certificate_get_peers().
+   * implemented, deprecated).  Use #MHD_CONNECTION_INFO_TLS_SESSION
+   * to get the `SSL` and then call
+   * SSL_get_peer_certificate() or SSL_get_peer_cert_chain().
    */
-  MHD_CONNECTION_INFO_GNUTLS_CLIENT_CERT,
+  MHD_CONNECTION_INFO_TLS_CLIENT_CERT,
 
   /**
    * Get the `struct MHD_Daemon *` responsible for managing this connection.

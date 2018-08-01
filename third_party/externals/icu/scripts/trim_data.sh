@@ -3,6 +3,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -e
+
+# Remove entries currently not used in Chromium/V8.
+function filter_locale_data {
+  echo Removing unncessary categories in ${localedatapath}
+  for langpath in ${localedatapath}/*.txt
+  do
+    echo Overwriting ${langpath} ...
+    sed -r -i \
+      '/^    characterLabel\{$/,/^    \}$/d
+       /^    AuxExemplarCharacters\{.*\}$/d
+       /^    AuxExemplarCharacters\{$/, /^    \}$/d
+       /^    ExemplarCharacters\{.*\}$/d
+       /^    ExemplarCharacters\{$/, /^    \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun|quarter)(|-short|-narrow)\{$/, /^        \}$/d' ${langpath}
+  done
+}
 
 # Remove display names for languages that are not listed in the accept-language
 # list of Chromium.
@@ -15,10 +32,10 @@ function filter_display_language_names {
   done
   ACCEPT_LANG_PATTERN="(${ACCEPT_LANG_PATTERN})[^a-z]"
 
-  echo "Filtering out display names for non-A-L languages ${langdatapath}"
-  for lang in $(grep -v '^#' "${scriptdir}/chrome_ui_languages.list")
+  echo "Filtering out display names for non-A-L languages in ${langdatapath}"
+  for langpath in ${langdatapath}/*.txt
   do
-    target=${langdatapath}/${lang}.txt
+    target=${langpath}
     echo Overwriting ${target} ...
     sed -r -i \
     '/^    Keys\{$/,/^    \}$/d
@@ -29,6 +46,8 @@ function filter_display_language_names {
        d
      }
      /^    Types\{$/,/^    \}$/d
+     /^    Types%short\{$/,/^    \}$/d
+     /^    characterLabelPattern\{$/,/^    \}$/d
      /^    Variants\{$/,/^    \}$/d' ${target}
 
     # Delete an empty "Languages" block. Otherwise, getting the display
@@ -39,7 +58,7 @@ function filter_display_language_names {
     '/^    Languages\{$/ {
        N
        /^    Languages\{\n    \}/ d
-     }' ${target}
+    }' ${target}
   done
 }
 
@@ -67,10 +86,6 @@ function abridge_locale_data_for_non_ui_languages {
     sed -n -r -i \
       '1, /^'${lang}'\{$/p
        /^    "%%ALIAS"\{/p
-       /^    AuxExemplarCharacters\{.*\}$/p
-       /^    AuxExemplarCharacters\{$/, /^    \}$/p
-       /^    ExemplarCharacters\{.*\}$/p
-       /^    ExemplarCharacters\{$/, /^    \}$/p
        /^    (LocaleScript|layout)\{$/, /^    \}$/p
        /^    Version\{.*$/p
        /^\}$/p' ${target}
@@ -134,7 +149,15 @@ function filter_currency_data {
        }
        /^    [cC]urrency(Map|Meta|Spacing|UnitPatterns)\{$/, /^    \}$/ p
        /^    Version\{.*\}$/p
-       /^\}$/p' $i
+       /^\}$/p' "${i}"
+
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/791318.
+    sed -r -i \
+      '/^    Currenc(ie.*|yPlurals)\{$/ {
+         N
+         /^    Currenc(ie.*|yPlurals)\{\n    \}/ d
+      }' "${i}"
   done
 }
 
@@ -170,6 +193,14 @@ function filter_unit_data {
          /^    \}$/ p
          d
        }' ${i}
+
+    # Delete empty units,units{Narrow|Short} block. Otherwise, locale fallback
+    # fails. See crbug.com/707515.
+    sed -r -i \
+      '/^    units(|Narrow|Short)\{$/ {
+         N
+         /^    units(|Narrow|Short)\{\n    \}/ d
+      }' ${i}
   done
 }
 
@@ -189,6 +220,7 @@ langdatapath="${dataroot}/lang"
 
 
 
+filter_locale_data
 filter_display_language_names
 abridge_locale_data_for_non_ui_languages
 filter_currency_data

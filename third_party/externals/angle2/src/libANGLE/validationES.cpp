@@ -79,34 +79,42 @@ bool DifferenceCanOverflow(GLint a, GLint b)
     return !checkedA.IsValid();
 }
 
+bool ValidateDrawClientAttribs(Context *context)
+{
+    if (!context->getStateCache().hasAnyEnabledClientAttrib())
+        return true;
+
+    const gl::State &state = context->getGLState();
+
+    if (context->getExtensions().webglCompatibility || !state.areClientArraysEnabled())
+    {
+        // [WebGL 1.0] Section 6.5 Enabled Vertex Attributes and Range Checking
+        // If a vertex attribute is enabled as an array via enableVertexAttribArray but no
+        // buffer is bound to that attribute via bindBuffer and vertexAttribPointer, then calls
+        // to drawArrays or drawElements will generate an INVALID_OPERATION error.
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), VertexArrayNoBuffer);
+        return false;
+    }
+
+    if (state.getVertexArray()->hasEnabledNullPointerClientArray())
+    {
+        // This is an application error that would normally result in a crash, but we catch it
+        // and return an error
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), VertexArrayNoBufferPointer);
+        return false;
+    }
+
+    return true;
+}
+
 bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex, GLint vertexCount)
 {
     const gl::State &state     = context->getGLState();
     const gl::Program *program = state.getProgram();
 
-    bool webglCompatibility = context->getExtensions().webglCompatibility;
-
-    const VertexArray *vao              = state.getVertexArray();
-    const AttributesMask &clientAttribs = vao->getEnabledClientMemoryAttribsMask();
-
-    if (clientAttribs.any())
+    if (!ValidateDrawClientAttribs(context))
     {
-        if (webglCompatibility || !state.areClientArraysEnabled())
-        {
-            // [WebGL 1.0] Section 6.5 Enabled Vertex Attributes and Range Checking
-            // If a vertex attribute is enabled as an array via enableVertexAttribArray but no
-            // buffer is bound to that attribute via bindBuffer and vertexAttribPointer, then calls
-            // to drawArrays or drawElements will generate an INVALID_OPERATION error.
-            ANGLE_VALIDATION_ERR(context, InvalidOperation(), VertexArrayNoBuffer);
-            return false;
-        }
-        else if (vao->hasEnabledNullPointerClientArray())
-        {
-            // This is an application error that would normally result in a crash, but we catch it
-            // and return an error
-            ANGLE_VALIDATION_ERR(context, InvalidOperation(), VertexArrayNoBufferPointer);
-            return false;
-        }
+        return false;
     }
 
     // If we're drawing zero vertices, we have enough data.
@@ -115,14 +123,11 @@ bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex, GLi
         return true;
     }
 
+    const VertexArray *vao     = state.getVertexArray();
     const auto &vertexAttribs  = vao->getVertexAttributes();
     const auto &vertexBindings = vao->getVertexBindings();
 
-    bool isGLES1 = context->getClientVersion() < Version(2, 0);
-
-    const AttributesMask &activeAttribs = ((isGLES1 ? context->getVertexArraysAttributeMask()
-                                                    : program->getActiveAttribLocationsMask()) &
-                                           vao->getEnabledAttributesMask() & ~clientAttribs);
+    const AttributesMask &activeAttribs = context->getStateCache().getActiveBufferedAttribsMask();
 
     for (size_t attributeIndex : activeAttribs)
     {
@@ -130,7 +135,7 @@ bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex, GLi
         ASSERT(attrib.enabled);
 
         const VertexBinding &binding = vertexBindings[attrib.bindingIndex];
-        ASSERT(isGLES1 || program->isAttribLocationActive(attributeIndex));
+        ASSERT(context->isGLES1() || program->isAttribLocationActive(attributeIndex));
 
         GLint maxVertexElement = maxVertex;
         GLuint divisor         = binding.getDivisor();
@@ -174,12 +179,6 @@ bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex, GLi
             ANGLE_VALIDATION_ERR(context, InvalidOperation(), InsufficientVertexBufferSize);
             return false;
         }
-    }
-
-    if (webglCompatibility && vao->hasTransformFeedbackBindingConflict(activeAttribs))
-    {
-        ANGLE_VALIDATION_ERR(context, InvalidOperation(), VertexBufferBoundForTransformFeedback);
-        return false;
     }
 
     return true;
@@ -1510,8 +1509,10 @@ bool ValidateBlitFramebufferParameters(Context *context,
 
     // ANGLE_multiview, Revision 1:
     // Calling BlitFramebuffer will result in an INVALID_FRAMEBUFFER_OPERATION error if the
-    // multi-view layout of the current draw framebuffer or read framebuffer is not NONE.
-    if (readFramebuffer->getMultiviewLayout() != GL_NONE)
+    // multi-view layout of the current draw framebuffer is not NONE, or if the multi-view layout of
+    // the current read framebuffer is FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE or the number of
+    // views in the current read framebuffer is more than one.
+    if (readFramebuffer->readDisallowedByMultiview())
     {
         context->handleError(InvalidFramebufferOperation()
                              << "Attempt to read from a multi-view framebuffer.");
@@ -2526,8 +2527,9 @@ bool ValidateCopyTexImageParametersBase(Context *context,
     // ANGLE_multiview spec, Revision 1:
     // Calling CopyTexSubImage3D, CopyTexImage2D, or CopyTexSubImage2D will result in an
     // INVALID_FRAMEBUFFER_OPERATION error if the multi-view layout of the current read framebuffer
-    // is not NONE.
-    if (source->getMultiviewLayout() != GL_NONE)
+    // is FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE or the number of views in the current read
+    // framebuffer is more than one.
+    if (readFramebuffer->readDisallowedByMultiview())
     {
         context->handleError(InvalidFramebufferOperation()
                              << "The active read framebuffer object has multiview attachments.");
@@ -2876,6 +2878,17 @@ bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
             {
                 return false;
             }
+
+            if (count > 0)
+            {
+                const VertexArray *vao = context->getGLState().getVertexArray();
+                if (vao->hasTransformFeedbackBindingConflict(context))
+                {
+                    ANGLE_VALIDATION_ERR(context, InvalidOperation(),
+                                         VertexBufferBoundForTransformFeedback);
+                    return false;
+                }
+            }
         }
     }
 
@@ -3138,20 +3151,10 @@ bool ValidateDrawElementsCommon(Context *context,
         }
     }
 
-    if (context->getExtensions().robustBufferAccessBehavior)
+    if (context->getExtensions().robustBufferAccessBehavior || count == 0)
     {
-        // Here we use maxVertex = 0 and vertexCount = 1 to avoid retrieving IndexRange when robust
-        // access is enabled.
-        if (!ValidateDrawAttribs(context, primcount, 0, 1))
-        {
-            return false;
-        }
-    }
-    else if (count == 0)
-    {
-        // ValidateDrawAttribs also does some extra validation that is independent of the vertex
-        // count.
-        if (!ValidateDrawAttribs(context, 0, 0, 0))
+        // Special checks are needed for client attribs. But we don't need to validate overflows.
+        if (!ValidateDrawClientAttribs(context))
         {
             return false;
         }
@@ -5711,8 +5714,9 @@ bool ValidateReadPixelsBase(Context *context,
 
     // ANGLE_multiview, Revision 1:
     // ReadPixels generates an INVALID_FRAMEBUFFER_OPERATION error if the multi-view layout of the
-    // current read framebuffer is not NONE.
-    if (readBuffer->getMultiviewLayout() != GL_NONE)
+    // current read framebuffer is FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE or the number of views
+    // in the current read framebuffer is more than one.
+    if (framebuffer->readDisallowedByMultiview())
     {
         context->handleError(InvalidFramebufferOperation()
                              << "Attempting to read from a multi-view framebuffer.");

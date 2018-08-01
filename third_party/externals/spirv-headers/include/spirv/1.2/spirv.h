@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2014-2017 The Khronos Group Inc.
+** Copyright (c) 2014-2018 The Khronos Group Inc.
 ** 
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and/or associated documentation files (the "Materials"),
@@ -51,11 +51,11 @@
 typedef unsigned int SpvId;
 
 #define SPV_VERSION 0x10200
-#define SPV_REVISION 1
+#define SPV_REVISION 2
 
 static const unsigned int SpvMagicNumber = 0x07230203;
 static const unsigned int SpvVersion = 0x00010200;
-static const unsigned int SpvRevision = 1;
+static const unsigned int SpvRevision = 2;
 static const unsigned int SpvOpCodeMask = 0xffff;
 static const unsigned int SpvWordCountShift = 16;
 
@@ -134,6 +134,7 @@ typedef enum SpvExecutionMode_ {
     SpvExecutionModeLocalSizeId = 38,
     SpvExecutionModeLocalSizeHintId = 39,
     SpvExecutionModePostDepthCoverage = 4446,
+    SpvExecutionModeStencilRefReplacingEXT = 5027,
     SpvExecutionModeMax = 0x7fffffff,
 } SpvExecutionMode;
 
@@ -396,6 +397,8 @@ typedef enum SpvDecoration_ {
     SpvDecorationPassthroughNV = 5250,
     SpvDecorationViewportRelativeNV = 5252,
     SpvDecorationSecondaryViewportRelativeNV = 5256,
+    SpvDecorationHlslCounterBufferGOOGLE = 5634,
+    SpvDecorationHlslSemanticGOOGLE = 5635,
     SpvDecorationMax = 0x7fffffff,
 } SpvDecoration;
 
@@ -458,6 +461,7 @@ typedef enum SpvBuiltIn_ {
     SpvBuiltInBaryCoordSmoothCentroidAMD = 4996,
     SpvBuiltInBaryCoordSmoothSampleAMD = 4997,
     SpvBuiltInBaryCoordPullModelAMD = 4998,
+    SpvBuiltInFragStencilRefEXT = 5014,
     SpvBuiltInViewportMaskNV = 5253,
     SpvBuiltInSecondaryPositionNV = 5257,
     SpvBuiltInSecondaryViewportMaskNV = 5258,
@@ -661,12 +665,19 @@ typedef enum SpvCapability_ {
     SpvCapabilityAtomicStorageOps = 4445,
     SpvCapabilitySampleMaskPostDepthCoverage = 4447,
     SpvCapabilityImageGatherBiasLodAMD = 5009,
+    SpvCapabilityFragmentMaskAMD = 5010,
+    SpvCapabilityStencilExportEXT = 5013,
+    SpvCapabilityImageReadWriteLodAMD = 5015,
     SpvCapabilitySampleMaskOverrideCoverageNV = 5249,
     SpvCapabilityGeometryShaderPassthroughNV = 5251,
+    SpvCapabilityShaderViewportIndexLayerEXT = 5254,
     SpvCapabilityShaderViewportIndexLayerNV = 5254,
     SpvCapabilityShaderViewportMaskNV = 5255,
     SpvCapabilityShaderStereoViewNV = 5259,
     SpvCapabilityPerViewAttributesNV = 5260,
+    SpvCapabilitySubgroupShuffleINTEL = 5568,
+    SpvCapabilitySubgroupBufferBlockIOINTEL = 5569,
+    SpvCapabilitySubgroupImageBlockIOINTEL = 5570,
     SpvCapabilityMax = 0x7fffffff,
 } SpvCapability;
 
@@ -991,6 +1002,18 @@ typedef enum SpvOp_ {
     SpvOpGroupFMaxNonUniformAMD = 5005,
     SpvOpGroupUMaxNonUniformAMD = 5006,
     SpvOpGroupSMaxNonUniformAMD = 5007,
+    SpvOpFragmentMaskFetchAMD = 5011,
+    SpvOpFragmentFetchAMD = 5012,
+    SpvOpSubgroupShuffleINTEL = 5571,
+    SpvOpSubgroupShuffleDownINTEL = 5572,
+    SpvOpSubgroupShuffleUpINTEL = 5573,
+    SpvOpSubgroupShuffleXorINTEL = 5574,
+    SpvOpSubgroupBlockReadINTEL = 5575,
+    SpvOpSubgroupBlockWriteINTEL = 5576,
+    SpvOpSubgroupImageBlockReadINTEL = 5577,
+    SpvOpSubgroupImageBlockWriteINTEL = 5578,
+    SpvOpDecorateStringGOOGLE = 5632,
+    SpvOpMemberDecorateStringGOOGLE = 5633,
     SpvOpMax = 0x7fffffff,
 } SpvOp;
 

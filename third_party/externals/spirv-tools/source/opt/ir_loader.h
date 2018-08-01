@@ -23,7 +23,7 @@
 #include "spirv-tools/libspirv.hpp"
 
 namespace spvtools {
-namespace ir {
+namespace opt {
 
 // Loader class for constructing SPIR-V in-memory IR representation. Methods in
 // this class are designed to work with the interface for spvBinaryParse() in
@@ -39,10 +39,12 @@ class IrLoader {
   // All internal messages will be communicated to the outside via the given
   // message |consumer|. This instance only keeps a reference to the |consumer|,
   // so the |consumer| should outlive this instance.
-  IrLoader(const MessageConsumer& consumer, Module* module);
+  IrLoader(const MessageConsumer& consumer, Module* m);
 
   // Sets the source name of the module.
   void SetSource(const std::string& src) { source_ = src; }
+
+  Module* module() const { return module_; }
 
   // Sets the fields in the module's header to the given parameters.
   void SetModuleHeader(uint32_t magic, uint32_t version, uint32_t generator,
@@ -76,7 +78,7 @@ class IrLoader {
   std::vector<Instruction> dbg_line_info_;
 };
 
-}  // namespace ir
+}  // namespace opt
 }  // namespace spvtools
 
 #endif  // LIBSPIRV_OPT_IR_LOADER_H_

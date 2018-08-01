@@ -20,6 +20,8 @@
 #include "unit_spirv.h"
 #include "val_fixtures.h"
 
+namespace spvtools {
+namespace val {
 namespace {
 
 using ::testing::HasSubstr;
@@ -29,10 +31,7 @@ using std::string;
 
 using ValidateTypeUnique = spvtest::ValidateBase<bool>;
 
-// TODO(atgoo@github) Error logging temporarily disabled because it's failing
-// vulkancts tests. See https://github.com/KhronosGroup/SPIRV-Tools/issues/559
-// const spv_result_t kDuplicateTypeError = SPV_ERROR_INVALID_DATA;
-const spv_result_t kDuplicateTypeError = SPV_SUCCESS;
+const spv_result_t kDuplicateTypeError = SPV_ERROR_INVALID_DATA;
 
 const string& GetHeader() {
   static const string header = R"(
@@ -94,8 +93,8 @@ OpFunctionEnd
 // Returns expected error string if |opcode| produces a duplicate type
 // declaration.
 string GetErrorString(SpvOp opcode) {
-  return "Duplicate non-aggregate type declarations are not allowed. Opcode: "
-      + std::to_string(opcode);
+  return "Duplicate non-aggregate type declarations are not allowed. Opcode: " +
+         std::string(spvOpcodeString(opcode));
 }
 
 TEST_F(ValidateTypeUnique, success) {
@@ -238,4 +237,35 @@ OpMemoryModel Physical32 OpenCL
               Not(HasSubstr(GetErrorString(SpvOpTypeVoid))));
 }
 
-}  // anonymous namespace
+TEST_F(ValidateTypeUnique, DuplicatePointerTypesNoExtension) {
+  string str = R"(
+OpCapability Shader
+OpCapability Linkage
+OpMemoryModel Logical GLSL450
+%u32 = OpTypeInt 32 0
+%ptr1 = OpTypePointer Input %u32
+%ptr2 = OpTypePointer Input %u32
+)";
+  CompileSuccessfully(str.c_str());
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+}
+
+TEST_F(ValidateTypeUnique, DuplicatePointerTypesWithExtension) {
+  string str = R"(
+OpCapability Shader
+OpCapability Linkage
+OpExtension "SPV_KHR_variable_pointers"
+OpMemoryModel Logical GLSL450
+%u32 = OpTypeInt 32 0
+%ptr1 = OpTypePointer Input %u32
+%ptr2 = OpTypePointer Input %u32
+)";
+  CompileSuccessfully(str.c_str());
+  ASSERT_EQ(SPV_SUCCESS, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              Not(HasSubstr(GetErrorString(SpvOpTypePointer))));
+}
+
+}  // namespace
+}  // namespace val
+}  // namespace spvtools

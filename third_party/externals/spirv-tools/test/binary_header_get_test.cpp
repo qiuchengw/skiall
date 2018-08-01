@@ -15,6 +15,7 @@
 #include "source/spirv_constant.h"
 #include "unit_spirv.h"
 
+namespace spvtools {
 namespace {
 
 class BinaryHeaderGet : public ::testing::Test {
@@ -50,7 +51,7 @@ TEST_F(BinaryHeaderGet, Default) {
   ASSERT_EQ(SPV_SUCCESS, spvBinaryHeaderGet(&const_bin, endian, &header));
 
   ASSERT_EQ(static_cast<uint32_t>(SpvMagicNumber), header.magic);
-  ASSERT_EQ(0x00010200u, header.version);
+  ASSERT_EQ(0x00010300u, header.version);
   ASSERT_EQ(static_cast<uint32_t>(SPV_GENERATOR_CODEPLAY), header.generator);
   ASSERT_EQ(1u, header.bound);
   ASSERT_EQ(0u, header.schema);
@@ -79,4 +80,5 @@ TEST_F(BinaryHeaderGet, TruncatedHeader) {
   }
 }
 
-}  // anonymous namespace
+}  // namespace
+}  // namespace spvtools

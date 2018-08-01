@@ -51,7 +51,12 @@ static const char **static_shaper_list;
 static
 void free_static_shaper_list (void)
 {
-  free (static_shaper_list);
+retry:
+  const char **shaper_list = (const char **) hb_atomic_ptr_get (&static_shaper_list);
+  if (!hb_atomic_ptr_cmpexch (&static_shaper_list, shaper_list, nullptr))
+    goto retry;
+
+  free (shaper_list);
 }
 #endif
 
@@ -76,7 +81,7 @@ retry:
     /* Not found; allocate one. */
     shaper_list = (const char **) calloc (1 + HB_SHAPERS_COUNT, sizeof (const char *));
     if (unlikely (!shaper_list)) {
-      static const char *nil_shaper_list[] = {NULL};
+      static const char *nil_shaper_list[] = {nullptr};
       return nil_shaper_list;
     }
 
@@ -84,9 +89,9 @@ retry:
     unsigned int i;
     for (i = 0; i < HB_SHAPERS_COUNT; i++)
       shaper_list[i] = shapers[i].name;
-    shaper_list[i] = NULL;
+    shaper_list[i] = nullptr;
 
-    if (!hb_atomic_ptr_cmpexch (&static_shaper_list, NULL, shaper_list)) {
+    if (!hb_atomic_ptr_cmpexch (&static_shaper_list, nullptr, shaper_list)) {
       free (shaper_list);
       goto retry;
     }
@@ -157,5 +162,5 @@ hb_shape (hb_font_t           *font,
 	  const hb_feature_t  *features,
 	  unsigned int         num_features)
 {
-  hb_shape_full (font, buffer, features, num_features, NULL);
+  hb_shape_full (font, buffer, features, num_features, nullptr);
 }

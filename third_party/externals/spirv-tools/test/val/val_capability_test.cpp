@@ -22,10 +22,13 @@
 #include <gmock/gmock.h>
 
 #include "source/assembly_grammar.h"
+#include "spirv_target_env.h"
 #include "test_fixture.h"
 #include "unit_spirv.h"
 #include "val_fixtures.h"
 
+namespace spvtools {
+namespace val {
 namespace {
 
 using spvtest::ScopedContext;
@@ -109,6 +112,8 @@ using ValidateCapabilityV11 = spvtest::ValidateBase<CapTestParameter>;
 using ValidateCapabilityVulkan10 = spvtest::ValidateBase<CapTestParameter>;
 // Always assembles using OpenGL 4.0.
 using ValidateCapabilityOpenGL40 = spvtest::ValidateBase<CapTestParameter>;
+// Always assembles using Vulkan 1.1.
+using ValidateCapabilityVulkan11 = spvtest::ValidateBase<CapTestParameter>;
 
 TEST_F(ValidateCapability, Default) {
   const char str[] = R"(
@@ -187,7 +192,26 @@ const vector<string>& AllCapabilities() {
     "MultiViewport",
     "SubgroupDispatch",
     "NamedBarrier",
-    "PipeStorage"};
+    "PipeStorage",
+    "GroupNonUniform",
+    "GroupNonUniformVote",
+    "GroupNonUniformArithmetic",
+    "GroupNonUniformBallot",
+    "GroupNonUniformShuffle",
+    "GroupNonUniformShuffleRelative",
+    "GroupNonUniformClustered",
+    "GroupNonUniformQuad",
+    "DrawParameters",
+    "StorageBuffer16BitAccess",
+    "StorageUniformBufferBlock16",
+    "UniformAndStorageBuffer16BitAccess",
+    "StorageUniform16",
+    "StoragePushConstant16",
+    "StorageInputOutput16",
+    "DeviceGroup",
+    "MultiView",
+    "VariablePointersStorageBuffer",
+    "VariablePointers"};
   return *r;
 }
 
@@ -294,6 +318,66 @@ const vector<string>& AllVulkan10Capabilities() {
   return *r;
 }
 
+const vector<string>& AllVulkan11Capabilities() {
+  static const auto r = new vector<string>{
+    "",
+    "Matrix",
+    "Shader",
+    "InputAttachment",
+    "Sampled1D",
+    "Image1D",
+    "SampledBuffer",
+    "ImageBuffer",
+    "ImageQuery",
+    "DerivativeControl",
+    "Geometry",
+    "Tessellation",
+    "Float64",
+    "Int64",
+    "Int16",
+    "TessellationPointSize",
+    "GeometryPointSize",
+    "ImageGatherExtended",
+    "StorageImageMultisample",
+    "UniformBufferArrayDynamicIndexing",
+    "SampledImageArrayDynamicIndexing",
+    "StorageBufferArrayDynamicIndexing",
+    "StorageImageArrayDynamicIndexing",
+    "ClipDistance",
+    "CullDistance",
+    "ImageCubeArray",
+    "SampleRateShading",
+    "SparseResidency",
+    "MinLod",
+    "SampledCubeArray",
+    "ImageMSArray",
+    "StorageImageExtendedFormats",
+    "InterpolationFunction",
+    "StorageImageReadWithoutFormat",
+    "StorageImageWriteWithoutFormat",
+    "MultiViewport",
+    "GroupNonUniform",
+    "GroupNonUniformVote",
+    "GroupNonUniformArithmetic",
+    "GroupNonUniformBallot",
+    "GroupNonUniformShuffle",
+    "GroupNonUniformShuffleRelative",
+    "GroupNonUniformClustered",
+    "GroupNonUniformQuad",
+    "DrawParameters",
+    "StorageBuffer16BitAccess",
+    "StorageUniformBufferBlock16",
+    "UniformAndStorageBuffer16BitAccess",
+    "StorageUniform16",
+    "StoragePushConstant16",
+    "StorageInputOutput16",
+    "DeviceGroup",
+    "MultiView",
+    "VariablePointersStorageBuffer",
+    "VariablePointers"};
+  return *r;
+}
+
 const vector<string>& MatrixDependencies() {
   static const auto r = new vector<string>{
   "Matrix",
@@ -328,7 +412,11 @@ const vector<string>& MatrixDependencies() {
   "GeometryStreams",
   "StorageImageReadWithoutFormat",
   "StorageImageWriteWithoutFormat",
-  "MultiViewport"};
+  "MultiViewport",
+  "DrawParameters",
+  "MultiView",
+  "VariablePointersStorageBuffer",
+  "VariablePointers"};
   return *r;
 }
 
@@ -365,7 +453,11 @@ const vector<string>& ShaderDependencies() {
   "GeometryStreams",
   "StorageImageReadWithoutFormat",
   "StorageImageWriteWithoutFormat",
-  "MultiViewport"};
+  "MultiViewport",
+  "DrawParameters",
+  "MultiView",
+  "VariablePointersStorageBuffer",
+  "VariablePointers"};
   return *r;
 }
 
@@ -409,10 +501,34 @@ const vector<string>& KernelDependencies() {
   "Pipes",
   "DeviceEnqueue",
   "LiteralSampler",
-  "Int8",
   "SubgroupDispatch",
   "NamedBarrier",
   "PipeStorage"};
+  return *r;
+}
+
+const vector<string>& KernelAndGroupNonUniformDependencies() {
+  static const auto r = new vector<string>{
+  "Kernel",
+  "Vector16",
+  "Float16Buffer",
+  "ImageBasic",
+  "ImageReadWrite",
+  "ImageMipmap",
+  "Pipes",
+  "DeviceEnqueue",
+  "LiteralSampler",
+  "SubgroupDispatch",
+  "NamedBarrier",
+  "PipeStorage",
+  "GroupNonUniform",
+  "GroupNonUniformVote",
+  "GroupNonUniformArithmetic",
+  "GroupNonUniformBallot",
+  "GroupNonUniformShuffle",
+  "GroupNonUniformShuffleRelative",
+  "GroupNonUniformClustered",
+  "GroupNonUniformQuad"};
   return *r;
 }
 
@@ -843,16 +959,16 @@ make_pair(string(kGLSL450MemoryModel) +
           vector<string>{"LiteralSampler"})
 )),);
 
-//TODO(umar): Sampler Filter Mode
-//TODO(umar): Image Format
-//TODO(umar): Image Channel Order
-//TODO(umar): Image Channel Data Type
-//TODO(umar): Image Operands
-//TODO(umar): FP Fast Math Mode
-//TODO(umar): FP Rounding Mode
-//TODO(umar): Linkage Type
-//TODO(umar): Access Qualifier
-//TODO(umar): Function Parameter Attribute
+// TODO(umar): Sampler Filter Mode
+// TODO(umar): Image Format
+// TODO(umar): Image Channel Order
+// TODO(umar): Image Channel Data Type
+// TODO(umar): Image Operands
+// TODO(umar): FP Fast Math Mode
+// TODO(umar): FP Rounding Mode
+// TODO(umar): Linkage Type
+// TODO(umar): Access Qualifier
+// TODO(umar): Function Parameter Attribute
 
 INSTANTIATE_TEST_CASE_P(Decoration, ValidateCapability,
                         Combine(
@@ -1035,11 +1151,6 @@ make_pair(string(kGLSL450MemoryModel) +
           KernelDependencies()),
 make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n"
-          "OpDecorate %intt FPRoundingMode RTE\n"
-          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          KernelDependencies()),
-make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n"
           "OpDecorate %intt FPFastMathMode Fast\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
           KernelDependencies()),
@@ -1213,7 +1324,7 @@ make_pair(string(kOpenCLMemoryModel) +
           "OpEntryPoint Kernel %func \"compute\" \n" +
           "OpDecorate %intt BuiltIn SampleMask\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          vector<string>{"SampleRateShading"}),
+          ShaderDependencies()),
 make_pair(string(kOpenCLMemoryModel) +
           "OpEntryPoint Kernel %func \"compute\" \n" +
           "OpDecorate %intt BuiltIn FragDepth\n"
@@ -1293,7 +1404,7 @@ make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" +
           "OpDecorate %intt BuiltIn SubgroupSize\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          KernelDependencies()),
+          KernelAndGroupNonUniformDependencies()),
 make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" +
           "OpDecorate %intt BuiltIn SubgroupMaxSize\n"
@@ -1303,7 +1414,7 @@ make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" +
           "OpDecorate %intt BuiltIn NumSubgroups\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          KernelDependencies()),
+          KernelAndGroupNonUniformDependencies()),
 make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" +
           "OpDecorate %intt BuiltIn NumEnqueuedSubgroups\n"
@@ -1313,12 +1424,12 @@ make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" +
           "OpDecorate %intt BuiltIn SubgroupId\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          KernelDependencies()),
+          KernelAndGroupNonUniformDependencies()),
 make_pair(string(kGLSL450MemoryModel) +
           "OpEntryPoint Vertex %func \"shader\" \n" +
           "OpDecorate %intt BuiltIn SubgroupLocalInvocationId\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
-          KernelDependencies()),
+          KernelAndGroupNonUniformDependencies()),
 make_pair(string(kOpenCLMemoryModel) +
           "OpEntryPoint Kernel %func \"compute\" \n" +
           "OpDecorate %intt BuiltIn VertexIndex\n"
@@ -1341,20 +1452,30 @@ INSTANTIATE_TEST_CASE_P(BuiltIn, ValidateCapabilityVulkan10,
                             ValuesIn(AllSpirV10Capabilities()),
                             Values(
 make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n" +
-          "OpDecorate %intt BuiltIn PointSize\n"
+          "OpEntryPoint Vertex %func \"shader\" \n"
+          "OpMemberDecorate %block 0 BuiltIn PointSize\n"
+          "%f32 = OpTypeFloat 32\n"
+          "%block = OpTypeStruct %f32\n"
           "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
           // Capabilities which should succeed.
           AllVulkan10Capabilities()),
 make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n" +
-          "OpDecorate %intt BuiltIn ClipDistance\n"
-          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
+          "OpEntryPoint Vertex %func \"shader\" \n"
+          "OpMemberDecorate %block 0 BuiltIn ClipDistance\n"
+          "%f32 = OpTypeFloat 32\n"
+          "%intt = OpTypeInt 32 0\n"
+          "%intt_4 = OpConstant %intt 4\n"
+          "%f32arr4 = OpTypeArray %f32 %intt_4\n"
+          "%block = OpTypeStruct %f32arr4\n" + string(kVoidFVoid),
           AllVulkan10Capabilities()),
 make_pair(string(kGLSL450MemoryModel) +
-          "OpEntryPoint Vertex %func \"shader\" \n" +
-          "OpDecorate %intt BuiltIn CullDistance\n"
-          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
+          "OpEntryPoint Vertex %func \"shader\" \n"
+          "OpMemberDecorate %block 0 BuiltIn CullDistance\n"
+          "%f32 = OpTypeFloat 32\n"
+          "%intt = OpTypeInt 32 0\n"
+          "%intt_4 = OpConstant %intt 4\n"
+          "%f32arr4 = OpTypeArray %f32 %intt_4\n"
+          "%block = OpTypeStruct %f32arr4\n" + string(kVoidFVoid),
           AllVulkan10Capabilities())
 )),);
 
@@ -1380,6 +1501,23 @@ make_pair(string(kGLSL450MemoryModel) +
           AllSpirV10Capabilities())
 )),);
 
+INSTANTIATE_TEST_CASE_P(Capabilities, ValidateCapabilityVulkan11,
+                        Combine(
+                            // All capabilities to try.
+                            ValuesIn(AllCapabilities()),
+                            Values(
+make_pair(string(kGLSL450MemoryModel) +
+          "OpEntryPoint Vertex %func \"shader\" \n" +
+          "OpDecorate %intt BuiltIn PointSize\n"
+          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
+          AllVulkan11Capabilities()),
+make_pair(string(kGLSL450MemoryModel) +
+          "OpEntryPoint Vertex %func \"shader\" \n" +
+          "OpDecorate %intt BuiltIn CullDistance\n"
+          "%intt = OpTypeInt 32 0\n" + string(kVoidFVoid),
+          AllVulkan11Capabilities())
+)),);
+
 // TODO(umar): Selection Control
 // TODO(umar): Loop Control
 // TODO(umar): Function Control
@@ -1402,6 +1540,10 @@ make_pair(string(kOpenCLMemoryModel) +
           MatrixDependencies()))),);
 // clang-format on
 
+#if 0
+// TODO(atgoo@github.com) The following test is not valid as it generates
+// invalid combinations of images, instructions and image operands.
+//
 // Creates assembly containing an OpImageFetch instruction using operands for
 // the image-operands part.  The assembly defines constants %fzero and %izero
 // that can be used for operands where IDs are required.  The assembly is valid,
@@ -1448,51 +1590,106 @@ INSTANTIATE_TEST_CASE_P(
                          vector<string>{"MinLod"}),
                make_pair(ImageOperandsTemplate("Lod|Sample %fzero %izero"),
                          AllCapabilities()))), );
+#endif
 
 // TODO(umar): Instruction capability checks
 
-// True if capability exists in env.
+spv_result_t spvCoreOperandTableNameLookup(spv_target_env env,
+                                           const spv_operand_table table,
+                                           const spv_operand_type_t type,
+                                           const char* name,
+                                           const size_t nameLength) {
+  if (!table) return SPV_ERROR_INVALID_TABLE;
+  if (!name) return SPV_ERROR_INVALID_POINTER;
+
+  for (uint64_t typeIndex = 0; typeIndex < table->count; ++typeIndex) {
+    const auto& group = table->types[typeIndex];
+    if (type != group.type) continue;
+    for (uint64_t index = 0; index < group.count; ++index) {
+      const auto& entry = group.entries[index];
+      // Check for min version only.
+      if (spvVersionForTargetEnv(env) >= entry.minVersion &&
+          nameLength == strlen(entry.name) &&
+          !strncmp(entry.name, name, nameLength)) {
+        return SPV_SUCCESS;
+      }
+    }
+  }
+
+  return SPV_ERROR_INVALID_LOOKUP;
+}
+
+// True if capability exists in core spec of env.
 bool Exists(const std::string& capability, spv_target_env env) {
-  spv_operand_desc dummy;
+  ScopedContext sc(env);
   return SPV_SUCCESS ==
-         libspirv::AssemblyGrammar(ScopedContext(env).context)
-             .lookupOperand(SPV_OPERAND_TYPE_CAPABILITY, capability.c_str(),
-                            capability.size(), &dummy);
+         spvCoreOperandTableNameLookup(env, sc.context->operand_table,
+                                       SPV_OPERAND_TYPE_CAPABILITY,
+                                       capability.c_str(), capability.size());
 }
 
 TEST_P(ValidateCapability, Capability) {
   const string capability = Capability(GetParam());
-  spv_target_env env =
-      (capability.empty() || Exists(capability, SPV_ENV_UNIVERSAL_1_0))
-          ? SPV_ENV_UNIVERSAL_1_0
-          : SPV_ENV_UNIVERSAL_1_1;
+  spv_target_env env = SPV_ENV_UNIVERSAL_1_0;
+  if (!capability.empty()) {
+    if (Exists(capability, SPV_ENV_UNIVERSAL_1_0))
+      env = SPV_ENV_UNIVERSAL_1_0;
+    else if (Exists(capability, SPV_ENV_UNIVERSAL_1_1))
+      env = SPV_ENV_UNIVERSAL_1_1;
+    else if (Exists(capability, SPV_ENV_UNIVERSAL_1_2))
+      env = SPV_ENV_UNIVERSAL_1_2;
+    else
+      env = SPV_ENV_UNIVERSAL_1_3;
+  }
   const string test_code = MakeAssembly(GetParam());
   CompileSuccessfully(test_code, env);
-  ASSERT_EQ(ExpectedResult(GetParam()), ValidateInstructions(env)) << test_code;
+  ASSERT_EQ(ExpectedResult(GetParam()), ValidateInstructions(env))
+      << "target env: " << spvTargetEnvDescription(env) << "\ntest code:\n"
+      << test_code;
 }
 
 TEST_P(ValidateCapabilityV11, Capability) {
-  const string test_code = MakeAssembly(GetParam());
-  CompileSuccessfully(test_code, SPV_ENV_UNIVERSAL_1_1);
-  ASSERT_EQ(ExpectedResult(GetParam()),
-            ValidateInstructions(SPV_ENV_UNIVERSAL_1_1))
-      << test_code;
+  const string capability = Capability(GetParam());
+  if (Exists(capability, SPV_ENV_UNIVERSAL_1_1)) {
+    const string test_code = MakeAssembly(GetParam());
+    CompileSuccessfully(test_code, SPV_ENV_UNIVERSAL_1_1);
+    ASSERT_EQ(ExpectedResult(GetParam()),
+              ValidateInstructions(SPV_ENV_UNIVERSAL_1_1))
+        << test_code;
+  }
 }
 
 TEST_P(ValidateCapabilityVulkan10, Capability) {
-  const string test_code = MakeAssembly(GetParam());
-  CompileSuccessfully(test_code, SPV_ENV_VULKAN_1_0);
-  ASSERT_EQ(ExpectedResult(GetParam()),
-            ValidateInstructions(SPV_ENV_VULKAN_1_0))
-      << test_code;
+  const string capability = Capability(GetParam());
+  if (Exists(capability, SPV_ENV_VULKAN_1_0)) {
+    const string test_code = MakeAssembly(GetParam());
+    CompileSuccessfully(test_code, SPV_ENV_VULKAN_1_0);
+    ASSERT_EQ(ExpectedResult(GetParam()),
+              ValidateInstructions(SPV_ENV_VULKAN_1_0))
+        << test_code;
+  }
+}
+
+TEST_P(ValidateCapabilityVulkan11, Capability) {
+  const string capability = Capability(GetParam());
+  if (Exists(capability, SPV_ENV_VULKAN_1_1)) {
+    const string test_code = MakeAssembly(GetParam());
+    CompileSuccessfully(test_code, SPV_ENV_VULKAN_1_1);
+    ASSERT_EQ(ExpectedResult(GetParam()),
+              ValidateInstructions(SPV_ENV_VULKAN_1_1))
+        << test_code;
+  }
 }
 
 TEST_P(ValidateCapabilityOpenGL40, Capability) {
-  const string test_code = MakeAssembly(GetParam());
-  CompileSuccessfully(test_code, SPV_ENV_OPENGL_4_0);
-  ASSERT_EQ(ExpectedResult(GetParam()),
-            ValidateInstructions(SPV_ENV_OPENGL_4_0))
-      << test_code;
+  const string capability = Capability(GetParam());
+  if (Exists(capability, SPV_ENV_OPENGL_4_0)) {
+    const string test_code = MakeAssembly(GetParam());
+    CompileSuccessfully(test_code, SPV_ENV_OPENGL_4_0);
+    ASSERT_EQ(ExpectedResult(GetParam()),
+              ValidateInstructions(SPV_ENV_OPENGL_4_0))
+        << test_code;
+  }
 }
 
 TEST_F(ValidateCapability, SemanticsIdIsAnIdNotALiteral) {
@@ -1586,7 +1783,7 @@ OpMemoryModel Logical GLSL450
   EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
             ValidateInstructions(SPV_ENV_VULKAN_1_0));
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Capability value 5 is not allowed by Vulkan 1.0"));
+              HasSubstr("Capability Linkage is not allowed by Vulkan 1.0"));
 }
 
 TEST_F(ValidateCapability, Vulkan10EnabledByExtension) {
@@ -1596,8 +1793,9 @@ OpCapability DrawParameters
 OpExtension "SPV_KHR_shader_draw_parameters"
 OpMemoryModel Logical GLSL450
 OpEntryPoint Vertex %func "shader"
-OpDecorate %intt BuiltIn PointSize
-%intt = OpTypeInt 32 0
+OpMemberDecorate %block 0 BuiltIn PointSize
+%f32 = OpTypeFloat 32
+%block = OpTypeStruct %f32
 )" + string(kVoidFVoid);
 
   CompileSuccessfully(spirv, SPV_ENV_VULKAN_1_0);
@@ -1617,8 +1815,486 @@ OpDecorate %intt BuiltIn PointSize
   CompileSuccessfully(spirv, SPV_ENV_VULKAN_1_0);
   EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
             ValidateInstructions(SPV_ENV_VULKAN_1_0));
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Capability value 4427 is not allowed by Vulkan 1.0"));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("Capability DrawParameters is not allowed by Vulkan 1.0"));
 }
 
-}  // namespace anonymous
+TEST_F(ValidateCapability, NonOpenCL12FullCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Pipes
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_1_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_1_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("Capability Pipes is not allowed by OpenCL 1.2 Full Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL12FullEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability ImageBasic
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_1_2);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_1_2));
+}
+
+TEST_F(ValidateCapability, OpenCL12FullNotEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_1_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_1_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Capability Sampled1D is not allowed by OpenCL 1.2 Full Profile"));
+}
+
+TEST_F(ValidateCapability, NonOpenCL12EmbeddedCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Int64
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_1_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_1_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Capability Int64 is not allowed by OpenCL 1.2 Embedded Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL12EmbeddedEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability ImageBasic
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_1_2);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_1_2));
+}
+
+TEST_F(ValidateCapability, OpenCL12EmbeddedNotEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_1_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_1_2));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Capability Sampled1D is not allowed by OpenCL 1.2 "
+                        "Embedded Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL20FullCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Pipes
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_0);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_2_0));
+}
+
+TEST_F(ValidateCapability, NonOpenCL20FullCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Matrix
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_0);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_2_0));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Capability Matrix is not allowed by OpenCL 2.0/2.1 Full Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL20FullEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability ImageBasic
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_0);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_2_0));
+}
+
+TEST_F(ValidateCapability, OpenCL20FullNotEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_0);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_2_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Capability Sampled1D is not allowed by OpenCL 2.0/2.1 "
+                        "Full Profile"));
+}
+
+TEST_F(ValidateCapability, NonOpenCL20EmbeddedCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Int64
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_2_0);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_2_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Capability Int64 is not allowed by OpenCL 2.0/2.1 "
+                        "Embedded Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL20EmbeddedEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability ImageBasic
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_2_0);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_2_0));
+}
+
+TEST_F(ValidateCapability, OpenCL20EmbeddedNotEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_2_0);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_2_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Capability Sampled1D is not allowed by OpenCL 2.0/2.1 "
+                        "Embedded Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL22FullCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability PipeStorage
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_2);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_2_2));
+}
+
+TEST_F(ValidateCapability, NonOpenCL22FullCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Matrix
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_2_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("Capability Matrix is not allowed by OpenCL 2.2 Full Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL22FullEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability ImageBasic
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_2);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_2_2));
+}
+
+TEST_F(ValidateCapability, OpenCL22FullNotEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_2_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_2_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Capability Sampled1D is not allowed by OpenCL 2.2 Full Profile"));
+}
+
+TEST_F(ValidateCapability, NonOpenCL22EmbeddedCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Int64
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)";
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_2_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_2_2));
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr(
+          "Capability Int64 is not allowed by OpenCL 2.2 Embedded Profile"));
+}
+
+TEST_F(ValidateCapability, OpenCL22EmbeddedEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability ImageBasic
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_2_2);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_2_2));
+}
+
+TEST_F(ValidateCapability, OpenCL22EmbeddedNotEnabledByCapability) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability Linkage
+OpCapability Sampled1D
+OpMemoryModel Physical64 OpenCL
+%u32    = OpTypeInt 32 0
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_OPENCL_EMBEDDED_2_2);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_OPENCL_EMBEDDED_2_2));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Capability Sampled1D is not allowed by OpenCL 2.2 "
+                        "Embedded Profile"));
+}
+
+// Three tests to check enablement of an enum (a decoration) which is not
+// in core, and is directly enabled by a capability, but not directly enabled
+// by an extension.  See https://github.com/KhronosGroup/SPIRV-Tools/issues/1596
+
+TEST_F(ValidateCapability, DecorationFromExtensionMissingEnabledByCapability) {
+  // Decoration ViewportRelativeNV is enabled by ShaderViewportMaskNV, which in
+  // turn is enabled by SPV_NV_viewport_array2.
+  const std::string spirv = R"(
+OpCapability Shader
+OpMemoryModel Logical Simple
+OpDecorate %void ViewportRelativeNV
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_0);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Operand 2 of Decorate requires one of these "
+                        "capabilities: ShaderViewportMaskNV"));
+}
+
+TEST_F(ValidateCapability, CapabilityEnabledByMissingExtension) {
+  // Capability ShaderViewportMaskNV is enabled by SPV_NV_viewport_array2.
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability ShaderViewportMaskNV
+OpMemoryModel Logical Simple
+)" + string(kVoidFVoid);
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_0);
+  EXPECT_EQ(SPV_ERROR_MISSING_EXTENSION,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("operand 5255 requires one of these extensions: "
+                        "SPV_NV_viewport_array2"));
+}
+
+TEST_F(ValidateCapability,
+       DecorationEnabledByCapabilityEnabledByPresentExtension) {
+  // Decoration ViewportRelativeNV is enabled by ShaderViewportMaskNV, which in
+  // turn is enabled by SPV_NV_viewport_array2.
+  const std::string spirv = R"(
+OpCapability Shader
+OpCapability Linkage
+OpCapability ShaderViewportMaskNV
+OpExtension "SPV_NV_viewport_array2"
+OpMemoryModel Logical Simple
+OpDecorate %void ViewportRelativeNV
+%void = OpTypeVoid
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_0);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_0))
+      << getDiagnosticString();
+}
+
+// Three tests to check enablement of an instruction  which is not in core, and
+// is directly enabled by a capability, but not directly enabled by an
+// extension. See https://github.com/KhronosGroup/SPIRV-Tools/issues/1624
+// Instruction OpSubgroupShuffleINTEL is enabled by SubgroupShuffleINTEL, which
+// in turn is enabled by SPV_INTEL_subgroups.
+
+TEST_F(ValidateCapability, InstructionFromExtensionMissingEnabledByCapability) {
+  // Decoration ViewportRelativeNV is enabled by ShaderViewportMaskNV, which in
+  // turn is enabled by SPV_NV_viewport_array2.
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+; OpCapability SubgroupShuffleINTEL
+OpExtension "SPV_INTEL_subgroups"
+OpMemoryModel Physical32 OpenCL
+OpEntryPoint Kernel %main "main"
+%void = OpTypeVoid
+%uint = OpTypeInt 32 0
+%voidfn = OpTypeFunction %void
+%zero = OpConstant %uint 0
+%main = OpFunction %void None %voidfn
+%entry = OpLabel
+%foo = OpSubgroupShuffleINTEL %uint %zero %zero
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_0);
+  EXPECT_EQ(SPV_ERROR_INVALID_CAPABILITY,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Opcode SubgroupShuffleINTEL requires one of these "
+                        "capabilities: SubgroupShuffleINTEL"));
+}
+
+TEST_F(ValidateCapability,
+       InstructionEnablingCapabilityEnabledByMissingExtension) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability SubgroupShuffleINTEL
+; OpExtension "SPV_INTEL_subgroups"
+OpMemoryModel Physical32 OpenCL
+OpEntryPoint Kernel %main "main"
+%void = OpTypeVoid
+%uint = OpTypeInt 32 0
+%voidfn = OpTypeFunction %void
+%zero = OpConstant %uint 0
+%main = OpFunction %void None %voidfn
+%entry = OpLabel
+%foo = OpSubgroupShuffleINTEL %uint %zero %zero
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_0);
+  EXPECT_EQ(SPV_ERROR_MISSING_EXTENSION,
+            ValidateInstructions(SPV_ENV_UNIVERSAL_1_0));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("operand 5568 requires one of these extensions: "
+                        "SPV_INTEL_subgroups"));
+}
+
+TEST_F(ValidateCapability,
+       InstructionEnabledByCapabilityEnabledByPresentExtension) {
+  const std::string spirv = R"(
+OpCapability Kernel
+OpCapability Addresses
+OpCapability SubgroupShuffleINTEL
+OpExtension "SPV_INTEL_subgroups"
+OpMemoryModel Physical32 OpenCL
+OpEntryPoint Kernel %main "main"
+%void = OpTypeVoid
+%uint = OpTypeInt 32 0
+%voidfn = OpTypeFunction %void
+%zero = OpConstant %uint 0
+%main = OpFunction %void None %voidfn
+%entry = OpLabel
+%foo = OpSubgroupShuffleINTEL %uint %zero %zero
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_0);
+  EXPECT_EQ(SPV_SUCCESS, ValidateInstructions(SPV_ENV_UNIVERSAL_1_0))
+      << getDiagnosticString();
+}
+
+}  // namespace
+}  // namespace val
+}  // namespace spvtools
