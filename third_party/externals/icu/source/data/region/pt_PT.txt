@@ -29,7 +29,7 @@ pt_PT{
         EE{"Estónia"}
         EH{"Sara Ocidental"}
         EZ{"Zona Euro"}
-        FK{"Ilhas Malvinas"}
+        FK{"Ilhas Falkland"}
         FO{"Ilhas Faroé"}
         GL{"Gronelândia"}
         GU{"Guame"}
@@ -44,7 +44,7 @@ pt_PT{
         LV{"Letónia"}
         MC{"Mónaco"}
         MG{"Madagáscar"}
-        MK{"Macedónia (ARJM)"}
+        MK{"Macedónia"}
         MS{"Monserrate"}
         MU{"Maurícia"}
         MW{"Maláui"}
@@ -79,6 +79,8 @@ pt_PT{
         CG{"República do Congo"}
         CI{"Costa do Marfim"}
         CZ{"República Checa"}
+        FK{"Ilhas Malvinas"}
+        MK{"Macedónia (ARJM)"}
     }
     Version{"2.1.41.97"}
 }

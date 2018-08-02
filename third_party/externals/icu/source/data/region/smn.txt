@@ -73,7 +73,7 @@ smn{
         ET{"Etiopia"}
         FI{"Suomâ"}
         FJ{"Fidži"}
-        FK{"Falklandsuolluuh (Malvinassuolluuh)"}
+        FK{"Falklandsuolluuh"}
         FM{"Mikronesia littoväldi"}
         FO{"Färsuolluuh"}
         FR{"Ranska"}
@@ -96,7 +96,7 @@ smn{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hongkong – Kiina e.h.k."}
         HM{"Heard já McDonaldsuolluuh"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -146,11 +146,10 @@ smn{
         MF{"St. Martin"}
         MG{"Madagaskar"}
         MH{"Marshallsuolluuh"}
-        MK{"OJT Makedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macao"}
+        MO{"Macao - – Kiina e.h.k."}
         MP{"Tave-Marianeh"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -256,11 +255,15 @@ smn{
     }
     Countries%short{
         GB{"OK"}
+        HK{"Hong Kong"}
+        MO{"Macao"}
         US{"USA"}
     }
     Countries%variant{
         CD{"Kongo demokraattisâš täsiväldi"}
         CG{"Kongo täsiväldi"}
+        FK{"Falklandsuolluuh (Malvinassuolluuh)"}
+        MK{"OJT Makedonia"}
     }
     Version{"2.1.38.69"}
 }

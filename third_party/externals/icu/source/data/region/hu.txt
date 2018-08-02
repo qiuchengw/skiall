@@ -110,7 +110,7 @@ hu{
         EZ{"Eurózóna"}
         FI{"Finnország"}
         FJ{"Fidzsi"}
-        FK{"Falkland-szigetek (Malvin-szigetek)"}
+        FK{"Falkland-szigetek"}
         FM{"Mikronézia"}
         FO{"Feröer-szigetek"}
         FR{"Franciaország"}
@@ -133,7 +133,7 @@ hu{
         GU{"Guam"}
         GW{"Bissau-Guinea"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong KKT"}
         HM{"Heard-sziget és McDonald-szigetek"}
         HN{"Honduras"}
         HR{"Horvátország"}
@@ -183,11 +183,11 @@ hu{
         MF{"Saint Martin"}
         MG{"Madagaszkár"}
         MH{"Marshall-szigetek"}
-        MK{"Macedónia (MVJK)"}
+        MK{"Macedónia"}
         ML{"Mali"}
         MM{"Mianmar (Burma)"}
         MN{"Mongólia"}
-        MO{"Makaó"}
+        MO{"Makaó KKT"}
         MP{"Északi Mariana-szigetek"}
         MQ{"Martinique"}
         MR{"Mauritánia"}
@@ -222,7 +222,7 @@ hu{
         PM{"Saint-Pierre és Miquelon"}
         PN{"Pitcairn-szigetek"}
         PR{"Puerto Rico"}
-        PS{"Palesztina"}
+        PS{"Palesztin Terület"}
         PT{"Portugália"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -297,6 +297,9 @@ hu{
     }
     Countries%short{
         GB{"UK"}
+        HK{"Hongkong"}
+        MO{"Makaó"}
+        PS{"Palesztina"}
         UN{"ENSZ"}
         US{"USA"}
     }
@@ -305,6 +308,8 @@ hu{
         CG{"Kongó (Köztársaság)"}
         CI{"CI"}
         CZ{"Cseh Köztársaság"}
+        FK{"Falkland-szigetek (Malvin-szigetek)"}
+        MK{"Macedónia (MVJK)"}
         TL{"Timor-Leste"}
     }
     Version{"2.1.41.97"}

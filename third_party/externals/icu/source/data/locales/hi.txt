@@ -418,16 +418,16 @@ hi{
         }
         gregorian{
             AmPmMarkers{
-                "am",
-                "pm",
+                "पूर्वाह्न",
+                "अपराह्न",
             }
             AmPmMarkersAbbr{
                 "पूर्वाह्न",
                 "अपराह्न",
             }
             AmPmMarkersNarrow{
-                "am",
-                "pm",
+                "पू",
+                "अ",
             }
             DateTimePatterns{
                 "h:mm:ss a zzzz",
@@ -595,14 +595,14 @@ hi{
                     narrow{
                         afternoon1{"अपराह्न"}
                         evening1{"शाम"}
-                        midnight{"m"}
+                        midnight{"मध्यरात्रि"}
                         morning1{"सुबह"}
                         night1{"रात"}
                     }
                     wide{
                         afternoon1{"अपराह्न"}
                         evening1{"शाम"}
-                        midnight{"midnight"}
+                        midnight{"मध्यरात्रि"}
                         morning1{"सुबह"}
                         night1{"रात"}
                     }

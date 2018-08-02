@@ -110,7 +110,7 @@ az{
         EZ{"Avrozona"}
         FI{"Finlandiya"}
         FJ{"Fici"}
-        FK{"Folklend adaları (Malvin adaları)"}
+        FK{"Folklend adaları"}
         FM{"Mikroneziya"}
         FO{"Farer adaları"}
         FR{"Fransa"}
@@ -133,7 +133,7 @@ az{
         GU{"Quam"}
         GW{"Qvineya-Bisau"}
         GY{"Qayana"}
-        HK{"Honq Konq"}
+        HK{"Honq Konq Xüsusi İnzibati Ərazi Çin"}
         HM{"Herd və Makdonald adaları"}
         HN{"Honduras"}
         HR{"Xorvatiya"}
@@ -183,11 +183,11 @@ az{
         MF{"Sent Martin"}
         MG{"Madaqaskar"}
         MH{"Marşal adaları"}
-        MK{"Makedoniya (KYRM)"}
+        MK{"Makedoniya"}
         ML{"Mali"}
         MM{"Myanma"}
         MN{"Monqolustan"}
-        MO{"Makao"}
+        MO{"Makao Xüsusi İnzibati Ərazi Çin"}
         MP{"Şimali Marian adaları"}
         MQ{"Martinik"}
         MR{"Mavritaniya"}
@@ -222,7 +222,7 @@ az{
         PM{"Müqəddəs Pyer və Mikelon"}
         PN{"Pitkern adaları"}
         PR{"Puerto Riko"}
-        PS{"Fələstin"}
+        PS{"Fələstin Əraziləri"}
         PT{"Portuqaliya"}
         PW{"Palau"}
         PY{"Paraqvay"}
@@ -297,6 +297,9 @@ az{
     }
     Countries%short{
         GB{"BK"}
+        HK{"Honq Konq"}
+        MO{"Makao"}
+        PS{"Fələstin"}
         UN{"BMT"}
         US{"ABŞ"}
     }
@@ -305,6 +308,8 @@ az{
         CG{"Konqo (Respublika)"}
         CI{"Fil Dişi Sahili"}
         CZ{"Çex Respublikası"}
+        FK{"Folklend adaları (Malvin adaları)"}
+        MK{"Makedoniya (KYRM)"}
         TL{"Doğu Timor"}
     }
     Version{"2.1.41.97"}

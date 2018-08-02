@@ -106,7 +106,7 @@ mt{
         EU{"Unjoni Ewropea"}
         FI{"il-Finlandja"}
         FJ{"Fiġi"}
-        FK{"Il-Gżejjer Falkland (il-Gżejjer Malvinas)"}
+        FK{"il-Gżejjer Falkland"}
         FM{"Mikroneżja"}
         FO{"il-Gżejjer Faeroe"}
         FR{"Franza"}
@@ -129,7 +129,10 @@ mt{
         GU{"Guam"}
         GW{"il-Guinea-Bissau"}
         GY{"il-Guyana"}
-        HK{"Hong Kong"}
+        HK{
+            "ir-Reġjun Amministrattiv Speċjali ta’ Hong Kong tar-Repubblika tal-Poplu"
+            " taċ-Ċina"
+        }
         HM{"il-Gżejjer Heard u l-Gżejjer McDonald"}
         HN{"il-Honduras"}
         HR{"il-Kroazja"}
@@ -183,7 +186,10 @@ mt{
         ML{"il-Mali"}
         MM{"il-Myanmar/Burma"}
         MN{"il-Mongolja"}
-        MO{"il-Macao"}
+        MO{
+            "ir-Reġjun Amministrattiv Speċjali tal-Macao tar-Repubblika tal-Poplu taċ"
+            "-Ċina"
+        }
         MP{"Ġżejjer Mariana tat-Tramuntana"}
         MQ{"Martinique"}
         MR{"il-Mauritania"}
@@ -218,7 +224,7 @@ mt{
         PM{"Saint Pierre u Miquelon"}
         PN{"Gżejjer Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"il-Palestina"}
+        PS{"it-Territorji Palestinjani"}
         PT{"il-Portugall"}
         PW{"Palau"}
         PY{"il-Paragwaj"}
@@ -291,11 +297,15 @@ mt{
     }
     Countries%short{
         GB{"UK"}
+        HK{"Hong Kong"}
+        MO{"il-Macao"}
+        PS{"il-Palestina"}
         US{"US"}
     }
     Countries%variant{
         CD{"Kongo (RDK)"}
         CG{"ir-Repubblika tal-Kongo"}
+        FK{"Il-Gżejjer Falkland (il-Gżejjer Malvinas)"}
         TL{"Timor tal-Lvant"}
     }
     Version{"2.1.41.97"}

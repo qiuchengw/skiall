@@ -110,7 +110,7 @@ ga{
         EZ{"Limistéar an euro"}
         FI{"an Fhionlainn"}
         FJ{"Fidsí"}
-        FK{"Oileáin Fháclainne (Islas Malvinas)"}
+        FK{"Oileáin Fháclainne"}
         FM{"an Mhicrinéis"}
         FO{"Oileáin Fharó"}
         FR{"an Fhrainc"}
@@ -133,7 +133,7 @@ ga{
         GU{"Guam"}
         GW{"Guine Bissau"}
         GY{"an Ghuáin"}
-        HK{"Hong Cong"}
+        HK{"S.R.R. na Síne Hong Cong"}
         HM{"Oileán Heard agus Oileáin McDonald"}
         HN{"Hondúras"}
         HR{"an Chróit"}
@@ -183,11 +183,11 @@ ga{
         MF{"Saint-Martin"}
         MG{"Madagascar"}
         MH{"Oileáin Marshall"}
-        MK{"an Mhacadóin (PIIM)"}
+        MK{"an Mhacadóin"}
         ML{"Mailí"}
         MM{"Maenmar (Burma)"}
         MN{"an Mhongóil"}
-        MO{"Macao"}
+        MO{"S.R.R. na Síne Macao"}
         MP{"na hOileáin Mháirianacha Thuaidh"}
         MQ{"Martinique"}
         MR{"an Mháratáin"}
@@ -222,7 +222,7 @@ ga{
         PM{"San Pierre agus Miquelon"}
         PN{"Oileáin Pitcairn"}
         PR{"Pórtó Ríce"}
-        PS{"an Phalaistín"}
+        PS{"na Críocha Palaistíneacha"}
         PT{"an Phortaingéil"}
         PW{"Oileáin Palau"}
         PY{"Paragua"}
@@ -297,6 +297,9 @@ ga{
     }
     Countries%short{
         GB{"RA"}
+        HK{"Hong Cong"}
+        MO{"Macao"}
+        PS{"an Phalaistín"}
         UN{"NA"}
         US{"SAM"}
     }
@@ -305,6 +308,8 @@ ga{
         CG{"an Congó (Poblacht)"}
         CI{"Côte d’Ivoire"}
         CZ{"Poblacht na Seice"}
+        FK{"Oileáin Fháclainne (Islas Malvinas)"}
+        MK{"an Mhacadóin (PIIM)"}
     }
     Version{"2.1.41.97"}
 }

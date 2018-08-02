@@ -1,5 +1,7 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
- * Copyright (c) 1997-2013, International Business Machines
+ * Copyright (c) 1997-2016, International Business Machines
  * Corporation and others. All Rights Reserved.
  ********************************************************************/
  
@@ -10,6 +12,7 @@
 #include "unicode/simpletz.h"
 #include "unicode/smpdtfmt.h"
 #include "unicode/strenum.h"
+#include "unicode/gregocal.h"
 #include "tzregts.h"
 #include "calregts.h"
 #include "cmemory.h"
@@ -17,8 +20,6 @@
 // *****************************************************************************
 // class TimeZoneRegressionTest
 // *****************************************************************************
-/* length of an array */
-#define ARRAY_LENGTH(array) (sizeof(array)/sizeof(array[0]))
 #define CASE(id,test) case id: name = #test; if (exec) { logln(#test "---"); logln((UnicodeString)""); test(); } break
 
 void 
@@ -46,6 +47,7 @@ TimeZoneRegressionTest::runIndexedTest( int32_t index, UBool exec, const char* &
         CASE(16, TestJDK12API);
         CASE(17, Test4176686);
         CASE(18, Test4184229);
+        CASE(19, TestNegativeDaylightSaving);
         default: name = ""; break;
     }
 }
@@ -413,7 +415,7 @@ TimeZoneRegressionTest::checkCalendar314(GregorianCalendar *testCal, TimeZone *t
     } 
 
     UnicodeString output;
-    FieldPosition pos(0);
+    FieldPosition pos(FieldPosition::DONT_CARE);
     output = testTZ->getID(output) + " " + sdf->format(testDate, output, pos) +
         " Offset(" + tzOffsetFloat + ")" +
         " RawOffset(" + tzRawOffsetFloat + ")" + 
@@ -709,10 +711,10 @@ TimeZoneRegressionTest::Test4154525()
     int32_t DATA [] = {
         1, GOOD,
         0, BAD,
-        -1, BAD,
+        -1, GOOD,   // #13566 updates SimpleTimeZone to support negative DST saving amount
         60*60*1000, GOOD,
-        INT32_MIN, BAD,
-        // Integer.MAX_VALUE, ?, // no upper limit on DST savings at this time
+        INT32_MAX, GOOD,    // no upper limit on DST savings at this time
+        INT32_MIN, GOOD     // no lower limit as well
     };
 
     UErrorCode status = U_ZERO_ERROR;
@@ -799,7 +801,7 @@ TimeZoneRegressionTest::Test4154650()
         BAD,  GOOD_ERA, GOOD_YEAR, GOOD_MONTH, GOOD_DAY, GOOD_DOW, 24*3600000,
     };
 
-    int32_t dataLen = (int32_t)(sizeof(DATA) / sizeof(DATA[0]));
+    int32_t dataLen = UPRV_LENGTHOF(DATA);
 
     UErrorCode status = U_ZERO_ERROR;
     TimeZone *tz = TimeZone::createDefault();
@@ -892,7 +894,7 @@ TimeZoneRegressionTest::Test4162593()
         UnicodeString temp;
         logln(tz->getID(temp) + ":");
         for (int32_t i = 0; i < 4; ++i) {
-            FieldPosition pos(0);
+            FieldPosition pos(FieldPosition::DONT_CARE);
             zone[i].remove();
             zone[i] = fmt->format(d+ i*ONE_HOUR, zone[i], pos);
             logln(UnicodeString("") + i + ": " + d + " / " + zone[i]);
@@ -971,7 +973,7 @@ void TimeZoneRegressionTest::Test4176686() {
         "DateFormat.format(dst)/dst zone", fmt2->format(dst, l), "GMT+2:15",
     };
 
-    for (int32_t idx=0; idx<(int32_t)ARRAY_LENGTH(DATA); idx+=3) {
+    for (int32_t idx=0; idx<UPRV_LENGTHOF(DATA); idx+=3) {
         if (DATA[idx+1]!=(DATA[idx+2])) {
             errln("FAIL: " + DATA[idx] + " -> " + DATA[idx+1] + ", exp " + DATA[idx+2]);
         }
@@ -1205,5 +1207,62 @@ void TimeZoneRegressionTest::Test4184229() {
     }
     delete zone;
 }
+
+void TimeZoneRegressionTest::TestNegativeDaylightSaving() {
+    UErrorCode status = U_ZERO_ERROR;
+    int32_t stdOff = 1 * 60*60*1000;    // Standard offset UTC+1
+    int save = -1 * 60*60*1000;     // DST saving amount -1 hour
+    SimpleTimeZone stzDublin(stdOff, "Dublin-2018",
+                                UCAL_OCTOBER, -1, -UCAL_SUNDAY, 2*60*60*1000,
+                                UCAL_MARCH, -1, -UCAL_SUNDAY, 1*60*60*1000,
+                                save, status);
+    failure(status, "SimpleTimeZone constructor");
+
+    if (save != stzDublin.getDSTSavings()) {
+        errln((UnicodeString)"FAIL: DST saving is not " + save);
+    }
+
+    GregorianCalendar cal(* TimeZone::getGMT(), status);
+    failure(status, "GregorianCalendar constructor");
+
+    UDate testDate;
+    int32_t rawOffset;
+    int32_t dstOffset;
+
+    cal.set(2018, UCAL_JANUARY, 15, 0, 0, 0);
+    testDate = cal.getTime(status);
+    failure(status, "calendar getTime() - Jan 15");
+
+    if (!stzDublin.inDaylightTime(testDate, status)) {
+        errln("FAIL: The test date (Jan 15) must be in DST.");
+    }
+    failure(status, "inDaylightTime() - Jan 15");
+
+    stzDublin.getOffset(testDate, FALSE, rawOffset, dstOffset, status);
+    failure(status, "getOffset() - Jan 15");
+    if (rawOffset != stdOff || dstOffset != save) {
+        errln((UnicodeString)"FAIL: Expected [stdoff=" + stdOff + ",save=" + save
+            + "] on the test date (Jan 15), actual[stdoff=" + rawOffset
+            + ",save=" + dstOffset + "]");
+    }
+
+    cal.set(2018, UCAL_JULY, 15, 0, 0, 0);
+    testDate = cal.getTime(status);
+    failure(status, "calendar getTime() - Jul 15");
+
+    if (stzDublin.inDaylightTime(testDate, status)) {
+        errln("FAIL: The test date (Jul 15) must be in DST.");
+    }
+    failure(status, "inDaylightTime() - Jul 15");
+
+    stzDublin.getOffset(testDate, FALSE, rawOffset, dstOffset, status);
+    failure(status, "getOffset() - Jul 15");
+    if (rawOffset != stdOff || dstOffset != 0) {
+        errln((UnicodeString)"FAIL: Expected [stdoff=" + stdOff + ",save=" + 0
+            + "] on the test date (Jul 15), actual[stdoff=" + rawOffset
+            + ",save=" + dstOffset + "]");
+    }
+}
+
 
 #endif /* #if !UCONFIG_NO_FORMATTING */

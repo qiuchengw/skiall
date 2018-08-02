@@ -15,7 +15,7 @@ using namespace icu::number::impl;
 
 namespace {
 
-alignas(DecimalFormatProperties) char kRawDefaultProperties[sizeof(DecimalFormatProperties)];
+char kRawDefaultProperties[sizeof(DecimalFormatProperties)];
 
 icu::UInitOnce gDefaultPropertiesInitOnce = U_INITONCE_INITIALIZER;
 

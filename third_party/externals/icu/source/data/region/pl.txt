@@ -110,7 +110,7 @@ pl{
         EZ{"strefa euro"}
         FI{"Finlandia"}
         FJ{"Fidżi"}
-        FK{"Falklandy (Malwiny)"}
+        FK{"Falklandy"}
         FM{"Mikronezja"}
         FO{"Wyspy Owcze"}
         FR{"Francja"}
@@ -133,7 +133,7 @@ pl{
         GU{"Guam"}
         GW{"Gwinea Bissau"}
         GY{"Gujana"}
-        HK{"Hongkong"}
+        HK{"SRA Hongkong (Chiny)"}
         HM{"Wyspy Heard i McDonalda"}
         HN{"Honduras"}
         HR{"Chorwacja"}
@@ -183,11 +183,11 @@ pl{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Wyspy Marshalla"}
-        MK{"Była Jugosłowiańska Republika Macedonii"}
+        MK{"Macedonia"}
         ML{"Mali"}
         MM{"Mjanma (Birma)"}
         MN{"Mongolia"}
-        MO{"Makau"}
+        MO{"SRA Makau (Chiny)"}
         MP{"Mariany Północne"}
         MQ{"Martynika"}
         MR{"Mauretania"}
@@ -222,7 +222,7 @@ pl{
         PM{"Saint-Pierre i Miquelon"}
         PN{"Pitcairn"}
         PR{"Portoryko"}
-        PS{"Palestyna"}
+        PS{"Terytoria Palestyńskie"}
         PT{"Portugalia"}
         PW{"Palau"}
         PY{"Paragwaj"}
@@ -297,6 +297,9 @@ pl{
     }
     Countries%short{
         GB{"Wlk. Bryt."}
+        HK{"Hongkong"}
+        MO{"Makau"}
+        PS{"Palestyna"}
         UN{"ONZ"}
         US{"USA"}
     }
@@ -305,6 +308,8 @@ pl{
         CG{"Republika Konga"}
         CI{"Wybrzeże Kości Słoniowej"}
         CZ{"Republika Czeska"}
+        FK{"Falklandy (Malwiny)"}
+        MK{"Była Jugosłowiańska Republika Macedonii"}
         TL{"Timor-Leste"}
     }
     Version{"2.1.41.97"}

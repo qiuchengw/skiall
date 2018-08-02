@@ -41,7 +41,8 @@ ar{
                 timeSeparator{":"}
             }
         }
-        default{"latn"}
+        default{"arab"}
+        default_latn{"latn"}
         latn{
             miscPatterns{
                 atLeast{"+{0}"}

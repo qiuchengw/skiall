@@ -106,7 +106,7 @@ ee{
         EU{"Europa Wɔɖeka nutome"}
         FI{"Finland nutome"}
         FJ{"Fidzi nutome"}
-        FK{"Falkland ƒudomekpowo (Islas Malvinas) nutome"}
+        FK{"Falkland ƒudomekpowo nutome"}
         FM{"Mikronesia nutome"}
         FO{"Faroe ƒudomekpowo nutome"}
         FR{"France nutome"}
@@ -129,7 +129,7 @@ ee{
         GU{"Guam nutome"}
         GW{"Gini-Bisao nutome"}
         GY{"Guyanadu"}
-        HK{"Hɔng Kɔng nutome"}
+        HK{"Hɔng Kɔng SAR Tsaina nutome"}
         HM{"Heard kple Mcdonald ƒudomekpowo nutome"}
         HN{"Hondurasdu"}
         HR{"Kroatsia nutome"}
@@ -179,11 +179,11 @@ ee{
         MF{"Saint Martin nutome"}
         MG{"Madagaska nutome"}
         MH{"Marshal ƒudomekpowo nutome"}
-        MK{"Makedonia (FYROM) nutome"}
+        MK{"Makedonia nutome"}
         ML{"Mali nutome"}
         MM{"Myanmar (Burma) nutome"}
         MN{"Mongolia nutome"}
-        MO{"Macau nutome"}
+        MO{"Macau SAR Tsaina nutome"}
         MP{"Dziehe Marina ƒudomekpowo nutome"}
         MQ{"Martiniki nutome"}
         MR{"Mauritania nutome"}
@@ -286,10 +286,16 @@ ee{
         ZW{"Zimbabwe nutome"}
         ZZ{"nutome manya"}
     }
+    Countries%short{
+        HK{"Hɔng Kɔng nutome"}
+        MO{"Macau nutome"}
+    }
     Countries%variant{
         CD{"Kongo demokratik repɔblik nutome"}
         CG{"Kongo repɔblik nutome"}
         CI{"Ivory Kost nutome"}
+        FK{"Falkland ƒudomekpowo (Islas Malvinas) nutome"}
+        MK{"Makedonia (FYROM) nutome"}
         TL{"Ɣedzeƒe Timɔ nutome"}
     }
     Version{"2.1.41.97"}

@@ -807,11 +807,11 @@ foundBest:
 static const int32_t KHMER_LOOKAHEAD = 3;
 
 // Will not combine a non-word with a preceding dictionary word longer than this
-static const int32_t KHMER_ROOT_COMBINE_THRESHOLD = 10;
+static const int32_t KHMER_ROOT_COMBINE_THRESHOLD = 3;
 
 // Will not combine a non-word that shares at least this much prefix with a
 // dictionary word, with a preceding word
-static const int32_t KHMER_PREFIX_COMBINE_THRESHOLD = 5;
+static const int32_t KHMER_PREFIX_COMBINE_THRESHOLD = 3;
 
 // Minimum word size
 static const int32_t KHMER_MIN_WORD = 2;

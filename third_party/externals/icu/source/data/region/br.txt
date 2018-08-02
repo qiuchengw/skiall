@@ -110,7 +110,7 @@ br{
         EZ{"takad an euro"}
         FI{"Finland"}
         FJ{"Fidji"}
-        FK{"Inizi Falkland (Inizi Maloù)"}
+        FK{"Inizi Falkland"}
         FM{"Mikronezia"}
         FO{"Inizi Faero"}
         FR{"Frañs"}
@@ -133,7 +133,7 @@ br{
         GU{"Guam"}
         GW{"Ginea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong"}
+        HK{"Hong Kong RMD Sina"}
         HM{"Inizi Heard ha McDonald"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -183,11 +183,11 @@ br{
         MF{"Saint Martin"}
         MG{"Madagaskar"}
         MH{"Inizi Marshall"}
-        MK{"Makedonia (RYKM)"}
+        MK{"Makedonia"}
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"Macau"}
+        MO{"Macau RMD Sina"}
         MP{"Inizi Mariana an Norzh"}
         MQ{"Martinik"}
         MR{"Maouritania"}
@@ -222,7 +222,7 @@ br{
         PM{"Sant-Pêr-ha-Mikelon"}
         PN{"Enez Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Tiriadoù Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -297,6 +297,9 @@ br{
     }
     Countries%short{
         GB{"RU"}
+        HK{"Hong Kong"}
+        MO{"Macau"}
+        PS{"Palestina"}
         US{"SU"}
     }
     Countries%variant{
@@ -304,6 +307,8 @@ br{
         CG{"Kongo (Republik)"}
         CI{"Aod Olifant"}
         CZ{"Republik Tchek"}
+        FK{"Inizi Falkland (Inizi Maloù)"}
+        MK{"Makedonia (RYKM)"}
         TL{"Timor ar Reter"}
     }
     Version{"2.1.41.97"}

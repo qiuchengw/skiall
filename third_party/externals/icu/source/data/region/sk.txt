@@ -110,7 +110,7 @@ sk{
         EZ{"eurozóna"}
         FI{"Fínsko"}
         FJ{"Fidži"}
-        FK{"Falklandy (Malvíny)"}
+        FK{"Falklandy"}
         FM{"Mikronézia"}
         FO{"Faerské ostrovy"}
         FR{"Francúzsko"}
@@ -133,7 +133,7 @@ sk{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong – OAO Číny"}
         HM{"Heardov ostrov a Macdonaldove ostrovy"}
         HN{"Honduras"}
         HR{"Chorvátsko"}
@@ -183,11 +183,11 @@ sk{
         MF{"Svätý Martin (fr.)"}
         MG{"Madagaskar"}
         MH{"Marshallove ostrovy"}
-        MK{"Macedónsko (BJRM)"}
+        MK{"Macedónsko"}
         ML{"Mali"}
         MM{"Mjanmarsko"}
         MN{"Mongolsko"}
-        MO{"Macao"}
+        MO{"Macao – OAO Číny"}
         MP{"Severné Mariány"}
         MQ{"Martinik"}
         MR{"Mauritánia"}
@@ -222,7 +222,7 @@ sk{
         PM{"Saint Pierre a Miquelon"}
         PN{"Pitcairnove ostrovy"}
         PR{"Portoriko"}
-        PS{"Palestínska samospráva"}
+        PS{"Palestínske územia"}
         PT{"Portugalsko"}
         PW{"Palau"}
         PY{"Paraguaj"}
@@ -297,11 +297,16 @@ sk{
     }
     Countries%short{
         GB{"UK"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestínska samospráva"}
         UN{"OSN"}
         US{"USA"}
     }
     Countries%variant{
         CZ{"Česká republika"}
+        FK{"Falklandy (Malvíny)"}
+        MK{"Macedónsko (BJRM)"}
     }
     Version{"2.1.41.97"}
 }

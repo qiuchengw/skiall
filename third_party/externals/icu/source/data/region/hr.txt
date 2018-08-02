@@ -110,7 +110,7 @@ hr{
         EZ{"eurozona"}
         FI{"Finska"}
         FJ{"Fidži"}
-        FK{"Falklandski otoci (Malvini)"}
+        FK{"Falklandski otoci"}
         FM{"Mikronezija"}
         FO{"Farski otoci"}
         FR{"Francuska"}
@@ -133,7 +133,7 @@ hr{
         GU{"Guam"}
         GW{"Gvineja Bisau"}
         GY{"Gvajana"}
-        HK{"Hong Kong"}
+        HK{"PUP Hong Kong Kina"}
         HM{"Otoci Heard i McDonald"}
         HN{"Honduras"}
         HR{"Hrvatska"}
@@ -183,11 +183,11 @@ hr{
         MF{"Saint Martin"}
         MG{"Madagaskar"}
         MH{"Maršalovi Otoci"}
-        MK{"Makedonija (BJRM)"}
+        MK{"Makedonija"}
         ML{"Mali"}
         MM{"Mjanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Makao"}
+        MO{"PUP Makao Kina"}
         MP{"Sjevernomarijanski otoci"}
         MQ{"Martinique"}
         MR{"Mauretanija"}
@@ -222,7 +222,7 @@ hr{
         PM{"Sveti Petar i Mikelon"}
         PN{"Otoci Pitcairn"}
         PR{"Portoriko"}
-        PS{"Palestina"}
+        PS{"Palestinsko područje"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -297,6 +297,9 @@ hr{
     }
     Countries%short{
         GB{"UK"}
+        HK{"Hong Kong"}
+        MO{"Makao"}
+        PS{"Palestina"}
         UN{"UN"}
         US{"SAD"}
     }
@@ -305,6 +308,8 @@ hr{
         CG{"Kongo (RK)"}
         CI{"Bjelokosna Obala"}
         CZ{"Češka Republika"}
+        FK{"Falklandski otoci (Malvini)"}
+        MK{"Makedonija (BJRM)"}
         TL{"Istočni Timor"}
     }
     Version{"2.1.41.97"}

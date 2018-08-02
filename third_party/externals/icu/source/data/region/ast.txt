@@ -109,7 +109,7 @@ ast{
         EZ{"Eurozona"}
         FI{"Finlandia"}
         FJ{"Islles Fixi"}
-        FK{"Islles Malvines (Falkland Islands)"}
+        FK{"Falkland Islands"}
         FM{"Micronesia"}
         FO{"Islles Feroe"}
         FR{"Francia"}
@@ -132,7 +132,7 @@ ast{
         GU{"Guam"}
         GW{"Guinea-Bisáu"}
         GY{"Guyana"}
-        HK{"Ḥong Kong"}
+        HK{"ARE China de Ḥong Kong"}
         HM{"Islles Heard y McDonald"}
         HN{"Hondures"}
         HR{"Croacia"}
@@ -182,11 +182,11 @@ ast{
         MF{"Saint Martin"}
         MG{"Madagascar"}
         MH{"Islles Marshall"}
-        MK{"Macedonia (ARYDM)"}
+        MK{"Macedonia"}
         ML{"Malí"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"Macáu"}
+        MO{"ARE China de Macáu"}
         MP{"Islles Marianes del Norte"}
         MQ{"La Martinica"}
         MR{"Mauritania"}
@@ -221,7 +221,7 @@ ast{
         PM{"Saint Pierre y Miquelon"}
         PN{"Islles Pitcairn"}
         PR{"Puertu Ricu"}
-        PS{"Palestina"}
+        PS{"Territorios Palestinos"}
         PT{"Portugal"}
         PW{"Paláu"}
         PY{"Paraguái"}
@@ -296,6 +296,9 @@ ast{
     }
     Countries%short{
         GB{"RX"}
+        HK{"Ḥong Kong"}
+        MO{"Macáu"}
+        PS{"Palestina"}
         US{"EE.XX."}
     }
     Countries%variant{
@@ -303,6 +306,8 @@ ast{
         CG{"Congu (República del)"}
         CI{"Costa del Marfil"}
         CZ{"República Checa"}
+        FK{"Islles Malvines (Falkland Islands)"}
+        MK{"Macedonia (ARYDM)"}
         TL{"Timor Este"}
     }
     Version{"2.1.41.97"}

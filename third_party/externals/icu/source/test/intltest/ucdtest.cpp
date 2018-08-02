@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * Copyright (c) 1997-2016, International Business Machines Corporation and
  * others. All Rights Reserved.
@@ -60,6 +62,8 @@ void UnicodeTest::runIndexedTest( int32_t index, UBool exec, const char* &name, 
     TESTCASE_AUTO(TestScriptMetadata);
     TESTCASE_AUTO(TestBidiPairedBracketType);
     TESTCASE_AUTO(TestEmojiProperties);
+    TESTCASE_AUTO(TestDefaultScriptExtensions);
+    TESTCASE_AUTO(TestInvalidCodePointFolding);
     TESTCASE_AUTO_END;
 }
 
@@ -418,13 +422,17 @@ namespace {
  */
 UScriptCode getCharScript(UScriptCode script) {
     switch(script) {
+    case USCRIPT_HAN_WITH_BOPOMOFO:
     case USCRIPT_SIMPLIFIED_HAN:
     case USCRIPT_TRADITIONAL_HAN:
         return USCRIPT_HAN;
     case USCRIPT_JAPANESE:
         return USCRIPT_HIRAGANA;
+    case USCRIPT_JAMO:
     case USCRIPT_KOREAN:
         return USCRIPT_HANGUL;
+    case USCRIPT_SYMBOLS_EMOJI:
+        return USCRIPT_SYMBOLS;
     default:
         return script;
     }
@@ -441,7 +449,7 @@ void UnicodeTest::TestScriptMetadata() {
     for(int32_t sci = 0; sci < USCRIPT_CODE_LIMIT; ++sci) {
         UScriptCode sc = (UScriptCode)sci;
         // Run the test with -v to see which script has failures:
-        // .../intltest$ make && ./intltest utility/UnicodeTest/TestScriptMetadata -v | grep -C 3 FAIL
+        // .../intltest$ make && ./intltest utility/UnicodeTest/TestScriptMetadata -v | grep -C 6 FAIL
         logln(uscript_getShortName(sc));
         UScriptUsage usage = uscript_getUsage(sc);
         UnicodeString sample = uscript_getSampleUnicodeString(sc);
@@ -521,4 +529,42 @@ void UnicodeTest::TestEmojiProperties() {
                u_hasBinaryProperty(0x1F3FF, UCHAR_EMOJI_MODIFIER));
     assertTrue("happy person is Emoji_Modifier_Base",
                u_hasBinaryProperty(0x1F64B, UCHAR_EMOJI_MODIFIER_BASE));
+    assertTrue("asterisk is Emoji_Component",
+               u_hasBinaryProperty(0x2A, UCHAR_EMOJI_COMPONENT));
+    assertTrue("copyright is Extended_Pictographic",
+               u_hasBinaryProperty(0xA9, UCHAR_EXTENDED_PICTOGRAPHIC));
+}
+
+void UnicodeTest::TestDefaultScriptExtensions() {
+    // Block 3000..303F CJK Symbols and Punctuation defaults to scx=Bopo Hang Hani Hira Kana Yiii
+    // but some of its characters revert to scx=<script> which is usually Common.
+    IcuTestErrorCode errorCode(*this, "TestDefaultScriptExtensions()");
+    UScriptCode scx[20];
+    scx[0] = USCRIPT_INVALID_CODE;
+    assertEquals("U+3000 num scx", 1,  // IDEOGRAPHIC SPACE
+                 uscript_getScriptExtensions(0x3000, scx, UPRV_LENGTHOF(scx), errorCode));
+    assertEquals("U+3000 num scx[0]", USCRIPT_COMMON, scx[0]);
+    scx[0] = USCRIPT_INVALID_CODE;
+    assertEquals("U+3012 num scx", 1,  // POSTAL MARK
+                 uscript_getScriptExtensions(0x3012, scx, UPRV_LENGTHOF(scx), errorCode));
+    assertEquals("U+3012 num scx[0]", USCRIPT_COMMON, scx[0]);
+}
+
+void UnicodeTest::TestInvalidCodePointFolding(void) {
+    // Test behavior when an invalid code point is passed to u_foldCase
+    static const UChar32 invalidCodePoints[] = {
+            0xD800, // lead surrogate
+            0xDFFF, // trail surrogate
+            0xFDD0, // noncharacter
+            0xFFFF, // noncharacter
+            0x110000, // out of range
+            -1 // negative
+    };
+    for (int32_t i=0; i<UPRV_LENGTHOF(invalidCodePoints); ++i) {
+        UChar32 cp = invalidCodePoints[i];
+        assertEquals("Invalid code points should be echoed back",
+                cp, u_foldCase(cp, U_FOLD_CASE_DEFAULT));
+        assertEquals("Invalid code points should be echoed back",
+                cp, u_foldCase(cp, U_FOLD_CASE_EXCLUDE_SPECIAL_I));
+    }
 }

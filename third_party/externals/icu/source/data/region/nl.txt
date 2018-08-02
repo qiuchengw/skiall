@@ -110,7 +110,7 @@ nl{
         EZ{"eurozone"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"Falklandeilanden (Islas Malvinas)"}
+        FK{"Falklandeilanden"}
         FM{"Micronesia"}
         FO{"Faeröer"}
         FR{"Frankrijk"}
@@ -133,7 +133,7 @@ nl{
         GU{"Guam"}
         GW{"Guinee-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong SAR van China"}
         HM{"Heard en McDonaldeilanden"}
         HN{"Honduras"}
         HR{"Kroatië"}
@@ -183,11 +183,11 @@ nl{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Marshalleilanden"}
-        MK{"Macedonië (FYROM)"}
+        MK{"Macedonië"}
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongolië"}
-        MO{"Macau"}
+        MO{"Macau SAR van China"}
         MP{"Noordelijke Marianen"}
         MQ{"Martinique"}
         MR{"Mauritanië"}
@@ -222,7 +222,7 @@ nl{
         PM{"Saint-Pierre en Miquelon"}
         PN{"Pitcairneilanden"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Palestijnse gebieden"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -297,6 +297,9 @@ nl{
     }
     Countries%short{
         GB{"VK"}
+        HK{"Hongkong"}
+        MO{"Macau"}
+        PS{"Palestina"}
         UN{"VN"}
         US{"VS"}
     }
@@ -305,6 +308,8 @@ nl{
         CG{"Congo (Republiek)"}
         CI{"Republiek Ivoorkust"}
         CZ{"Tsjechische Republiek"}
+        FK{"Falklandeilanden (Islas Malvinas)"}
+        MK{"Macedonië (FYROM)"}
         TL{"Democratische Republiek Oost-Timor"}
     }
     Version{"2.1.41.97"}

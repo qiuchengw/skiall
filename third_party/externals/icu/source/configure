@@ -716,6 +716,7 @@ CFLAGS
 CC
 ENABLE_RELEASE
 ENABLE_DEBUG
+INSTALL_ICU_CONFIG
 CPPFLAGS
 host_os
 host_vendor
@@ -775,6 +776,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_icu_config
 enable_debug
 enable_release
 with_cross_build
@@ -1443,6 +1445,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-icu-config     install icu-config
   --enable-debug          build debug libraries and enable the U_DEBUG define default=no
   --enable-release        build release libraries default=yes
   --enable-strict         compile with strict compiler options default=yes
@@ -2796,6 +2799,21 @@ UCONFIG_CPPFLAGS=""
 # UCONFIG_CFLAGS: contains a copy of anything that needs to be set by end users
 # such as -std
 UCONFIG_CFLAGS=""
+
+# Check whether to install icu-config
+# Check whether --enable-icu-config was given.
+if test "${enable_icu_config+set}" = set; then :
+  enableval=$enable_icu_config; case "${enableval}" in
+            yes) enable_icu_config=true ;;
+            no) enable_icu_config=false ;;
+            *) as_fn_error $? "bad value '${enableval}' for --enable-icu-config" "$LINENO" 5 ;;
+        esac
+else
+  enable_icu_config=true
+fi
+
+INSTALL_ICU_CONFIG=$enable_icu_config
+
 
 # Check whether to build debug libraries
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build debug libraries" >&5
@@ -7859,7 +7877,7 @@ echo "CXXFLAGS=$CXXFLAGS"
 
 
 # output the Makefiles
-ac_config_files="$ac_config_files icudefs.mk Makefile data/pkgdataMakefile config/Makefile.inc config/icu.pc config/pkgdataMakefile data/Makefile stubdata/Makefile common/Makefile i18n/Makefile io/Makefile extra/Makefile extra/uconv/Makefile extra/uconv/pkgdataMakefile extra/scrptrun/Makefile tools/Makefile tools/ctestfw/Makefile tools/toolutil/Makefile tools/makeconv/Makefile tools/genrb/Makefile tools/genccode/Makefile tools/gencmn/Makefile tools/gencnval/Makefile tools/gendict/Makefile tools/gentest/Makefile tools/gennorm2/Makefile tools/genbrk/Makefile tools/gensprep/Makefile tools/icuinfo/Makefile tools/icupkg/Makefile tools/icuswap/Makefile tools/pkgdata/Makefile tools/tzcode/Makefile tools/gencfu/Makefile tools/escapesrc/Makefile samples/Makefile samples/date/Makefile samples/cal/Makefile samples/layout/Makefile"
+ac_config_files="$ac_config_files icudefs.mk Makefile data/pkgdataMakefile config/Makefile.inc config/icu.pc config/pkgdataMakefile data/Makefile stubdata/Makefile common/Makefile i18n/Makefile layoutex/Makefile io/Makefile extra/Makefile extra/uconv/Makefile extra/uconv/pkgdataMakefile extra/scrptrun/Makefile tools/Makefile tools/ctestfw/Makefile tools/toolutil/Makefile tools/makeconv/Makefile tools/genrb/Makefile tools/genccode/Makefile tools/gencmn/Makefile tools/gencnval/Makefile tools/gendict/Makefile tools/gentest/Makefile tools/gennorm2/Makefile tools/genbrk/Makefile tools/gensprep/Makefile tools/icuinfo/Makefile tools/icupkg/Makefile tools/icuswap/Makefile tools/pkgdata/Makefile tools/tzcode/Makefile tools/gencfu/Makefile tools/escapesrc/Makefile test/Makefile test/compat/Makefile test/testdata/Makefile test/testdata/pkgdataMakefile test/hdrtst/Makefile test/intltest/Makefile test/cintltst/Makefile test/iotest/Makefile test/letest/Makefile test/perf/Makefile test/perf/collationperf/Makefile test/perf/collperf/Makefile test/perf/collperf2/Makefile test/perf/dicttrieperf/Makefile test/perf/ubrkperf/Makefile test/perf/charperf/Makefile test/perf/convperf/Makefile test/perf/normperf/Makefile test/perf/DateFmtPerf/Makefile test/perf/howExpensiveIs/Makefile test/perf/strsrchperf/Makefile test/perf/unisetperf/Makefile test/perf/usetperf/Makefile test/perf/ustrperf/Makefile test/perf/utfperf/Makefile test/perf/utrie2perf/Makefile test/perf/leperf/Makefile samples/Makefile samples/date/Makefile samples/cal/Makefile samples/layout/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

@@ -1056,7 +1056,6 @@ UBool DecimalFormat::areSignificantDigitsUsed() const {
 }
 
 void DecimalFormat::setSignificantDigitsUsed(UBool useSignificantDigits) {
-    if (areSignificantDigitsUsed()) return;
     // These are the default values from the old implementation.
     int32_t minSig = useSignificantDigits ? 1 : -1;
     int32_t maxSig = useSignificantDigits ? 6 : -1;

@@ -108,7 +108,7 @@ ksh{
         EU{"de Europähjesche Unijon"}
         FI{"Finnland"}
         FJ{"de Fidschi-Endelle"}
-        FK{"de malleviinesche Enselle"}
+        FK{"de Falkland-Enselle"}
         FM{"Mikroneesije"}
         FO{"de Färrör-Enselle"}
         FR{"Frankrisch"}
@@ -181,7 +181,7 @@ ksh{
         MF{"de Zint-Määtes-Ensel"}
         MG{"Maddajaska"}
         MH{"de Machschall-Enselle"}
-        MK{"de vörmaals ens jugoßlaawesch jewääse Republik Mazedoonije"}
+        MK{"Mazedoonije"}
         ML{"Maali"}
         MM{"Birma"}
         MN{"Mongjolei"}
@@ -294,12 +294,16 @@ ksh{
     }
     Countries%short{
         GB{"Jruußbrettannije"}
+        HK{"Hongkong"}
+        MO{"Makau"}
         US{"USA"}
     }
     Countries%variant{
         CD{"de Demmokraatesche Republik Konggo"}
         CG{"de Republik Konggo"}
         CI{"de Älfebeijnköß"}
+        FK{"de malleviinesche Enselle"}
+        MK{"de vörmaals ens jugoßlaawesch jewääse Republik Mazedoonije"}
     }
     Version{"2.1.41.97"}
 }

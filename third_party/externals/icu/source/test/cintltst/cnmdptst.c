@@ -1,6 +1,8 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2014, International Business Machines Corporation
+ * Copyright (c) 1997-2016, International Business Machines Corporation
  * and others. All Rights Reserved.
  ********************************************************************/
 /*******************************************************************************
@@ -25,6 +27,7 @@
 #include "unicode/uloc.h"
 #include "unicode/unum.h"
 #include "unicode/ustring.h"
+#include "unicode/putil.h"
 #include "cintltst.h"
 #include "cnmdptst.h"
 #include "cmemory.h"
@@ -66,11 +69,11 @@ static void TestPatterns(void)
     UChar *str=NULL;
     UErrorCode status = U_ZERO_ERROR;
     const char* pat[]    = { "#.#", "#.", ".#", "#" };
-    const char* newpat[] = { "#0.#", "#0.", "#.0", "#" };
+    const char* newpat[] = { "0.#", "0.", "#.0", "0" };
     const char* num[]    = { "0",   "0.", ".0", "0" };
 
     log_verbose("\nTesting different format patterns\n");
-    pat_length = sizeof(pat) / sizeof(pat[0]);
+    pat_length = UPRV_LENGTHOF(pat);
     for (i=0; i < pat_length; ++i)
     {
         status = U_ZERO_ERROR;
@@ -243,9 +246,9 @@ static void TestExponential(void)
     };
 
 
-    pat_length = sizeof(pat) / sizeof(pat[0]);
-    val_length = sizeof(val) / sizeof(val[0]);
-    lval_length = sizeof(lval) / sizeof(lval[0]);
+    pat_length = UPRV_LENGTHOF(pat);
+    val_length = UPRV_LENGTHOF(val);
+    lval_length = UPRV_LENGTHOF(lval);
     ival = 0;
     ilval = 0;
     for (p=0; p < pat_length; ++p)
@@ -470,8 +473,8 @@ static void TestCurrencyPreEuro(void)
     };
 
     const char* result[]={
-        "\\u20A7\\u00A02", "2\\u00A0F",            "IEP1.50",                      "1,50\\u00A0mk",   "2\\u00A0F",         "ITL\\u00A02",
-        "1$50\\u00A0\\u200B", "\\u00F6S\\u00A01,50",  "1,50\\u00A0\\u0394\\u03C1\\u03C7", "2\\u00A0\\u20A7", "1,50\\u00A0FB",     "IEP1.50",
+        "\\u20A7\\u00A02", "2\\u00A0F",            "IEP\\u00A01.50",                      "1,50\\u00A0mk",   "2\\u00A0F",         "ITL\\u00A02",
+        "1$50\\u00A0\\u200B", "\\u00F6S\\u00A01,50",  "1,50\\u00A0\\u0394\\u03C1\\u03C7", "2\\u00A0\\u20A7", "1,50\\u00A0FB",     "IEP\\u00A01.50",
         "1,50\\u00A0BEF",   "1,50\\u00A0DM",        "1,50\\u00A0BEF",                    "\\u20A7\\u00A02", "1,50\\u00A0F",      "2\\u00A0\\u20A7",
         "NLG\\u00A01,50"
     };
@@ -728,17 +731,17 @@ static void TestSecondaryGrouping(void) {
     u_uastrcpy(buffer, "12,34,56,789");
     if ((u_strcmp(resultBuffer, buffer) != 0) || U_FAILURE(status))
     {
-        log_err("Fail: Formatting \"#,##,###\" pattern with 123456789 got %s, expected %s\n", resultBuffer, "12,34,56,789");
+        log_err("Fail: Formatting \"#,##,###\" pattern with 123456789 got %s, expected %s\n", austrdup(resultBuffer), "12,34,56,789");
     }
     if (pos.beginIndex != 0 && pos.endIndex != 12) {
         log_err("Fail: Formatting \"#,##,###\" pattern pos = (%d, %d) expected pos = (0, 12)\n", pos.beginIndex, pos.endIndex);
     }
     memset(resultBuffer,0, sizeof(UChar)*512);
     unum_toPattern(f, FALSE, resultBuffer, 512, &status);
-    u_uastrcpy(buffer, "#,##,###");
+    u_uastrcpy(buffer, "#,##,##0");
     if ((u_strcmp(resultBuffer, buffer) != 0) || U_FAILURE(status))
     {
-        log_err("Fail: toPattern() got %s, expected %s\n", resultBuffer, "#,##,###");
+        log_err("Fail: toPattern() got %s, expected %s\n", austrdup(resultBuffer), "#,##,##0");
     }
     memset(resultBuffer,0, sizeof(UChar)*512);
     u_uastrcpy(buffer, "#,###");
@@ -752,14 +755,14 @@ static void TestSecondaryGrouping(void) {
     u_uastrcpy(buffer, "12,3456,789");
     if ((u_strcmp(resultBuffer, buffer) != 0) || U_FAILURE(status))
     {
-        log_err("Fail: Formatting \"#,###\" pattern with 123456789 got %s, expected %s\n", resultBuffer, "12,3456,789");
+        log_err("Fail: Formatting \"#,###\" pattern with 123456789 got %s, expected %s\n", austrdup(resultBuffer), "12,3456,789");
     }
     memset(resultBuffer,0, sizeof(UChar)*512);
     unum_toPattern(f, FALSE, resultBuffer, 512, &status);
-    u_uastrcpy(buffer, "#,####,###");
+    u_uastrcpy(buffer, "#,####,##0");
     if ((u_strcmp(resultBuffer, buffer) != 0) || U_FAILURE(status))
     {
-        log_err("Fail: toPattern() got %s, expected %s\n", resultBuffer, "#,####,###");
+        log_err("Fail: toPattern() got %s, expected %s\n", austrdup(resultBuffer), "#,####,##0");
     }
     memset(resultBuffer,0, sizeof(UChar)*512);
     g = unum_open(UNUM_DECIMAL, NULL,0,"hi_IN",NULL, &status);
@@ -852,7 +855,7 @@ static void TestCurrencyKeywords(void)
 
     for(i = 0; i < noLocales; i++) {
         strcpy(currLoc, uloc_getAvailable(i));
-        for(j = 0; j < sizeof(currencies)/sizeof(currencies[0]); j++) {
+        for(j = 0; j < UPRV_LENGTHOF(currencies); j++) {
             strcpy(locale, currLoc);
             strcat(locale, "@currency=");
             strcat(locale, currencies[j]);
@@ -868,7 +871,7 @@ static void TestCurrencyKeywords(void)
 }
 
 static void TestGetKeywordValuesForLocale(void) {
-#define PREFERRED_SIZE 12
+#define PREFERRED_SIZE 15
 #define MAX_NUMBER_OF_KEYWORDS 4
     const char *PREFERRED[PREFERRED_SIZE][MAX_NUMBER_OF_KEYWORDS] = {
             { "root",               "USD", "USN", NULL },
@@ -884,9 +887,19 @@ static void TestGetKeywordValuesForLocale(void) {
             { "en@currency=CAD",    "USD", "USN", NULL },
             { "fr@currency=zzz",    "EUR", NULL, NULL },
             { "de_DE@currency=DEM", "EUR", NULL, NULL },
+            { "en_US@rg=THZZZZ",    "THB", NULL, NULL },
+            { "de@rg=USZZZZ",       "USD", "USN", NULL },
+            { "en_US@currency=CAD;rg=THZZZZ", "THB", NULL, NULL },
     };
     const int32_t EXPECTED_SIZE[PREFERRED_SIZE] = {
-            2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1
+            2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 2, 1
+    };
+    /* ucurr_forLocale results for same locales; "" if no result expected */
+    const char *FORLOCALE[PREFERRED_SIZE] = {
+            "",    "",    "USD", "",
+            "THB", "",    "EUR", "",
+            "ILS", "CAD", "ZZZ", "DEM",
+            "THB", "USD", "CAD"
     };
     UErrorCode status = U_ZERO_ERROR;
     int32_t i, j, size;
@@ -905,6 +918,10 @@ static void TestGetKeywordValuesForLocale(void) {
     }
     
     for (i = 0; i < PREFERRED_SIZE; i++) {
+        UChar getCurrU[4];
+        int32_t getCurrLen;
+
+        status = U_ZERO_ERROR;
         pref = NULL;
         all = NULL;
         loc = PREFERRED[i][0];
@@ -972,6 +989,24 @@ static void TestGetKeywordValuesForLocale(void) {
         }
         
         uenum_close(all);
+        
+        status = U_ZERO_ERROR;
+        getCurrLen = ucurr_forLocale(loc, getCurrU, 4, &status);
+        if(U_FAILURE(status)) {
+            if (FORLOCALE[i][0] != 0) {
+                log_err("ERROR: ucurr_forLocale %s, status %s\n", loc, u_errorName(status));
+            }
+        } else if (getCurrLen != 3) {
+            if (FORLOCALE[i][0] != 0 || getCurrLen != -1) {
+                log_err("ERROR: ucurr_forLocale %s, returned len %d\n", loc, getCurrLen);
+            }
+        } else {
+            char getCurrB[4];
+            u_UCharsToChars(getCurrU, getCurrB, 4);
+            if ( uprv_strncmp(getCurrB, FORLOCALE[i], 4) != 0 ) {
+                log_err("ERROR: ucurr_forLocale %s, expected %s, got %s\n", loc, FORLOCALE[i], getCurrB);
+            }
+        }
     }
     
     uenum_close(ALL);

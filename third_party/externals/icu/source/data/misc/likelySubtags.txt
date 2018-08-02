@@ -529,6 +529,7 @@ likelySubtags:table(nofallback){
     jen{"jen_Latn_ZZ"}
     jgk{"jgk_Latn_ZZ"}
     jgo{"jgo_Latn_CM"}
+    ji{"ji_Hebr_UA"}
     jib{"jib_Latn_ZZ"}
     jmc{"jmc_Latn_TZ"}
     jml{"jml_Deva_NP"}
@@ -643,7 +644,6 @@ likelySubtags:table(nofallback){
     kto{"kto_Latn_ZZ"}
     ku{"ku_Latn_TR"}
     ku_Arab{"ku_Arab_IQ"}
-    ku_IR{"ku_Arab_IR"}
     ku_LB{"ku_Arab_LB"}
     kub{"kub_Latn_ZZ"}
     kud{"kud_Latn_ZZ"}
@@ -1061,7 +1061,6 @@ likelySubtags:table(nofallback){
     sgs{"sgs_Latn_LT"}
     sgw{"sgw_Ethi_ZZ"}
     sgz{"sgz_Latn_ZZ"}
-    sh{"sr_Latn_RS"}
     shi{"shi_Tfng_MA"}
     shk{"shk_Latn_ZZ"}
     shn{"shn_Mymr_MM"}

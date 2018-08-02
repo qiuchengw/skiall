@@ -110,7 +110,7 @@ fi{
         EZ{"euroalue"}
         FI{"Suomi"}
         FJ{"Fidži"}
-        FK{"Falklandinsaaret (Malvinassaaret)"}
+        FK{"Falklandinsaaret"}
         FM{"Mikronesian liittovaltio"}
         FO{"Färsaaret"}
         FR{"Ranska"}
@@ -133,7 +133,7 @@ fi{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Hongkong – Kiinan e.h.a."}
         HM{"Heard ja McDonaldinsaaret"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -183,11 +183,11 @@ fi{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Marshallinsaaret"}
-        MK{"EJT Makedonia"}
+        MK{"Makedonia"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macao"}
+        MO{"Macao – Kiinan e.h.a."}
         MP{"Pohjois-Mariaanit"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -222,7 +222,7 @@ fi{
         PM{"Saint-Pierre ja Miquelon"}
         PN{"Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Palestiina"}
+        PS{"Palestiinalaisalueet"}
         PT{"Portugali"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -297,6 +297,9 @@ fi{
     }
     Countries%short{
         GB{"Britannia"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestiina"}
         UN{"YK"}
         US{"USA"}
     }
@@ -305,6 +308,8 @@ fi{
         CG{"Kongo-Brazzaville"}
         CI{"Côte d’Ivoire"}
         CZ{"Tšekin tasavalta"}
+        FK{"Falklandinsaaret (Malvinassaaret)"}
+        MK{"EJT Makedonia"}
         TL{"Timor-Leste"}
     }
     Version{"2.1.41.97"}

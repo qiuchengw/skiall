@@ -110,7 +110,7 @@ sv{
         EZ{"eurozonen"}
         FI{"Finland"}
         FJ{"Fiji"}
-        FK{"FK"}
+        FK{"Falklandsöarna"}
         FM{"Mikronesien"}
         FO{"Färöarna"}
         FR{"Frankrike"}
@@ -183,7 +183,7 @@ sv{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Marshallöarna"}
-        MK{"f.d. jugoslaviska republiken Makedonien"}
+        MK{"Makedonien"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongoliet"}
@@ -222,7 +222,7 @@ sv{
         PM{"S:t Pierre och Miquelon"}
         PN{"Pitcairnöarna"}
         PR{"Puerto Rico"}
-        PS{"Palestina"}
+        PS{"Palestinska territorierna"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -297,6 +297,9 @@ sv{
     }
     Countries%short{
         GB{"Storbritannien"}
+        HK{"Hongkong"}
+        MO{"Macao"}
+        PS{"Palestina"}
         UN{"FN"}
         US{"USA"}
     }
@@ -305,6 +308,8 @@ sv{
         CG{"Republiken Kongo"}
         CI{"CI"}
         CZ{"CZ"}
+        FK{"FK"}
+        MK{"f.d. jugoslaviska republiken Makedonien"}
         TL{"TL"}
     }
     Version{"2.1.41.97"}

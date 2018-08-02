@@ -1,6 +1,8 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
- * COPYRIGHT: 
- * Copyright (c) 1997-2014, International Business Machines Corporation and
+ * COPYRIGHT:
+ * Copyright (c) 1997-2016, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /********************************************************************************
@@ -157,6 +159,7 @@ void addNormTest(TestNode** root)
 }
 
 static const char* const modeStrings[]={
+    "?",
     "UNORM_NONE",
     "UNORM_NFD",
     "UNORM_NFKD",
@@ -181,7 +184,7 @@ static void TestNormCases(UNormalizationMode mode,
         length2= unorm_normalize(source, -1, mode, 0, NULL, 0, &status2);
         if(neededLen!=length2) {
           log_err("ERROR in unorm_normalize(%s)[%d]: "
-                  "preflight length/NUL %d!=%d preflight length/srcLength\n",
+                  "preflight length/srcLength %d!=%d preflight length/NUL\n",
                   modeStrings[mode], (int)x, (int)neededLen, (int)length2);
         }
         if(status==U_BUFFER_OVERFLOW_ERROR)
@@ -190,14 +193,14 @@ static void TestNormCases(UNormalizationMode mode,
         }
         length2=unorm_normalize(source, u_strlen(source), mode, 0, result, UPRV_LENGTHOF(result), &status); 
         if(U_FAILURE(status) || neededLen!=length2) {
-            log_data_err("ERROR in unorm_normalize(%s/NUL) at %s:  %s - (Are you missing data?)\n",
+            log_data_err("ERROR in unorm_normalize(%s/srcLength) at %s:  %s - (Are you missing data?)\n",
                          modeStrings[mode], austrdup(source), myErrorName(status));
         } else {
             assertEqual(result, cases[x][expIndex], x);
         }
         length2=unorm_normalize(source, -1, mode, 0, result, UPRV_LENGTHOF(result), &status); 
         if(U_FAILURE(status) || neededLen!=length2) {
-            log_data_err("ERROR in unorm_normalize(%s/srcLength) at %s:  %s - (Are you missing data?)\n",
+            log_data_err("ERROR in unorm_normalize(%s/NUL) at %s:  %s - (Are you missing data?)\n",
                          modeStrings[mode], austrdup(source), myErrorName(status));
         } else {
             assertEqual(result, cases[x][expIndex], x);
@@ -664,12 +667,12 @@ void TestCheckFCD()
     UChar nfd[100];
     int normsize = 0;
     int nfdsize = 0;
-    
+
     while (size != 19) {
-      data[size] = datachar[(rand() * 50) / RAND_MAX];
+      data[size] = datachar[rand() % UPRV_LENGTHOF(datachar)];
       log_verbose("0x%x", data[size]);
-      normsize += unorm_normalize(data + size, 1, UNORM_NFD, 0, 
-                                  norm + normsize, 100 - normsize, &status);       
+      normsize += unorm_normalize(data + size, 1, UNORM_NFD, 0,
+                                  norm + normsize, 100 - normsize, &status);
       if (U_FAILURE(status)) {
         log_data_err("unorm_quickCheck(FCD) failed: exception occured at data generation - (Are you missing data?)\n");
         break;
@@ -678,8 +681,8 @@ void TestCheckFCD()
     }
     log_verbose("\n");
 
-    nfdsize = unorm_normalize(data, size, UNORM_NFD, 0, 
-                              nfd, 100, &status);       
+    nfdsize = unorm_normalize(data, size, UNORM_NFD, 0,
+                              nfd, 100, &status);
     if (U_FAILURE(status)) {
       log_data_err("unorm_quickCheck(FCD) failed: exception occured at normalized data generation - (Are you missing data?)\n");
     }
@@ -900,7 +903,7 @@ TestNormCoverage() {
     errorCode=U_ZERO_ERROR;
     length=unorm_normalize(input, inLength,
                            UNORM_NFKC, 0,
-                           output, sizeof(output)/U_SIZEOF_UCHAR,
+                           output, UPRV_LENGTHOF(output),
                            &errorCode);
     if(U_FAILURE(errorCode)) {
         log_data_err("error unorm_normalize(long input, UNORM_NFKC) failed with %s - (Are you missing data?)\n", u_errorName(errorCode));
@@ -940,7 +943,7 @@ TestNormCoverage() {
     errorCode=U_ZERO_ERROR;
     length=unorm_normalize(input, inLength,
                            UNORM_FCD, 0,
-                           output, sizeof(output)/U_SIZEOF_UCHAR,
+                           output, UPRV_LENGTHOF(output),
                            &errorCode);
     if(U_FAILURE(errorCode)) {
         log_data_err("error unorm_normalize(long input, UNORM_FCD) failed with %s - (Are you missing data?)\n", u_errorName(errorCode));
@@ -1055,7 +1058,7 @@ _testIter(const UChar *src, int32_t srcLength,
                 return;
             }
             length=unorm_next(iter,
-                              buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                              buffer, UPRV_LENGTHOF(buffer),
                               mode, 0,
                               (UBool)(out!=NULL), &neededToNormalize,
                               &errorCode);
@@ -1080,7 +1083,7 @@ _testIter(const UChar *src, int32_t srcLength,
                 return;
             }
             length=unorm_previous(iter,
-                                  buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                                  buffer, UPRV_LENGTHOF(buffer),
                                   mode, 0,
                                   (UBool)(out!=NULL), &neededToNormalize,
                                   &errorCode);
@@ -1185,59 +1188,59 @@ TestNextPrevious() {
     UBool neededToNormalize;
     UErrorCode errorCode;
 
-    uiter_setString(&iter, src, sizeof(src)/U_SIZEOF_UCHAR);
+    uiter_setString(&iter, src, UPRV_LENGTHOF(src));
 
     /* test iteration with doNormalize */
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFD, TRUE, nfd, sizeof(nfd)/U_SIZEOF_UCHAR, nfdIndexes, sizeof(nfdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFD, TRUE, nfd, UPRV_LENGTHOF(nfd), nfdIndexes, sizeof(nfdIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKD, TRUE, nfkd, sizeof(nfkd)/U_SIZEOF_UCHAR, nfkdIndexes, sizeof(nfkdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKD, TRUE, nfkd, UPRV_LENGTHOF(nfkd), nfkdIndexes, sizeof(nfkdIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFC, TRUE, nfc, sizeof(nfc)/U_SIZEOF_UCHAR, nfcIndexes, sizeof(nfcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFC, TRUE, nfc, UPRV_LENGTHOF(nfc), nfcIndexes, sizeof(nfcIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKC, TRUE, nfkc, sizeof(nfkc)/U_SIZEOF_UCHAR, nfkcIndexes, sizeof(nfkcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKC, TRUE, nfkc, UPRV_LENGTHOF(nfkc), nfkcIndexes, sizeof(nfkcIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_FCD, TRUE, fcd, sizeof(fcd)/U_SIZEOF_UCHAR, fcdIndexes, sizeof(fcdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_FCD, TRUE, fcd, UPRV_LENGTHOF(fcd), fcdIndexes, sizeof(fcdIndexes)/4);
 
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFD, FALSE, nfd, sizeof(nfd)/U_SIZEOF_UCHAR, nfdIndexes, sizeof(nfdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFD, FALSE, nfd, UPRV_LENGTHOF(nfd), nfdIndexes, sizeof(nfdIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKD, FALSE, nfkd, sizeof(nfkd)/U_SIZEOF_UCHAR, nfkdIndexes, sizeof(nfkdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKD, FALSE, nfkd, UPRV_LENGTHOF(nfkd), nfkdIndexes, sizeof(nfkdIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFC, FALSE, nfc, sizeof(nfc)/U_SIZEOF_UCHAR, nfcIndexes, sizeof(nfcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFC, FALSE, nfc, UPRV_LENGTHOF(nfc), nfcIndexes, sizeof(nfcIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKC, FALSE, nfkc, sizeof(nfkc)/U_SIZEOF_UCHAR, nfkcIndexes, sizeof(nfkcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKC, FALSE, nfkc, UPRV_LENGTHOF(nfkc), nfkcIndexes, sizeof(nfkcIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_FCD, FALSE, fcd, sizeof(fcd)/U_SIZEOF_UCHAR, fcdIndexes, sizeof(fcdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_FCD, FALSE, fcd, UPRV_LENGTHOF(fcd), fcdIndexes, sizeof(fcdIndexes)/4);
 
     /* test iteration without doNormalize */
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFD, TRUE, NULL, 0, nfdIndexes, sizeof(nfdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFD, TRUE, NULL, 0, nfdIndexes, sizeof(nfdIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKD, TRUE, NULL, 0, nfkdIndexes, sizeof(nfkdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKD, TRUE, NULL, 0, nfkdIndexes, sizeof(nfkdIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFC, TRUE, NULL, 0, nfcIndexes, sizeof(nfcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFC, TRUE, NULL, 0, nfcIndexes, sizeof(nfcIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKC, TRUE, NULL, 0, nfkcIndexes, sizeof(nfkcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKC, TRUE, NULL, 0, nfkcIndexes, sizeof(nfkcIndexes)/4);
     iter.index=0;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_FCD, TRUE, NULL, 0, fcdIndexes, sizeof(fcdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_FCD, TRUE, NULL, 0, fcdIndexes, sizeof(fcdIndexes)/4);
 
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFD, FALSE, NULL, 0, nfdIndexes, sizeof(nfdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFD, FALSE, NULL, 0, nfdIndexes, sizeof(nfdIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKD, FALSE, NULL, 0, nfkdIndexes, sizeof(nfkdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKD, FALSE, NULL, 0, nfkdIndexes, sizeof(nfkdIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFC, FALSE, NULL, 0, nfcIndexes, sizeof(nfcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFC, FALSE, NULL, 0, nfcIndexes, sizeof(nfcIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_NFKC, FALSE, NULL, 0, nfkcIndexes, sizeof(nfkcIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_NFKC, FALSE, NULL, 0, nfkcIndexes, sizeof(nfkcIndexes)/4);
     iter.index=iter.length;
-    _testIter(src, sizeof(src)/U_SIZEOF_UCHAR, &iter, UNORM_FCD, FALSE, NULL, 0, fcdIndexes, sizeof(fcdIndexes)/4);
+    _testIter(src, UPRV_LENGTHOF(src), &iter, UNORM_FCD, FALSE, NULL, 0, fcdIndexes, sizeof(fcdIndexes)/4);
 
     /* try without neededToNormalize */
     errorCode=U_ZERO_ERROR;
     buffer[0]=5;
     iter.index=1;
-    length=unorm_next(&iter, buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+    length=unorm_next(&iter, buffer, UPRV_LENGTHOF(buffer),
                       UNORM_NFD, 0, TRUE, NULL,
                       &errorCode);
     if(U_FAILURE(errorCode) || length!=2 || buffer[0]!=nfd[2] || buffer[1]!=nfd[3]) {
@@ -1273,7 +1276,7 @@ TestNextPrevious() {
     buffer[0]=buffer[1]=5;
     neededToNormalize=9;
     iter.index=1;
-    length=unorm_next(NULL, buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+    length=unorm_next(NULL, buffer, UPRV_LENGTHOF(buffer),
                       UNORM_NFD, 0, TRUE, &neededToNormalize,
                       &errorCode);
     if(errorCode!=U_ILLEGAL_ARGUMENT_ERROR) {
@@ -1285,7 +1288,7 @@ TestNextPrevious() {
     buffer[0]=buffer[1]=5;
     neededToNormalize=9;
     iter.index=1;
-    length=unorm_next(&iter, buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+    length=unorm_next(&iter, buffer, UPRV_LENGTHOF(buffer),
                       (UNormalizationMode)0, 0, TRUE, &neededToNormalize,
                       &errorCode);
     if(errorCode!=U_ILLEGAL_ARGUMENT_ERROR) {
@@ -1297,7 +1300,7 @@ TestNextPrevious() {
     errorCode=U_MISPLACED_QUANTIFIER;
     buffer[0]=5;
     iter.index=1;
-    length=unorm_next(&iter, buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+    length=unorm_next(&iter, buffer, UPRV_LENGTHOF(buffer),
                       UNORM_NFD, 0, TRUE, NULL,
                       &errorCode);
     if(errorCode!=U_MISPLACED_QUANTIFIER) {
@@ -1406,6 +1409,10 @@ TestQuickCheckPerCP() {
         }
 
         length=unorm_normalize(s, length, UNORM_NFD, 0, nfd, UPRV_LENGTHOF(nfd), &errorCode);
+        if (U_FAILURE(errorCode)) {
+            log_data_err("%s:%d errorCode=%s\n", __FILE__, __LINE__, u_errorName(errorCode));
+            break;
+        }
         /* length-length == 0 is used to get around a compiler warning. */
         U16_GET(nfd, 0, length-length, length, lead);
         U16_GET(nfd, 0, length-1, length, trail);

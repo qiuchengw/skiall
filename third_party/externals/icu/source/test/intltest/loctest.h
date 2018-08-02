@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
  * Copyright (c) 1997-2015, International Business Machines Corporation and
@@ -103,6 +105,8 @@ public:
     void TestGetVariantWithKeywords(void);
     void TestIsRightToLeft();
     void TestBug11421();
+    void TestBug13277();
+    void TestBug13554();
 
 private:
     void _checklocs(const char* label,

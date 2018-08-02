@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
  * Copyright (c) 1997-2012, International Business Machines Corporation and
@@ -213,7 +215,6 @@ UObject *UObjectTest::testClassNoClassID(UObject *obj, const char *className, co
 #include "rbt_data.h"
 #include "nultrans.h"
 #include "anytrans.h"
-#include "digitlst.h"
 #include "esctrn.h"
 #include "funcrepl.h"
 #include "servnotf.h"
@@ -271,9 +272,11 @@ UObject *UObjectTest::testClassNoClassID(UObject *obj, const char *className, co
 #include "unicode/idna.h"
 #include "unicode/locdspnm.h"
 #include "unicode/locid.h"
+#include "unicode/measunit.h"
 #include "unicode/msgfmt.h"
 #include "unicode/normlzr.h"
 #include "unicode/normalizer2.h"
+#include "unicode/nounit.h"
 #include "unicode/numfmt.h"
 #include "unicode/parsepos.h"
 #include "unicode/plurrule.h"
@@ -290,6 +293,7 @@ UObject *UObjectTest::testClassNoClassID(UObject *obj, const char *className, co
 #include "unicode/stsearch.h"
 #include "unicode/tblcoll.h"
 #include "unicode/timezone.h"
+#include "unicode/tmunit.h"
 #include "unicode/translit.h"
 #include "unicode/uchriter.h"
 #include "unicode/uloc.h"
@@ -368,9 +372,13 @@ void UObjectTest::testIDs()
     TESTCLASSID_DEFAULT(FieldPosition);
     TESTCLASSID_DEFAULT(Formattable);
 
-    static const UChar SMALL_STR[] = {0x51, 0x51, 0x51, 0}; // "QQQ"
+    TESTCLASSID_FACTORY(MeasureUnit, MeasureUnit::createMeter(status));
+    TESTCLASSID_FACTORY(NoUnit, NoUnit::percent().clone());
+    TESTCLASSID_FACTORY(TimeUnit, TimeUnit::createInstance(TimeUnit::UTIMEUNIT_YEAR, status));
+    static const UChar SMALL_STR[] = u"QQQ";
     TESTCLASSID_CTOR(CurrencyAmount, (1.0, SMALL_STR, status));
     TESTCLASSID_CTOR(CurrencyUnit, (SMALL_STR, status));
+
     TESTCLASSID_NONE_FACTORY(LocaleDisplayNames, LocaleDisplayNames::createInstance("de"));
     TESTCLASSID_FACTORY_HIDDEN(CurrencyFormat, MeasureFormat::createCurrencyFormat(Locale::getUS(), status));
     TESTCLASSID_FACTORY(GregorianCalendar, Calendar::createInstance(Locale("@calendar=gregorian"), status));
@@ -382,11 +390,9 @@ void UObjectTest::testIDs()
     TESTCLASSID_FACTORY(IndianCalendar, Calendar::createInstance(Locale("@calendar=indian"), status));
     TESTCLASSID_FACTORY(ChineseCalendar, Calendar::createInstance(Locale("@calendar=chinese"), status));
     TESTCLASSID_FACTORY(TaiwanCalendar, Calendar::createInstance(Locale("@calendar=roc"), status));
-#if U_PLATFORM_HAS_WIN32_API
-    TESTCLASSID_FACTORY(Win32DateFormat, DateFormat::createDateInstance(DateFormat::kFull, Locale("@compat=host")));
 #if U_PLATFORM_USES_ONLY_WIN32_API
+    TESTCLASSID_FACTORY(Win32DateFormat, DateFormat::createDateInstance(DateFormat::kFull, Locale("@compat=host")));
     TESTCLASSID_FACTORY(Win32NumberFormat, NumberFormat::createInstance(Locale("@compat=host"), status));
-#endif
 #endif
 #endif
 

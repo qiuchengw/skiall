@@ -106,7 +106,7 @@ wae{
         EU{"Europäiši Unio"}
         FI{"Finnland"}
         FJ{"Fidši"}
-        FK{"Falklandinslä (Malwine)"}
+        FK{"Falklandinslä"}
         FM{"Mikronesie"}
         FO{"Färöe"}
         FR{"Frankrič"}
@@ -129,7 +129,7 @@ wae{
         GU{"Guam"}
         GW{"Ginea Bissau"}
         GY{"Guyana"}
-        HK{"Hongkong"}
+        HK{"Sonderverwaltigszona Hongkong"}
         HM{"Heard- und McDonald-Inslä"}
         HN{"Honduras"}
         HR{"Kroatie"}
@@ -179,11 +179,11 @@ wae{
         MF{"St. Martin"}
         MG{"Madagaskar"}
         MH{"Maršalinslä"}
-        MK{"Mazedonie (EJR)"}
+        MK{"Mazedonie"}
         ML{"Mali"}
         MM{"Burma"}
         MN{"Mongolei"}
-        MO{"Makau"}
+        MO{"Sonderverwaltigszona Makau"}
         MP{"Nördliči Mariane"}
         MQ{"Martinique"}
         MR{"Mauretanie"}
@@ -287,10 +287,16 @@ wae{
         ZW{"Simbabwe"}
         ZZ{"Unbekannti Regio"}
     }
+    Countries%short{
+        HK{"Hongkong"}
+        MO{"Makau"}
+    }
     Countries%variant{
         CD{"Kongo (Demokratiši Rebublik)"}
         CG{"Kongo (Rebublik)"}
         CI{"Côte d’Ivoire"}
+        FK{"Falklandinslä (Malwine)"}
+        MK{"Mazedonie (EJR)"}
         TL{"Wešttimor"}
     }
     Version{"2.1.38.69"}

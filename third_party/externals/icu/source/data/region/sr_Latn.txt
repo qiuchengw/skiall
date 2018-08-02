@@ -111,7 +111,7 @@ sr_Latn{
         EZ{"Evrozona"}
         FI{"Finska"}
         FJ{"Fidži"}
-        FK{"Foklandska (Malvinska) ostrva"}
+        FK{"Foklandska Ostrva"}
         FM{"Mikronezija"}
         FO{"Farska Ostrva"}
         FR{"Francuska"}
@@ -134,7 +134,7 @@ sr_Latn{
         GU{"Guam"}
         GW{"Gvineja-Bisao"}
         GY{"Gvajana"}
-        HK{"Hongkong"}
+        HK{"SAR Hongkong (Kina)"}
         HM{"Ostrvo Herd i Mekdonaldova ostrva"}
         HN{"Honduras"}
         HR{"Hrvatska"}
@@ -184,11 +184,11 @@ sr_Latn{
         MF{"Sveti Martin (Francuska)"}
         MG{"Madagaskar"}
         MH{"Maršalska Ostrva"}
-        MK{"Makedonija (BJRM)"}
+        MK{"Makedonija"}
         ML{"Mali"}
         MM{"Mijanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Makao"}
+        MO{"SAR Makao (Kina)"}
         MP{"Severna Marijanska Ostrva"}
         MQ{"Martinik"}
         MR{"Mauritanija"}
@@ -223,7 +223,7 @@ sr_Latn{
         PM{"Sen Pjer i Mikelon"}
         PN{"Pitkern"}
         PR{"Portoriko"}
-        PS{"Palestina"}
+        PS{"Palestinske teritorije"}
         PT{"Portugalija"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -298,6 +298,9 @@ sr_Latn{
     }
     Countries%short{
         GB{"UK"}
+        HK{"Hongkong"}
+        MO{"Makao"}
+        PS{"Palestina"}
         UN{"UN"}
         US{"SAD"}
     }
@@ -306,6 +309,8 @@ sr_Latn{
         CG{"Kongo (Republika)"}
         CI{"Obala Slonovače"}
         CZ{"Češka Republika"}
+        FK{"Foklandska (Malvinska) ostrva"}
+        MK{"Makedonija (BJRM)"}
         TL{"Istočni Timor"}
     }
     Version{"2.1.41.97"}

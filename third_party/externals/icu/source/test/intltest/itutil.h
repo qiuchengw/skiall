@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
  * Copyright (c) 1997-2009, International Business Machines Corporation and
@@ -23,6 +25,7 @@ public:
     void runIndexedTest(int32_t index, UBool exec, const char* &name, char* par = NULL);
     void TestErrorCode();
     void TestSubclass();
+    void TestIcuTestErrorCode();
 };
 
 #endif

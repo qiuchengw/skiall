@@ -290,6 +290,11 @@ typedef double UDate;
  * @stable ICU 3.4
  */
 
+#ifdef U_IN_DOXYGEN
+// This definition is required when generating the API docs.
+#define U_COMBINED_IMPLEMENTATION 1
+#endif
+
 #if defined(U_COMBINED_IMPLEMENTATION)
 #define U_DATA_API     U_EXPORT
 #define U_COMMON_API   U_EXPORT
@@ -307,11 +312,7 @@ typedef double UDate;
 #define U_IO_API
 #define U_TOOLUTIL_API
 #elif defined(U_COMMON_IMPLEMENTATION)
-#if defined(U_ICUDATAENTRY_IN_COMMON)
-#define U_DATA_API     U_EXPORT
-#else
 #define U_DATA_API     U_IMPORT
-#endif
 #define U_COMMON_API   U_EXPORT
 #define U_I18N_API     U_IMPORT
 #define U_LAYOUT_API   U_IMPORT
