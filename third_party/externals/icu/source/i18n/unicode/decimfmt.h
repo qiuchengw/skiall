@@ -612,7 +612,7 @@ template class U_I18N_API    EnumSet<UNumberFormatAttribute,
  * including prefix and suffix, determines the format width.  For example, in
  * the pattern <code>"* #0 o''clock"</code>, the format width is 10.
  *
- * <li>The width is counted in 16-bit code units (char16_ts).
+ * <li>The width is counted in 16-bit code units (UChars).
  *
  * <li>Some parameters which usually do not matter have meaning when padding is
  * used, because the pattern width is significant with padding.  In the pattern
@@ -2014,14 +2014,14 @@ class U_I18N_API DecimalFormat : public NumberFormat {
      * @param ec input-output error code
      * @stable ICU 3.0
      */
-    void setCurrency(const char16_t* theCurrency, UErrorCode& ec) U_OVERRIDE;
+    void setCurrency(const UChar* theCurrency, UErrorCode& ec) U_OVERRIDE;
 
     /**
      * Sets the currency used to display currency amounts.  See
-     * setCurrency(const char16_t*, UErrorCode&).
-     * @deprecated ICU 3.0. Use setCurrency(const char16_t*, UErrorCode&).
+     * setCurrency(const UChar*, UErrorCode&).
+     * @deprecated ICU 3.0. Use setCurrency(const UChar*, UErrorCode&).
      */
-    virtual void setCurrency(const char16_t* theCurrency);
+    virtual void setCurrency(const UChar* theCurrency);
 
     /**
      * Sets the `Currency Usage` object used to display currency.

@@ -8,7 +8,7 @@
 #include "numbertest.h"
 #include "numparse_stringsegment.h"
 
-static const char16_t* SAMPLE_STRING = u"📻 radio 📻";
+static const UChar* SAMPLE_STRING = u"📻 radio 📻";
 
 void StringSegmentTest::runIndexedTest(int32_t index, UBool exec, const char*&name, char*) {
     if (exec) {

@@ -1586,7 +1586,7 @@ void UTextTest::Ticket12130() {
 
 void UTextTest::Ticket13344() {
     UErrorCode status = U_ZERO_ERROR;
-    const char16_t *str = u"abc\U0010abcd xyz";
+    const UChar *str = u"abc\U0010abcd xyz";
     LocalUTextPointer ut(utext_openUChars(NULL, str, -1, &status));
 
     assertSuccess("UTextTest::Ticket13344-status", status);

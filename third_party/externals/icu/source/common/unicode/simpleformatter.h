@@ -62,7 +62,7 @@ public:
      * Default constructor.
      * @stable ICU 57
      */
-    SimpleFormatter() : compiledPattern((char16_t)0) {}
+    SimpleFormatter() : compiledPattern((UChar)0) {}
 
     /**
      * Constructs a formatter from the pattern string.
@@ -280,15 +280,15 @@ private:
      */
     UnicodeString compiledPattern;
 
-    static inline int32_t getArgumentLimit(const char16_t *compiledPattern,
+    static inline int32_t getArgumentLimit(const UChar *compiledPattern,
                                               int32_t compiledPatternLength) {
         return compiledPatternLength == 0 ? 0 : compiledPattern[0];
     }
 
-    static UnicodeString getTextWithNoArguments(const char16_t *compiledPattern, int32_t compiledPatternLength);
+    static UnicodeString getTextWithNoArguments(const UChar *compiledPattern, int32_t compiledPatternLength);
 
     static UnicodeString &format(
-            const char16_t *compiledPattern, int32_t compiledPatternLength,
+            const UChar *compiledPattern, int32_t compiledPatternLength,
             const UnicodeString *const *values,
             UnicodeString &result, const UnicodeString *resultCopy, UBool forbidResultAsValue,
             int32_t *offsets, int32_t offsetsLength,

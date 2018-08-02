@@ -19,7 +19,7 @@
 #include "cstring.h"
 #include "uinvchar.h"
 
-static constexpr char16_t kDefaultCurrency[] = u"XXX";
+static constexpr UChar kDefaultCurrency[] = u"XXX";
 
 U_NAMESPACE_BEGIN
 
@@ -28,7 +28,7 @@ CurrencyUnit::CurrencyUnit(ConstChar16Ptr _isoCode, UErrorCode& ec) {
     // Note: in ICU4J Currency.getInstance(), we check string length for 3, but in ICU4C we allow a
     // non-NUL-terminated string to be passed as an argument, so it is not possible to check length.
     // However, we allow a NUL-terminated empty string, which should have the same behavior as nullptr.
-    const char16_t* isoCodeToUse;
+    const UChar* isoCodeToUse;
     if (U_FAILURE(ec) || _isoCode == nullptr || _isoCode[0] == 0) {
         isoCodeToUse = kDefaultCurrency;
     } else if (!uprv_isInvariantUString(_isoCode, 3)) {

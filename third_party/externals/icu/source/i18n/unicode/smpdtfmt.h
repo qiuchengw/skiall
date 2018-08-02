@@ -1174,7 +1174,7 @@ public:
      * @param field The UDateFormatField to get
      * @stable ICU 54
      */
-    const NumberFormat * getNumberFormatForField(char16_t field) const;
+    const NumberFormat * getNumberFormatForField(UChar field) const;
 
 #ifndef U_HIDE_INTERNAL_API
     /**
@@ -1266,7 +1266,7 @@ private:
      *                  succeeds.
      */
     void subFormat(UnicodeString &appendTo,
-                   char16_t ch,
+                   UChar ch,
                    int32_t count,
                    UDisplayContext capitalizationContext,
                    int32_t fieldNum,
@@ -1297,7 +1297,7 @@ private:
      * Return true if the given format character, occuring count
      * times, represents a numeric field.
      */
-    static UBool isNumeric(char16_t formatChar, int32_t count);
+    static UBool isNumeric(UChar formatChar, int32_t count);
 
     /**
      * Returns TRUE if the patternOffset is at the start of a numeric field.
@@ -1415,7 +1415,7 @@ private:
      * @return the new start position if matching succeeded; a negative number
      * indicating matching failure, otherwise.
      */
-    int32_t subParse(const UnicodeString& text, int32_t& start, char16_t ch, int32_t count,
+    int32_t subParse(const UnicodeString& text, int32_t& start, UChar ch, int32_t count,
                      UBool obeyCount, UBool allowNegative, UBool ambiguousYear[], int32_t& saveHebrewMonth, Calendar& cal,
                      int32_t patLoc, MessageFormat * numericLeapMonthFormatter, UTimeZoneFormatTimeType *tzTimeType,
                      int32_t *dayPeriod=NULL) const;
@@ -1546,12 +1546,12 @@ private:
     /**
      * Map calendar field letter into calendar field level.
      */
-    static int32_t getLevelFromChar(char16_t ch);
+    static int32_t getLevelFromChar(UChar ch);
 
     /**
      * Tell if a character can be used to define a field in a format string.
      */
-    static UBool isSyntaxChar(char16_t ch);
+    static UBool isSyntaxChar(UChar ch);
 
     /**
      * The formatting pattern for this formatter.

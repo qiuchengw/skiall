@@ -1115,7 +1115,7 @@ void DecimalQuantity::moveBcdFrom(DecimalQuantity &other) {
     }
 }
 
-const char16_t* DecimalQuantity::checkHealth() const {
+const UChar* DecimalQuantity::checkHealth() const {
     if (usingBytes) {
         if (precision == 0) { return u"Zero precision but we are in byte mode"; }
         int32_t capacity = fBCD.bcdBytes.len;

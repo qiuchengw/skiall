@@ -721,31 +721,31 @@ namespace std {
 /** @} */
 
 /**
- * \def U_HAVE_CHAR16_T
- * Defines whether the char16_t type is available for UTF-16
+ * \def U_HAVE_UChar
+ * Defines whether the UChar type is available for UTF-16
  * and u"abc" UTF-16 string literals are supported.
  * This is a new standard type and standard string literal syntax in C++0x
  * but has been available in some compilers before.
  * @internal
  */
-#ifdef U_HAVE_CHAR16_T
+#ifdef U_HAVE_UChar
     /* Use the predefined value. */
 #else
     /*
      * Notes:
-     * Visual Studio 2010 (_MSC_VER==1600) defines char16_t as a typedef
+     * Visual Studio 2010 (_MSC_VER==1600) defines UChar as a typedef
      * and does not support u"abc" string literals.
      * Visual Studio 2015 (_MSC_VER>=1900) and above adds support for
-     * both char16_t and u"abc" string literals.
-     * gcc 4.4 defines the __CHAR16_TYPE__ macro to a usable type but
+     * both UChar and u"abc" string literals.
+     * gcc 4.4 defines the __UCharYPE__ macro to a usable type but
      * does not support u"abc" string literals.
      * C++11 and C11 require support for UTF-16 literals
      * TODO: Fix for plain C. Doesn't work on Mac.
      */
 #   if U_CPLUSPLUS_VERSION >= 11 || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L)
-#       define U_HAVE_CHAR16_T 1
+#       define U_HAVE_UChar 1
 #   else
-#       define U_HAVE_CHAR16_T 0
+#       define U_HAVE_UChar 0
 #   endif
 #endif
 
@@ -758,7 +758,7 @@ namespace std {
  */
 #ifdef U_DECLARE_UTF16
     /* Use the predefined value. */
-#elif U_HAVE_CHAR16_T \
+#elif U_HAVE_UChar \
     || (defined(__xlC__) && defined(__IBM_UTF_LITERAL) && U_SIZEOF_WCHAR_T != 2) \
     || (defined(__HP_aCC) && __HP_aCC >= 035000) \
     || (defined(__HP_cc) && __HP_cc >= 111106) \

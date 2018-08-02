@@ -74,7 +74,7 @@ struct U_I18N_API ParsedPatternInfo : public AffixPatternProvider, public UMemor
 
     static int32_t getLengthFromEndpoints(const Endpoints& endpoints);
 
-    char16_t charAt(int32_t flags, int32_t index) const U_OVERRIDE;
+    UChar charAt(int32_t flags, int32_t index) const U_OVERRIDE;
 
     int32_t length(int32_t flags) const U_OVERRIDE;
 
@@ -113,7 +113,7 @@ struct U_I18N_API ParsedPatternInfo : public AffixPatternProvider, public UMemor
 
         // TODO: We don't currently do anything with the message string.
         // This method is here as a shell for Java compatibility.
-        inline void toParseException(const char16_t* message) { (void) message; }
+        inline void toParseException(const UChar* message) { (void) message; }
     } state;
 
     // NOTE: In Java, these are written as pure functions.
@@ -164,7 +164,7 @@ class U_I18N_API PatternParser {
      * <p>
      * To obtain a more useful form of the data, consider using {@link #parseToProperties} instead.
      *
-     * TODO: Change argument type to const char16_t* instead of UnicodeString?
+     * TODO: Change argument type to const UChar* instead of UnicodeString?
      *
      * @param patternString
      *            The LDML decimal format pattern (Excel-style pattern) to parse.

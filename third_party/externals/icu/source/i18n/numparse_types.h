@@ -204,7 +204,7 @@ class U_I18N_API StringSegment : public UMemory {
 
     int32_t length() const;
 
-    char16_t charAt(int32_t index) const;
+    UChar charAt(int32_t index) const;
 
     UChar32 codePointAt(int32_t index) const;
 

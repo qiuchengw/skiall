@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 #define UNISTR_FROM_CHAR_EXPLICIT
@@ -46,7 +46,7 @@ PatternParser::parseToExistingProperties(const UnicodeString& pattern, DecimalFo
 }
 
 
-char16_t ParsedPatternInfo::charAt(int32_t flags, int32_t index) const {
+UChar ParsedPatternInfo::charAt(int32_t flags, int32_t index) const {
     const Endpoints& endpoints = getEndpoints(flags);
     if (index < 0 || index >= endpoints.end - endpoints.start) {
         U_ASSERT(false);
@@ -850,7 +850,7 @@ int PatternStringUtils::escapePaddingString(UnicodeString input, UnicodeString& 
         int offset = 1;
         for (int i = 0; i < input.length(); i++) {
             // it's okay to deal in chars here because the quote mark is the only interesting thing.
-            char16_t ch = input.charAt(i);
+            UChar ch = input.charAt(i);
             if (ch == u'\'') {
                 output.insert(startIndex + offset, u"''", -1);
                 offset += 2;
@@ -1049,7 +1049,7 @@ void PatternStringUtils::patternInfoToStringBuilder(const AffixPatternProvider& 
     // Finally, set the result into the StringBuilder.
     output.remove();
     for (int index = 0; index < length; index++) {
-        char16_t candidate;
+        UChar candidate;
         if (prependSign && index == 0) {
             candidate = u'-';
         } else if (prependSign) {

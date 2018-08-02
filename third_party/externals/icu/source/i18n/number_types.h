@@ -37,7 +37,7 @@ static constexpr int32_t kMaxIntFracSig = 999;
 static constexpr RoundingMode kDefaultMode = RoundingMode::UNUM_FOUND_HALFEVEN;
 
 // ICU4J Equivalent: Padder.FALLBACK_PADDING_STRING
-static constexpr char16_t kFallbackPaddingString[] = u" ";
+static constexpr UChar kFallbackPaddingString[] = u" ";
 
 // Forward declarations:
 
@@ -103,7 +103,7 @@ class U_I18N_API AffixPatternProvider {
 
     virtual ~AffixPatternProvider();
 
-    virtual char16_t charAt(int flags, int i) const = 0;
+    virtual UChar charAt(int flags, int i) const = 0;
 
     virtual int length(int flags) const = 0;
 

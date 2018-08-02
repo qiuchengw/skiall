@@ -5839,12 +5839,12 @@ void RegexTest::TestBug13631() {
 void RegexTest::TestBug13632() {
     UErrorCode status = U_ZERO_ERROR;
     URegularExpression *re = uregex_openC(" ", 0, nullptr, &status);
-    const char16_t *sourceString = u"Hello, world.";
+    const UChar *sourceString = u"Hello, world.";
     uregex_setText(re, sourceString, u_strlen(sourceString), &status);
 
     const int32_t destCap = 20;
-    char16_t dest[destCap] = {};
-    const char16_t replacement[] = {u'x', u'$'};    // Not nul terminated string.
+    UChar dest[destCap] = {};
+    const UChar replacement[] = {u'x', u'$'};    // Not nul terminated string.
     uregex_replaceAll(re, replacement, 2, dest, destCap, &status);
 
     assertEquals("", U_REGEX_INVALID_CAPTURE_GROUP_NAME, status);

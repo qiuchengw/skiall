@@ -8555,7 +8555,7 @@ void NumberFormatTest::Test11735_ExceptionIssue() {
 void NumberFormatTest::Test11035_FormatCurrencyAmount() {
     UErrorCode status = U_ZERO_ERROR;
     double amount = 12345.67;
-    const char16_t* expected = u"12,345$67 ​";
+    const UChar* expected = u"12,345$67 ​";
 
     // Test two ways to set a currency via API
 
@@ -8823,7 +8823,7 @@ void NumberFormatTest::Test10354() {
 
 void NumberFormatTest::Test11645_ApplyPatternEquality() {
     IcuTestErrorCode status(*this, "Test11645_ApplyPatternEquality");
-    const char16_t* pattern = u"#,##0.0#";
+    const UChar* pattern = u"#,##0.0#";
     LocalPointer<DecimalFormat> fmt((DecimalFormat*) NumberFormat::createInstance(status), status);
     if (!assertSuccess("", status, true, __FILE__, __LINE__)) { return; }
     fmt->applyPattern(pattern, status);
@@ -8847,7 +8847,7 @@ void NumberFormatTest::Test11645_ApplyPatternEquality() {
     assertEquals("Value after applyPattern", fmtCopy->getRoundingMode(), newRoundingMode);
     assertFalse("roundingMode", *fmt == *fmtCopy);
 
-    static const char16_t *const newCurrency = u"EAT";
+    static const UChar *const newCurrency = u"EAT";
     fmtCopy.adoptInstead(new DecimalFormat(*fmt));
     assertFalse("Value before setter", fmtCopy->getCurrency() == newCurrency);
     fmtCopy->setCurrency(newCurrency);
@@ -9125,7 +9125,7 @@ void NumberFormatTest::Test13804_EmptyStringsWhenParsing() {
         UnicodeString result;
         df.format(0, result); // should not crash or hit infinite loop
     }
-    const char16_t* samples[] = {
+    const UChar* samples[] = {
             u"",
             u"123",
             u"$123",
@@ -9163,7 +9163,7 @@ void NumberFormatTest::Test13840_ParseLongStringCrash() {
     if (status.errIfFailureAndReset()) { return; }
 
     Formattable result;
-    static const char16_t* bigString =
+    static const UChar* bigString =
         u"111111111111111111111111111111111111111111111111111111111111111111111"
         u"111111111111111111111111111111111111111111111111111111111111111111111"
         u"111111111111111111111111111111111111111111111111111111111111111111111"

@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 
@@ -1068,7 +1068,7 @@ void DecimalFormat::setSignificantDigitsUsed(UBool useSignificantDigits) {
     touchNoError();
 }
 
-void DecimalFormat::setCurrency(const char16_t* theCurrency, UErrorCode& ec) {
+void DecimalFormat::setCurrency(const UChar* theCurrency, UErrorCode& ec) {
     CurrencyUnit currencyUnit(theCurrency, ec);
     if (U_FAILURE(ec)) { return; }
     if (!fields->properties->currency.isNull() && fields->properties->currency.getNoError() == currencyUnit) {
@@ -1080,7 +1080,7 @@ void DecimalFormat::setCurrency(const char16_t* theCurrency, UErrorCode& ec) {
     touchNoError();
 }
 
-void DecimalFormat::setCurrency(const char16_t* theCurrency) {
+void DecimalFormat::setCurrency(const UChar* theCurrency) {
     ErrorCode localStatus;
     setCurrency(theCurrency, localStatus);
 }
@@ -1321,7 +1321,7 @@ void DecimalFormat::setupFastFormat() {
     // Good to go!
     trace("can use fast format!\n");
     fields->canUseFastFormat = true;
-    fields->fastData.cpZero = static_cast<char16_t>(codePointZero);
+    fields->fastData.cpZero = static_cast<UChar>(codePointZero);
     fields->fastData.cpGroupingSeparator = groupingUsed && groupingSize == 3 ? groupingString.charAt(0) : 0;
     fields->fastData.cpMinusSign = minusSignString.charAt(0);
     fields->fastData.minInt = (minInt < 0 || minInt > 127) ? 0 : static_cast<int8_t>(minInt);
@@ -1363,8 +1363,8 @@ void DecimalFormat::doFastFormatInt32(int32_t input, bool isNegative, UnicodeStr
     // Cap at int32_t to make the buffer small and operations fast.
     // Longest string: "2,147,483,648" (13 chars in length)
     static constexpr int32_t localCapacity = 13;
-    char16_t localBuffer[localCapacity];
-    char16_t* ptr = localBuffer + localCapacity;
+    UChar localBuffer[localCapacity];
+    UChar* ptr = localBuffer + localCapacity;
     int8_t group = 0;
     for (int8_t i = 0; i < fields->fastData.maxInt && (input != 0 || i < fields->fastData.minInt); i++) {
         if (group++ == 3 && fields->fastData.cpGroupingSeparator != 0) {
@@ -1372,7 +1372,7 @@ void DecimalFormat::doFastFormatInt32(int32_t input, bool isNegative, UnicodeStr
             group = 1;
         }
         std::div_t res = std::div(input, 10);
-        *(--ptr) = static_cast<char16_t>(fields->fastData.cpZero + res.rem);
+        *(--ptr) = static_cast<UChar>(fields->fastData.cpZero + res.rem);
         input = res.quot;
     }
     int32_t len = localCapacity - static_cast<int32_t>(ptr - localBuffer);

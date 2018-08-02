@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 
@@ -30,7 +30,7 @@ namespace {
 
 icu::UInitOnce gNumberSkeletonsInitOnce = U_INITONCE_INITIALIZER;
 
-char16_t* kSerializedStemTrie = nullptr;
+UChar* kSerializedStemTrie = nullptr;
 
 UBool U_CALLCONV cleanupNumberSkeletons() {
     uprv_free(kSerializedStemTrie);
@@ -105,8 +105,8 @@ void U_CALLCONV initNumberSkeletons(UErrorCode& status) {
     if (U_FAILURE(status)) { return; }
 
     // Copy the result into the global constant pointer
-    size_t numBytes = result.length() * sizeof(char16_t);
-    kSerializedStemTrie = static_cast<char16_t*>(uprv_malloc(numBytes));
+    size_t numBytes = result.length() * sizeof(UChar);
+    kSerializedStemTrie = static_cast<UChar*>(uprv_malloc(numBytes));
     uprv_memcpy(kSerializedStemTrie, result.getBuffer(), numBytes);
 }
 

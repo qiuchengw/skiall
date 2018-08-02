@@ -27,7 +27,7 @@ class U_I18N_API CurrencySymbols : public UMemory {
     CurrencySymbols(CurrencyUnit currency, const Locale& locale, const DecimalFormatSymbols& symbols,
                     UErrorCode& status);
 
-    const char16_t* getIsoCode() const;
+    const UChar* getIsoCode() const;
 
     UnicodeString getNarrowCurrencySymbol(UErrorCode& status) const;
 

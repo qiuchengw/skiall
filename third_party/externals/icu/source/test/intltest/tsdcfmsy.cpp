@@ -351,8 +351,8 @@ void IntlTestDecimalFormatSymbols::testNumberingSystem() {
     struct testcase {
         const char* locid;
         const char* nsname;
-        const char16_t* expected1; // Expected number format string
-        const char16_t* expected2; // Expected pattern separator
+        const UChar* expected1; // Expected number format string
+        const UChar* expected2; // Expected pattern separator
     };
     static const testcase cases[] = {
             {"en", "latn", u"1,234.56", u"%"},

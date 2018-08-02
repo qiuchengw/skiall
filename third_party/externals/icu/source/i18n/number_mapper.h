@@ -40,7 +40,7 @@ class PropertiesAffixPatternProvider : public AffixPatternProvider, public UMemo
 
     // AffixPatternProvider Methods:
 
-    char16_t charAt(int32_t flags, int32_t i) const U_OVERRIDE;
+    UChar charAt(int32_t flags, int32_t i) const U_OVERRIDE;
 
     int32_t length(int32_t flags) const U_OVERRIDE;
 
@@ -85,7 +85,7 @@ class CurrencyPluralInfoAffixProvider : public AffixPatternProvider, public UMem
 
     // AffixPatternProvider Methods:
 
-    char16_t charAt(int32_t flags, int32_t i) const U_OVERRIDE;
+    UChar charAt(int32_t flags, int32_t i) const U_OVERRIDE;
 
     int32_t length(int32_t flags) const U_OVERRIDE;
 
@@ -152,9 +152,9 @@ struct DecimalFormatFields : public UMemory {
     // Data for fastpath
     bool canUseFastFormat = false;
     struct FastFormatData {
-        char16_t cpZero;
-        char16_t cpGroupingSeparator;
-        char16_t cpMinusSign;
+        UChar cpZero;
+        UChar cpGroupingSeparator;
+        UChar cpMinusSign;
         int8_t minInt;
         int8_t maxInt;
     } fastData;

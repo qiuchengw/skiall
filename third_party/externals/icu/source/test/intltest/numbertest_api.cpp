@@ -2431,7 +2431,7 @@ void NumberFormatterApiTest::localPointerCAPI() {
 }
 
 
-void NumberFormatterApiTest::assertFormatDescending(const char16_t* umessage, const char16_t* uskeleton,
+void NumberFormatterApiTest::assertFormatDescending(const UChar* umessage, const UChar* uskeleton,
                                                     const UnlocalizedNumberFormatter& f, Locale locale,
                                                     ...) {
     va_list args;
@@ -2444,9 +2444,9 @@ void NumberFormatterApiTest::assertFormatDescending(const char16_t* umessage, co
     status.setScope(message);
     UnicodeString expecteds[10];
     for (int16_t i = 0; i < 9; i++) {
-        char16_t caseNumber = u'0' + i;
+        UChar caseNumber = u'0' + i;
         double d = inputs[i];
-        UnicodeString expected = va_arg(args, const char16_t*);
+        UnicodeString expected = va_arg(args, const UChar*);
         expecteds[i] = expected;
         UnicodeString actual1 = l1.formatDouble(d, status).toString();
         assertSuccess(message + u": Unsafe Path: " + caseNumber, status);
@@ -2472,7 +2472,7 @@ void NumberFormatterApiTest::assertFormatDescending(const char16_t* umessage, co
     }
 }
 
-void NumberFormatterApiTest::assertFormatDescendingBig(const char16_t* umessage, const char16_t* uskeleton,
+void NumberFormatterApiTest::assertFormatDescendingBig(const UChar* umessage, const UChar* uskeleton,
                                                        const UnlocalizedNumberFormatter& f, Locale locale,
                                                        ...) {
     va_list args;
@@ -2485,9 +2485,9 @@ void NumberFormatterApiTest::assertFormatDescendingBig(const char16_t* umessage,
     status.setScope(message);
     UnicodeString expecteds[10];
     for (int16_t i = 0; i < 9; i++) {
-        char16_t caseNumber = u'0' + i;
+        UChar caseNumber = u'0' + i;
         double d = inputs[i];
-        UnicodeString expected = va_arg(args, const char16_t*);
+        UnicodeString expected = va_arg(args, const UChar*);
         expecteds[i] = expected;
         UnicodeString actual1 = l1.formatDouble(d, status).toString();
         assertSuccess(message + u": Unsafe Path: " + caseNumber, status);
@@ -2513,7 +2513,7 @@ void NumberFormatterApiTest::assertFormatDescendingBig(const char16_t* umessage,
     }
 }
 
-void NumberFormatterApiTest::assertFormatSingle(const char16_t* umessage, const char16_t* uskeleton,
+void NumberFormatterApiTest::assertFormatSingle(const UChar* umessage, const UChar* uskeleton,
                                                 const UnlocalizedNumberFormatter& f, Locale locale,
                                                 double input, const UnicodeString& expected) {
     UnicodeString message(TRUE, umessage, -1);

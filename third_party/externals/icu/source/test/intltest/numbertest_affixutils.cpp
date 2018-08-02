@@ -62,7 +62,7 @@ void AffixUtilsTest::runIndexedTest(int32_t index, UBool exec, const char *&name
 }
 
 void AffixUtilsTest::testEscape() {
-    static const char16_t *cases[][2] = {{u"", u""},
+    static const UChar *cases[][2] = {{u"", u""},
                                          {u"abc", u"abc"},
                                          {u"-", u"'-'"},
                                          {u"-!", u"'-'!"},
@@ -84,10 +84,10 @@ void AffixUtilsTest::testEscape() {
 
 void AffixUtilsTest::testUnescape() {
     static struct TestCase {
-        const char16_t *input;
+        const UChar *input;
         bool currency;
         int32_t expectedLength;
-        const char16_t *output;
+        const UChar *output;
     } cases[] = {{u"", false, 0, u""},
                  {u"abc", false, 3, u"abc"},
                  {u"-", false, 1, u"−"},
@@ -147,9 +147,9 @@ void AffixUtilsTest::testUnescape() {
 
 void AffixUtilsTest::testContainsReplaceType() {
     static struct TestCase {
-        const char16_t *input;
+        const UChar *input;
         bool hasMinusSign;
-        const char16_t *output;
+        const UChar *output;
     } cases[] = {{u"", false, u""},
                  {u"-", true, u"+"},
                  {u"-a", true, u"+a"},
@@ -174,14 +174,14 @@ void AffixUtilsTest::testContainsReplaceType() {
 }
 
 void AffixUtilsTest::testInvalid() {
-    static const char16_t *invalidExamples[] = {
+    static const UChar *invalidExamples[] = {
             u"'", u"x'", u"'x", u"'x''", u"''x'"};
 
     UErrorCode status = U_ZERO_ERROR;
     DefaultSymbolProvider defaultProvider(status);
     assertSuccess("Constructing DefaultSymbolProvider", status);
 
-    for (const char16_t *strPtr : invalidExamples) {
+    for (const UChar *strPtr : invalidExamples) {
         UnicodeString str(strPtr);
 
         status = U_ZERO_ERROR;
@@ -206,7 +206,7 @@ class NumericSymbolProvider : public SymbolProvider {
 };
 
 void AffixUtilsTest::testUnescapeWithSymbolProvider() {
-    static const char16_t* cases[][2] = {
+    static const UChar* cases[][2] = {
             {u"", u""},
             {u"-", u"1"},
             {u"'-'", u"-"},

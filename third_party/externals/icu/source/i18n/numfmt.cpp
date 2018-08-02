@@ -1186,7 +1186,7 @@ void NumberFormat::setCurrency(const UChar* theCurrency, UErrorCode& ec) {
     }
 }
 
-const char16_t* NumberFormat::getCurrency() const {
+const UChar* NumberFormat::getCurrency() const {
     return fCurrency;
 }
 
@@ -1399,7 +1399,7 @@ NumberFormat::makeInstance(const Locale& desiredLocale,
         }
 
         // Load the pattern from data using the common library function
-        const char16_t* patternPtr = number::impl::utils::getPatternForStyle(
+        const UChar* patternPtr = number::impl::utils::getPatternForStyle(
                 desiredLocale,
                 ns->getName(),
                 gFormatCldrStyles[style],

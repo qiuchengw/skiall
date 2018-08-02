@@ -190,7 +190,7 @@ Precision FractionPrecision::withMaxDigits(int32_t maxSignificantDigits) const {
 Precision Precision::withCurrency(const CurrencyUnit &currency, UErrorCode &status) const {
     if (fType == RND_ERROR) { return *this; } // no-op in error state
     U_ASSERT(fType == RND_CURRENCY);
-    const char16_t *isoCode = currency.getISOCurrency();
+    const UChar *isoCode = currency.getISOCurrency();
     double increment = ucurr_getRoundingIncrementForUsage(isoCode, fUnion.currencyUsage, &status);
     int32_t minMaxFrac = ucurr_getDefaultFractionDigitsForUsage(
             isoCode, fUnion.currencyUsage, &status);

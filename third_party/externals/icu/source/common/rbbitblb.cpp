@@ -1383,8 +1383,8 @@ void RBBITableBuilder::buildSafeReverseTable(UErrorCode &status) {
                 }
             }
             if (wantedEndState == endState) {
-                safePairs.append((char16_t)c1);
-                safePairs.append((char16_t)c2);
+                safePairs.append((UChar)c1);
+                safePairs.append((UChar)c2);
                 // printf("(%d, %d) ", c1, c2);
             }
         }

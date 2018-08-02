@@ -8,7 +8,7 @@
 #include "putilimp.h"
 #include "numbertest.h"
 
-static const char16_t *EXAMPLE_STRINGS[] = {
+static const UChar *EXAMPLE_STRINGS[] = {
         u"",
         u"xyz",
         u"The quick brown fox jumps over the lazy dog",
@@ -36,7 +36,7 @@ void NumberStringBuilderTest::testInsertAppendUnicodeString() {
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString sb1;
     NumberStringBuilder sb2;
-    for (const char16_t* strPtr : EXAMPLE_STRINGS) {
+    for (const UChar* strPtr : EXAMPLE_STRINGS) {
         UnicodeString str(strPtr);
 
         NumberStringBuilder sb3;
@@ -78,7 +78,7 @@ void NumberStringBuilderTest::testInsertAppendUnicodeString() {
 
 void NumberStringBuilderTest::testSplice() {
     static const struct TestCase {
-        const char16_t* input;
+        const UChar* input;
         const int32_t startThis;
         const int32_t endThis;
     } cases[] = {
@@ -96,7 +96,7 @@ void NumberStringBuilderTest::testSplice() {
     UnicodeString sb1;
     NumberStringBuilder sb2;
     for (auto cas : cases) {
-        for (const char16_t* replacementPtr : EXAMPLE_STRINGS) {
+        for (const UChar* replacementPtr : EXAMPLE_STRINGS) {
             UnicodeString replacement(replacementPtr);
 
             // Test replacement with full string
@@ -143,7 +143,7 @@ void NumberStringBuilderTest::testInsertAppendCodePoint() {
         assertEquals("Code point count of sb3", 1, sb3.codePointCount());
         assertEquals(
                 "First code unit in sb3",
-                !U_IS_SUPPLEMENTARY(cas) ? (char16_t) cas : U16_LEAD(cas),
+                !U_IS_SUPPLEMENTARY(cas) ? (UChar) cas : U16_LEAD(cas),
                 sb3.charAt(0));
 
         UnicodeString sb4;

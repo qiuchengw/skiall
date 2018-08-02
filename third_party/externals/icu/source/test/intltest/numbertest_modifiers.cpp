@@ -56,19 +56,19 @@ void ModifiersTest::testConstantMultiFieldModifier() {
 void ModifiersTest::testSimpleModifier() {
     static const int32_t NUM_CASES = 5;
     static const int32_t NUM_OUTPUTS = 4;
-    static const char16_t *patterns[] = {u"{0}", u"X{0}Y", u"XX{0}YYY", u"{0}YY", u"XX📺XX{0}"};
+    static const UChar *patterns[] = {u"{0}", u"X{0}Y", u"XX{0}YYY", u"{0}YY", u"XX📺XX{0}"};
     static const struct {
-        const char16_t *baseString;
+        const UChar *baseString;
         int32_t leftIndex;
         int32_t rightIndex;
     } outputs[NUM_OUTPUTS] = {{u"", 0, 0}, {u"a📻bcde", 0, 0}, {u"a📻bcde", 4, 4}, {u"a📻bcde", 3, 5}};
     static const int32_t prefixLens[] = {0, 1, 2, 0, 6};
-    static const char16_t *expectedCharFields[][2] = {{u"|", u"n"},
+    static const UChar *expectedCharFields[][2] = {{u"|", u"n"},
                                                       {u"X|Y", u"%n%"},
                                                       {u"XX|YYY", u"%%n%%%"},
                                                       {u"|YY", u"n%%"},
                                                       {u"XX📺XX|", u"%%%%%%n"}};
-    static const char16_t *expecteds[][NUM_CASES] = // force auto-format line break
+    static const UChar *expecteds[][NUM_CASES] = // force auto-format line break
             {{
                      u"", u"XY", u"XXYYY", u"YY", u"XX📺XX"}, {
                      u"a📻bcde", u"XYa📻bcde", u"XXYYYa📻bcde", u"YYa📻bcde", u"XX📺XXa📻bcde"}, {

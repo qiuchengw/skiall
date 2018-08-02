@@ -17,7 +17,7 @@
 U_NAMESPACE_BEGIN
 
 UBool
-ByteSinkUtil::appendChange(int32_t length, const char16_t *s16, int32_t s16Length,
+ByteSinkUtil::appendChange(int32_t length, const UChar *s16, int32_t s16Length,
                            ByteSink &sink, Edits *edits, UErrorCode &errorCode) {
     if (U_FAILURE(errorCode)) { return FALSE; }
     char scratch[200];
@@ -56,7 +56,7 @@ ByteSinkUtil::appendChange(int32_t length, const char16_t *s16, int32_t s16Lengt
 
 UBool
 ByteSinkUtil::appendChange(const uint8_t *s, const uint8_t *limit,
-                           const char16_t *s16, int32_t s16Length,
+                           const UChar *s16, int32_t s16Length,
                            ByteSink &sink, Edits *edits, UErrorCode &errorCode) {
     if (U_FAILURE(errorCode)) { return FALSE; }
     if ((limit - s) > INT32_MAX) {

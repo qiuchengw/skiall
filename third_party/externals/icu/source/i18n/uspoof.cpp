@@ -55,7 +55,7 @@ uspoof_cleanup(void) {
 }
 
 static void U_CALLCONV initializeStatics(UErrorCode &status) {
-    static const char16_t *inclusionPat =
+    static const UChar *inclusionPat =
         u"['\\-.\\:\\u00B7\\u0375\\u058A\\u05F3\\u05F4\\u06FD\\u06FE\\u0F0B\\u200C"
         u"\\u200D\\u2010\\u2019\\u2027\\u30A0\\u30FB]";
     gInclusionSet = new UnicodeSet(UnicodeString(inclusionPat), status);
@@ -70,7 +70,7 @@ static void U_CALLCONV initializeStatics(UErrorCode &status) {
     //      org.unicode.text.tools.RecommendedSetGenerator
     // It will print the Java and C++ code to the console for easy copy-paste into this file.
     // Note: concatenated string constants do not work with UNICODE_STRING_SIMPLE on all platforms.
-    static const char16_t *recommendedPat =
+    static const UChar *recommendedPat =
         u"[0-9A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u0131\\u0134-\\u013E"
         u"\\u0141-\\u0148\\u014A-\\u017E\\u018F\\u01A0\\u01A1\\u01AF\\u01B0\\u01CD-"
         u"\\u01DC\\u01DE-\\u01E3\\u01E6-\\u01F0\\u01F4\\u01F5\\u01F8-\\u021B\\u021E"

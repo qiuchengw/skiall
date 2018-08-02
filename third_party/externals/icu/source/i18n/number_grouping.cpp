@@ -20,7 +20,7 @@ int16_t getMinGroupingForLocale(const Locale& locale) {
     UErrorCode localStatus = U_ZERO_ERROR;
     LocalUResourceBundlePointer bundle(ures_open(NULL, locale.getName(), &localStatus));
     int32_t resultLen = 0;
-    const char16_t* result = ures_getStringByKeyWithFallback(
+    const UChar* result = ures_getStringByKeyWithFallback(
         bundle.getAlias(),
         "NumberElements/minimumGroupingDigits",
         &resultLen,

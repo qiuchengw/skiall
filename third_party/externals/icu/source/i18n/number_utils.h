@@ -61,7 +61,7 @@ inline bool unitIsPermille(const MeasureUnit& unit) {
 }
 
 // NOTE: In Java, this method is in NumberFormat.java
-const char16_t*
+const UChar*
 getPatternForStyle(const Locale& locale, const char* nsName, CldrPatternStyle style, UErrorCode& status);
 
 /**

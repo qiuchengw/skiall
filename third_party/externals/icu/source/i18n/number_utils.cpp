@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 
@@ -31,7 +31,7 @@ using icu::double_conversion::DoubleToStringConverter;
 
 namespace {
 
-const char16_t*
+const UChar*
 doGetPattern(UResourceBundle* res, const char* nsName, const char* patternKey, UErrorCode& publicStatus,
              UErrorCode& localStatus) {
     // Construct the path into the resource bundle
@@ -49,7 +49,7 @@ doGetPattern(UResourceBundle* res, const char* nsName, const char* patternKey, U
 }
 
 
-const char16_t* utils::getPatternForStyle(const Locale& locale, const char* nsName, CldrPatternStyle style,
+const UChar* utils::getPatternForStyle(const Locale& locale, const char* nsName, CldrPatternStyle style,
                                           UErrorCode& status) {
     const char* patternKey;
     switch (style) {
@@ -77,7 +77,7 @@ const char16_t* utils::getPatternForStyle(const Locale& locale, const char* nsNa
 
     // Attempt to get the pattern with the native numbering system.
     UErrorCode localStatus = U_ZERO_ERROR;
-    const char16_t* pattern;
+    const UChar* pattern;
     pattern = doGetPattern(res.getAlias(), nsName, patternKey, status, localStatus);
     if (U_FAILURE(status)) { return u""; }
 

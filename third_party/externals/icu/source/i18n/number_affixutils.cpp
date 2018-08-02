@@ -227,7 +227,7 @@ bool AffixUtils::hasCurrencySymbols(const UnicodeString &affixPattern, UErrorCod
 }
 
 UnicodeString AffixUtils::replaceType(const UnicodeString &affixPattern, AffixPatternType type,
-                                      char16_t replacementChar, UErrorCode &status) {
+                                      UChar replacementChar, UErrorCode &status) {
     UnicodeString output(affixPattern); // copy
     if (affixPattern.length() == 0) {
         return output;

@@ -43,7 +43,7 @@ void DecimalQuantityTest::assertDoubleEquals(UnicodeString message, double a, do
 }
 
 void DecimalQuantityTest::assertHealth(const DecimalQuantity &fq) {
-    const char16_t* health = fq.checkHealth();
+    const UChar* health = fq.checkHealth();
     if (health != nullptr) {
         errln(UnicodeString(u"HEALTH FAILURE: ") + UnicodeString(health) + u": " + fq.toString());
     }
@@ -313,7 +313,7 @@ void DecimalQuantityTest::testUseApproximateDoubleWhenAble() {
 void DecimalQuantityTest::testHardDoubleConversion() {
     static const struct TestCase {
         double input;
-        const char16_t* expectedOutput;
+        const UChar* expectedOutput;
     } cases[] = {
             { 512.0000000000017, u"512.0000000000017" },
             { 4095.9999999999977, u"4095.9999999999977" },

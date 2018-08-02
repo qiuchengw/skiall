@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 
@@ -35,7 +35,7 @@ CurrencySymbols::CurrencySymbols(CurrencyUnit currency, const Locale& locale,
     }
 }
 
-const char16_t* CurrencySymbols::getIsoCode() const {
+const UChar* CurrencySymbols::getIsoCode() const {
     return fCurrency.getISOCurrency();
 }
 
@@ -52,10 +52,10 @@ UnicodeString CurrencySymbols::getCurrencySymbol(UErrorCode& status) const {
 }
 
 UnicodeString CurrencySymbols::loadSymbol(UCurrNameStyle selector, UErrorCode& status) const {
-    const char16_t* isoCode = fCurrency.getISOCurrency();
+    const UChar* isoCode = fCurrency.getISOCurrency();
     UBool ignoredIsChoiceFormatFillIn = FALSE;
     int32_t symbolLen = 0;
-    const char16_t* symbol = ucurr_getName(
+    const UChar* symbol = ucurr_getName(
             isoCode,
             fLocaleName.data(),
             selector,
@@ -81,10 +81,10 @@ UnicodeString CurrencySymbols::getIntlCurrencySymbol(UErrorCode&) const {
 }
 
 UnicodeString CurrencySymbols::getPluralName(StandardPlural::Form plural, UErrorCode& status) const {
-    const char16_t* isoCode = fCurrency.getISOCurrency();
+    const UChar* isoCode = fCurrency.getISOCurrency();
     UBool isChoiceFormat = FALSE;
     int32_t symbolLen = 0;
-    const char16_t* symbol = ucurr_getPluralName(
+    const UChar* symbol = ucurr_getPluralName(
             isoCode,
             fLocaleName.data(),
             &isChoiceFormat,
@@ -108,7 +108,7 @@ icu::number::impl::resolveCurrency(const DecimalFormatProperties& properties, co
         return properties.currency.getNoError();
     } else {
         UErrorCode localStatus = U_ZERO_ERROR;
-        char16_t buf[4] = {};
+        UChar buf[4] = {};
         ucurr_forLocale(locale.getName(), buf, 4, &localStatus);
         if (U_SUCCESS(localStatus)) {
             return CurrencyUnit(buf, status);

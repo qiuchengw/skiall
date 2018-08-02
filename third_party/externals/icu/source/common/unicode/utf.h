@@ -47,8 +47,8 @@
  * but are optimized for the much more frequently occurring BMP code points.
  *
  * umachine.h defines UChar to be an unsigned 16-bit integer.
- * Since ICU 59, ICU uses char16_t in C++, UChar only in C,
- * and defines UChar=char16_t by default. See the UChar API docs for details.
+ * Since ICU 59, ICU uses UChar in C++, UChar only in C,
+ * and defines UChar=UChar by default. See the UChar API docs for details.
  *
  * UChar32 is defined to be a signed 32-bit integer (int32_t), large enough for a 21-bit
  * Unicode code point (Unicode scalar value, 0..0x10ffff) and U_SENTINEL (-1).

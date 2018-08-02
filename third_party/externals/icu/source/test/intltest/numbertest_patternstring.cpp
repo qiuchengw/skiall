@@ -44,7 +44,7 @@ void PatternStringTest::testLocalized() {
 }
 
 void PatternStringTest::testToPatternSimple() {
-    const char16_t* cases[][2] = {{u"#", u"0"},
+    const UChar* cases[][2] = {{u"#", u"0"},
                                   {u"0", u"0"},
                                   {u"#0", u"0"},
                                   {u"###", u"0"},
@@ -68,7 +68,7 @@ void PatternStringTest::testToPatternSimple() {
                                   {u"*'நி'##0", u"*'நி'##0"},};
 
     UErrorCode status = U_ZERO_ERROR;
-    for (const char16_t** cas : cases) {
+    for (const UChar** cas : cases) {
         UnicodeString input(cas[0]);
         UnicodeString output(cas[1]);
 
@@ -81,7 +81,7 @@ void PatternStringTest::testToPatternSimple() {
 }
 
 void PatternStringTest::testExceptionOnInvalid() {
-    static const char16_t* invalidPatterns[] = {
+    static const UChar* invalidPatterns[] = {
             u"#.#.#",
             u"0#",
             u"0#.",

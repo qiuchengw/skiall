@@ -720,7 +720,7 @@ void IntlTestSpoof::testCombiningDot() {
 
     static const struct TestCase {
         bool shouldFail;
-        const char16_t* input;
+        const UChar* input;
     } cases[] = {
             {false, u"i"},
             {false, u"j"},

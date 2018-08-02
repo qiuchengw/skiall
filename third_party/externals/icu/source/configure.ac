@@ -1062,7 +1062,7 @@ static const unsigned short test[] = u"This is a UTF16 literal string.";
         # -Wno-return-type-c-linkage is desired so that stable ICU API is not warned about.
         AC_LANG_PUSH([C++])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-static const char16_t test[] = u"This is a UTF16 literal string.";
+static const UChar test[] = u"This is a UTF16 literal string.";
         ]], [[]])],[CXX_UTF16_STRING=1],[CXX_UTF16_STRING=0])
         AC_LANG_POP([C++])
         if test "$CXX_UTF16_STRING" = 1; then

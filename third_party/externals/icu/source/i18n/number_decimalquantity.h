@@ -246,7 +246,7 @@ class U_I18N_API DecimalQuantity : public IFixedDecimal, public UMemory {
      *
      * @return An error message if this instance is invalid, or null if this instance is healthy.
      */
-    const char16_t* checkHealth() const;
+    const UChar* checkHealth() const;
 
     UnicodeString toString() const;
 

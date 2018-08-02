@@ -37,7 +37,7 @@ void NumberSkeletonTest::validTokens() {
 
     // This tests only if the tokens are valid, not their behavior.
     // Most of these are from the design doc.
-    static const char16_t* cases[] = {
+    static const UChar* cases[] = {
             u"precision-integer",
             u"precision-unlimited",
             u"@@@##",
@@ -117,7 +117,7 @@ void NumberSkeletonTest::validTokens() {
 }
 
 void NumberSkeletonTest::invalidTokens() {
-    static const char16_t* cases[] = {
+    static const UChar* cases[] = {
             u".00x",
             u".00##0",
             u".##+",
@@ -153,7 +153,7 @@ void NumberSkeletonTest::invalidTokens() {
 }
 
 void NumberSkeletonTest::unknownTokens() {
-    static const char16_t* cases[] = {
+    static const UChar* cases[] = {
             u"maesure-unit",
             u"measure-unit/foo-bar",
             u"numbering-system/dummy",
@@ -166,7 +166,7 @@ void NumberSkeletonTest::unknownTokens() {
 }
 
 void NumberSkeletonTest::unexpectedTokens() {
-    static const char16_t* cases[] = {
+    static const UChar* cases[] = {
             u"group-thousands/foo",
             u"precision-integer//@## group-off",
             u"precision-integer//@##  group-off",
@@ -177,7 +177,7 @@ void NumberSkeletonTest::unexpectedTokens() {
 }
 
 void NumberSkeletonTest::duplicateValues() {
-    static const char16_t* cases[] = {
+    static const UChar* cases[] = {
             u"precision-integer precision-integer",
             u"precision-integer .00+",
             u"precision-integer precision-unlimited",
@@ -190,7 +190,7 @@ void NumberSkeletonTest::duplicateValues() {
 }
 
 void NumberSkeletonTest::stemsRequiringOption() {
-    static const char16_t* stems[] = {
+    static const UChar* stems[] = {
             u"precision-increment",
             u"measure-unit",
             u"per-unit",
@@ -198,7 +198,7 @@ void NumberSkeletonTest::stemsRequiringOption() {
             u"integer-width",
             u"numbering-system",
             u"scale"};
-    static const char16_t* suffixes[] = {u"", u"/@##", u" scientific", u"/@## scientific"};
+    static const UChar* suffixes[] = {u"", u"/@##", u" scientific", u"/@## scientific"};
 
     for (auto& stem : stems) {
         for (auto& suffix : suffixes) {
@@ -213,7 +213,7 @@ void NumberSkeletonTest::stemsRequiringOption() {
 void NumberSkeletonTest::defaultTokens() {
     IcuTestErrorCode status(*this, "defaultTokens");
 
-    static const char16_t* cases[] = {
+    static const UChar* cases[] = {
             u"notation-simple",
             u"base-unit",
             u"group-auto",
@@ -237,8 +237,8 @@ void NumberSkeletonTest::flexibleSeparators() {
     IcuTestErrorCode status(*this, "flexibleSeparators");
 
     static struct TestCase {
-        const char16_t* skeleton;
-        const char16_t* expected;
+        const UChar* skeleton;
+        const UChar* expected;
     } cases[] = {{u"precision-integer group-off", u"5142"},
                  {u"precision-integer  group-off", u"5142"},
                  {u"precision-integer/@## group-off", u"5140"},
@@ -259,7 +259,7 @@ void NumberSkeletonTest::flexibleSeparators() {
 }
 
 // In C++, there is no distinguishing between "invalid", "unknown", and "unexpected" tokens.
-void NumberSkeletonTest::expectedErrorSkeleton(const char16_t** cases, int32_t casesLen) {
+void NumberSkeletonTest::expectedErrorSkeleton(const UChar** cases, int32_t casesLen) {
     for (int32_t i = 0; i < casesLen; i++) {
         UnicodeString skeletonString(cases[i]);
         UErrorCode status = U_ZERO_ERROR;

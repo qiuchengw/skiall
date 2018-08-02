@@ -21,12 +21,12 @@ public:
 
     /** (length) bytes were mapped to valid (s16, s16Length). */
     static UBool appendChange(int32_t length,
-                              const char16_t *s16, int32_t s16Length,
+                              const UChar *s16, int32_t s16Length,
                               ByteSink &sink, Edits *edits, UErrorCode &errorCode);
 
     /** The bytes at [s, limit[ were mapped to valid (s16, s16Length). */
     static UBool appendChange(const uint8_t *s, const uint8_t *limit,
-                              const char16_t *s16, int32_t s16Length,
+                              const UChar *s16, int32_t s16Length,
                               ByteSink &sink, Edits *edits, UErrorCode &errorCode);
 
     /** (length) bytes were mapped/changed to valid code point c. */

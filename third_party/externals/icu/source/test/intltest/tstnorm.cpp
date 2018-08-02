@@ -1697,15 +1697,15 @@ BasicNormalizerTest::TestNormalizeIllFormedText() {
     // ICU currently treats ill-formed sequences as normalization-inert
     // and copies them unchanged.
     UnicodeString src(u"  A");
-    src.append((char16_t)0xD800).append(u"ÄA\u0308").append((char16_t)0xD900).
-        append(u"A\u0308\u00ad\u0323").append((char16_t)0xDBFF).
-        append(u"Ä\u0323,\u00ad").append((char16_t)0xDC00).
-        append(u"\u1100\u1161가\u11A8가\u3133  ").append((char16_t)0xDFFF);
+    src.append((UChar)0xD800).append(u"ÄA\u0308").append((UChar)0xD900).
+        append(u"A\u0308\u00ad\u0323").append((UChar)0xDBFF).
+        append(u"Ä\u0323,\u00ad").append((UChar)0xDC00).
+        append(u"\u1100\u1161가\u11A8가\u3133  ").append((UChar)0xDFFF);
     UnicodeString expected(u"  a");
-    expected.append((char16_t)0xD800).append(u"ää").append((char16_t)0xD900).
-        append(u"ạ\u0308").append((char16_t)0xDBFF).
-        append(u"ạ\u0308,").append((char16_t)0xDC00).
-        append(u"가각갃  ").append((char16_t)0xDFFF);
+    expected.append((UChar)0xD800).append(u"ää").append((UChar)0xD900).
+        append(u"ạ\u0308").append((UChar)0xDBFF).
+        append(u"ạ\u0308,").append((UChar)0xDC00).
+        append(u"가각갃  ").append((UChar)0xDFFF);
     UnicodeString result = nfkc_cf->normalize(src, errorCode);
     assertSuccess("normalize", errorCode.get());
     assertEquals("normalize", expected, result);

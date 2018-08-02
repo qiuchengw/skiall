@@ -45,7 +45,7 @@ class U_I18N_API NumberStringBuilder : public UMemory {
 
     int32_t codePointCount() const;
 
-    inline char16_t charAt(int32_t index) const {
+    inline UChar charAt(int32_t index) const {
         U_ASSERT(index >= 0);
         U_ASSERT(index < fLength);
         return getCharPtr()[fZero + index];
@@ -98,7 +98,7 @@ class U_I18N_API NumberStringBuilder : public UMemory {
 
     UnicodeString toDebugString() const;
 
-    const char16_t *chars() const;
+    const UChar *chars() const;
 
     bool contentEquals(const NumberStringBuilder &other) const;
 
@@ -108,16 +108,16 @@ class U_I18N_API NumberStringBuilder : public UMemory {
 
   private:
     bool fUsingHeap = false;
-    ValueOrHeapArray<char16_t> fChars;
+    ValueOrHeapArray<UChar> fChars;
     ValueOrHeapArray<Field> fFields;
     int32_t fZero = DEFAULT_CAPACITY / 2;
     int32_t fLength = 0;
 
-    inline char16_t *getCharPtr() {
+    inline UChar *getCharPtr() {
         return fUsingHeap ? fChars.heap.ptr : fChars.value;
     }
 
-    inline const char16_t *getCharPtr() const {
+    inline const UChar *getCharPtr() const {
         return fUsingHeap ? fChars.heap.ptr : fChars.value;
     }
 

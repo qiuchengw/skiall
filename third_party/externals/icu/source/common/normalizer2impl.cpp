@@ -812,7 +812,7 @@ Normalizer2Impl::decomposeShort(const uint8_t *src, const uint8_t *limit,
             if (c < 0) {
                 c = codePointFromValidUTF8(prevSrc, src);
             }
-            char16_t jamos[3];
+            UChar jamos[3];
             if (!buffer.appendZeroCC(jamos, jamos+Hangul::decompose(c, jamos), errorCode)) {
                 return nullptr;
             }
@@ -828,7 +828,7 @@ Normalizer2Impl::decomposeShort(const uint8_t *src, const uint8_t *limit,
             } else {
                 leadCC = 0;
             }
-            if (!buffer.append((const char16_t *)mapping+1, length, leadCC, trailCC, errorCode)) {
+            if (!buffer.append((const UChar *)mapping+1, length, leadCC, trailCC, errorCode)) {
                 return nullptr;
             }
         }

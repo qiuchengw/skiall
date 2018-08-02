@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 
@@ -52,7 +52,7 @@ int32_t StringSegment::length() const {
     return fEnd - fStart;
 }
 
-char16_t StringSegment::charAt(int32_t index) const {
+UChar StringSegment::charAt(int32_t index) const {
     return fStr.charAt(index + fStart);
 }
 
@@ -70,7 +70,7 @@ const UnicodeString StringSegment::toTempUnicodeString() const {
 }
 
 UChar32 StringSegment::getCodePoint() const {
-    char16_t lead = fStr.charAt(fStart);
+    UChar lead = fStr.charAt(fStart);
     if (U16_IS_LEAD(lead) && fStart + 1 < fEnd) {
         return fStr.char32At(fStart);
     } else if (U16_IS_SURROGATE(lead)) {
@@ -116,8 +116,8 @@ int32_t StringSegment::getPrefixLengthInternal(const UnicodeString& other, bool 
     int32_t offset = 0;
     for (; offset < uprv_min(length(), other.length());) {
         // TODO: case-fold code points, not chars
-        char16_t c1 = charAt(offset);
-        char16_t c2 = other.charAt(offset);
+        UChar c1 = charAt(offset);
+        UChar c2 = other.charAt(offset);
         if (!codePointsEqual(c1, c2, foldCase)) {
             break;
         }

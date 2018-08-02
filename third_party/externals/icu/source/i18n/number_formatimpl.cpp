@@ -28,9 +28,9 @@ namespace {
 
 struct CurrencyFormatInfoResult {
     bool exists;
-    const char16_t* pattern;
-    const char16_t* decimalSeparator;
-    const char16_t* groupingSeparator;
+    const UChar* pattern;
+    const UChar* decimalSeparator;
+    const UChar* groupingSeparator;
 };
 
 CurrencyFormatInfoResult
@@ -197,7 +197,7 @@ NumberFormatterImpl::macrosToMicroGenerator(const MacroProps& macros, bool safe,
 
     // Load and parse the pattern string. It is used for grouping sizes and affixes only.
     // If we are formatting currency, check for a currency-specific pattern.
-    const char16_t* pattern = nullptr;
+    const UChar* pattern = nullptr;
     if (isCurrency) {
         CurrencyFormatInfoResult info = getCurrencyFormatInfo(
                 macros.locale, currency.getSubtype(), status);

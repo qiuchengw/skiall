@@ -62,7 +62,7 @@ NumberStringBuilder &NumberStringBuilder::operator=(const NumberStringBuilder &o
     if (capacity > DEFAULT_CAPACITY) {
         // FIXME: uprv_malloc
         // C++ note: malloc appears in two places: here and in prepareForInsertHelper.
-        auto newChars = static_cast<char16_t *> (uprv_malloc(sizeof(char16_t) * capacity));
+        auto newChars = static_cast<UChar *> (uprv_malloc(sizeof(UChar) * capacity));
         auto newFields = static_cast<Field *>(uprv_malloc(sizeof(Field) * capacity));
         if (newChars == nullptr || newFields == nullptr) {
             // UErrorCode is not available; fail silently.
@@ -79,7 +79,7 @@ NumberStringBuilder &NumberStringBuilder::operator=(const NumberStringBuilder &o
         fFields.heap.ptr = newFields;
     }
 
-    uprv_memcpy2(getCharPtr(), other.getCharPtr(), sizeof(char16_t) * capacity);
+    uprv_memcpy2(getCharPtr(), other.getCharPtr(), sizeof(UChar) * capacity);
     uprv_memcpy2(getFieldPtr(), other.getFieldPtr(), sizeof(Field) * capacity);
 
     fZero = other.fZero;
@@ -148,7 +148,7 @@ NumberStringBuilder::insertCodePoint(int32_t index, UChar32 codePoint, Field fie
         return count;
     }
     if (count == 1) {
-        getCharPtr()[position] = (char16_t) codePoint;
+        getCharPtr()[position] = (UChar) codePoint;
         getFieldPtr()[position] = field;
     } else {
         getCharPtr()[position] = U16_LEAD(codePoint);
@@ -259,14 +259,14 @@ int32_t NumberStringBuilder::prepareForInsert(int32_t index, int32_t count, UErr
 int32_t NumberStringBuilder::prepareForInsertHelper(int32_t index, int32_t count, UErrorCode &status) {
     int32_t oldCapacity = getCapacity();
     int32_t oldZero = fZero;
-    char16_t *oldChars = getCharPtr();
+    UChar *oldChars = getCharPtr();
     Field *oldFields = getFieldPtr();
     if (fLength + count > oldCapacity) {
         int32_t newCapacity = (fLength + count) * 2;
         int32_t newZero = newCapacity / 2 - (fLength + count) / 2;
 
         // C++ note: malloc appears in two places: here and in the assignment operator.
-        auto newChars = static_cast<char16_t *> (uprv_malloc(sizeof(char16_t) * newCapacity));
+        auto newChars = static_cast<UChar *> (uprv_malloc(sizeof(UChar) * newCapacity));
         auto newFields = static_cast<Field *>(uprv_malloc(sizeof(Field) * newCapacity));
         if (newChars == nullptr || newFields == nullptr) {
             uprv_free(newChars);
@@ -278,10 +278,10 @@ int32_t NumberStringBuilder::prepareForInsertHelper(int32_t index, int32_t count
         // First copy the prefix and then the suffix, leaving room for the new chars that the
         // caller wants to insert.
         // C++ note: memcpy is OK because the src and dest do not overlap.
-        uprv_memcpy2(newChars + newZero, oldChars + oldZero, sizeof(char16_t) * index);
+        uprv_memcpy2(newChars + newZero, oldChars + oldZero, sizeof(UChar) * index);
         uprv_memcpy2(newChars + newZero + index + count,
                 oldChars + oldZero + index,
-                sizeof(char16_t) * (fLength - index));
+                sizeof(UChar) * (fLength - index));
         uprv_memcpy2(newFields + newZero, oldFields + oldZero, sizeof(Field) * index);
         uprv_memcpy2(newFields + newZero + index + count,
                 oldFields + oldZero + index,
@@ -304,10 +304,10 @@ int32_t NumberStringBuilder::prepareForInsertHelper(int32_t index, int32_t count
         // C++ note: memmove is required because src and dest may overlap.
         // First copy the entire string to the location of the prefix, and then move the suffix
         // to make room for the new chars that the caller wants to insert.
-        uprv_memmove2(oldChars + newZero, oldChars + oldZero, sizeof(char16_t) * fLength);
+        uprv_memmove2(oldChars + newZero, oldChars + oldZero, sizeof(UChar) * fLength);
         uprv_memmove2(oldChars + newZero + index + count,
                 oldChars + newZero + index,
-                sizeof(char16_t) * (fLength - index));
+                sizeof(UChar) * (fLength - index));
         uprv_memmove2(oldFields + newZero, oldFields + oldZero, sizeof(Field) * fLength);
         uprv_memmove2(oldFields + newZero + index + count,
                 oldFields + newZero + index,
@@ -324,7 +324,7 @@ int32_t NumberStringBuilder::remove(int32_t index, int32_t count) {
     int32_t position = index + fZero;
     uprv_memmove2(getCharPtr() + position,
             getCharPtr() + position + count,
-            sizeof(char16_t) * (fLength - index - count));
+            sizeof(UChar) * (fLength - index - count));
     uprv_memmove2(getFieldPtr() + position,
             getFieldPtr() + position + count,
             sizeof(Field) * (fLength - index - count));
@@ -350,7 +350,7 @@ UnicodeString NumberStringBuilder::toDebugString() const {
         if (fieldAt(i) == UNUM_FIELD_COUNT) {
             sb.append(u'n');
         } else {
-            char16_t c;
+            UChar c;
             switch (fieldAt(i)) {
                 case UNUM_SIGN_FIELD:
                     c = u'-';
@@ -396,7 +396,7 @@ UnicodeString NumberStringBuilder::toDebugString() const {
     return sb;
 }
 
-const char16_t *NumberStringBuilder::chars() const {
+const UChar *NumberStringBuilder::chars() const {
     return getCharPtr() + fZero;
 }
 

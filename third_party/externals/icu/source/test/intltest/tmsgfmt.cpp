@@ -1997,10 +1997,10 @@ void TestMessageFormat::TestMessageFormatNumberSkeleton() {
     IcuTestErrorCode status(*this, "TestMessageFormatNumberSkeleton");
 
     static const struct TestCase {
-        const char16_t* messagePattern;
+        const UChar* messagePattern;
         const char* localeName;
         double arg;
-        const char16_t* expected;
+        const UChar* expected;
     } cases[] = {
             { u"{0,number,::percent}", "en", 50, u"50%" },
             { u"{0,number,::percent scale/100}", "en", 0.5, u"50%" },

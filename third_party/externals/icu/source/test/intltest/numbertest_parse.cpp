@@ -33,8 +33,8 @@ void NumberParserTest::testBasic() {
 
     static const struct TestCase {
         int32_t flags;
-        const char16_t* inputString;
-        const char16_t* patternString;
+        const UChar* inputString;
+        const UChar* patternString;
         int32_t expectedCharsConsumed;
         double expectedResultDouble;
     } cases[] = {{3, u"51423", u"0", 5, 51423.},
@@ -205,7 +205,7 @@ void NumberParserTest::testSeriesMatcher() {
     assertTrue("", series.smokeTest(StringSegment(u"+", false)));
 
     static const struct TestCase {
-        const char16_t* input;
+        const UChar* input;
         int32_t expectedOffset;
         bool expectedMaybeMore;
     } cases[] = {{u"", 0, true},
@@ -258,9 +258,9 @@ void NumberParserTest::testCombinedCurrencyMatcher() {
     NumberParseMatcher& matcherNoForeign = warehouseNoForeign.currency(status);
 
     static const struct TestCase {
-        const char16_t* input;
-        const char16_t* expectedCurrencyCode;
-        const char16_t* expectedNoForeignCurrencyCode;
+        const UChar* input;
+        const UChar* expectedCurrencyCode;
+        const UChar* expectedNoForeignCurrencyCode;
     } cases[]{{u"", u"", u""},
               {u"FOO", u"", u""},
               {u"USD", u"USD", u""},
@@ -318,9 +318,9 @@ void NumberParserTest::testAffixPatternMatcher() {
 
     static const struct TestCase {
         bool exactMatch;
-        const char16_t* affixPattern;
+        const UChar* affixPattern;
         int32_t expectedMatcherLength;
-        const char16_t* sampleParseableString;
+        const UChar* sampleParseableString;
     } cases[] = {{false, u"-", 1, u"-"},
                  {false, u"+-%", 5, u"+-%"},
                  {true, u"+-%", 3, u"+-%"},

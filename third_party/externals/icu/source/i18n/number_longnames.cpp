@@ -121,7 +121,7 @@ void getCurrencyLongNameData(const Locale &locale, const CurrencyUnit &currency,
         }
         UBool isChoiceFormat = FALSE;
         int32_t longNameLen = 0;
-        const char16_t *longName = ucurr_getPluralName(
+        const UChar *longName = ucurr_getPluralName(
                 currency.getISOCurrency(),
                 locale.getName(),
                 &isChoiceFormat,

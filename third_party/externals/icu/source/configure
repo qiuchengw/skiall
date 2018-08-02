@@ -7528,7 +7528,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-static const char16_t test[] = u"This is a UTF16 literal string.";
+static const UChar test[] = u"This is a UTF16 literal string.";
 
 int
 main ()

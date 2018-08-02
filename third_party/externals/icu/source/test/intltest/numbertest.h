@@ -102,13 +102,13 @@ class NumberFormatterApiTest : public IntlTest {
     DecimalFormatSymbols SWISS_SYMBOLS;
     DecimalFormatSymbols MYANMAR_SYMBOLS;
 
-    void assertFormatDescending(const char16_t* message, const char16_t* skeleton,
+    void assertFormatDescending(const UChar* message, const UChar* skeleton,
                                 const UnlocalizedNumberFormatter& f, Locale locale, ...);
 
-    void assertFormatDescendingBig(const char16_t* message, const char16_t* skeleton,
+    void assertFormatDescendingBig(const UChar* message, const UChar* skeleton,
                                    const UnlocalizedNumberFormatter& f, Locale locale, ...);
 
-    void assertFormatSingle(const char16_t* message, const char16_t* skeleton,
+    void assertFormatSingle(const UChar* message, const UChar* skeleton,
                             const UnlocalizedNumberFormatter& f, Locale locale, double input,
                             const UnicodeString& expected);
 
@@ -241,7 +241,7 @@ class NumberSkeletonTest : public IntlTest {
     void runIndexedTest(int32_t index, UBool exec, const char *&name, char *par = 0);
 
   private:
-    void expectedErrorSkeleton(const char16_t** cases, int32_t casesLen);
+    void expectedErrorSkeleton(const UChar** cases, int32_t casesLen);
 };
 
 

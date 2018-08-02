@@ -660,7 +660,7 @@ void RangeDescriptor::split(UChar32 where, UErrorCode &status) {
 void RangeDescriptor::setDictionaryFlag() {
     int i;
 
-    static const char16_t *dictionary = u"dictionary";
+    static const UChar *dictionary = u"dictionary";
     for (i=0; i<fIncludesSets->size(); i++) {
         RBBINode *usetNode  = (RBBINode *)fIncludesSets->elementAt(i);
         RBBINode *setRef = usetNode->fParent;

@@ -71,7 +71,7 @@ public:
     void TestCaseMapGreekExtended();
 
 private:
-    void assertGreekUpper(const char16_t *s, const char16_t *expected);
+    void assertGreekUpper(const UChar *s, const UChar *expected);
 
     Locale GREEK_LOCALE_;
 };
@@ -702,7 +702,7 @@ StringCaseTest::TestFullCaseFoldingIterator() {
 }
 
 void
-StringCaseTest::assertGreekUpper(const char16_t *s, const char16_t *expected) {
+StringCaseTest::assertGreekUpper(const UChar *s, const UChar *expected) {
     UnicodeString s16(s);
     UnicodeString expected16(expected);
     UnicodeString msg = UnicodeString("UnicodeString::toUpper/Greek(\"") + s16 + "\")";
@@ -1522,7 +1522,7 @@ void StringCaseTest::TestLongUnicodeString() {
 #if !UCONFIG_NO_BREAK_ITERATION
 void StringCaseTest::TestBug13127() {
     // Test case crashed when the bug was present.
-    const char16_t *s16 = u"日本語";
+    const UChar *s16 = u"日本語";
     UnicodeString s(TRUE, s16, -1);
     s.toTitle(0, Locale::getEnglish());
 }
@@ -1530,8 +1530,8 @@ void StringCaseTest::TestBug13127() {
 void StringCaseTest::TestInPlaceTitle() {
     // Similar to TestBug13127. u_strToTitle() can modify the buffer in-place.
     IcuTestErrorCode errorCode(*this, "TestInPlaceTitle");
-    char16_t s[32] = u"ß ß ß日本語 abcdef";
-    const char16_t *expected = u"Ss Ss Ss日本語 Abcdef";
+    UChar s[32] = u"ß ß ß日本語 abcdef";
+    const UChar *expected = u"Ss Ss Ss日本語 Abcdef";
     int32_t length = u_strToTitle(s, UPRV_LENGTHOF(s), s, -1, nullptr, "", errorCode);
     assertEquals("u_strToTitle(in-place) length", u_strlen(expected), length);
     assertEquals("u_strToTitle(in-place)", expected, s);
@@ -1540,33 +1540,33 @@ void StringCaseTest::TestInPlaceTitle() {
 
 void StringCaseTest::TestCaseMapEditsIteratorDocs() {
     IcuTestErrorCode status(*this, "TestCaseMapEditsIteratorDocs");
-    const char16_t* input = u"abcßDeF";
+    const UChar* input = u"abcßDeF";
     int32_t inputLength = u_strlen(input);
     // output: "abcssdef"
 
-    char16_t output[10];
+    UChar output[10];
     Edits edits;
     CaseMap::fold(0, input, -1, output, 10, &edits, status);
 
-    static const char16_t* fineIteratorExpected[] = {
+    static const UChar* fineIteratorExpected[] = {
             u"{ src[0..3] ≡ dest[0..3] (no-change) }",
             u"{ src[3..4] ⇝ dest[3..5], repl[0..2] }",
             u"{ src[4..5] ⇝ dest[5..6], repl[2..3] }",
             u"{ src[5..6] ≡ dest[6..7] (no-change) }",
             u"{ src[6..7] ⇝ dest[7..8], repl[3..4] }",
     };
-    static const char16_t* fineChangesIteratorExpected[] = {
+    static const UChar* fineChangesIteratorExpected[] = {
             u"{ src[3..4] ⇝ dest[3..5], repl[0..2] }",
             u"{ src[4..5] ⇝ dest[5..6], repl[2..3] }",
             u"{ src[6..7] ⇝ dest[7..8], repl[3..4] }",
     };
-    static const char16_t* coarseIteratorExpected[] = {
+    static const UChar* coarseIteratorExpected[] = {
             u"{ src[0..3] ≡ dest[0..3] (no-change) }",
             u"{ src[3..5] ⇝ dest[3..6], repl[0..3] }",
             u"{ src[5..6] ≡ dest[6..7] (no-change) }",
             u"{ src[6..7] ⇝ dest[7..8], repl[3..4] }",
     };
-    static const char16_t* coarseChangesIteratorExpected[] = {
+    static const UChar* coarseChangesIteratorExpected[] = {
             u"{ src[3..5] ⇝ dest[3..6], repl[0..3] }",
             u"{ src[6..7] ⇝ dest[7..8], repl[3..4] }",
     };

@@ -184,7 +184,7 @@ class U_I18N_API AffixUtils {
      * @return A string containing the new affix pattern.
      */
     static UnicodeString replaceType(const UnicodeString& affixPattern, AffixPatternType type,
-                                     char16_t replacementChar, UErrorCode& status);
+                                     UChar replacementChar, UErrorCode& status);
 
     /**
      * Returns whether the given affix pattern contains only symbols and ignorables as defined by the

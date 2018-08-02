@@ -5,7 +5,7 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-// Allow implicit conversion from char16_t* to UnicodeString for this file:
+// Allow implicit conversion from UChar* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
 #define UNISTR_FROM_STRING_EXPLICIT
 
@@ -375,7 +375,7 @@ void PropertiesAffixPatternProvider::setTo(const DecimalFormatProperties& proper
     }
 }
 
-char16_t PropertiesAffixPatternProvider::charAt(int flags, int i) const {
+UChar PropertiesAffixPatternProvider::charAt(int flags, int i) const {
     return getStringInternal(flags).charAt(i);
 }
 
@@ -459,7 +459,7 @@ void CurrencyPluralInfoAffixProvider::setTo(const CurrencyPluralInfo& cpi,
     }
 }
 
-char16_t CurrencyPluralInfoAffixProvider::charAt(int32_t flags, int32_t i) const {
+UChar CurrencyPluralInfoAffixProvider::charAt(int32_t flags, int32_t i) const {
     int32_t pluralOrdinal = (flags & AFFIX_PLURAL_MASK);
     return affixesByPlural[pluralOrdinal].charAt(flags, i);
 }
