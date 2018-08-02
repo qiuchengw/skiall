@@ -1323,7 +1323,7 @@ private:
 };
 
 struct JsonStatus {
-    const Json::Value& fObject;
+    /*const*/ Json::Value& fObject;
     Json::Value::iterator fIter;
     string fName;
 };
