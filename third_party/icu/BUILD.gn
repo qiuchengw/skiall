@@ -12,7 +12,7 @@ import("../third_party.gni")
 if (skia_use_system_icu) {
   system("icu") {
     libs = [ "icuuc" ]
-    defines = [ "U_USING_ICU_NAMESPACE=0" ]
+    defines = [ "U_USING_ICU_NAMESPACE=0", "UCHAR_TYPE=char16_t" ]
   }
 } else {
   third_party("icu") {
@@ -20,13 +20,14 @@ if (skia_use_system_icu) {
       "../externals/icu/source/common",
       ".",
     ]
-    public_defines = [ "U_USING_ICU_NAMESPACE=0" ]
+    public_defines = [ "U_USING_ICU_NAMESPACE=0", "UCHAR_TYPE=char16_t" ]
     configs -= [ "//gn:no_rtti" ]
     defines = [
       # http://userguide.icu-project.org/howtouseicu
       "U_COMMON_IMPLEMENTATION",
       "U_STATIC_IMPLEMENTATION",
       "U_ENABLE_DYLOAD=0",
+      "UCHAR_TYPE=char16_t",
     ]
     sources = [
       "../externals/icu/source/common/appendable.cpp",
@@ -217,6 +218,7 @@ if (skia_use_system_icu) {
       public_defines += [
         "U_NOEXCEPT=",
         "U_STATIC_IMPLEMENTATION",
+        "UCHAR_TYPE=char16_t",
       ]
       libs = [ "Advapi32.lib" ]
       sources += [ "../externals/icu/source/stubdata/stubdata.c" ]
