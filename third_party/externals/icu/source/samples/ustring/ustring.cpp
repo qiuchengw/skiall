@@ -1,18 +1,12 @@
 /*
 *******************************************************************************
 *
-*   © 2016 and later: Unicode, Inc. and others.
-*   License & terms of use: http://www.unicode.org/copyright.html#License
-*
-*******************************************************************************
-*******************************************************************************
-*
 *   Copyright (C) 2000-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
 *   file name:  ustring.c
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -30,12 +24,6 @@
 #include "unicode/ustring.h"
 #include "unicode/ucnv.h"
 #include "unicode/unistr.h"
-
-using namespace icu;
-
-#ifndef UPRV_LENGTHOF
-#define UPRV_LENGTHOF(array) (int32_t)(sizeof(array)/sizeof((array)[0]))
-#endif
 
 // helper functions -------------------------------------------------------- ***
 

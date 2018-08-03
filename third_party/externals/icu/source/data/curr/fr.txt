@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fr.xml
+// *
+// ***************************************************************************
 fr{
     Currencies{
         ADP{
@@ -190,13 +196,9 @@ fr{
             "BYB",
             "nouveau rouble biélorusse (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "rouble biélorusse",
-        }
         BYR{
             "BYR",
-            "rouble biélorusse (2000–2016)",
+            "rouble biélorusse",
         }
         BZD{
             "$BZ",
@@ -229,10 +231,6 @@ fr{
         CLP{
             "$CL",
             "peso chilien",
-        }
-        CNH{
-            "CNH",
-            "yuan chinois (zone extracôtière)",
         }
         CNY{
             "CNY",
@@ -468,7 +466,7 @@ fr{
         }
         IRR{
             "IRR",
-            "riyal iranien",
+            "rial iranien",
         }
         ISK{
             "ISK",
@@ -620,10 +618,6 @@ fr{
         }
         MRO{
             "MRO",
-            "ouguiya mauritanien (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "ouguiya mauritanien",
         }
         MTL{
@@ -708,7 +702,7 @@ fr{
         }
         OMR{
             "OMR",
-            "riyal omanais",
+            "rial omanais",
         }
         PAB{
             "PAB",
@@ -720,11 +714,11 @@ fr{
         }
         PEN{
             "PEN",
-            "sol péruvien",
+            "nouveau sol péruvien",
         }
         PES{
             "PES",
-            "sol péruvien (1863–1985)",
+            "sol péruvien",
         }
         PGK{
             "PGK",
@@ -756,7 +750,7 @@ fr{
         }
         QAR{
             "QAR",
-            "riyal qatari",
+            "rial qatari",
         }
         RHD{
             "$RH",
@@ -788,7 +782,7 @@ fr{
         }
         SAR{
             "SAR",
-            "riyal saoudien",
+            "rial saoudien",
         }
         SBD{
             "$SB",
@@ -852,10 +846,6 @@ fr{
         }
         STD{
             "STD",
-            "dobra santoméen (1977–2017)",
-        }
-        STN{
-            "STN",
             "dobra santoméen",
         }
         SUR{
@@ -1072,7 +1062,7 @@ fr{
         }
         YER{
             "YER",
-            "riyal yéménite",
+            "rial yéménite",
         }
         YUD{
             "YUD",
@@ -1136,7 +1126,7 @@ fr{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1153,7 +1143,6 @@ fr{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -1194,7 +1183,6 @@ fr{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"L"}
         RUB{"₽"}
         RWF{"FR"}
         SBD{"$"}
@@ -1203,7 +1191,7 @@ fr{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1412,13 +1400,9 @@ fr{
             one{"nouveau rouble biélorusse (1994–1999)"}
             other{"nouveaux roubles biélorusses (1994–1999)"}
         }
-        BYN{
+        BYR{
             one{"rouble biélorusse"}
             other{"roubles biélorusses"}
-        }
-        BYR{
-            one{"rouble biélorusse (2000–2016)"}
-            other{"roubles biélorusses (2000–2016)"}
         }
         BZD{
             one{"dollar bélizéen"}
@@ -1451,10 +1435,6 @@ fr{
         CLP{
             one{"peso chilien"}
             other{"pesos chiliens"}
-        }
-        CNH{
-            one{"yuan chinois (zone extracôtière)"}
-            other{"yuans chinois (zone extracôtière)"}
         }
         CNY{
             one{"yuan renminbi chinois"}
@@ -1689,8 +1669,8 @@ fr{
             other{"dinars irakiens"}
         }
         IRR{
-            one{"riyal iranien"}
-            other{"riyals iraniens"}
+            one{"rial iranien"}
+            other{"rials iraniens"}
         }
         ISK{
             one{"couronne islandaise"}
@@ -1841,10 +1821,6 @@ fr{
             other{"patacas macanaises"}
         }
         MRO{
-            one{"ouguiya mauritanien (1973–2017)"}
-            other{"ouguiyas mauritaniens (1973–2017)"}
-        }
-        MRU{
             one{"ouguiya mauritanien"}
             other{"ouguiyas mauritaniens"}
         }
@@ -1929,8 +1905,8 @@ fr{
             other{"dollars néo-zélandais"}
         }
         OMR{
-            one{"riyal omanais"}
-            other{"riyals omanis"}
+            one{"rial omanais"}
+            other{"rials omanis"}
         }
         PAB{
             one{"balboa panaméen"}
@@ -1941,8 +1917,8 @@ fr{
             other{"intis péruviens"}
         }
         PEN{
-            one{"sol péruvien"}
-            other{"sols péruviens"}
+            one{"nouveau sol péruvien"}
+            other{"nouveaux sols péruviens"}
         }
         PES{
             one{"sol péruvien (1863–1985)"}
@@ -1977,8 +1953,8 @@ fr{
             other{"guaranís paraguayens"}
         }
         QAR{
-            one{"riyal qatari"}
-            other{"riyals qataris"}
+            one{"rial qatari"}
+            other{"rials qataris"}
         }
         RHD{
             one{"dollar rhodésien"}
@@ -2009,8 +1985,8 @@ fr{
             other{"francs rwandais"}
         }
         SAR{
-            one{"riyal saoudien"}
-            other{"riyals saoudiens"}
+            one{"rial saoudien"}
+            other{"rials saoudiens"}
         }
         SBD{
             one{"dollar des îles Salomon"}
@@ -2073,10 +2049,6 @@ fr{
             other{"livres sud-soudanaises"}
         }
         STD{
-            one{"dobra santoméen (1977–2017)"}
-            other{"dobras santoméens (1977–2017)"}
-        }
-        STN{
             one{"dobra santoméen"}
             other{"dobras santoméens"}
         }
@@ -2289,8 +2261,8 @@ fr{
             other{"dinars nord-yéménites"}
         }
         YER{
-            one{"riyal yéménite"}
-            other{"riyals yéménites"}
+            one{"rial yéménite"}
+            other{"rials yéménites"}
         }
         YUD{
             one{"dinar fort yougoslave (1966–1989)"}
@@ -2345,5 +2317,5 @@ fr{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
 }

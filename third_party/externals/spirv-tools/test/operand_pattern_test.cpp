@@ -17,10 +17,9 @@
 #include "gmock/gmock.h"
 #include "source/operand.h"
 
-namespace spvtools {
-namespace {
-
 using ::testing::Eq;
+
+namespace {
 
 TEST(OperandPattern, InitiallyEmpty) {
   spv_operand_pattern_t empty;
@@ -69,18 +68,18 @@ using MaskExpansionTest = ::testing::TestWithParam<MaskExpansionCase>;
 
 TEST_P(MaskExpansionTest, Sample) {
   spv_operand_table operandTable = nullptr;
-  auto env = SPV_ENV_UNIVERSAL_1_0;
-  ASSERT_EQ(SPV_SUCCESS, spvOperandTableGet(&operandTable, env));
+  ASSERT_EQ(SPV_SUCCESS,
+            spvOperandTableGet(&operandTable, SPV_ENV_UNIVERSAL_1_0));
 
   spv_operand_pattern_t pattern(GetParam().initial);
-  spvPushOperandTypesForMask(env, operandTable, GetParam().type,
-                             GetParam().mask, &pattern);
+  spvPushOperandTypesForMask(operandTable, GetParam().type, GetParam().mask,
+                                &pattern);
   EXPECT_THAT(pattern, Eq(GetParam().expected));
 }
 
 // These macros let us write non-trivial examples without too much text.
 #define PREFIX0 SPV_OPERAND_TYPE_ID, SPV_OPERAND_TYPE_NONE
-#define PREFIX1                                                         \
+#define PREFIX1                                              \
   SPV_OPERAND_TYPE_STORAGE_CLASS, SPV_OPERAND_TYPE_SAMPLER_FILTER_MODE, \
       SPV_OPERAND_TYPE_ID
 INSTANTIATE_TEST_CASE_P(
@@ -203,25 +202,27 @@ TEST(AlternatePatternFollowingImmediate, ResultIdFront) {
               Eq(spv_operand_pattern_t{SPV_OPERAND_TYPE_OPTIONAL_CIV,
                                        SPV_OPERAND_TYPE_RESULT_ID,
                                        SPV_OPERAND_TYPE_OPTIONAL_CIV}));
-  EXPECT_THAT(
-      spvAlternatePatternFollowingImmediate({SPV_OPERAND_TYPE_RESULT_ID,
-                                             SPV_OPERAND_TYPE_FP_ROUNDING_MODE,
-                                             SPV_OPERAND_TYPE_ID}),
-      Eq(spv_operand_pattern_t{
-          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_RESULT_ID,
-          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_OPTIONAL_CIV}));
-  EXPECT_THAT(
-      spvAlternatePatternFollowingImmediate(
-          {SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_DIMENSIONALITY,
-           SPV_OPERAND_TYPE_LINKAGE_TYPE,
-           SPV_OPERAND_TYPE_FUNCTION_PARAMETER_ATTRIBUTE,
-           SPV_OPERAND_TYPE_FP_ROUNDING_MODE, SPV_OPERAND_TYPE_ID,
-           SPV_OPERAND_TYPE_VARIABLE_ID}),
-      Eq(spv_operand_pattern_t{
-          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_RESULT_ID,
-          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_OPTIONAL_CIV,
-          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_OPTIONAL_CIV,
-          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_OPTIONAL_CIV}));
+  EXPECT_THAT(spvAlternatePatternFollowingImmediate(
+                  {SPV_OPERAND_TYPE_RESULT_ID,
+                   SPV_OPERAND_TYPE_FP_ROUNDING_MODE, SPV_OPERAND_TYPE_ID}),
+              Eq(spv_operand_pattern_t{SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_RESULT_ID,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV}));
+  EXPECT_THAT(spvAlternatePatternFollowingImmediate(
+                  {SPV_OPERAND_TYPE_RESULT_ID, SPV_OPERAND_TYPE_DIMENSIONALITY,
+                   SPV_OPERAND_TYPE_LINKAGE_TYPE,
+                   SPV_OPERAND_TYPE_FUNCTION_PARAMETER_ATTRIBUTE,
+                   SPV_OPERAND_TYPE_FP_ROUNDING_MODE, SPV_OPERAND_TYPE_ID,
+                   SPV_OPERAND_TYPE_VARIABLE_ID}),
+              Eq(spv_operand_pattern_t{SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_RESULT_ID,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV,
+                                       SPV_OPERAND_TYPE_OPTIONAL_CIV}));
 }
 
 TEST(AlternatePatternFollowingImmediate, ResultIdMiddle) {
@@ -251,17 +252,16 @@ TEST(AlternatePatternFollowingImmediate, ResultIdBack) {
   EXPECT_THAT(spvAlternatePatternFollowingImmediate(
                   {SPV_OPERAND_TYPE_FP_ROUNDING_MODE, SPV_OPERAND_TYPE_ID,
                    SPV_OPERAND_TYPE_RESULT_ID}),
-              Eq(spv_operand_pattern_t{SPV_OPERAND_TYPE_OPTIONAL_CIV,
-                                       SPV_OPERAND_TYPE_RESULT_ID}));
+              Eq(spv_operand_pattern_t{
+                  SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_RESULT_ID}));
   EXPECT_THAT(
       spvAlternatePatternFollowingImmediate(
           {SPV_OPERAND_TYPE_DIMENSIONALITY, SPV_OPERAND_TYPE_LINKAGE_TYPE,
            SPV_OPERAND_TYPE_FUNCTION_PARAMETER_ATTRIBUTE,
            SPV_OPERAND_TYPE_FP_ROUNDING_MODE, SPV_OPERAND_TYPE_ID,
            SPV_OPERAND_TYPE_VARIABLE_ID, SPV_OPERAND_TYPE_RESULT_ID}),
-      Eq(spv_operand_pattern_t{SPV_OPERAND_TYPE_OPTIONAL_CIV,
-                               SPV_OPERAND_TYPE_RESULT_ID}));
+      Eq(spv_operand_pattern_t{
+          SPV_OPERAND_TYPE_OPTIONAL_CIV, SPV_OPERAND_TYPE_RESULT_ID}));
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

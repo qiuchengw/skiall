@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
@@ -132,7 +130,7 @@ public:
     ResourceBundle(UErrorCode &err);
 
     /**
-     * Standard constructor, constructs a resource bundle for the locale-specific
+     * Standard constructor, onstructs a resource bundle for the locale-specific
      * bundle in the specified package.
      *
      * @param packageName   The packageName and locale together point to an ICU udata object, 

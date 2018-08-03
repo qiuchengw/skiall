@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/mzn.xml
+// *
+// ***************************************************************************
 mzn{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -42,12 +48,6 @@ mzn{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"kt"}
-                other{"{0} kt"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -303,6 +303,12 @@ mzn{
                 other{"{0} وات"}
             }
         }
+        proportion{
+            karat{
+                dnam{"kt"}
+                other{"{0} kt"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"کیلومتر بر ساعت"}
@@ -552,12 +558,6 @@ mzn{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"kt"}
-                other{"{0} kt"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -811,6 +811,12 @@ mzn{
             watt{
                 dnam{"وات"}
                 other{"{0} W"}
+            }
+        }
+        proportion{
+            karat{
+                dnam{"kt"}
+                other{"{0} kt"}
             }
         }
         speed{

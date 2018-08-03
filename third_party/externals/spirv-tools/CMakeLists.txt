@@ -13,9 +13,6 @@
 # limitations under the License.
 
 cmake_minimum_required(VERSION 2.8.12)
-if (POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif()
 if (POLICY CMP0054)
   # Avoid dereferencing variables or interpret keywords that have been
   # quoted or bracketed.
@@ -34,7 +31,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
   add_definitions(-DSPIRV_LINUX)
-  set(SPIRV_TIMER_ENABLED ON)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   add_definitions(-DSPIRV_WINDOWS)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "CYGWIN")
@@ -43,15 +39,10 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
   add_definitions(-DSPIRV_MAC)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
   add_definitions(-DSPIRV_ANDROID)
-  set(SPIRV_TIMER_ENABLED ON)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
   add_definitions(-DSPIRV_FREEBSD)
 else()
   message(FATAL_ERROR "Your platform '${CMAKE_SYSTEM_NAME}' is not supported!")
-endif()
-
-if (${SPIRV_TIMER_ENABLED})
-  add_definitions(-DSPIRV_TIMER_ENABLED)
 endif()
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
@@ -63,15 +54,13 @@ option(SKIP_SPIRV_TOOLS_INSTALL "Skip installation" ${SKIP_SPIRV_TOOLS_INSTALL})
 if(NOT ${SKIP_SPIRV_TOOLS_INSTALL})
   set(ENABLE_SPIRV_TOOLS_INSTALL ON)
 endif()
-
-option(SPIRV_BUILD_COMPRESSION "Build SPIR-V compressing codec" OFF)
-
+ 
 option(SPIRV_WERROR "Enable error on warning" ON)
 if(("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
   set(COMPILER_IS_LIKE_GNU TRUE)
 endif()
 if(${COMPILER_IS_LIKE_GNU})
-  set(SPIRV_WARNINGS -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers -Wno-self-assign)
+  set(SPIRV_WARNINGS -Wall -Wextra -Wnon-virtual-dtor -Wno-missing-field-initializers)
 
   option(SPIRV_WARN_EVERYTHING "Enable -Weverything" ${SPIRV_WARN_EVERYTHING})
   if(${SPIRV_WARN_EVERYTHING})
@@ -90,7 +79,7 @@ if(${COMPILER_IS_LIKE_GNU})
     set(SPIRV_WARNINGS ${SPIRV_WARNINGS} -Werror)
   endif()
 elseif(MSVC)
-  set(SPIRV_WARNINGS -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS /wd4800)
+  set(SPIRV_WARNINGS -D_CRT_SECURE_NO_WARNINGS /wd4800)
 
   if(${SPIRV_WERROR})
     set(SPIRV_WARNINGS ${SPIRV_WARNINGS} /WX)
@@ -98,7 +87,6 @@ elseif(MSVC)
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/)
 
 option(SPIRV_COLOR_TERMINAL "Enable color terminal output" ON)
 if(${SPIRV_COLOR_TERMINAL})
@@ -108,10 +96,6 @@ endif()
 option(SPIRV_LOG_DEBUG "Enable excessive debug output" OFF)
 if(${SPIRV_LOG_DEBUG})
   add_definitions(-DSPIRV_LOG_DEBUG)
-endif()
-
-if (DEFINED SPIRV_TOOLS_EXTRA_DEFINITIONS)
-  add_definitions(${SPIRV_TOOLS_EXTRA_DEFINITIONS})
 endif()
 
 function(spvtools_default_compile_options TARGET)
@@ -169,24 +153,6 @@ endif()
 
 find_host_package(PythonInterp)
 
-# Check for symbol exports on Linux.
-# At the moment, this check will fail on the OSX build machines for the Android NDK.
-# It appears they don't have objdump.
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-  macro(spvtools_check_symbol_exports TARGET)
-    if (NOT "${SPIRV_SKIP_TESTS}")
-      add_test(NAME spirv-tools-symbol-exports-${TARGET}
-               COMMAND ${PYTHON_EXECUTABLE}
-               ${spirv-tools_SOURCE_DIR}/utils/check_symbol_exports.py "$<TARGET_FILE:${TARGET}>")
-    endif()
-  endmacro()
-else()
-  macro(spvtools_check_symbol_exports TARGET)
-    if (NOT "${SPIRV_SKIP_TESTS}")
-      message("Skipping symbol exports test for ${TARGET}")
-    endif()
-  endmacro()
-endif()
 
 # Defaults to OFF if the user didn't set it.
 option(SPIRV_SKIP_EXECUTABLES
@@ -198,18 +164,7 @@ if ("${SPIRV_SKIP_EXECUTABLES}")
   set(SPIRV_SKIP_TESTS ON)
 endif()
 
-# Defaults to ON.  The checks can be time consuming.
-# Turn off if they take too long.
-option(SPIRV_CHECK_CONTEXT "In a debug build, check if the IR context is in a valid state." ON)
-if (${SPIRV_CHECK_CONTEXT})
-  add_definitions(-DSPIRV_CHECK_CONTEXT)
-endif()
-
 add_subdirectory(external)
-
-if (TARGET effcee)
-  add_definitions(-DSPIRV_EFFCEE)
-endif()
 
 add_subdirectory(source)
 add_subdirectory(tools)
@@ -223,54 +178,10 @@ if(ENABLE_SPIRV_TOOLS_INSTALL)
       ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/libspirv.h
       ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/libspirv.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/optimizer.hpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/spirv-tools/linker.hpp
     DESTINATION
       ${CMAKE_INSTALL_INCLUDEDIR}/spirv-tools/)
 endif(ENABLE_SPIRV_TOOLS_INSTALL)
 
-if (NOT "${SPIRV_SKIP_TESTS}")
-  add_test(NAME spirv-tools-copyrights
-           COMMAND ${PYTHON_EXECUTABLE} utils/check_copyright.py
-           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
-set(SPIRV_LIBRARIES "-lSPIRV-Tools -lSPIRV-Tools-link -lSPIRV-Tools-opt")
-set(SPIRV_SHARED_LIBRARIES "-lSPIRV-Tools-shared")
-if(SPIRV_BUILD_COMPRESSION)
-  set(SPIRV_LIBRARIES "${SPIRV_LIBRARIES} -lSPIRV-Tools-comp")
-endif(SPIRV_BUILD_COMPRESSION)
-
-# Build pkg-config file
-# Use a first-class target so it's regenerated when relevant files are updated.
-add_custom_target(spirv-tools-pkg-config ALL
-        COMMAND ${CMAKE_COMMAND}
-                      -DCHANGES_FILE=${CMAKE_CURRENT_SOURCE_DIR}/CHANGES
-                      -DTEMPLATE_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/SPIRV-Tools.pc.in
-                      -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools.pc
-                      -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-                      -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
-                      -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                      -DSPIRV_LIBRARIES=${SPIRV_LIBRARIES}
-                      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
-        DEPENDS "CHANGES" "cmake/SPIRV-Tools.pc.in" "cmake/write_pkg_config.cmake")
-add_custom_target(spirv-tools-shared-pkg-config ALL
-        COMMAND ${CMAKE_COMMAND}
-                      -DCHANGES_FILE=${CMAKE_CURRENT_SOURCE_DIR}/CHANGES
-                      -DTEMPLATE_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/SPIRV-Tools-shared.pc.in
-                      -DOUT_FILE=${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools-shared.pc
-                      -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-                      -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
-                      -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                      -DSPIRV_SHARED_LIBRARIES=${SPIRV_SHARED_LIBRARIES}
-                      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_pkg_config.cmake
-        DEPENDS "CHANGES" "cmake/SPIRV-Tools-shared.pc.in" "cmake/write_pkg_config.cmake")
-
-# Install pkg-config file
-if (ENABLE_SPIRV_TOOLS_INSTALL)
-  install(
-    FILES
-      ${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools.pc
-      ${CMAKE_CURRENT_BINARY_DIR}/SPIRV-Tools-shared.pc
-    DESTINATION
-      ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
+add_test(NAME spirv-tools-copyrights
+         COMMAND ${PYTHON_EXECUTABLE} utils/check_copyright.py
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

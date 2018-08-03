@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,15 +20,15 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_androidvideo_h_
-#define SDL_androidvideo_h_
+#ifndef _SDL_androidvideo_h
+#define _SDL_androidvideo_h
 
 #include "SDL_mutex.h"
 #include "SDL_rect.h"
 #include "../SDL_sysvideo.h"
 
 /* Called by the JNI layer when the screen changes size or format */
-extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, Uint32 format, float rate);
+extern void Android_SetScreenResolution(int width, int height, Uint32 format, float rate);
 
 /* Private display data */
 
@@ -37,15 +37,13 @@ typedef struct SDL_VideoData
     SDL_Rect        textRect;
 } SDL_VideoData;
 
-extern int Android_SurfaceWidth;
-extern int Android_SurfaceHeight;
-extern int Android_DeviceWidth;
-extern int Android_DeviceHeight;
+extern int Android_ScreenWidth;
+extern int Android_ScreenHeight;
 extern Uint32 Android_ScreenFormat;
 extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
 extern SDL_Window *Android_Window;
 
 
-#endif /* SDL_androidvideo_h_ */
+#endif /* _SDL_androidvideo_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

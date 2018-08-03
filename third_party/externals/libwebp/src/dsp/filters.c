@@ -238,7 +238,12 @@ extern void VP8FiltersInitMSA(void);
 extern void VP8FiltersInitNEON(void);
 extern void VP8FiltersInitSSE2(void);
 
-WEBP_DSP_INIT_FUNC(VP8FiltersInit) {
+static volatile VP8CPUInfo filters_last_cpuinfo_used =
+    (VP8CPUInfo)&filters_last_cpuinfo_used;
+
+WEBP_TSAN_IGNORE_FUNCTION void VP8FiltersInit(void) {
+  if (filters_last_cpuinfo_used == VP8GetCPUInfo) return;
+
   WebPUnfilters[WEBP_FILTER_NONE] = NULL;
 #if !WEBP_NEON_OMIT_C_CODE
   WebPUnfilters[WEBP_FILTER_HORIZONTAL] = HorizontalUnfilter_C;
@@ -284,4 +289,6 @@ WEBP_DSP_INIT_FUNC(VP8FiltersInit) {
   assert(WebPFilters[WEBP_FILTER_HORIZONTAL] != NULL);
   assert(WebPFilters[WEBP_FILTER_VERTICAL] != NULL);
   assert(WebPFilters[WEBP_FILTER_GRADIENT] != NULL);
+
+  filters_last_cpuinfo_used = VP8GetCPUInfo;
 }

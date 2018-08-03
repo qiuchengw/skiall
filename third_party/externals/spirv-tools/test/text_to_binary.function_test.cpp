@@ -20,7 +20,6 @@
 #include "gmock/gmock.h"
 #include "test_fixture.h"
 
-namespace spvtools {
 namespace {
 
 using spvtest::EnumCase;
@@ -75,5 +74,4 @@ TEST_F(OpFunctionControlTest, WrongFunctionControl) {
 // TODO(dneto): OpFunctionEnd
 // TODO(dneto): OpFunctionCall
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

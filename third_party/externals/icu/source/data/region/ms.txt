@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ms.xml
+// *
+// ***************************************************************************
 ms{
     Countries{
         001{"Dunia"}
@@ -31,7 +37,6 @@ ms{
         151{"Eropah Timur"}
         154{"Eropah Utara"}
         155{"Eropah Barat"}
-        202{"Afrika Sub-Sahara"}
         419{"Amerika Latin"}
         AC{"Pulau Ascension"}
         AD{"Andorra"}
@@ -41,6 +46,7 @@ ms{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Netherlands Antilles"}
         AO{"Angola"}
         AQ{"Antartika"}
         AR{"Argentina"}
@@ -90,7 +96,7 @@ ms{
         CW{"Curacao"}
         CX{"Pulau Krismas"}
         CY{"Cyprus"}
-        CZ{"Czechia"}
+        CZ{"Republik Czech"}
         DE{"Jerman"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -107,7 +113,6 @@ ms{
         ES{"Sepanyol"}
         ET{"Ethiopia"}
         EU{"Kesatuan Eropah"}
-        EZ{"Zon Euro"}
         FI{"Finland"}
         FJ{"Fiji"}
         FK{"Kepulauan Falkland"}
@@ -133,7 +138,7 @@ ms{
         GU{"Guam"}
         GW{"Guinea Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong SAR China"}
+        HK{"Hong Kong"}
         HM{"Kepulauan Heard & McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
@@ -187,7 +192,7 @@ ms{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Macau SAR China"}
+        MO{"Macau"}
         MP{"Kepulauan Mariana Utara"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -222,7 +227,7 @@ ms{
         PM{"Saint Pierre dan Miquelon"}
         PN{"Kepulauan Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Wilayah Palestin"}
+        PS{"Palestin"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -274,7 +279,6 @@ ms{
         UA{"Ukraine"}
         UG{"Uganda"}
         UM{"Kepulauan Terpencil A.S."}
-        UN{"Bangsa-bangsa Bersatu"}
         US{"Amerika Syarikat"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -297,20 +301,15 @@ ms{
     }
     Countries%short{
         GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"Macau"}
-        PS{"Palestin"}
-        UN{"PBB"}
         US{"A.S"}
     }
     Countries%variant{
         CD{"Congo (DRC)"}
         CG{"Congo (Republik)"}
         CI{"Ivory Coast"}
-        CZ{"Republik Czech"}
         FK{"Kepulauan Falkland (Islas Malvinas)"}
         MK{"Macedonia (FYROM)"}
         TL{"Timor Timur"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
 }

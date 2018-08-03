@@ -1,130 +1,95 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/pt_PT.xml
+// *
+// ***************************************************************************
 pt_PT{
     Keys{
-        cf{"Formato monetário"}
         colBackwards{"Ordenação de acentos invertida"}
         colCaseLevel{"Ordenação sensível a maiúsculas e minúsculas"}
+        colHiraganaQuaternary{"Ordenação kana"}
         colNormalization{"Ordenação normalizada"}
         colNumeric{"Ordenação numérica"}
         colStrength{"Força da ordenação"}
         hc{"Ciclo horário (12 vs. 24)"}
         ms{"Sistema de medida"}
+        variableTop{"Ordenar como símbolos"}
         x{"Utilização privada"}
     }
     Languages{
-        af{"africanês"}
-        ang{"inglês antigo"}
+        af{"africânder"}
         ar_001{"árabe moderno padrão"}
         arn{"mapuche"}
-        ars{"árabe do Négede"}
-        av{"avaric"}
+        az_Arab{"azeri meridional"}
         bax{"bamun"}
         bbj{"ghomala"}
-        bua{"buriat"}
-        chk{"chuquês"}
         chn{"jargão chinook"}
-        chy{"cheyenne"}
         ckb{"sorani curdo"}
-        co{"córsico"}
-        crs{"francês crioulo seselwa"}
         cs{"checo"}
         cv{"chuvash"}
-        de_AT{"alemão austríaco"}
-        de_CH{"alto alemão suíço"}
+        dsb{"baixo sórabio"}
         ee{"ewe"}
-        efi{"efik"}
         egy{"egípcio clássico"}
-        en_AU{"inglês australiano"}
         en_CA{"inglês canadiano"}
-        en_GB{"inglês britânico"}
-        en_US{"inglês americano"}
-        es_419{"espanhol latino-americano"}
-        es_ES{"espanhol europeu"}
-        es_MX{"espanhol mexicano"}
+        enm{"inglês medieval"}
         et{"estónio"}
-        fon{"fon"}
         fr_CA{"francês canadiano"}
-        fr_CH{"francês suíço"}
-        fro{"francês antigo"}
+        frm{"francês medieval"}
         frs{"frísio oriental"}
         fy{"frísico ocidental"}
-        gez{"geʼez"}
-        goh{"alemão alto antigo"}
+        gmh{"alemão medieval alto"}
         grc{"grego clássico"}
-        gsw{"alemão suíço"}
         ha{"haúça"}
         hi{"hindi"}
+        hsb{"alto sórabio"}
         hy{"arménio"}
-        kbd{"cabardiano"}
-        kea{"crioulo cabo-verdiano"}
-        krc{"carachaio-bálcaro"}
+        ig{"igbo"}
+        kea{"cabo-verdiano"}
+        kg{"conguês"}
+        kn{"canarim"}
         lez{"lezghiano"}
         lg{"ganda"}
-        lou{"crioulo de Louisiana"}
         lrc{"luri do norte"}
         luo{"luo"}
-        mak{"makassarês"}
+        mga{"irlandês, medieval"}
         mk{"macedónio"}
         moh{"mohawk"}
-        mr{"marata"}
-        mul{"vários idiomas"}
         nb{"norueguês bokmål"}
         nds{"baixo-alemão"}
-        nds_NL{"baixo-saxão"}
-        ne{"nepali"}
         nn{"norueguês nynorsk"}
-        non{"nórdico antigo"}
-        oc{"occitano"}
-        or{"oriya"}
+        oc{"provençal"}
         os{"ossético"}
-        pag{"língua pangasinesa"}
-        pam{"pampango"}
-        peo{"persa antigo"}
         pl{"polaco"}
-        pon{"língua pohnpeica"}
-        pro{"provençal antigo"}
         ps{"pastó"}
-        pt_BR{"português do Brasil"}
-        pt_PT{"português europeu"}
-        raj{"rajastanês"}
+        rom{"romanês"}
         root{"root"}
-        se{"sami do norte"}
-        sga{"irlandês antigo"}
+        rw{"kinyarwanda"}
+        sah{"sakha"}
         shu{"árabe do Chade"}
+        smj{"lule sami"}
         smn{"inari sami"}
-        sn{"shona"}
-        te{"telugu"}
-        tem{"temne"}
-        tg{"tajique"}
+        sms{"skolt sami"}
         tk{"turcomano"}
         to{"tonga"}
-        tt{"tatar"}
-        tzm{"tamazight do Atlas Central"}
-        uz{"usbeque"}
         vai{"vai"}
-        wo{"uólofe"}
-        xh{"xosa"}
         xog{"soga"}
-        yo{"ioruba"}
-        zgh{"tamazight marroquino padrão"}
-        zun{"zuni"}
-        zza{"zaza"}
     }
     Languages%short{
         en_GB{"inglês (RU)"}
+        en_US{"inglês (EUA)"}
     }
     Scripts{
         Armn{"arménio"}
         Egyd{"egípcio demótico"}
         Egyh{"egípcio hierático"}
-        Hanb{"han com bopomofo"}
+        Gujr{"guzerate"}
         Inds{"indus"}
-        Orya{"odia"}
         Sylo{"siloti nagri"}
         Tale{"tai le"}
         Telu{"telugu"}
-        Zsye{"emoji"}
         Zsym{"símbolos"}
         Zxxx{"não escrito"}
     }
@@ -134,20 +99,12 @@ pt_PT{
             chinese{"Calendário chinês"}
             coptic{"Calendário copta"}
             dangi{"Calendário dangi"}
-            ethiopic{"Calendário etíope"}
             ethiopic-amete-alem{"Calendário Etíope Amete Alem"}
             gregorian{"Calendário gregoriano"}
             hebrew{"Calendário hebraico"}
-            indian{"Calendário nacional indiano"}
             islamic{"Calendário islâmico"}
-            islamic-civil{"Calendário islâmico (civil)"}
-            islamic-umalqura{"Calendário islâmico (Umm al-Qura)"}
             japanese{"Calendário japonês"}
             persian{"Calendário persa"}
-        }
-        cf{
-            account{"Formato monetário contabilístico"}
-            standard{"Formato monetário padrão"}
         }
         colAlternate{
             non-ignorable{"Ordenar símbolos"}
@@ -165,6 +122,10 @@ pt_PT{
         colCaseLevel{
             no{"Ordenar insensível a maiúsculas/minúsculas"}
             yes{"Ordenar sensível a maiúsculas/minúsculas"}
+        }
+        colHiraganaQuaternary{
+            no{"Ordenar kana separadamente"}
+            yes{"Ordenar kana diferentemente"}
         }
         colNormalization{
             no{"Ordenar sem normalização"}
@@ -184,7 +145,6 @@ pt_PT{
         collation{
             dictionary{"Ordenação do dicionário"}
             ducet{"Ordenação unicode predefinida"}
-            eor{"Regras de ordenação europeias"}
             phonebook{"Ordem da lista telefónica"}
             phonetic{"Sequência de ordenação fonética"}
             reformed{"Reforma da ordenação"}
@@ -193,25 +153,16 @@ pt_PT{
             traditional{"Ordem tradicional"}
             unihan{"Ordem por radical e traços"}
         }
-        d0{
-            fwidth{"Largura completa"}
-            hwidth{"Meia largura"}
-        }
         lb{
-            loose{"Estilo flexível de quebra de linha"}
+            loose{"Estilo solto de quebra de linha"}
             normal{"Estilo padrão de quebra de linha"}
             strict{"Estilo estrito de quebra de linha"}
-        }
-        m0{
-            bgn{"Transliteração BGN"}
-            ungegn{"Transliteração UNGEGN"}
         }
         ms{
             uksystem{"Sistema de medida imperial"}
             ussystem{"Sistema de medida americano"}
         }
         numbers{
-            arabext{"Algarismos indo-arábicos expandidos"}
             armn{"Numeração arménia"}
             armnlow{"Numeração arménia minúscula"}
             beng{"Algarismos bengalis"}
@@ -236,7 +187,7 @@ pt_PT{
             knda{"Algarismos de canarim"}
             mlym{"Algarismos de malaiala"}
             mymr{"Algarismos birmaneses"}
-            orya{"Algarismos de odia"}
+            orya{"Algarismos de oriya"}
             roman{"Numeração romana"}
             romanlow{"Numeração romana minúscula"}
             taml{"Numeração tâmil"}
@@ -251,20 +202,7 @@ pt_PT{
         MONOTON{"monotónico"}
         POLYTON{"politónico"}
     }
-    Version{"2.1.41.97"}
-    characterLabelPattern{
-        all{"{0} – tudo"}
-        compatibility{"{0} – compatibilidade"}
-        enclosed{"{0} – incluso"}
-        extended{"{0} – estendido"}
-        historic{"{0} – histórico"}
-        miscellaneous{"{0} – diversos"}
-        other{"{0} – outro"}
-        scripts{"{0} – escritas"}
-        strokes{
-            one{"{0} traço"}
-        }
-    }
+    Version{"2.1.19.79"}
     codePatterns{
         script{"Escrita: {0}"}
     }

@@ -60,10 +60,8 @@ TableBasedTableBuilder::TableBasedTableBuilder(Header* header)
 }
 
 Table* TableBasedTableBuilder::GetTable() {
-  if (!table_) {
-    ReadableFontData* data = InternalReadData();
-    if (data)
-      table_.Attach(down_cast<Table*>(SubBuildTable(data)));
+  if (table_ == NULL) {
+    table_.Attach(down_cast<Table*>(SubBuildTable(InternalReadData())));
   }
   return table_;
 }

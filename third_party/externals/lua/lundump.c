@@ -1,5 +1,5 @@
 /*
-** $Id: lundump.c,v 2.49 2017/12/07 18:59:52 roberto Exp roberto $
+** $Id: lundump.c,v 2.43 2015/09/17 15:51:05 roberto Exp roberto $
 ** load precompiled Lua chunks
 ** See Copyright Notice in lua.h
 */
@@ -36,7 +36,7 @@ typedef struct {
 } LoadState;
 
 
-static l_noret error (LoadState *S, const char *why) {
+static l_noret error(LoadState *S, const char *why) {
   luaO_pushfstring(S->L, "%s: %s precompiled chunk", S->name, why);
   luaD_throw(S->L, LUA_ERRSYNTAX);
 }
@@ -58,26 +58,16 @@ static void LoadBlock (LoadState *S, void *b, size_t size) {
 
 
 static lu_byte LoadByte (LoadState *S) {
-  int b = zgetc(S->Z);
-  if (b == EOZ)
-    error(S, "truncated");
-  return cast_byte(b);
-}
-
-
-static size_t LoadSize (LoadState *S) {
-  size_t x = 0;
-  int b;
-  do {
-    b = LoadByte(S);
-    x = (x << 7) | (b & 0x7f);
-  } while ((b & 0x80) == 0);
+  lu_byte x;
+  LoadVar(S, x);
   return x;
 }
 
 
 static int LoadInt (LoadState *S) {
-  return cast_int(LoadSize(S));
+  int x;
+  LoadVar(S, x);
+  return x;
 }
 
 
@@ -95,11 +85,10 @@ static lua_Integer LoadInteger (LoadState *S) {
 }
 
 
-/*
-** Load a nullable string
-*/
-static TString *LoadStringN (LoadState *S) {
-  size_t size = LoadSize(S);
+static TString *LoadString (LoadState *S) {
+  size_t size = LoadByte(S);
+  if (size == 0xFF)
+    LoadVar(S, size);
   if (size == 0)
     return NULL;
   else if (--size <= LUAI_MAXSHORTLEN) {  /* short string? */
@@ -115,20 +104,9 @@ static TString *LoadStringN (LoadState *S) {
 }
 
 
-/*
-** Load a non-nullable string.
-*/
-static TString *LoadString (LoadState *S) {
-  TString *st = LoadStringN(S);
-  if (st == NULL)
-    error(S, "bad format for constant string");
-  return st;
-}
-
-
 static void LoadCode (LoadState *S, Proto *f) {
   int n = LoadInt(S);
-  f->code = luaM_newvectorchecked(S->L, n, Instruction);
+  f->code = luaM_newvector(S->L, n, Instruction);
   f->sizecode = n;
   LoadVector(S, f->code, n);
 }
@@ -140,7 +118,7 @@ static void LoadFunction(LoadState *S, Proto *f, TString *psource);
 static void LoadConstants (LoadState *S, Proto *f) {
   int i;
   int n = LoadInt(S);
-  f->k = luaM_newvectorchecked(S->L, n, TValue);
+  f->k = luaM_newvector(S->L, n, TValue);
   f->sizek = n;
   for (i = 0; i < n; i++)
     setnilvalue(&f->k[i]);
@@ -148,23 +126,24 @@ static void LoadConstants (LoadState *S, Proto *f) {
     TValue *o = &f->k[i];
     int t = LoadByte(S);
     switch (t) {
-      case LUA_TNIL:
-        setnilvalue(o);
-        break;
-      case LUA_TBOOLEAN:
-        setbvalue(o, LoadByte(S));
-        break;
-      case LUA_TNUMFLT:
-        setfltvalue(o, LoadNumber(S));
-        break;
-      case LUA_TNUMINT:
-        setivalue(o, LoadInteger(S));
-        break;
-      case LUA_TSHRSTR:
-      case LUA_TLNGSTR:
-        setsvalue2n(S->L, o, LoadString(S));
-        break;
-      default: lua_assert(0);
+    case LUA_TNIL:
+      setnilvalue(o);
+      break;
+    case LUA_TBOOLEAN:
+      setbvalue(o, LoadByte(S));
+      break;
+    case LUA_TNUMFLT:
+      setfltvalue(o, LoadNumber(S));
+      break;
+    case LUA_TNUMINT:
+      setivalue(o, LoadInteger(S));
+      break;
+    case LUA_TSHRSTR:
+    case LUA_TLNGSTR:
+      setsvalue2n(S->L, o, LoadString(S));
+      break;
+    default:
+      lua_assert(0);
     }
   }
 }
@@ -173,7 +152,7 @@ static void LoadConstants (LoadState *S, Proto *f) {
 static void LoadProtos (LoadState *S, Proto *f) {
   int i;
   int n = LoadInt(S);
-  f->p = luaM_newvectorchecked(S->L, n, Proto *);
+  f->p = luaM_newvector(S->L, n, Proto *);
   f->sizep = n;
   for (i = 0; i < n; i++)
     f->p[i] = NULL;
@@ -187,7 +166,7 @@ static void LoadProtos (LoadState *S, Proto *f) {
 static void LoadUpvalues (LoadState *S, Proto *f) {
   int i, n;
   n = LoadInt(S);
-  f->upvalues = luaM_newvectorchecked(S->L, n, Upvaldesc);
+  f->upvalues = luaM_newvector(S->L, n, Upvaldesc);
   f->sizeupvalues = n;
   for (i = 0; i < n; i++)
     f->upvalues[i].name = NULL;
@@ -201,34 +180,27 @@ static void LoadUpvalues (LoadState *S, Proto *f) {
 static void LoadDebug (LoadState *S, Proto *f) {
   int i, n;
   n = LoadInt(S);
-  f->lineinfo = luaM_newvectorchecked(S->L, n, ls_byte);
+  f->lineinfo = luaM_newvector(S->L, n, int);
   f->sizelineinfo = n;
   LoadVector(S, f->lineinfo, n);
   n = LoadInt(S);
-  f->abslineinfo = luaM_newvectorchecked(S->L, n, AbsLineInfo);
-  f->sizeabslineinfo = n;
-  for (i = 0; i < n; i++) {
-    f->abslineinfo[i].pc = LoadInt(S);
-    f->abslineinfo[i].line = LoadInt(S);
-  }
-  n = LoadInt(S);
-  f->locvars = luaM_newvectorchecked(S->L, n, LocVar);
+  f->locvars = luaM_newvector(S->L, n, LocVar);
   f->sizelocvars = n;
   for (i = 0; i < n; i++)
     f->locvars[i].varname = NULL;
   for (i = 0; i < n; i++) {
-    f->locvars[i].varname = LoadStringN(S);
+    f->locvars[i].varname = LoadString(S);
     f->locvars[i].startpc = LoadInt(S);
     f->locvars[i].endpc = LoadInt(S);
   }
   n = LoadInt(S);
   for (i = 0; i < n; i++)
-    f->upvalues[i].name = LoadStringN(S);
+    f->upvalues[i].name = LoadString(S);
 }
 
 
 static void LoadFunction (LoadState *S, Proto *f, TString *psource) {
-  f->source = LoadStringN(S);
+  f->source = LoadString(S);
   if (f->source == NULL)  /* no source in dump? */
     f->source = psource;  /* reuse parent's source */
   f->linedefined = LoadInt(S);
@@ -296,7 +268,7 @@ LClosure *luaU_undump(lua_State *L, ZIO *Z, const char *name) {
   S.Z = Z;
   checkHeader(&S);
   cl = luaF_newLclosure(L, LoadByte(&S));
-  setclLvalue2s(L, L->top, cl);
+  setclLvalue(L, L->top, cl);
   luaD_inctop(L);
   cl->p = luaF_newproto(L);
   LoadFunction(&S, cl->p, NULL);

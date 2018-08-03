@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
 * Copyright (c) 2004-2006, International Business Machines
@@ -46,7 +44,7 @@ class U_I18N_API CurrencyAmount: public Measure {
      * is invalid, then this will be set to a failing value.
      * @stable ICU 3.0
      */
-    CurrencyAmount(const Formattable& amount, ConstChar16Ptr isoCode,
+    CurrencyAmount(const Formattable& amount, const UChar* isoCode,
                    UErrorCode &ec);
 
     /**
@@ -59,7 +57,7 @@ class U_I18N_API CurrencyAmount: public Measure {
      * then this will be set to a failing value.
      * @stable ICU 3.0
      */
-    CurrencyAmount(double amount, ConstChar16Ptr isoCode,
+    CurrencyAmount(double amount, const UChar* isoCode,
                    UErrorCode &ec);
 
     /**

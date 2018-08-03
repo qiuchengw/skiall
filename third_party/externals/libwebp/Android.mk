@@ -85,13 +85,11 @@ dsp_dec_srcs := \
     src/dsp/upsampling_msa.c \
     src/dsp/upsampling_neon.$(NEON) \
     src/dsp/upsampling_sse2.c \
-    src/dsp/upsampling_sse41.c \
     src/dsp/yuv.c \
     src/dsp/yuv_mips32.c \
     src/dsp/yuv_mips_dsp_r2.c \
     src/dsp/yuv_neon.$(NEON) \
     src/dsp/yuv_sse2.c \
-    src/dsp/yuv_sse41.c \
 
 dsp_enc_srcs := \
     src/dsp/cost.c \
@@ -123,6 +121,7 @@ enc_srcs := \
     src/enc/backward_references_enc.c \
     src/enc/config_enc.c \
     src/enc/cost_enc.c \
+    src/enc/delta_palettization_enc.c \
     src/enc/filter_enc.c \
     src/enc/frame_enc.c \
     src/enc/histogram_enc.c \
@@ -174,7 +173,7 @@ LOCAL_SRC_FILES := \
     $(utils_dec_srcs) \
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
-LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/src
 
 # prefer arm over thumb mode for performance gains
 LOCAL_ARM_MODE := arm
@@ -208,7 +207,7 @@ LOCAL_SRC_FILES := \
     $(utils_enc_srcs) \
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
-LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/src
 
 # prefer arm over thumb mode for performance gains
 LOCAL_ARM_MODE := arm
@@ -231,7 +230,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(demux_srcs)
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
-LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/src
 
 # prefer arm over thumb mode for performance gains
 LOCAL_ARM_MODE := arm
@@ -254,7 +253,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(mux_srcs)
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
-LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/src
 
 # prefer arm over thumb mode for performance gains
 LOCAL_ARM_MODE := arm

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef SDL_thread_c_h_
-#define SDL_thread_c_h_
+#ifndef _SDL_thread_c_h
+#define _SDL_thread_c_h
 
 #include "SDL_thread.h"
 
@@ -71,7 +71,7 @@ typedef struct {
     unsigned int limit;
     struct {
         void *data;
-        void (SDLCALL *destructor)(void*);
+        void (*destructor)(void*);
     } array[1];
 } SDL_TLSData;
 
@@ -82,7 +82,7 @@ typedef struct {
    This is only intended as a fallback if getting real thread-local
    storage fails or isn't supported on this platform.
  */
-extern SDL_TLSData *SDL_Generic_GetTLSData(void);
+extern SDL_TLSData *SDL_Generic_GetTLSData();
 
 /* Set cross-platform, slow, thread local storage for this thread.
    This is only intended as a fallback if getting real thread-local
@@ -90,6 +90,6 @@ extern SDL_TLSData *SDL_Generic_GetTLSData(void);
  */
 extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
 
-#endif /* SDL_thread_c_h_ */
+#endif /* _SDL_thread_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

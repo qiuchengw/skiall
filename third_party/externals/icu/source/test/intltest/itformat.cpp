@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
  * Copyright (c) 1997-2015, International Business Machines
@@ -59,7 +57,6 @@
 #include "dcfmtest.h"       // DecimalFormatTest
 #include "listformattertest.h"  // ListFormatterTest
 #include "regiontst.h"      // RegionTest
-#include "numbertest.h"     // NumberTest
 
 extern IntlTest *createCompactDecimalFormatTest();
 extern IntlTest *createGenderInfoTest();
@@ -70,6 +67,7 @@ extern IntlTest *createTimeUnitTest();
 extern IntlTest *createMeasureFormatTest();
 extern IntlTest *createNumberFormatSpecificationTest();
 extern IntlTest *createScientificNumberFormatterTest();
+extern IntlTest *createNumberFormat2Test(); 
 
 
 #define TESTCLASS(id, TestClass)          \
@@ -204,7 +202,7 @@ void IntlTestFormat::runIndexedTest( int32_t index, UBool exec, const char* &nam
             callTest(*test, par);
           }
           break;
-        case 49:
+       case 49:
           name = "ScientificNumberFormatterTest";
           if (exec) {
             logln("ScientificNumberFormatterTest test---");
@@ -213,8 +211,15 @@ void IntlTestFormat::runIndexedTest( int32_t index, UBool exec, const char* &nam
             callTest(*test, par);
           }
           break;
-        TESTCLASS(50,NumberFormatDataDrivenTest);
-        TESTCLASS(51,NumberTest);
+      case 50: 
+        name = "NumberFormat2Test"; 
+          if (exec) { 
+            logln("NumberFormat2Test test---"); 
+            logln((UnicodeString)""); 
+            LocalPointer<IntlTest> test(createNumberFormat2Test()); 
+            callTest(*test, par); 
+          } 
+          break; 
         default: name = ""; break; //needed to end loop
     }
     if (exec) {

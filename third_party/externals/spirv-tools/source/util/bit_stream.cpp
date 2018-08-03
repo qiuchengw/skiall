@@ -20,8 +20,8 @@
 
 #include "util/bit_stream.h"
 
-namespace spvtools {
-namespace utils {
+namespace spvutils {
+
 namespace {
 
 // Returns if the system is little-endian. Unfortunately only works during
@@ -121,13 +121,15 @@ bool ReadVariableWidthInternal(BitReaderInterface* reader, uint64_t* val,
 
   while (payload_read + chunk_length < max_payload) {
     uint64_t bits = 0;
-    if (reader->ReadBits(&bits, chunk_length) != chunk_length) return false;
+    if (reader->ReadBits(&bits, chunk_length) != chunk_length)
+      return false;
 
     *val |= bits << payload_read;
     payload_read += chunk_length;
 
     uint64_t more_to_come = 0;
-    if (reader->ReadBits(&more_to_come, 1) != 1) return false;
+    if (reader->ReadBits(&more_to_come, 1) != 1)
+      return false;
 
     if (!more_to_come) {
       return true;
@@ -137,7 +139,8 @@ bool ReadVariableWidthInternal(BitReaderInterface* reader, uint64_t* val,
   // Need to read the last chunk which may be truncated. No signal bit follows.
   uint64_t bits = 0;
   const size_t left_to_read = max_payload - payload_read;
-  if (reader->ReadBits(&bits, left_to_read) != left_to_read) return false;
+  if (reader->ReadBits(&bits, left_to_read) != left_to_read)
+    return false;
 
   *val |= bits << payload_read;
   return true;
@@ -252,22 +255,26 @@ void BitWriterInterface::WriteVariableWidthU8(uint8_t val,
   WriteVariableWidthUnsigned(this, val, chunk_length);
 }
 
-void BitWriterInterface::WriteVariableWidthS64(int64_t val, size_t chunk_length,
+void BitWriterInterface::WriteVariableWidthS64(int64_t val,
+                                               size_t chunk_length,
                                                size_t zigzag_exponent) {
   WriteVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
 
-void BitWriterInterface::WriteVariableWidthS32(int32_t val, size_t chunk_length,
+void BitWriterInterface::WriteVariableWidthS32(int32_t val,
+                                               size_t chunk_length,
                                                size_t zigzag_exponent) {
   WriteVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
 
-void BitWriterInterface::WriteVariableWidthS16(int16_t val, size_t chunk_length,
+void BitWriterInterface::WriteVariableWidthS16(int16_t val,
+                                               size_t chunk_length,
                                                size_t zigzag_exponent) {
   WriteVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
 
-void BitWriterInterface::WriteVariableWidthS8(int8_t val, size_t chunk_length,
+void BitWriterInterface::WriteVariableWidthS8(int8_t val,
+                                              size_t chunk_length,
                                               size_t zigzag_exponent) {
   WriteVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
@@ -292,8 +299,6 @@ void BitWriterWord64::WriteBits(uint64_t bits, size_t num_bits) {
   const bool is_little_endian = IsLittleEndian();
   assert(is_little_endian && "Big-endian architecture support not implemented");
   if (!is_little_endian) return;
-
-  if (num_bits == 0) return;
 
   bits = GetLowerBits(bits, num_bits);
 
@@ -345,22 +350,26 @@ bool BitReaderInterface::ReadVariableWidthU8(uint8_t* val,
   return ReadVariableWidthUnsigned(this, val, chunk_length);
 }
 
-bool BitReaderInterface::ReadVariableWidthS64(int64_t* val, size_t chunk_length,
+bool BitReaderInterface::ReadVariableWidthS64(int64_t* val,
+                                              size_t chunk_length,
                                               size_t zigzag_exponent) {
   return ReadVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
 
-bool BitReaderInterface::ReadVariableWidthS32(int32_t* val, size_t chunk_length,
+bool BitReaderInterface::ReadVariableWidthS32(int32_t* val,
+                                              size_t chunk_length,
                                               size_t zigzag_exponent) {
   return ReadVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
 
-bool BitReaderInterface::ReadVariableWidthS16(int16_t* val, size_t chunk_length,
+bool BitReaderInterface::ReadVariableWidthS16(int16_t* val,
+                                              size_t chunk_length,
                                               size_t zigzag_exponent) {
   return ReadVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
 
-bool BitReaderInterface::ReadVariableWidthS8(int8_t* val, size_t chunk_length,
+bool BitReaderInterface::ReadVariableWidthS8(int8_t* val,
+                                             size_t chunk_length,
                                              size_t zigzag_exponent) {
   return ReadVariableWidthSigned(this, val, chunk_length, zigzag_exponent);
 }
@@ -385,7 +394,8 @@ size_t BitReaderWord64::ReadBits(uint64_t* bits, size_t num_bits) {
   assert(is_little_endian && "Big-endian architecture support not implemented");
   if (!is_little_endian) return 0;
 
-  if (ReachedEnd()) return 0;
+  if (ReachedEnd())
+    return 0;
 
   // Index of the current word.
   const size_t index = pos_ / 64;
@@ -402,7 +412,6 @@ size_t BitReaderWord64::ReadBits(uint64_t* bits, size_t num_bits) {
 
   if (pos_ >= buffer_.size() * 64) {
     // Reached end of buffer_.
-    EmitSequence(*bits, num_read_from_first_word);
     return num_read_from_first_word;
   }
 
@@ -415,17 +424,20 @@ size_t BitReaderWord64::ReadBits(uint64_t* bits, size_t num_bits) {
 
   // We likely have written more bits than requested. Clear excessive bits.
   *bits = GetLowerBits(*bits, num_bits);
-  EmitSequence(*bits, num_bits);
   return num_bits;
 }
 
-bool BitReaderWord64::ReachedEnd() const { return pos_ >= buffer_.size() * 64; }
+bool BitReaderWord64::ReachedEnd() const {
+  return pos_ >= buffer_.size() * 64;
+}
 
 bool BitReaderWord64::OnlyZeroesLeft() const {
-  if (ReachedEnd()) return true;
+  if (ReachedEnd())
+    return true;
 
   const size_t index = pos_ / 64;
-  if (index < buffer_.size() - 1) return false;
+  if (index < buffer_.size() - 1)
+    return false;
 
   assert(index == buffer_.size() - 1);
 
@@ -434,5 +446,4 @@ bool BitReaderWord64::OnlyZeroesLeft() const {
   return !remaining_bits;
 }
 
-}  // namespace utils
-}  // namespace spvtools
+}  // namespace spvutils

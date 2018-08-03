@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/br.xml
+// *
+// ***************************************************************************
 br{
     Countries{
         001{"Bed"}
@@ -31,7 +37,6 @@ br{
         151{"Europa ar Reter"}
         154{"Europa an Norzh"}
         155{"Europa ar Cʼhornôg"}
-        202{"Afrika issaharat"}
         419{"Amerika Latin"}
         AC{"Enez Ascension"}
         AD{"Andorra"}
@@ -41,6 +46,7 @@ br{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Antilhez Nederlandat"}
         AO{"Angola"}
         AQ{"Antarktika"}
         AR{"Arcʼhantina"}
@@ -90,7 +96,7 @@ br{
         CW{"Curaçao"}
         CX{"Enez Christmas"}
         CY{"Kiprenez"}
-        CZ{"Tchekia"}
+        CZ{"Republik Tchek"}
         DE{"Alamagn"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -107,7 +113,6 @@ br{
         ES{"Spagn"}
         ET{"Etiopia"}
         EU{"Unaniezh Europa"}
-        EZ{"takad an euro"}
         FI{"Finland"}
         FJ{"Fidji"}
         FK{"Inizi Falkland"}
@@ -133,7 +138,7 @@ br{
         GU{"Guam"}
         GW{"Ginea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong RMD Sina"}
+        HK{"Hong Kong"}
         HM{"Inizi Heard ha McDonald"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -187,7 +192,7 @@ br{
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"Macau RMD Sina"}
+        MO{"Macau"}
         MP{"Inizi Mariana an Norzh"}
         MQ{"Martinik"}
         MR{"Maouritania"}
@@ -222,7 +227,7 @@ br{
         PM{"Sant-Pêr-ha-Mikelon"}
         PN{"Enez Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Tiriadoù Palestina"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -274,7 +279,6 @@ br{
         UA{"Ukraina"}
         UG{"Ouganda"}
         UM{"Inizi diabell ar Stadoù-Unanet"}
-        UN{"Broadoù unanet"}
         US{"Stadoù-Unanet"}
         UY{"Uruguay"}
         UZ{"Ouzbekistan"}
@@ -297,19 +301,15 @@ br{
     }
     Countries%short{
         GB{"RU"}
-        HK{"Hong Kong"}
-        MO{"Macau"}
-        PS{"Palestina"}
         US{"SU"}
     }
     Countries%variant{
         CD{"Kongo (RDK)"}
         CG{"Kongo (Republik)"}
         CI{"Aod Olifant"}
-        CZ{"Republik Tchek"}
         FK{"Inizi Falkland (Inizi Maloù)"}
         MK{"Makedonia (RYKM)"}
         TL{"Timor ar Reter"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
 }

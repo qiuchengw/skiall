@@ -1,5 +1,5 @@
 /*
-** $Id: ltablib.c,v 1.96 2018/03/16 14:18:18 roberto Exp roberto $
+** $Id: ltablib.c,v 1.92 2016/02/08 12:55:19 roberto Exp roberto $
 ** Library for Table Manipulation
 ** See Copyright Notice in lua.h
 */
@@ -58,6 +58,24 @@ static void checktab (lua_State *L, int arg, int what) {
 }
 
 
+#if defined(LUA_COMPAT_MAXN)
+static int maxn (lua_State *L) {
+  lua_Number max = 0;
+  luaL_checktype(L, 1, LUA_TTABLE);
+  lua_pushnil(L);  /* first key */
+  while (lua_next(L, 1)) {
+    lua_pop(L, 1);  /* remove value */
+    if (lua_type(L, -1) == LUA_TNUMBER) {
+      lua_Number v = lua_tonumber(L, -1);
+      if (v > max) max = v;
+    }
+  }
+  lua_pushnumber(L, max);
+  return 1;
+}
+#endif
+
+
 static int tinsert (lua_State *L) {
   lua_Integer e = aux_getn(L, 1, TAB_RW) + 1;  /* first empty element */
   lua_Integer pos;  /* where to insert new element */
@@ -96,7 +114,7 @@ static int tremove (lua_State *L) {
     lua_seti(L, 1, pos);  /* t[pos] = t[pos + 1] */
   }
   lua_pushnil(L);
-  lua_seti(L, 1, pos);  /* remove entry t[pos] */
+  lua_seti(L, 1, pos);  /* t[pos] = nil */
   return 1;
 }
 
@@ -173,7 +191,7 @@ static int tconcat (lua_State *L) {
 ** =======================================================
 */
 
-static int tpack (lua_State *L) {
+static int pack (lua_State *L) {
   int i;
   int n = lua_gettop(L);  /* number of elements to pack */
   lua_createtable(L, n, 1);  /* create result table */
@@ -186,7 +204,7 @@ static int tpack (lua_State *L) {
 }
 
 
-static int tunpack (lua_State *L) {
+static int unpack (lua_State *L) {
   lua_Unsigned n;
   lua_Integer i = luaL_optinteger(L, 2, 1);
   lua_Integer e = luaL_opt(L, luaL_checkinteger, 3, luaL_len(L, 1));
@@ -407,9 +425,12 @@ static int sort (lua_State *L) {
 
 static const luaL_Reg tab_funcs[] = {
   {"concat", tconcat},
+#if defined(LUA_COMPAT_MAXN)
+  {"maxn", maxn},
+#endif
   {"insert", tinsert},
-  {"pack", tpack},
-  {"unpack", tunpack},
+  {"pack", pack},
+  {"unpack", unpack},
   {"remove", tremove},
   {"move", tmove},
   {"sort", sort},
@@ -419,6 +440,11 @@ static const luaL_Reg tab_funcs[] = {
 
 LUAMOD_API int luaopen_table (lua_State *L) {
   luaL_newlib(L, tab_funcs);
+#if defined(LUA_COMPAT_UNPACK)
+  /* _G.unpack = table.unpack */
+  lua_getfield(L, -1, "unpack");
+  lua_setglobal(L, "unpack");
+#endif
   return 1;
 }
 

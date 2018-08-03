@@ -1,8 +1,14 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/sl.xml
+// *
+// ***************************************************************************
 sl{
     Countries{
-        001{"svet"}
+        001{"Svet"}
         002{"Afrika"}
         003{"Severna Amerika"}
         005{"Južna Amerika"}
@@ -31,7 +37,6 @@ sl{
         151{"Vzhodna Evropa"}
         154{"Severna Evropa"}
         155{"Zahodna Evropa"}
-        202{"podsaharska Afrika"}
         419{"Latinska Amerika"}
         AC{"Otok Ascension"}
         AD{"Andora"}
@@ -41,6 +46,7 @@ sl{
         AI{"Angvila"}
         AL{"Albanija"}
         AM{"Armenija"}
+        AN{"Nizozemski Antili"}
         AO{"Angola"}
         AQ{"Antarktika"}
         AR{"Argentina"}
@@ -107,7 +113,6 @@ sl{
         ES{"Španija"}
         ET{"Etiopija"}
         EU{"Evropska unija"}
-        EZ{"evroobmočje"}
         FI{"Finska"}
         FJ{"Fidži"}
         FK{"Falklandski otoki"}
@@ -125,7 +130,7 @@ sl{
         GL{"Grenlandija"}
         GM{"Gambija"}
         GN{"Gvineja"}
-        GP{"Guadeloupe"}
+        GP{"Gvadalupe"}
         GQ{"Ekvatorialna Gvineja"}
         GR{"Grčija"}
         GS{"Južna Georgia in Južni Sandwichevi otoki"}
@@ -133,7 +138,7 @@ sl{
         GU{"Guam"}
         GW{"Gvineja Bissau"}
         GY{"Gvajana"}
-        HK{"Posebno administrativno območje LR Kitajske Hongkong"}
+        HK{"Hongkong"}
         HM{"Heardov otok in McDonaldovi otoki"}
         HN{"Honduras"}
         HR{"Hrvaška"}
@@ -187,7 +192,7 @@ sl{
         ML{"Mali"}
         MM{"Mjanmar (Burma)"}
         MN{"Mongolija"}
-        MO{"Posebno administrativno območje LR Kitajske Macao"}
+        MO{"Macao"}
         MP{"Severni Marianski otoki"}
         MQ{"Martinik"}
         MR{"Mavretanija"}
@@ -222,7 +227,7 @@ sl{
         PM{"Saint Pierre in Miquelon"}
         PN{"Pitcairn"}
         PR{"Portoriko"}
-        PS{"Palestinsko ozemlje"}
+        PS{"Palestina"}
         PT{"Portugalska"}
         PW{"Palau"}
         PY{"Paragvaj"}
@@ -255,14 +260,14 @@ sl{
         SY{"Sirija"}
         SZ{"Svazi"}
         TA{"Tristan da Cunha"}
-        TC{"Otoki Turks in Caicos"}
+        TC{"Otočji Turks in Caicos"}
         TD{"Čad"}
         TF{"Francosko južno ozemlje"}
         TG{"Togo"}
         TH{"Tajska"}
         TJ{"Tadžikistan"}
         TK{"Tokelau"}
-        TL{"Timor-Leste"}
+        TL{"Vzhodni Timor"}
         TM{"Turkmenistan"}
         TN{"Tunizija"}
         TO{"Tonga"}
@@ -273,8 +278,7 @@ sl{
         TZ{"Tanzanija"}
         UA{"Ukrajina"}
         UG{"Uganda"}
-        UM{"Stranski zunanji otoki Združenih držav"}
-        UN{"Združeni narodi"}
+        UM{"Druga ameriška ozemlja v Tihem oceanu"}
         US{"Združene države Amerike"}
         UY{"Urugvaj"}
         UZ{"Uzbekistan"}
@@ -297,20 +301,14 @@ sl{
     }
     Countries%short{
         GB{"ZK"}
-        HK{"Hongkong"}
-        MO{"Macao"}
-        PS{"Palestina"}
-        UN{"ZN"}
         US{"ZDA"}
     }
     Countries%variant{
         CD{"Kongo (Demokratična republika Kongo)"}
         CG{"Kongo (Republika)"}
         CI{"Côte d’Ivoire"}
-        CZ{"Češka republika"}
         FK{"Falklandski otoki (Malvini)"}
         MK{"Makedonija (FYROM)"}
-        TL{"Vzhodni Timor"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

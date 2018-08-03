@@ -1,7 +1,5 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*************************************************************************
-* Copyright (c) 1997-2016, International Business Machines Corporation
+* Copyright (c) 1997-2015, International Business Machines Corporation
 * and others. All Rights Reserved.
 **************************************************************************
 *
@@ -275,6 +273,7 @@ public:
     static const UnicodeString U_EXPORT2 getEquivalentID(const UnicodeString& id,
                                                int32_t index);
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Creates an instance of TimeZone detected from the current host
      * system configuration. Note that ICU4C does not change the default
@@ -284,13 +283,12 @@ public:
      * and may return a different TimeZone from the one returned by
      * TimeZone::createDefault().
      *
-     * <p>This function is not thread safe.</p>
-     *
      * @return  A new instance of TimeZone detected from the current host system
      *          configuration.
-     * @stable ICU 55
+     * @draft ICU 55
      */
     static TimeZone* U_EXPORT2 detectHostTimeZone();
+#endif  /* U_HIDE_DRAFT_API */
 
     /**
      * Creates a new copy of the default TimeZone for this host. Unless the default time

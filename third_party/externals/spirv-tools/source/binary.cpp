@@ -25,9 +25,9 @@
 #include "assembly_grammar.h"
 #include "diagnostic.h"
 #include "ext_inst.h"
-#include "latest_version_spirv_header.h"
 #include "opcode.h"
 #include "operand.h"
+#include "spirv/1.2/spirv.h"
 #include "spirv_constant.h"
 #include "spirv_endian.h"
 
@@ -121,13 +121,12 @@ class Parser {
   // the input stream, and for the given error code. Any data written to the
   // returned object will be propagated to the current parse's diagnostic
   // object.
-  spvtools::DiagnosticStream diagnostic(spv_result_t error) {
-    return spvtools::DiagnosticStream({0, 0, _.word_index}, consumer_, "",
-                                      error);
+  libspirv::DiagnosticStream diagnostic(spv_result_t error) {
+    return libspirv::DiagnosticStream({0, 0, _.word_index}, consumer_, error);
   }
 
   // Returns a diagnostic stream object with the default parse error code.
-  spvtools::DiagnosticStream diagnostic() {
+  libspirv::DiagnosticStream diagnostic() {
     // The default failure for parsing is invalid binary.
     return diagnostic(SPV_ERROR_INVALID_BINARY);
   }
@@ -157,7 +156,7 @@ class Parser {
 
   // Data members
 
-  const spvtools::AssemblyGrammar grammar_;        // SPIR-V syntax utility.
+  const libspirv::AssemblyGrammar grammar_;        // SPIR-V syntax utility.
   const spvtools::MessageConsumer& consumer_;      // Message consumer callback.
   void* const user_data_;                          // Context for the callbacks
   const spv_parsed_header_fn_t parsed_header_fn_;  // Parsed header callback
@@ -180,11 +179,12 @@ class Parser {
           word_index(0),
           endian(),
           requires_endian_conversion(false) {
-      // Temporary storage for parser state within a single instruction.
-      // Most instructions require fewer than 25 words or operands.
-      operands.reserve(25);
-      endian_converted_words.reserve(25);
-      expected_operands.reserve(25);
+
+        // Temporary storage for parser state within a single instruction.
+        // Most instructions require fewer than 25 words or operands.
+        operands.reserve(25);
+        endian_converted_words.reserve(25);
+        expected_operands.reserve(25);
     }
     State() : State(0, 0, nullptr) {}
     const uint32_t* words;       // Words in the binary SPIR-V module.
@@ -310,8 +310,7 @@ spv_result_t Parser::parseInstruction() {
   // own operands depending on the selected extended instruction.
   _.expected_operands.clear();
   for (auto i = 0; i < opcode_desc->numTypes; i++)
-    _.expected_operands.push_back(
-        opcode_desc->operandTypes[opcode_desc->numTypes - i - 1]);
+      _.expected_operands.push_back(opcode_desc->operandTypes[opcode_desc->numTypes - i - 1]);
 
   while (_.word_index < inst_offset + inst_word_count) {
     const uint16_t inst_word_index = uint16_t(_.word_index - inst_offset);
@@ -324,8 +323,7 @@ spv_result_t Parser::parseInstruction() {
                           << inst_word_count << ".";
     }
 
-    spv_operand_type_t type =
-        spvTakeFirstMatchableOperand(&_.expected_operands);
+    spv_operand_type_t type = spvTakeFirstMatchableOperand(&_.expected_operands);
 
     if (auto error =
             parseOperand(inst_offset, &inst, type, &_.endian_converted_words,
@@ -357,8 +355,7 @@ spv_result_t Parser::parseInstruction() {
   // word.
   assert(!_.requires_endian_conversion ||
          (inst_word_count == _.endian_converted_words.size()));
-  assert(_.requires_endian_conversion ||
-         (_.endian_converted_words.size() == 1));
+  assert(_.requires_endian_conversion || (_.endian_converted_words.size() == 1));
 
   recordNumberType(inst_offset, &inst);
 
@@ -433,8 +430,8 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
       // Save the result ID to type ID mapping.
       // In the grammar, type ID always appears before result ID.
       if (_.id_to_type_id.find(inst->result_id) != _.id_to_type_id.end())
-        return diagnostic(SPV_ERROR_INVALID_ID)
-               << "Id " << inst->result_id << " is defined more than once";
+        return diagnostic(SPV_ERROR_INVALID_ID) << "Id " << inst->result_id
+                                                << " is defined more than once";
       // Record it.
       // A regular value maps to its type.  Some instructions (e.g. OpLabel)
       // have no type Id, and will map to 0.  The result Id for a
@@ -480,8 +477,8 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
     case SPV_OPERAND_TYPE_SPEC_CONSTANT_OP_NUMBER: {
       assert(SpvOpSpecConstantOp == opcode);
       if (grammar_.lookupSpecConstantOpcode(SpvOp(word))) {
-        return diagnostic()
-               << "Invalid " << spvOperandTypeStr(type) << ": " << word;
+        return diagnostic() << "Invalid " << spvOperandTypeStr(type) << ": "
+                            << word;
       }
       spv_opcode_desc opcode_entry = nullptr;
       if (grammar_.lookupOpcode(SpvOp(word), &opcode_entry)) {
@@ -584,8 +581,8 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
         const spv_ext_inst_type_t ext_inst_type =
             spvExtInstImportTypeGet(string);
         if (SPV_EXT_INST_TYPE_NONE == ext_inst_type) {
-          return diagnostic()
-                 << "Invalid extended instruction import '" << string << "'";
+          return diagnostic() << "Invalid extended instruction import '"
+                              << string << "'";
         }
         // We must have parsed a valid result ID.  It's a condition
         // of the grammar, and we only accept non-zero result Ids.
@@ -614,11 +611,7 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
     case SPV_OPERAND_TYPE_BUILT_IN:
     case SPV_OPERAND_TYPE_GROUP_OPERATION:
     case SPV_OPERAND_TYPE_KERNEL_ENQ_FLAGS:
-    case SPV_OPERAND_TYPE_KERNEL_PROFILING_INFO:
-    case SPV_OPERAND_TYPE_DEBUG_BASE_TYPE_ATTRIBUTE_ENCODING:
-    case SPV_OPERAND_TYPE_DEBUG_COMPOSITE_TYPE:
-    case SPV_OPERAND_TYPE_DEBUG_TYPE_QUALIFIER:
-    case SPV_OPERAND_TYPE_DEBUG_OPERATION: {
+    case SPV_OPERAND_TYPE_KERNEL_PROFILING_INFO: {
       // A single word that is a plain enum value.
 
       // Map an optional operand type to its corresponding concrete type.
@@ -627,9 +620,9 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
 
       spv_operand_desc entry;
       if (grammar_.lookupOperand(type, word, &entry)) {
-        return diagnostic()
-               << "Invalid " << spvOperandTypeStr(parsed_operand.type)
-               << " operand: " << word;
+        return diagnostic() << "Invalid "
+                            << spvOperandTypeStr(parsed_operand.type)
+                            << " operand: " << word;
       }
       // Prepare to accept operands to this operand, if needed.
       spvPushOperandTypes(entry->operandTypes, expected_operands);
@@ -641,8 +634,7 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
     case SPV_OPERAND_TYPE_IMAGE:
     case SPV_OPERAND_TYPE_OPTIONAL_IMAGE:
     case SPV_OPERAND_TYPE_OPTIONAL_MEMORY_ACCESS:
-    case SPV_OPERAND_TYPE_SELECTION_CONTROL:
-    case SPV_OPERAND_TYPE_DEBUG_INFO_FLAGS: {
+    case SPV_OPERAND_TYPE_SELECTION_CONTROL: {
       // This operand is a mask.
 
       // Map an optional operand type to its corresponding concrete type.
@@ -684,7 +676,8 @@ spv_result_t Parser::parseOperand(size_t inst_offset,
       return diagnostic() << "Internal error: Unhandled operand type: " << type;
   }
 
-  assert(spvOperandIsConcrete(parsed_operand.type));
+  assert(int(SPV_OPERAND_TYPE_FIRST_CONCRETE_TYPE) <= int(parsed_operand.type));
+  assert(int(SPV_OPERAND_TYPE_LAST_CONCRETE_TYPE) >= int(parsed_operand.type));
 
   operands->push_back(parsed_operand);
 
@@ -767,7 +760,7 @@ spv_result_t spvBinaryParse(const spv_const_context context, void* user_data,
   spv_context_t hijack_context = *context;
   if (diagnostic) {
     *diagnostic = nullptr;
-    spvtools::UseDiagnosticAsMessageConsumer(&hijack_context, diagnostic);
+    libspirv::UseDiagnosticAsMessageConsumer(&hijack_context, diagnostic);
   }
   Parser parser(&hijack_context, user_data, parsed_header, parsed_instruction);
   return parser.parse(code, num_words, diagnostic);

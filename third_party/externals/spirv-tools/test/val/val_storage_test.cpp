@@ -21,12 +21,11 @@
 #include "gmock/gmock.h"
 #include "val_fixtures.h"
 
-namespace spvtools {
-namespace val {
-namespace {
-
 using ::testing::HasSubstr;
+
 using ValidateStorage = spvtest::ValidateBase<std::string>;
+
+namespace {
 
 TEST_F(ValidateStorage, FunctionStorageInsideFunction) {
   char str[] = R"(
@@ -176,7 +175,4 @@ TEST_F(ValidateStorage, GenericVariableInsideFunction) {
   EXPECT_THAT(getDiagnosticString(),
               HasSubstr("OpVariable storage class cannot be Generic"));
 }
-
-}  // namespace
-}  // namespace val
-}  // namespace spvtools
+}

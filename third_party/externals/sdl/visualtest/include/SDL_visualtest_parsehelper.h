@@ -5,8 +5,8 @@
  * Header with some helper functions for parsing strings.
  */
 
-#ifndef SDL_visualtest_parsehelper_h_
-#define SDL_visualtest_parsehelper_h_
+#ifndef _SDL_visualtest_parsehelper_h
+#define _SDL_visualtest_parsehelper_h
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -41,6 +41,4 @@ char** SDLVisualTest_Tokenize(char* str, int max_token_len);
 }
 #endif
 
-#endif /* SDL_visualtest_parsehelper_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* _SDL_visualtest_parsehelper_h */

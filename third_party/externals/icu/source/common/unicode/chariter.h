@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ********************************************************************
 *
@@ -569,7 +567,7 @@ public:
      * Returns the numeric index in the underlying text-storage
      * object of the character the iterator currently refers to
      * (i.e., the character returned by current()).  
-     * @return the numeric index in the text-storage object of 
+     * @return the numberic index in the text-storage object of 
      * the character the iterator currently refers to
      * @stable ICU 2.0
      */
@@ -607,10 +605,6 @@ public:
      * @return the new position
      * @stable ICU 2.0
      */
-#ifdef move32
-     // One of the system headers right now is sometimes defining a conflicting macro we don't use
-#undef move32
-#endif
     virtual int32_t      move32(int32_t delta, EOrigin origin) = 0;
 
     /**

@@ -14,7 +14,6 @@
 
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
 TEST(FixWord, Default) {
@@ -60,5 +59,4 @@ TEST(FixDoubleWord, Reorder) {
   ASSERT_EQ(result, spvFixDoubleWord(low, high, endian));
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

@@ -1,17 +1,23 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/kea.xml
+// *
+// ***************************************************************************
 kea{
     Keys{
         calendar{"Kalendáriu"}
     }
     Languages{
-        ab{"abkáziu"}
+        ab{"abkaziu"}
         af{"afrikaner"}
         agq{"aghem"}
         ak{"akan"}
-        am{"amáriku"}
-        ar{"árabi"}
-        ar_001{"árabi mudernu"}
+        am{"amariku"}
+        ar{"arabi"}
+        ar_001{"arabi mudernu"}
         arn{"araukanu"}
         as{"asames"}
         asa{"asu"}
@@ -70,12 +76,12 @@ kea{
         fr{"franses"}
         fr_CA{"franses kanadianu"}
         fr_CH{"franses suisu"}
-        fy{"fríziu osidental"}
+        fy{"frisiu osidental"}
         ga{"irlandes"}
         gag{"gagauz"}
         gl{"galegu"}
         gn{"guarani"}
-        gsw{"alimãu suísu"}
+        gsw{"alimãu di Suisa"}
         gu{"gujarati"}
         guz{"gusii"}
         gv{"manks"}
@@ -125,10 +131,10 @@ kea{
         lv{"letãu"}
         mg{"malgaxi"}
         mi{"maori"}
-        mk{"masedóniu"}
+        mk{"masedoniu"}
         ml{"malaialam"}
         mr{"marati"}
-        ms{"maláiu"}
+        ms{"malaiu"}
         mt{"maltes"}
         my{"birmanes"}
         nb{"norueges bokmål"}
@@ -138,7 +144,7 @@ kea{
         nmg{"kuazio"}
         nn{"norueges nynorsk"}
         om{"oromo"}
-        or{"odía"}
+        or{"oriya"}
         pa{"pandjabi"}
         pl{"pulaku"}
         ps{"paxto"}
@@ -149,15 +155,14 @@ kea{
         quc{"kitxe"}
         rm{"romanxi"}
         ro{"rumenu"}
-        ro_MD{"rumenu moldáviku"}
         ru{"rusu"}
         rw{"kiniaruanda"}
-        sa{"sánskritu"}
+        sa{"sanskritu"}
         sd{"sindi"}
         ses{"koiraboro seni"}
         si{"singales"}
         sk{"slovaku"}
-        sl{"slovéniu"}
+        sl{"sloveniu"}
         smn{"inari sami"}
         so{"somali"}
         sq{"albanes"}
@@ -165,10 +170,10 @@ kea{
         su{"sundanes"}
         sv{"sueku"}
         sw{"suaíli"}
-        sw_CD{"suaíli kongoles"}
+        swc{"suaíli kongoles"}
         ta{"tamil"}
         te{"telugu"}
-        tg{"tadjiki"}
+        tg{"tajik"}
         th{"tailandes"}
         ti{"tigrinia"}
         tk{"turkmenu"}
@@ -178,7 +183,7 @@ kea{
         tzm{"tamazait di Atlas Sentral"}
         ug{"uigur"}
         uk{"ukranianu"}
-        und{"língua diskonxedu"}
+        und{"lingua diskonxedu"}
         ur{"urdu"}
         uz{"uzbeki"}
         vi{"vietnamita"}
@@ -189,7 +194,7 @@ kea{
         zh_Hans{"xines simplifikadu"}
         zh_Hant{"xines tradisional"}
         zu{"zulu"}
-        zxx{"sen kontiudu linguístiku"}
+        zxx{"sem konteudo linguistiku"}
     }
     Languages%short{
         az{"azeri"}
@@ -209,7 +214,7 @@ kea{
         Grek{"gregu"}
         Gujr{"gujarati"}
         Guru{"gurmuki"}
-        Hang{"hangul"}
+        Hang{"angul"}
         Hani{"han"}
         Hans{"simplifikadu"}
         Hant{"tradisional"}
@@ -232,7 +237,7 @@ kea{
         Thaa{"taana"}
         Thai{"tailandes"}
         Tibt{"tibetanu"}
-        Zsym{"símbulus"}
+        Zsym{"simbulus"}
         Zxxx{"nãu skritu"}
         Zyyy{"komun"}
         Zzzz{"skrita diskonxedu"}
@@ -249,7 +254,7 @@ kea{
             latn{"Númerus Arábikus"}
         }
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.74"}
     codePatterns{
         language{"Lingua: {0}"}
         script{"Skrita: {0}"}

@@ -320,8 +320,7 @@ FT_BEGIN_HEADER
    *
    *   cursor ::
    *     This field is set and used internally by FreeType when parsing
-   *     frames.  In particular, the `FT_GET_XXX' macros use this instead
-   *     of the `pos' field.
+   *     frames.
    *
    *   limit ::
    *     This field is set and used internally by FreeType when parsing

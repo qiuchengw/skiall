@@ -983,6 +983,4 @@
 </li>
 <li value=522><a href="extensions/EXT/EXT_EGL_image_storage.txt">GL_EXT_EGL_image_storage</a>
 </li>
-<li value=523><a href="extensions/AMD/AMD_framebuffer_multisample_advanced.txt">GL_AMD_framebuffer_multisample_advanced</a>
-</li>
 </ol>

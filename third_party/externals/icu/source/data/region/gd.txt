@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/gd.xml
+// *
+// ***************************************************************************
 gd{
     Countries{
         001{"An Saoghal"}
@@ -37,9 +43,10 @@ gd{
         AE{"Na h-Iomaratan Arabach Aonaichte"}
         AF{"Afghanastàn"}
         AG{"Aintìoga is Barbuda"}
-        AI{"Anguillia"}
+        AI{"Anguilla"}
         AL{"Albàinia"}
-        AM{"Airmeinea"}
+        AM{"Airmeinia"}
+        AN{"Eileanan Aintilia nan Tìrean Ìsle"}
         AO{"Angòla"}
         AQ{"An Antartaig"}
         AR{"An Argantain"}
@@ -49,7 +56,7 @@ gd{
         AW{"Arùba"}
         AX{"Na h-Eileanan Åland"}
         AZ{"Asarbaideàn"}
-        BA{"Bosna is Hearsagobhana"}
+        BA{"Bosna agus Hearsagobhana"}
         BB{"Barbados"}
         BD{"Bangladais"}
         BE{"A’ Bheilg"}
@@ -71,7 +78,7 @@ gd{
         BY{"A’ Bhealaruis"}
         BZ{"A’ Bheilìs"}
         CA{"Canada"}
-        CC{"Na h-Eileanan Chocos (Keeling)"}
+        CC{"Na h-Eileanan Cocos (Keeling)"}
         CD{"Congo - Kinshasa"}
         CF{"Poblachd Meadhan Afraga"}
         CG{"A’ Chongo - Brazzaville"}
@@ -89,7 +96,7 @@ gd{
         CW{"Curaçao"}
         CX{"Eilean na Nollaig"}
         CY{"Cìopras"}
-        CZ{"An t-Seic"}
+        CZ{"Poblachd na Seice"}
         DE{"A’ Ghearmailt"}
         DG{"Diego Garcia"}
         DJ{"Diobùtaidh"}
@@ -103,14 +110,13 @@ gd{
         EG{"An Èiphit"}
         EH{"Sathara an Iar"}
         ER{"Eartra"}
-        ES{"An Spàinnt"}
+        ES{"An Spàinn"}
         ET{"An Itiop"}
         EU{"An t-Aonadh Eòrpach"}
-        EZ{"Raon an Eòro"}
         FI{"An Fhionnlann"}
         FJ{"Fìdi"}
         FK{"Na h-Eileanan Fàclannach"}
-        FM{"Na Meanbh-eileanan"}
+        FM{"Na Meanbh-Eileanan"}
         FO{"Na h-Eileanan Fàro"}
         FR{"An Fhraing"}
         GA{"Gabon"}
@@ -127,19 +133,19 @@ gd{
         GP{"Guadalup"}
         GQ{"Gini Mheadhan-Chriosach"}
         GR{"A’ Ghreug"}
-        GS{"Seòirsea a Deas is na h-Eileanan Sandwich a Deas"}
+        GS{"Seòrsea a Deas is na h-Eileanan Sandwich a Deas"}
         GT{"Guatamala"}
         GU{"Guam"}
         GW{"Gini-Bioso"}
         GY{"Guidheàna"}
-        HK{"Hong Kong SAR na Sìne"}
+        HK{"Hong Kong"}
         HM{"Eilean Heard is MhicDhòmhnaill"}
         HN{"Hondùras"}
         HR{"A’ Chròthais"}
         HT{"Haidhti"}
         HU{"An Ungair"}
         IC{"Na h-Eileanan Canàrach"}
-        ID{"Na h-Innd-innse"}
+        ID{"Na h-Innd Innse"}
         IE{"Èirinn"}
         IL{"Iosrael"}
         IM{"Eilean Mhanainn"}
@@ -160,7 +166,7 @@ gd{
         KM{"Comoros"}
         KN{"Naomh Crìstean is Nibheis"}
         KP{"Coirèa a Tuath"}
-        KR{"Coirèa"}
+        KR{"Coirèa a Deas"}
         KW{"Cuibhèit"}
         KY{"Na h-Eileanan Caimean"}
         KZ{"Casachstàn"}
@@ -186,7 +192,7 @@ gd{
         ML{"Màili"}
         MM{"Miànmar"}
         MN{"Dùthaich nam Mongol"}
-        MO{"Macàthu SAR na Sìne"}
+        MO{"Macàthu"}
         MP{"Na h-Eileanan Mairianach a Tuath"}
         MQ{"Mairtinic"}
         MR{"Moratàinea"}
@@ -205,7 +211,7 @@ gd{
         NG{"Nigèiria"}
         NI{"Niocaragua"}
         NL{"Na Tìrean Ìsle"}
-        NO{"Nirribhidh"}
+        NO{"An Nirribhidh"}
         NP{"Neapàl"}
         NR{"Nabhru"}
         NU{"Niue"}
@@ -219,9 +225,9 @@ gd{
         PK{"Pagastàn"}
         PL{"A’ Phòlainn"}
         PM{"Saint Pierre agus Miquelon"}
-        PN{"Eileanan Pheit a’ Chàirn"}
+        PN{"Eilean Peit a’ Chàirn"}
         PR{"Porto Rìceo"}
-        PS{"Na Ranntairean Palastaineach"}
+        PS{"Palastain"}
         PT{"A’ Phortagail"}
         PW{"Palabh"}
         PY{"Paraguaidh"}
@@ -273,7 +279,6 @@ gd{
         UA{"An Ucràin"}
         UG{"Uganda"}
         UM{"Meanbh-Eileanan Iomallach nan SA"}
-        UN{"Na Dùthchannan Aonaichte"}
         US{"Na Stàitean Aonaichte"}
         UY{"Uruguaidh"}
         UZ{"Usbagastàn"}
@@ -281,7 +286,7 @@ gd{
         VC{"Naomh Bhionsant agus Eileanan Greanadach"}
         VE{"A’ Bheiniseala"}
         VG{"Eileanan Breatannach na Maighdinn"}
-        VI{"Eileanan na Maighdinn aig na SA"}
+        VI{"Eileanan Aimeireagach na Maighdinn"}
         VN{"Bhiet-Nam"}
         VU{"Vanuatu"}
         WF{"Uallas agus Futuna"}
@@ -296,19 +301,15 @@ gd{
     }
     Countries%short{
         GB{"RA"}
-        HK{"Hong Kong"}
-        MO{"Macàthu"}
-        PS{"Palastain"}
         US{"SA"}
     }
     Countries%variant{
         CD{"A’ Chongo (PDC)"}
-        CG{"A’ Chongo"}
+        CG{"A’ Chongo (Poblachd)"}
         CI{"An Costa Ìbhri"}
-        CZ{"Poblachd na Seice"}
         FK{"Na h-Eileanan Fàclannach (Islas Malvinas)"}
         MK{"A’ Mhasadon (FYROM)"}
         TL{"Tìomor an Ear"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
 }

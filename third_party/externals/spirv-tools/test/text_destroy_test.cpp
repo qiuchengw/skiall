@@ -14,7 +14,6 @@
 
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
 TEST(TextDestroy, DestroyNull) { spvBinaryDestroy(nullptr); }
@@ -71,5 +70,4 @@ TEST(TextDestroy, Default) {
   spvContextDestroy(context);
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

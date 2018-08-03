@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-* Copyright (C) 2013-2016, International Business Machines
+* Copyright (C) 2013-2015, International Business Machines
 * Corporation and others.  All Rights Reserved.
 *******************************************************************************
 * collationfastlatinbuilder.h
@@ -18,7 +16,6 @@
 
 #if !UCONFIG_NO_COLLATION
 
-#include "unicode/ucol.h"
 #include "unicode/unistr.h"
 #include "unicode/uobject.h"
 #include "collation.h"

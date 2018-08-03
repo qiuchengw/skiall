@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 /* GIMP RGB C-Source image dump (alpha.c) */
 
-static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
+const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -601,7 +601,7 @@ SDL_Surface *SDLTest_ImageBlitBlendAdd()
    return surface;
 }
 
-static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
+const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -1131,7 +1131,7 @@ SDL_Surface *SDLTest_ImageBlitBlend()
    return surface;
 }
 
-static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
+const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -1561,7 +1561,7 @@ SDL_Surface *SDLTest_ImageBlitBlendMod()
    return surface;
 }
 
-static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
+const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
   80, 60, 3,
   "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
   "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
@@ -2374,7 +2374,7 @@ SDL_Surface *SDLTest_ImageBlitBlendNone()
    return surface;
 }
 
-static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
+const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -2841,5 +2841,3 @@ SDL_Surface *SDLTest_ImageBlitBlendAll()
          );
    return surface;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

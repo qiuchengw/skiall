@@ -5,8 +5,8 @@
  * Header file for the parser for action config files.
  */
 
-#ifndef SDL_visualtest_action_configparser_h_
-#define SDL_visualtest_action_configparser_h_
+#ifndef _SDL_visualtest_action_configparser_h
+#define _SDL_visualtest_action_configparser_h
 
 /** The maximum length of one line in the actions file */
 #define MAX_ACTION_LINE_LENGTH 300
@@ -144,6 +144,4 @@ int SDLVisualTest_ParseActionConfig(char* file, SDLVisualTest_ActionQueue* queue
 }
 #endif
 
-#endif /* SDL_visualtest_action_configparser_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* _SDL_visualtest_action_configparser_h */

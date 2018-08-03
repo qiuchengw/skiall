@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -168,19 +168,7 @@ loop()
             PrintText("INPUT", event.text.text);
             break;
         case SDL_MOUSEBUTTONDOWN:
-            /* Left button quits the app, other buttons toggles text input */
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                done = 1;
-            } else {
-                if (SDL_IsTextInputActive()) {
-                    SDL_Log("Stopping text input\n");
-                    SDL_StopTextInput();
-                } else {
-                    SDL_Log("Starting text input\n");
-                    SDL_StartTextInput();
-                }
-            }
-            break;
+            /* Any button press quits the app... */
         case SDL_QUIT:
             done = 1;
             break;

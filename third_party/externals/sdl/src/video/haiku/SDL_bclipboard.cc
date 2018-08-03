@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
-/* BWindow based clipboard implementation */
+/* BWindow based framebuffer implementation */
 
 #include <unistd.h>
 #include <TypeConstants.h>
@@ -43,7 +43,7 @@ int BE_SetClipboardText(_THIS, const char *text) {
 			/* Presumably the string of characters is ascii-format */
 			ssize_t asciiLength = 0;
 			for(; text[asciiLength] != 0; ++asciiLength) {}
-			clip->AddData("text/plain", B_MIME_TYPE, text, asciiLength);
+			clip->AddData("text/plain", B_MIME_TYPE, &text, asciiLength);
 			be_clipboard->Commit();
 		}
 		be_clipboard->Unlock();
@@ -61,6 +61,8 @@ char *BE_GetClipboardText(_THIS) {
 			/* Presumably the string of characters is ascii-format */
 			clip->FindData("text/plain", B_MIME_TYPE, (const void**)&text,
 				&length);
+		} else {
+			be_clipboard->Unlock();
 		}
 		be_clipboard->Unlock();
 	} 
@@ -69,8 +71,8 @@ char *BE_GetClipboardText(_THIS) {
 		result = SDL_strdup("");
 	} else {
 		/* Copy the data and pass on to SDL */
-		result = (char *)SDL_malloc((length + 1) * sizeof(char));
-		SDL_strlcpy(result, text, length + 1);
+		result = (char*)SDL_calloc(1, sizeof(char*)*length);
+		SDL_strlcpy(result, text, length);
 	}
 	
 	return result;
@@ -91,5 +93,3 @@ SDL_bool BE_HasClipboardText(_THIS) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/hr.xml
+// *
+// ***************************************************************************
 hr{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -85,13 +91,13 @@ hr{
             ec{"Kampala"}
         }
         "Africa:Khartoum"{
-            ec{"Khartoum"}
+            ec{"Kartum"}
         }
         "Africa:Kigali"{
             ec{"Kigali"}
         }
         "Africa:Kinshasa"{
-            ec{"Kinshasa"}
+            ec{"Kinšasa"}
         }
         "Africa:Lagos"{
             ec{"Lagos"}
@@ -100,13 +106,13 @@ hr{
             ec{"Libreville"}
         }
         "Africa:Lome"{
-            ec{"Lomé"}
+            ec{"Lome"}
         }
         "Africa:Luanda"{
             ec{"Luanda"}
         }
         "Africa:Lubumbashi"{
-            ec{"Lubumbashi"}
+            ec{"Lubumbaši"}
         }
         "Africa:Lusaka"{
             ec{"Lusaka"}
@@ -301,10 +307,7 @@ hr{
             ec{"Eirunepe"}
         }
         "America:El_Salvador"{
-            ec{"Salvador"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
+            ec{"El Salvador"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -325,7 +328,7 @@ hr{
             ec{"Grenada"}
         }
         "America:Guadeloupe"{
-            ec{"Guadalupe"}
+            ec{"Guadalupa"}
         }
         "America:Guatemala"{
             ec{"Gvatemala"}
@@ -418,7 +421,7 @@ hr{
             ec{"Marigot"}
         }
         "America:Martinique"{
-            ec{"Martinique"}
+            ec{"Martinik"}
         }
         "America:Matamoros"{
             ec{"Matamoros"}
@@ -506,9 +509,6 @@ hr{
         }
         "America:Puerto_Rico"{
             ec{"Portoriko"}
-        }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
         }
         "America:Rainy_River"{
             ec{"Rainy River"}
@@ -660,9 +660,6 @@ hr{
         "Asia:Ashgabat"{
             ec{"Ashgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -674,9 +671,6 @@ hr{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -713,9 +707,6 @@ hr{
         }
         "Asia:Dushanbe"{
             ec{"Dušanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -856,10 +847,7 @@ hr{
             ec{"Thimphu"}
         }
         "Asia:Tokyo"{
-            ec{"Tokyo"}
-        }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
+            ec{"Tokio"}
         }
         "Asia:Ulaanbaatar"{
             ec{"Ulan Bator"}
@@ -951,9 +939,6 @@ hr{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"koordinirano svjetsko vrijeme"}
-        }
         "Etc:Unknown"{
             ec{"Nepoznati grad"}
         }
@@ -962,9 +947,6 @@ hr{
         }
         "Europe:Andorra"{
             ec{"Andora"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrakhan"}
         }
         "Europe:Athens"{
             ec{"Atena"}
@@ -991,7 +973,7 @@ hr{
             ec{"Busingen"}
         }
         "Europe:Chisinau"{
-            ec{"Kišinjev"}
+            ec{"Chisinau"}
         }
         "Europe:Copenhagen"{
             ec{"Kopenhagen"}
@@ -1023,9 +1005,6 @@ hr{
         }
         "Europe:Kiev"{
             ec{"Kijev"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lisabon"}
@@ -1085,14 +1064,11 @@ hr{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
         "Europe:Skopje"{
-            ec{"Skoplje"}
+            ec{"Skopje"}
         }
         "Europe:Sofia"{
             ec{"Sofija"}
@@ -1106,11 +1082,8 @@ hr{
         "Europe:Tirane"{
             ec{"Tirana"}
         }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovsk"}
-        }
         "Europe:Uzhgorod"{
-            ec{"Užgorod"}
+            ec{"Uzgorod"}
         }
         "Europe:Vaduz"{
             ec{"Vaduz"}
@@ -1185,7 +1158,7 @@ hr{
             ec{"Chatham"}
         }
         "Pacific:Easter"{
-            ec{"Uskršnji otok"}
+            ec{"Uskrsni Otok"}
         }
         "Pacific:Efate"{
             ec{"Efate"}
@@ -1377,9 +1350,9 @@ hr{
             ls{"argentinsko standardno vrijeme"}
         }
         "meta:Argentina_Western"{
-            ld{"zapadnoargentinsko ljetno vrijeme"}
-            lg{"zapadnoargentinsko vrijeme"}
-            ls{"zapadnoargentinsko standardno vrijeme"}
+            ld{"zapadno-argentinsko ljetno vrijeme"}
+            lg{"zapadno-argentinsko vrijeme"}
+            ls{"zapadno-argentinsko standardno vrijeme"}
         }
         "meta:Armenia"{
             ld{"armensko ljetno vrijeme"}
@@ -1475,7 +1448,7 @@ hr{
             ls{"vrijeme Božićnog otoka"}
         }
         "meta:Cocos"{
-            ls{"vrijeme Kokosovih otoka"}
+            ls{"vrijeme Kokosovih Otoka"}
         }
         "meta:Colombia"{
             ld{"kolumbijsko ljetno vrijeme"}
@@ -1483,9 +1456,9 @@ hr{
             ls{"kolumbijsko standardno vrijeme"}
         }
         "meta:Cook"{
-            ld{"Cookovi otoci, polusatni pomak, ljetno vrijeme"}
-            lg{"vrijeme Cookovih otoka"}
-            ls{"standardno vrijeme Cookovih otoka"}
+            ld{"Cookovo otočje, polusatni pomak, ljetno vrijeme"}
+            lg{"vrijeme Cookovih Otoka"}
+            ls{"standardno vrijeme Cookovih Otoka"}
         }
         "meta:Cuba"{
             ld{"kubansko ljetno vrijeme"}
@@ -1526,7 +1499,7 @@ hr{
             ss{"EET"}
         }
         "meta:Europe_Further_Eastern"{
-            ls{"dalekoistočno europsko vrijeme"}
+            ls{"daljeistočno europsko vrijeme"}
         }
         "meta:Europe_Western"{
             ld{"zapadnoeuropsko ljetno vrijeme"}
@@ -1568,7 +1541,7 @@ hr{
             ls{"gruzijsko standardno vrijeme"}
         }
         "meta:Gilbert_Islands"{
-            ls{"vrijeme Gilbertovih otoka"}
+            ls{"vrijeme Gilbertovih Otoka"}
         }
         "meta:Greenland_Eastern"{
             ld{"istočnogrenlandsko ljetno vrijeme"}
@@ -1724,9 +1697,9 @@ hr{
             ls{"meksičko pacifičko standardno vrijeme"}
         }
         "meta:Mongolia"{
-            ld{"ulanbatorsko ljetno vrijeme"}
-            lg{"ulanbatorsko vrijeme"}
-            ls{"ulanbatorsko standardno vrijeme"}
+            ld{"ulan-batorsko ljetno vrijeme"}
+            lg{"ulan-batorsko vrijeme"}
+            ls{"ulan-batorsko standardno vrijeme"}
         }
         "meta:Moscow"{
             ld{"moskovsko ljetno vrijeme"}
@@ -1734,7 +1707,7 @@ hr{
             ls{"moskovsko standardno vrijeme"}
         }
         "meta:Myanmar"{
-            ls{"mjanmarsko vrijeme"}
+            ls{"mianmarsko vrijeme"}
         }
         "meta:Nauru"{
             ls{"vrijeme Naurua"}
@@ -1820,9 +1793,6 @@ hr{
         }
         "meta:Ponape"{
             ls{"vrijeme Ponapea"}
-        }
-        "meta:Pyongyang"{
-            ls{"pjongjanško vrijeme"}
         }
         "meta:Qyzylorda"{
             ld{"ljetno vrijeme grada Kizilorde"}

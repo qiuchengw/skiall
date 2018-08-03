@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/lo.xml
+// *
+// ***************************************************************************
 lo{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -66,7 +72,6 @@ lo{
             square-kilometer{
                 dnam{"ກິໂລຕາແມັດ"}
                 other{"{0} ກິໂລຕາແມັດ"}
-                per{"{0} ຕໍ່ຕາກິໂລແມັດກ້ອນ"}
             }
             square-meter{
                 dnam{"ຕາແມັດ"}
@@ -76,7 +81,6 @@ lo{
             square-mile{
                 dnam{"ຕາ​ລາງໄມລ໌"}
                 other{"{0} ຕາ​ລາງໄມລ໌"}
-                per{"{0}/mi²"}
             }
             square-yard{
                 dnam{"square yards"}
@@ -85,24 +89,6 @@ lo{
         }
         compound{
             per{"{0} ຕໍ່ {1}"}
-        }
-        concentr{
-            karat{
-                dnam{"ກະຣັດ"}
-                other{"{0} ກະຣັດ"}
-            }
-            milligram-per-deciliter{
-                dnam{"ມິລິກຣັມຕໍ່ເດຊິລິດ"}
-                other{"{0} mg/dL"}
-            }
-            millimole-per-liter{
-                dnam{"ມິລິໂມລຕໍ່ລິດ"}
-                other{"{0} ມິລິໂມລຕໍ່ລິດ"}
-            }
-            part-per-million{
-                dnam{"ພາດຕໍ່ລ້ານ"}
-                other{"{0} ພາດຕໍ່ລ້ານ"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -116,10 +102,6 @@ lo{
             mile-per-gallon{
                 dnam{"ໄມລ໌ຕໍ່ແກລອນ"}
                 other{"{0} ໄມລ໌ຕໍ່ແກລອນ"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"ໄມລ໌ຕໍ່ແກລລອນອັງກິດ"}
-                other{"{0} ໄມລ໌ຕໍ່ແກລລອນອັງກິດ"}
             }
         }
         coordinate{
@@ -328,8 +310,8 @@ lo{
                 other{"{0} micrometers"}
             }
             mile{
-                dnam{"ໄມລ໌"}
-                other{"{0} ໄມລ໌"}
+                dnam{"ໄມ"}
+                other{"{0} ໄມ"}
             }
             mile-scandinavian{
                 dnam{"ໄມລ໌ສະກັງດີນາວຽນ"}
@@ -354,10 +336,6 @@ lo{
             picometer{
                 dnam{"ປິໂກແມັດ"}
                 other{"{0} ປິໂກແມັດ"}
-            }
-            point{
-                dnam{"ຈຸດ"}
-                other{"{0} ຈຸດ"}
             }
             yard{
                 dnam{"ຫລາ"}
@@ -464,6 +442,12 @@ lo{
                 other{"{0} pounds per square inch"}
             }
         }
+        proportion{
+            karat{
+                dnam{"ກະຣັດ"}
+                other{"{0} ກະຣັດ"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"ກິໂລແມັດຕໍ່ຊົ່ວໂມງ"}
@@ -485,7 +469,7 @@ lo{
         temperature{
             celsius{
                 dnam{"ອົງສາເຊວຊຽສ"}
-                other{"{0} ອົງສາ ຊີ."}
+                other{"{0} ອົງສາເຊວຊຽສ"}
             }
             fahrenheit{
                 dnam{"ອົງສາຟາເຣນຮາຍ"}
@@ -559,11 +543,6 @@ lo{
                 dnam{"gal"}
                 other{"{0} gal"}
                 per{"{0} per gallon"}
-            }
-            gallon-imperial{
-                dnam{"ແກລລອນອັງກິດ"}
-                other{"{0} ແກລລອນອັງກິດ"}
-                per{"{0}/gal Imp."}
             }
             hectoliter{
                 dnam{"hL"}
@@ -801,7 +780,7 @@ lo{
             }
             liter{
                 dnam{"ລິດ"}
-                other{"{0}L"}
+                other{"{0} ລ"}
             }
         }
     }
@@ -864,7 +843,6 @@ lo{
             square-kilometer{
                 dnam{"ກມ²"}
                 other{"{0} ກມ²"}
-                per{"{0}/km²"}
             }
             square-meter{
                 dnam{"ແມັດ²"}
@@ -874,7 +852,6 @@ lo{
             square-mile{
                 dnam{"sq miles"}
                 other{"{0} mi²"}
-                per{"{0}/mi²"}
             }
             square-yard{
                 dnam{"yards²"}
@@ -883,24 +860,6 @@ lo{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"ກະຣັດ"}
-                other{"{0} kt"}
-            }
-            milligram-per-deciliter{
-                dnam{"mg/dL"}
-                other{"{0} mg/dL"}
-            }
-            millimole-per-liter{
-                dnam{"ມິລິໂມນ/ລິດ"}
-                other{"{0} mmol/L"}
-            }
-            part-per-million{
-                dnam{"ພາດ/ລ້ານ"}
-                other{"{0} ppm"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -914,10 +873,6 @@ lo{
             mile-per-gallon{
                 dnam{"ໄມລ໌/ແກລ"}
                 other{"{0} mpg"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"ໄມລ໌/ແກລລອນອັງກິດ"}
-                other{"{0} mpg Imp."}
             }
         }
         coordinate{
@@ -980,8 +935,8 @@ lo{
             }
             hour{
                 dnam{"ຊົ່ວໂມງ"}
-                other{"{0} ຊມ"}
-                per{"{0}/ຊມ"}
+                other{"{0} ຊມ."}
+                per{"{0}/ຊມ."}
             }
             microsecond{
                 dnam{"μວິ"}
@@ -993,7 +948,7 @@ lo{
             }
             minute{
                 dnam{"ນທ."}
-                other{"{0} ນທ"}
+                other{"{0} ນທ."}
                 per{"{0}/ນາທີ"}
             }
             month{
@@ -1007,8 +962,8 @@ lo{
             }
             second{
                 dnam{"ວິ."}
-                other{"{0} ວິ"}
-                per{"{0}/ວິ"}
+                other{"{0} ວິ."}
+                per{"{0}/ວິ."}
             }
             week{
                 dnam{"ອາທິດ"}
@@ -1018,7 +973,7 @@ lo{
             year{
                 dnam{"ປີ"}
                 other{"{0} ປີ"}
-                per{"{0}/ປີ"}
+                per{"{0}/y"}
             }
         }
         electric{
@@ -1094,23 +1049,23 @@ lo{
                 per{"{0}/ຊັງຕີແມັດ"}
             }
             decimeter{
-                dnam{"ດມ"}
-                other{"{0} ດມ"}
+                dnam{"dm"}
+                other{"{0} dm"}
             }
             foot{
                 dnam{"ຟຸດ"}
                 other{"{0} ຟ"}
-                per{"{0}/ຟ"}
+                per{"{0}/ຟຸດ"}
             }
             inch{
                 dnam{"ນິ້ວ"}
                 other{"{0} ນິ"}
-                per{"{0}/ນິ"}
+                per{"{0}/ນີວ"}
             }
             kilometer{
                 dnam{"ກມ"}
                 other{"{0} ກມ"}
-                per{"{0}/ກມ"}
+                per{"{0}/ກິໂລແມັດ"}
             }
             light-year{
                 dnam{"ປີແສງ"}
@@ -1119,14 +1074,14 @@ lo{
             meter{
                 dnam{"ແມັດ"}
                 other{"{0} ມ"}
-                per{"{0}/ມ"}
+                per{"{0}/ແມັດ"}
             }
             micrometer{
                 dnam{"µm"}
                 other{"{0} µm"}
             }
             mile{
-                dnam{"ໄມລ໌"}
+                dnam{"ໄມ"}
                 other{"{0} ໄມ"}
             }
             mile-scandinavian{
@@ -1138,8 +1093,8 @@ lo{
                 other{"{0} ມມ"}
             }
             nanometer{
-                dnam{"ນມ"}
-                other{"{0} ນມ"}
+                dnam{"nm"}
+                other{"{0} nm"}
             }
             nautical-mile{
                 dnam{"nmi"}
@@ -1150,12 +1105,8 @@ lo{
                 other{"{0} pc"}
             }
             picometer{
-                dnam{"ປມ"}
-                other{"{0} ປມ"}
-            }
-            point{
-                dnam{"ຈຸດ"}
-                other{"{0} pt"}
+                dnam{"pm"}
+                other{"{0} pm"}
             }
             yard{
                 dnam{"ຫລາ"}
@@ -1262,6 +1213,12 @@ lo{
                 other{"{0} psi"}
             }
         }
+        proportion{
+            karat{
+                dnam{"ກະຣັດ"}
+                other{"{0} kt"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"ກມ/ຊມ"}
@@ -1358,18 +1315,13 @@ lo{
                 other{"{0} gal"}
                 per{"{0}/gal"}
             }
-            gallon-imperial{
-                dnam{"Imp. gal"}
-                other{"{0} gal Imp."}
-                per{"{0}/gal Imp."}
-            }
             hectoliter{
                 dnam{"hL"}
                 other{"{0} hL"}
             }
             liter{
                 dnam{"ລິດ"}
-                other{"{0} L"}
+                other{"{0} ລິດ"}
                 per{"{0}/l"}
             }
             megaliter{

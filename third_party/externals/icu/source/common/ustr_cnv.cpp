@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  ustr_cnv.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -28,7 +26,6 @@
 #include "cmemory.h"
 #include "umutex.h"
 #include "ustr_cnv.h"
-#include "ucnv_bld.h"
 
 /* mutexed access to a shared default converter ----------------------------- */
 
@@ -69,8 +66,8 @@ u_releaseDefaultConverter(UConverter *converter)
         if (converter != NULL) {
             ucnv_reset(converter);
         }
-        ucnv_enableCleanup();
         umtx_lock(NULL);
+
         if(gDefaultConverter == NULL) {
             gDefaultConverter = converter;
             converter = NULL;

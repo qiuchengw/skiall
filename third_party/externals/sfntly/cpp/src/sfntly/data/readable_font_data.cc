@@ -18,8 +18,6 @@
 
 #include <stdio.h>
 
-#include <limits>
-
 #include "sfntly/data/memory_byte_array.h"
 #include "sfntly/data/writable_font_data.h"
 #include "sfntly/port/exception_type.h"
@@ -38,7 +36,7 @@ ReadableFontData::~ReadableFontData() {}
 //                  not too useful without copying, but it's not performance
 //                  savvy to do copying.
 CALLER_ATTACH
-ReadableFontData* ReadableFontData::CreateReadableFontData(std::vector<uint8_t>* b) {
+ReadableFontData* ReadableFontData::CreateReadableFontData(ByteVector* b) {
   assert(b);
   ByteArrayPtr ba = new MemoryByteArray(b->size());
   ba->Put(0, b);
@@ -54,37 +52,35 @@ int64_t ReadableFontData::Checksum() {
   return checksum_;
 }
 
-void ReadableFontData::SetCheckSumRanges(const std::vector<int32_t>& ranges) {
+void ReadableFontData::SetCheckSumRanges(const IntegerList& ranges) {
   checksum_range_ = ranges;
   checksum_set_ = false;  // UNIMPLEMENTED: atomicity
 }
 
 int32_t ReadableFontData::ReadUByte(int32_t index) {
   int32_t b = array_->Get(BoundOffset(index));
-  if (b < 0) {
 #if !defined (SFNTLY_NO_EXCEPTION)
+  if (b < 0) {
     throw IndexOutOfBoundException(
         "Index attempted to be read from is out of bounds", index);
-#endif
-    return kInvalidUnsigned;
   }
+#endif
   return b;
 }
 
 int32_t ReadableFontData::ReadByte(int32_t index) {
   int32_t b = array_->Get(BoundOffset(index));
-  if (b < 0) {
 #if !defined (SFNTLY_NO_EXCEPTION)
+  if (b < 0) {
     throw IndexOutOfBoundException(
         "Index attempted to be read from is out of bounds", index);
-#endif
-    return kInvalidByte;
   }
+#endif
   return (b << 24) >> 24;
 }
 
 int32_t ReadableFontData::ReadBytes(int32_t index,
-                                    uint8_t* b,
+                                    byte_t* b,
                                     int32_t offset,
                                     int32_t length) {
   return array_->Get(BoundOffset(index), b, offset, BoundLength(index, length));
@@ -95,54 +91,24 @@ int32_t ReadableFontData::ReadChar(int32_t index) {
 }
 
 int32_t ReadableFontData::ReadUShort(int32_t index) {
-  int32_t b1 = ReadUByte(index);
-  if (b1 < 0)
-    return kInvalidUnsigned;
-  int32_t b2 = ReadUByte(index + 1);
-  if (b2 < 0)
-    return kInvalidUnsigned;
-  return 0xffff & (b1 << 8 | b2);
+  return 0xffff & (ReadUByte(index) << 8 | ReadUByte(index + 1));
 }
 
 int32_t ReadableFontData::ReadShort(int32_t index) {
-  int32_t b1 = ReadByte(index);
-  if (b1 == kInvalidByte)
-    return kInvalidShort;
-  int32_t b2 = ReadUByte(index + 1);
-  if (b2 < 0)
-    return kInvalidShort;
-
-  uint32_t result = static_cast<uint32_t>(b1) << 8 | b2;
-  return static_cast<int32_t>(result << 16) >> 16;
+  return ((ReadByte(index) << 8 | ReadUByte(index + 1)) << 16) >> 16;
 }
 
 int32_t ReadableFontData::ReadUInt24(int32_t index) {
-  int32_t b1 = ReadUByte(index);
-  if (b1 < 0)
-    return kInvalidUnsigned;
-  int32_t b2 = ReadUByte(index + 1);
-  if (b2 < 0)
-    return kInvalidUnsigned;
-  int32_t b3 = ReadUByte(index + 2);
-  if (b3 < 0)
-    return kInvalidUnsigned;
-  return 0xffffff & (b1 << 16 | b2 << 8 | b3);
+  return 0xffffff & (ReadUByte(index) << 16 |
+                     ReadUByte(index + 1) << 8 |
+                     ReadUByte(index + 2));
 }
 
 int64_t ReadableFontData::ReadULong(int32_t index) {
-  int32_t b1 = ReadUByte(index);
-  if (b1 < 0)
-    return kInvalidUnsigned;
-  int32_t b2 = ReadUByte(index + 1);
-  if (b2 < 0)
-    return kInvalidUnsigned;
-  int32_t b3 = ReadUByte(index + 2);
-  if (b3 < 0)
-    return kInvalidUnsigned;
-  int32_t b4 = ReadUByte(index + 3);
-  if (b4 < 0)
-    return kInvalidUnsigned;
-  return 0xffffffffL & (b1 << 24 | b2 << 16 | b3 << 8 | b4);
+  return 0xffffffffL & (ReadUByte(index) << 24 |
+                        ReadUByte(index + 1) << 16 |
+                        ReadUByte(index + 2) << 8 |
+                        ReadUByte(index + 3));
 }
 
 int32_t ReadableFontData::ReadULongAsInt(int32_t index) {
@@ -156,35 +122,17 @@ int32_t ReadableFontData::ReadULongAsInt(int32_t index) {
 }
 
 int64_t ReadableFontData::ReadULongLE(int32_t index) {
-  int32_t b1 = ReadUByte(index);
-  if (b1 < 0)
-    return kInvalidUnsigned;
-  int32_t b2 = ReadUByte(index + 1);
-  if (b2 < 0)
-    return kInvalidUnsigned;
-  int32_t b3 = ReadUByte(index + 2);
-  if (b3 < 0)
-    return kInvalidUnsigned;
-  int32_t b4 = ReadUByte(index + 3);
-  if (b4 < 0)
-    return kInvalidUnsigned;
-  return 0xffffffffL & (b1 | b2 << 8 | b3 << 16 | b4 << 24);
+  return 0xffffffffL & (ReadUByte(index) |
+                        ReadUByte(index + 1) << 8 |
+                        ReadUByte(index + 2) << 16 |
+                        ReadUByte(index + 3) << 24);
 }
 
 int32_t ReadableFontData::ReadLong(int32_t index) {
-  int32_t b1 = ReadByte(index);
-  if (b1 == kInvalidByte)
-    return kInvalidLong;
-  int32_t b2 = ReadUByte(index + 1);
-  if (b2 < 0)
-    return kInvalidLong;
-  int32_t b3 = ReadUByte(index + 2);
-  if (b3 < 0)
-    return kInvalidLong;
-  int32_t b4 = ReadUByte(index + 3);
-  if (b4 < 0)
-    return kInvalidLong;
-  return static_cast<uint32_t>(b1) << 24 | b2 << 16 | b3 << 8 | b4;
+  return ReadByte(index) << 24 |
+         ReadUByte(index + 1) << 16 |
+         ReadUByte(index + 2) << 8 |
+         ReadUByte(index + 3);
 }
 
 int32_t ReadableFontData::ReadFixed(int32_t index) {
@@ -192,13 +140,7 @@ int32_t ReadableFontData::ReadFixed(int32_t index) {
 }
 
 int64_t ReadableFontData::ReadDateTimeAsLong(int32_t index) {
-  int64_t high = ReadULong(index);
-  if (high == kInvalidUnsigned)
-    return kInvalidLongDateTime;
-  int64_t low = ReadULong(index + 4);
-  if (low == kInvalidUnsigned)
-    return kInvalidLongDateTime;
-  return high << 32 | low;
+  return (int64_t)ReadULong(index) << 32 | ReadULong(index + 4);
 }
 
 int32_t ReadableFontData::ReadFWord(int32_t index) {
@@ -245,11 +187,12 @@ int32_t ReadableFontData::SearchUShort(int32_t start_index,
 #if defined (SFNTLY_DEBUG_FONTDATA)
       fprintf(stderr, "**start: %d; end: %d\n", location_start, location_end);
 #endif
-      if (key <= location_end)
+      if (key <= location_end) {
         return location;
-
-      // location is above the current location
-      bottom = location + 1;
+      } else {
+        // location is above the current location
+        bottom = location + 1;
+      }
     }
   }
   return -1;
@@ -265,15 +208,14 @@ int32_t ReadableFontData::SearchUShort(int32_t start_index,
   while (top != bottom) {
     location = (top + bottom) / 2;
     int32_t location_start = ReadUShort(start_index + location * start_offset);
-    if (key == location_start)
-      return location;
-
     if (key < location_start) {
       // location is below current location
       top = location;
-    } else {
+    } else if (key > location_start) {
       // location is above current location
       bottom = location + 1;
+    } else {
+      return location;
     }
   }
   return -1;
@@ -301,11 +243,12 @@ int32_t ReadableFontData::SearchULong(int32_t start_index,
 #if defined (SFNTLY_DEBUG_FONTDATA)
       fprintf(stderr, "**start: %d; end: %d\n", location_start, location_end);
 #endif
-      if (key <= location_end)
+      if (key <= location_end) {
         return location;
-
-      // location is above the current location
-      bottom = location + 1;
+      } else {
+        // location is above the current location
+        bottom = location + 1;
+      }
     }
   }
   return -1;
@@ -313,9 +256,7 @@ int32_t ReadableFontData::SearchULong(int32_t start_index,
 
 CALLER_ATTACH FontData* ReadableFontData::Slice(int32_t offset,
                                                 int32_t length) {
-  if (offset < 0 || length < 0 ||
-      offset > std::numeric_limits<int32_t>::max() - length ||
-      offset + length > Size()) {
+  if (offset < 0 || offset + length > Size()) {
 #if !defined (SFNTLY_NO_EXCEPTION)
     throw IndexOutOfBoundsException(
         "Attempt to bind data outside of its limits");

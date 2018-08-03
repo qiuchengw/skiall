@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/id.xml
+// *
+// ***************************************************************************
 id{
     AuxExemplarCharacters{"[å]"}
     Ellipsis{
@@ -12,8 +18,7 @@ id{
     }
     ExemplarCharacters{"[a b c d e f g h i j k l m n o p q r s t u v w x y z]"}
     ExemplarCharactersIndex{"[A B C D E F G H I J K L M N O P Q R S T U V W X Y Z]"}
-    ExemplarCharactersNumbers{"[\\- , . % ‰ + 0 1 2 3 4 5 6 7 8 9]"}
-    ExemplarCharactersPunctuation{"[\\- ‐ – — , ; \\: ! ? . … ' ‘ ’ “ ” ( ) \\[ \\] /]"}
+    ExemplarCharactersPunctuation{"[‐ – — , ; \\: ! ? . … ' ‘ ’ “ ” ( ) \\[ \\] /]"}
     MoreInformation{"?"}
     NumberElements{
         default{"latn"}
@@ -72,7 +77,7 @@ id{
             patternsShort{
                 currencyFormat{
                     1000{
-                        other{"¤0 rb"}
+                        other{"¤0"}
                     }
                     10000{
                         other{"¤00 rb"}
@@ -110,7 +115,7 @@ id{
                 }
                 decimalFormat{
                     1000{
-                        other{"0 rb"}
+                        other{"0"}
                     }
                     10000{
                         other{"00 rb"}
@@ -162,18 +167,10 @@ id{
                 timeSeparator{"."}
             }
         }
-        minimalPairs{
-            ordinal{
-                other{"Ambil belokan kanan ke-{0}."}
-            }
-            plural{
-                other{"{0} hari"}
-            }
-        }
         minimumGroupingDigits{"1"}
         native{"latn"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     calendar{
         buddhist{
             DateTimePatterns{
@@ -185,19 +182,13 @@ id{
                 "d MMMM y G",
                 "d MMM y G",
                 "d/M/y GGGGG",
-                "{1}, {0}",
-                "{1} 'pukul' {0}",
-                "{1} 'pukul' {0}",
-                "{1}, {0}",
-                "{1}, {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
             }
             availableFormats{
-                E{"ccc"}
-                Ed{"E, d"}
-                Gy{"y G"}
-                GyMMM{"MMM y G"}
-                GyMMMEd{"E, d MMM y G"}
-                GyMMMd{"d MMM y G"}
                 M{"L"}
                 MEd{"E, d/M"}
                 MMM{"LLL"}
@@ -208,121 +199,10 @@ id{
                 Md{"d/M"}
                 d{"d"}
                 y{"G y"}
-                yyyy{"y G"}
-                yyyyM{"M/y G"}
-                yyyyMEd{"E, d/M/y G"}
-                yyyyMMM{"MMM y G"}
-                yyyyMMMEd{"E, d MMM y G"}
-                yyyyMMMM{"MMMM y G"}
-                yyyyMMMd{"d MMM y G"}
-                yyyyMd{"d/M/y G"}
-                yyyyQQQ{"QQQ y G"}
-                yyyyQQQQ{"QQQQ y G"}
             }
             eras{
                 abbreviated{
                     "BE",
-                }
-                narrow{
-                    "BE",
-                }
-                wide{
-                    "BE",
-                }
-            }
-            intervalFormats{
-                H{
-                    H{"HH – HH"}
-                }
-                Hm{
-                    H{"HH.mm – HH.mm"}
-                    m{"HH.mm – HH.mm"}
-                }
-                Hmv{
-                    H{"HH.mm – HH.mm v"}
-                    m{"HH.mm – HH.mm v"}
-                }
-                Hv{
-                    H{"HH – HH v"}
-                }
-                M{
-                    M{"M – M"}
-                }
-                MEd{
-                    M{"E, d/M – E, d/M"}
-                    d{"E, d/M – E, d/M"}
-                }
-                MMM{
-                    M{"MMM – MMM"}
-                }
-                MMMEd{
-                    M{"E, d MMM – E, d MMM"}
-                    d{"E, d MMM – E, d MMM"}
-                }
-                MMMd{
-                    M{"d MMM – d MMM"}
-                    d{"d – d MMM"}
-                }
-                Md{
-                    M{"d/M – d/M"}
-                    d{"d/M – d/M"}
-                }
-                d{
-                    d{"d – d"}
-                }
-                fallback{"{0} – {1}"}
-                h{
-                    a{"h a – h a"}
-                    h{"h – h a"}
-                }
-                hm{
-                    a{"h.mm a – h.mm a"}
-                    h{"h.mm – h.mm a"}
-                    m{"h.mm – h.mm a"}
-                }
-                hmv{
-                    a{"h.mm a – h.mm a v"}
-                    h{"h.mm – h.mm a v"}
-                    m{"h.mm – h.mm a v"}
-                }
-                hv{
-                    a{"h a – h a v"}
-                    h{"h – h a v"}
-                }
-                y{
-                    y{"y – y G"}
-                }
-                yM{
-                    M{"M/y – M/y GGGGG"}
-                    y{"M/y – M/y GGGGG"}
-                }
-                yMEd{
-                    M{"E, d/M/y – E, d/M/y GGGGG"}
-                    d{"E, d/M/y – E, d/M/y GGGGG"}
-                    y{"E, d/M/y – E, d/M/y GGGGG"}
-                }
-                yMMM{
-                    M{"MMM – MMM y G"}
-                    y{"MMM y – MMM y G"}
-                }
-                yMMMEd{
-                    M{"E, d MMM – E, d MMM y G"}
-                    d{"E, d MMM – E, d MMM y G"}
-                    y{"E, d MMM y – E, d MMM y G"}
-                }
-                yMMMM{
-                    M{"MMMM – MMMM y G"}
-                    y{"MMMM y – MMMM y G"}
-                }
-                yMMMd{
-                    M{"d MMM – d MMM y G"}
-                    d{"d – d MMM y G"}
-                    y{"d MMM y – d MMM y G"}
-                }
-                yMd{
-                    M{"d/M/y – d/M/y GGGGG"}
-                    d{"d/M/y – d/M/y GGGGG"}
-                    y{"d/M/y – d/M/y GGGGG"}
                 }
             }
         }
@@ -568,20 +448,6 @@ id{
             }
         }
         coptic{
-            eras{
-                abbreviated{
-                    "ERA0",
-                    "ERA1",
-                }
-                narrow{
-                    "ERA0",
-                    "ERA1",
-                }
-                wide{
-                    "ERA0",
-                    "ERA1",
-                }
-            }
             monthNames{
                 format{
                     abbreviated{
@@ -740,20 +606,6 @@ id{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    "ERA0",
-                    "ERA1",
-                }
-                narrow{
-                    "ERA0",
-                    "ERA1",
-                }
-                wide{
-                    "ERA0",
-                    "ERA1",
-                }
-            }
             monthNames{
                 format{
                     abbreviated{
@@ -851,19 +703,6 @@ id{
                 }
             }
         }
-        ethiopic-amete-alem{
-            eras{
-                abbreviated{
-                    "ERA0",
-                }
-                narrow{
-                    "ERA0",
-                }
-                wide{
-                    "ERA0",
-                }
-            }
-        }
         generic{
             DateTimePatterns{
                 "HH.mm.ss zzzz",
@@ -874,24 +713,15 @@ id{
                 "d MMMM y G",
                 "d MMM y G",
                 "dd/MM/yy GGGGG",
-                "{1}, {0}",
-                "{1} 'pukul' {0}",
-                "{1} 'pukul' {0}",
-                "{1}, {0}",
-                "{1}, {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
             }
             availableFormats{
-                Bh{"h B"}
-                Bhm{"h.mm B"}
-                Bhms{"h.mm.ss B"}
                 E{"ccc"}
-                EBhm{"E h.mm B"}
-                EBhms{"E h.mm.ss B"}
-                EHm{"E HH.mm"}
-                EHms{"E HH.mm.ss"}
                 Ed{"E, d"}
-                Ehm{"E h.mm a"}
-                Ehms{"E h.mm.ss a"}
                 Gy{"y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
@@ -1052,12 +882,7 @@ id{
                 Timezone{"{0} {1}"}
             }
             availableFormats{
-                Bh{"h B"}
-                Bhm{"h.mm B"}
-                Bhms{"h.mm.ss B"}
                 E{"ccc"}
-                EBhm{"E h.mm B"}
-                EBhms{"E h.mm.ss B"}
                 EHm{"E HH.mm"}
                 EHms{"E HH.mm.ss"}
                 Ed{"E, d"}
@@ -1077,9 +902,6 @@ id{
                 MMM{"LLL"}
                 MMMEd{"E, d MMM"}
                 MMMMEd{"E, d MMMM"}
-                MMMMW{
-                    other{"'minggu' 'ke'-W MMM"}
-                }
                 MMMMd{"d MMMM"}
                 MMMd{"d MMM"}
                 Md{"d/M"}
@@ -1100,9 +922,6 @@ id{
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
-                yw{
-                    other{"'minggu' 'ke'-w Y"}
-                }
             }
             dayNames{
                 format{
@@ -1257,7 +1076,7 @@ id{
                 }
                 wide{
                     "Sebelum Masehi",
-                    "Masehi",
+                    "M",
                 }
                 wide%variant{
                     "Sebelum Era Umum",
@@ -1497,12 +1316,6 @@ id{
                 abbreviated{
                     "AM",
                 }
-                narrow{
-                    "AM",
-                }
-                wide{
-                    "AM",
-                }
             }
             monthNames{
                 format{
@@ -1612,12 +1425,6 @@ id{
                 abbreviated{
                     "SAKA",
                 }
-                narrow{
-                    "SAKA",
-                }
-                wide{
-                    "SAKA",
-                }
             }
             monthNames{
                 format{
@@ -1721,18 +1528,12 @@ id{
                 "d MMM y G",
                 "d/M/y GGGGG",
                 "{1} {0}",
-                "{1} 'pukul' {0}",
-                "{1} 'pukul' {0}",
+                "{1} {0}",
+                "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
             }
             availableFormats{
-                E{"ccc"}
-                Ed{"E, d"}
-                Gy{"y G"}
-                GyMMM{"MMM y G"}
-                GyMMMEd{"E, d MMM y G"}
-                GyMMMd{"d MMM y G"}
                 M{"L"}
                 MEd{"E, d/M"}
                 MMM{"LLL"}
@@ -1743,121 +1544,10 @@ id{
                 Md{"d/M"}
                 d{"d"}
                 y{"y G"}
-                yyyy{"y G"}
-                yyyyM{"M/y G"}
-                yyyyMEd{"E, d/M/y G"}
-                yyyyMMM{"MMM y G"}
-                yyyyMMMEd{"E, d MMM y G"}
-                yyyyMMMM{"MMMM y G"}
-                yyyyMMMd{"d MMM y G"}
-                yyyyMd{"d/M/y G"}
-                yyyyQQQ{"QQQ y G"}
-                yyyyQQQQ{"QQQQ y G"}
             }
             eras{
                 abbreviated{
-                    "H",
-                }
-                narrow{
-                    "H",
-                }
-                wide{
-                    "H",
-                }
-            }
-            intervalFormats{
-                H{
-                    H{"HH – HH"}
-                }
-                Hm{
-                    H{"HH.mm – HH.mm"}
-                    m{"HH.mm – HH.mm"}
-                }
-                Hmv{
-                    H{"HH.mm – HH.mm v"}
-                    m{"HH.mm – HH.mm v"}
-                }
-                Hv{
-                    H{"HH – HH v"}
-                }
-                M{
-                    M{"M – M"}
-                }
-                MEd{
-                    M{"E, d/M – E, d/M"}
-                    d{"E, d/M – E, d/M"}
-                }
-                MMM{
-                    M{"MMM – MMM"}
-                }
-                MMMEd{
-                    M{"E, d MMM – E, d MMM"}
-                    d{"E, d MMM – E, d MMM"}
-                }
-                MMMd{
-                    M{"d MMM – d MMM"}
-                    d{"d – d MMM"}
-                }
-                Md{
-                    M{"d/M – d/M"}
-                    d{"d/M – d/M"}
-                }
-                d{
-                    d{"d – d"}
-                }
-                fallback{"{0} – {1}"}
-                h{
-                    a{"h a – h a"}
-                    h{"h – h a"}
-                }
-                hm{
-                    a{"h.mm a – h.mm a"}
-                    h{"h.mm – h.mm a"}
-                    m{"h.mm – h.mm a"}
-                }
-                hmv{
-                    a{"h.mm a – h.mm a v"}
-                    h{"h.mm – h.mm a v"}
-                    m{"h.mm – h.mm a v"}
-                }
-                hv{
-                    a{"h a – h a v"}
-                    h{"h – h a v"}
-                }
-                y{
-                    y{"y – y G"}
-                }
-                yM{
-                    M{"M/y – M/y GGGGG"}
-                    y{"M/y – M/y GGGGG"}
-                }
-                yMEd{
-                    M{"E, d/M/y – E, d/M/y GGGGG"}
-                    d{"E, d/M/y – E, d/M/y GGGGG"}
-                    y{"E, d/M/y – E, d/M/y GGGGG"}
-                }
-                yMMM{
-                    M{"MMM – MMM y G"}
-                    y{"MMM y – MMM y G"}
-                }
-                yMMMEd{
-                    M{"E, d MMM – E, d MMM y G"}
-                    d{"E, d MMM – E, d MMM y G"}
-                    y{"E, d MMM y – E, d MMM y G"}
-                }
-                yMMMM{
-                    M{"MMMM – MMMM y G"}
-                    y{"MMMM y – MMMM y G"}
-                }
-                yMMMd{
-                    M{"d MMM – d MMM y G"}
-                    d{"d – d MMM y G"}
-                    y{"d MMM y – d MMM y G"}
-                }
-                yMd{
-                    M{"d/M/y – d/M/y GGGGG"}
-                    d{"d/M/y – d/M/y GGGGG"}
-                    y{"d/M/y – d/M/y GGGGG"}
+                    "AH",
                 }
             }
             monthNames{
@@ -2225,12 +1915,6 @@ id{
                 abbreviated{
                     "AP",
                 }
-                narrow{
-                    "AP",
-                }
-                wide{
-                    "AP",
-                }
             }
             monthNames{
                 format{
@@ -2333,11 +2017,11 @@ id{
                 "d MMMM y G",
                 "d MMM y G",
                 "d/M/y GGGGG",
-                "{1}, {0}",
-                "{1} 'pukul' {0}",
-                "{1} 'pukul' {0}",
-                "{1}, {0}",
-                "{1}, {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
+                "{1} {0}",
             }
             availableFormats{
                 M{"L"}
@@ -2356,111 +2040,11 @@ id{
                     "Sebelum R.O.C.",
                     "R.O.C.",
                 }
-                narrow{
-                    "Sebelum R.O.C.",
-                    "R.O.C.",
-                }
-                wide{
-                    "Sebelum R.O.C.",
-                    "R.O.C.",
-                }
             }
         }
     }
-    characterLabel{
-        activities{"Aktivitas"}
-        african_scripts{"Skrip Afrika"}
-        american_scripts{"Skrip Amerika"}
-        animal{"hewan"}
-        animals_nature{"satwa atau alam"}
-        arrows{"panah"}
-        body{"badan"}
-        box_drawing{"gambar kotak"}
-        braille{"braille"}
-        building{"bangunan"}
-        bullets_stars{"butir atau bintang"}
-        consonantal_jamo{"jamo konsonan"}
-        currency_symbols{"simbol mata uang"}
-        dash_connector{"setrip atau tanda hubung"}
-        digits{"digit"}
-        dingbats{"dingbat"}
-        divination_symbols{"simbol ramalan"}
-        downwards_arrows{"panah bawah"}
-        downwards_upwards_arrows{"panah atas bawah"}
-        east_asian_scripts{"Skrip Asia Timur"}
-        emoji{"emoji"}
-        european_scripts{"Skrip Eropa"}
-        female{"perempuan"}
-        flag{"bendera"}
-        flags{"Bendera"}
-        food_drink{"makanan & minuman"}
-        format{"format"}
-        format_whitespace{"format & spasi kosong"}
-        full_width_form_variant{"varian lebar penuh"}
-        geometric_shapes{"bentuk geometris"}
-        half_width_form_variant{"varian setengah lebar"}
-        han_characters{"Aksara Han"}
-        han_radicals{"Han Radikal"}
-        hanja{"Hanja"}
-        hanzi_simplified{"Hanzi (Aksara Sederhana)"}
-        hanzi_traditional{"Hanzi (Aksara Tradisional)"}
-        heart{"hati"}
-        historic_scripts{"skrip historis"}
-        ideographic_desc_characters{"karakter desk. ideografis"}
-        japanese_kana{"Huruf Kana Jepang"}
-        kanbun{"kanbun"}
-        kanji{"kanji"}
-        keycap{"keycap"}
-        leftwards_arrows{"panah kiri"}
-        leftwards_rightwards_arrows{"panah kiri kanan"}
-        letterlike_symbols{"simbol seperti huruf"}
-        limited_use{"penggunaan terbatas"}
-        male{"pria"}
-        math_symbols{"simbol matematika"}
-        middle_eastern_scripts{"Skrip Timur Tengah"}
-        miscellaneous{"lain-lain"}
-        modern_scripts{"skrip modern"}
-        modifier{"pengubah"}
-        musical_symbols{"simbol musik"}
-        nature{"alam"}
-        nonspacing{"tanpa spasi"}
-        numbers{"angka"}
-        objects{"objek"}
-        other{"lainnya"}
-        paired{"dipasangkan"}
-        person{"orang"}
-        phonetic_alphabet{"abjad fonetik"}
-        pictographs{"piktograf"}
-        place{"tempat"}
-        plant{"tumbuhan"}
-        punctuation{"tanda baca"}
-        rightwards_arrows{"panah kanan"}
-        sign_standard_symbols{"tanda atau simbol"}
-        small_form_variant{"varian kecil"}
-        smiley{"wajah tersenyum"}
-        smileys_people{"smiley atau orang"}
-        south_asian_scripts{"Skrip Asia Selatan"}
-        southeast_asian_scripts{"Skrip Asia Tenggara"}
-        spacing{"spasi"}
-        sport{"olahraga"}
-        symbols{"simbol"}
-        technical_symbols{"simbol teknis"}
-        tone_marks{"tanda intonasi"}
-        travel{"wisata"}
-        travel_places{"perjalanan atau lokasi"}
-        upwards_arrows{"panah atas"}
-        variant_forms{"varian"}
-        vocalic_jamo{"jamo vokal"}
-        weather{"cuaca"}
-        western_asian_scripts{"Skrip Asia Bagian Barat"}
-        whitespace{"spasi kosong"}
-    }
     contextTransforms{
         relative:intvector{
-            1,
-            1,
-        }
-        typographicNames:intvector{
             1,
             1,
         }
@@ -2473,17 +2057,17 @@ id{
     }
     fields{
         day{
-            dn{"hari"}
+            dn{"Hari"}
             relative{
                 "-1"{"kemarin"}
-                "-2"{"kemarin dulu"}
+                "-2"{"kemarin lusa"}
                 "0"{"hari ini"}
                 "1"{"besok"}
                 "2"{"lusa"}
             }
             relativeTime{
                 future{
-                    other{"dalam {0} hari"}
+                    other{"Dalam {0} hari"}
                 }
                 past{
                     other{"{0} hari yang lalu"}
@@ -2494,10 +2078,10 @@ id{
             dn{"h"}
             relativeTime{
                 future{
-                    other{"dalam {0} h"}
+                    other{"Dalam {0} hari"}
                 }
                 past{
-                    other{"{0} h lalu"}
+                    other{"{0} hari yang lalu"}
                 }
             }
         }
@@ -2505,39 +2089,18 @@ id{
             dn{"h"}
             relativeTime{
                 future{
-                    other{"dalam {0} h"}
+                    other{"Dalam {0} hari"}
                 }
                 past{
-                    other{"{0} h lalu"}
+                    other{"{0} hari yang lalu"}
                 }
             }
-        }
-        dayOfYear{
-            dn{"Hari dalam Setahun"}
-        }
-        dayOfYear-narrow{
-            dn{"Hari dalam Setahun"}
-        }
-        dayOfYear-short{
-            dn{"Hari dalam Setahun"}
         }
         dayperiod{
             dn{"AM/PM"}
         }
-        dayperiod-narrow{
-            dn{"AM/PM"}
-        }
-        dayperiod-short{
-            dn{"AM/PM"}
-        }
         era{
-            dn{"era"}
-        }
-        era-narrow{
-            dn{"era"}
-        }
-        era-short{
-            dn{"era"}
+            dn{"Era"}
         }
         fri{
             relative{
@@ -2545,28 +2108,12 @@ id{
                 "0"{"Jumat ini"}
                 "1"{"Jumat berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dalam {0} Jumat"}
-                }
-                past{
-                    other{"{0} Jumat lalu"}
-                }
-            }
         }
         fri-narrow{
             relative{
-                "-1"{"Jum. lalu"}
-                "0"{"Jum. ini"}
-                "1"{"Jum. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Jum."}
-                }
-                past{
-                    other{"{0} Jum. lalu"}
-                }
+                "-1"{"J lalu"}
+                "0"{"J ini"}
+                "1"{"J berikutnya"}
             }
         }
         fri-short{
@@ -2575,23 +2122,12 @@ id{
                 "0"{"Jum. ini"}
                 "1"{"Jum. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Jum."}
-                }
-                past{
-                    other{"{0} Jum. lalu"}
-                }
-            }
         }
         hour{
             dn{"Jam"}
-            relative{
-                "0"{"jam ini"}
-            }
             relativeTime{
                 future{
-                    other{"dalam {0} jam"}
+                    other{"Dalam {0} jam"}
                 }
                 past{
                     other{"{0} jam yang lalu"}
@@ -2602,10 +2138,10 @@ id{
             dn{"j"}
             relativeTime{
                 future{
-                    other{"dalam {0} jam"}
+                    other{"+{0} jam"}
                 }
                 past{
-                    other{"{0} jam lalu"}
+                    other{"-{0} jam"}
                 }
             }
         }
@@ -2613,21 +2149,18 @@ id{
             dn{"jam"}
             relativeTime{
                 future{
-                    other{"dalam {0} jam"}
+                    other{"dlm {0} jam"}
                 }
                 past{
-                    other{"{0} jam lalu"}
+                    other{"{0} jam yg lalu"}
                 }
             }
         }
         minute{
-            dn{"menit"}
-            relative{
-                "0"{"menit ini"}
-            }
+            dn{"Menit"}
             relativeTime{
                 future{
-                    other{"dalam {0} menit"}
+                    other{"Dalam {0} menit"}
                 }
                 past{
                     other{"{0} menit yang lalu"}
@@ -2638,10 +2171,10 @@ id{
             dn{"m"}
             relativeTime{
                 future{
-                    other{"dlm {0} mnt"}
+                    other{"+{0} mnt"}
                 }
                 past{
-                    other{"{0} mnt lalu"}
+                    other{"-{0} mnt"}
                 }
             }
         }
@@ -2652,7 +2185,7 @@ id{
                     other{"dlm {0} mnt"}
                 }
                 past{
-                    other{"{0} mnt lalu"}
+                    other{"{0} mnt yg lalu"}
                 }
             }
         }
@@ -2662,28 +2195,12 @@ id{
                 "0"{"Senin ini"}
                 "1"{"Senin berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dalam {0} Senin"}
-                }
-                past{
-                    other{"{0} Senin lalu"}
-                }
-            }
         }
         mon-narrow{
             relative{
                 "-1"{"Sen. lalu"}
                 "0"{"Sen. ini"}
                 "1"{"Sen. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Sen."}
-                }
-                past{
-                    other{"{0} Sen. lalu"}
-                }
             }
         }
         mon-short{
@@ -2692,25 +2209,17 @@ id{
                 "0"{"Sen. ini"}
                 "1"{"Sen. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Sen."}
-                }
-                past{
-                    other{"{0} Sen. lalu"}
-                }
-            }
         }
         month{
-            dn{"bulan"}
+            dn{"Bulan"}
             relative{
                 "-1"{"bulan lalu"}
                 "0"{"bulan ini"}
-                "1"{"bulan berikutnya"}
+                "1"{"Bulan berikutnya"}
             }
             relativeTime{
                 future{
-                    other{"dalam {0} bulan"}
+                    other{"Dalam {0} bulan"}
                 }
                 past{
                     other{"{0} bulan yang lalu"}
@@ -2721,10 +2230,10 @@ id{
             dn{"bln."}
             relativeTime{
                 future{
-                    other{"dlm {0} bln"}
+                    other{"+{0} bln."}
                 }
                 past{
-                    other{"{0} bln lalu"}
+                    other{"-{0} bln."}
                 }
             }
         }
@@ -2732,48 +2241,43 @@ id{
             dn{"bln."}
             relativeTime{
                 future{
-                    other{"dlm {0} bln"}
+                    other{"Dalam {0} bulan"}
                 }
                 past{
-                    other{"{0} bln lalu"}
+                    other{"{0} bulan yang lalu"}
                 }
             }
         }
         quarter{
-            dn{"kuartal"}
-            relative{
-                "-1"{"Kuartal lalu"}
-                "0"{"kuartal ini"}
-                "1"{"kuartal berikutnya"}
-            }
+            dn{"Triwulan"}
             relativeTime{
                 future{
-                    other{"dalam {0} kuartal"}
+                    other{"dalam {0} triwulan"}
                 }
                 past{
-                    other{"{0} kuartal yang lalu"}
+                    other{"{0} triwulan yang lalu"}
                 }
             }
         }
         quarter-narrow{
-            dn{"krtl."}
+            dn{"triwln."}
             relativeTime{
                 future{
-                    other{"dlm {0} krtl."}
+                    other{"+{0} triwln."}
                 }
                 past{
-                    other{"{0} krtl. lalu"}
+                    other{"-{0} triwln."}
                 }
             }
         }
         quarter-short{
-            dn{"krtl."}
+            dn{"triwln."}
             relativeTime{
                 future{
-                    other{"dlm {0} krtl."}
+                    other{"dalam {0} triwulan"}
                 }
                 past{
-                    other{"{0} krtl. lalu"}
+                    other{"{0} triwulan yang lalu"}
                 }
             }
         }
@@ -2783,28 +2287,12 @@ id{
                 "0"{"Sabtu ini"}
                 "1"{"Sabtu berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dalam {0} Sabtu"}
-                }
-                past{
-                    other{"{0} Sabtu lalu"}
-                }
-            }
         }
         sat-narrow{
             relative{
                 "-1"{"Sab. lalu"}
                 "0"{"Sab. ini"}
                 "1"{"Sab. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Sab."}
-                }
-                past{
-                    other{"{0} Sab. lalu"}
-                }
             }
         }
         sat-short{
@@ -2813,23 +2301,15 @@ id{
                 "0"{"Sab. ini"}
                 "1"{"Sab. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Sab."}
-                }
-                past{
-                    other{"{0} Sab. lalu"}
-                }
-            }
         }
         second{
-            dn{"detik"}
+            dn{"Detik"}
             relative{
                 "0"{"sekarang"}
             }
             relativeTime{
                 future{
-                    other{"dalam {0} detik"}
+                    other{"Dalam {0} detik"}
                 }
                 past{
                     other{"{0} detik yang lalu"}
@@ -2840,10 +2320,10 @@ id{
             dn{"d"}
             relativeTime{
                 future{
-                    other{"dlm {0} dtk"}
+                    other{"+{0} dtk"}
                 }
                 past{
-                    other{"{0} dtk lalu"}
+                    other{"-{0} d yg lalu"}
                 }
             }
         }
@@ -2854,7 +2334,7 @@ id{
                     other{"dlm {0} dtk"}
                 }
                 past{
-                    other{"{0} dtk lalu"}
+                    other{"{0} dtk yg lalu"}
                 }
             }
         }
@@ -2864,28 +2344,12 @@ id{
                 "0"{"hari Minggu ini"}
                 "1"{"hari Minggu berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dalam {0} hari Minggu"}
-                }
-                past{
-                    other{"{0} hari Minggu yang lalu"}
-                }
-            }
         }
         sun-narrow{
             relative{
-                "-1"{"Min. lalu"}
-                "0"{"Min. ini"}
-                "1"{"Min. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Min."}
-                }
-                past{
-                    other{"{0} Min. lalu"}
-                }
+                "-1"{"M lalu"}
+                "0"{"M ini"}
+                "1"{"M berikutnya"}
             }
         }
         sun-short{
@@ -2894,14 +2358,6 @@ id{
                 "0"{"Min. ini"}
                 "1"{"Min. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Min."}
-                }
-                past{
-                    other{"{0} Min. lalu"}
-                }
-            }
         }
         thu{
             relative{
@@ -2909,28 +2365,12 @@ id{
                 "0"{"Kamis ini"}
                 "1"{"Kamis berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dalam {0} Kamis"}
-                }
-                past{
-                    other{"{0} Kamis lalu"}
-                }
-            }
         }
         thu-narrow{
             relative{
-                "-1"{"Kam. lalu"}
-                "0"{"Kam. ini"}
-                "1"{"Kam. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Kam."}
-                }
-                past{
-                    other{"{0} Kam. lalu"}
-                }
+                "-1"{"K lalu"}
+                "0"{"K ini"}
+                "1"{"K berikutnya"}
             }
         }
         thu-short{
@@ -2939,28 +2379,12 @@ id{
                 "0"{"Kam. ini"}
                 "1"{"Kam. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Kam."}
-                }
-                past{
-                    other{"{0} Kam. lalu"}
-                }
-            }
         }
         tue{
             relative{
                 "-1"{"Selasa lalu"}
                 "0"{"Selasa ini"}
                 "1"{"Selasa berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dalam {0} Selasa"}
-                }
-                past{
-                    other{"{0} Selasa lalu"}
-                }
             }
         }
         tue-narrow{
@@ -2969,28 +2393,12 @@ id{
                 "0"{"Sel. ini"}
                 "1"{"Sel. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Sel."}
-                }
-                past{
-                    other{"{0} Sel. lalu"}
-                }
-            }
         }
         tue-short{
             relative{
                 "-1"{"Sel. lalu"}
                 "0"{"Sel. ini"}
                 "1"{"Sel. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Sel."}
-                }
-                past{
-                    other{"{0} Sel. lalu"}
-                }
             }
         }
         wed{
@@ -2999,28 +2407,12 @@ id{
                 "0"{"Rabu ini"}
                 "1"{"Rabu berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dalam {0} Rabu"}
-                }
-                past{
-                    other{"{0} Rabu lalu"}
-                }
-            }
         }
         wed-narrow{
             relative{
-                "-1"{"Rab. lalu"}
-                "0"{"Rab. ini"}
-                "1"{"Rab. berikutnya"}
-            }
-            relativeTime{
-                future{
-                    other{"dlm {0} Rab."}
-                }
-                past{
-                    other{"{0} Rab. lalu"}
-                }
+                "-1"{"R lalu"}
+                "0"{"R ini"}
+                "1"{"R berikutnya"}
             }
         }
         wed-short{
@@ -3029,26 +2421,17 @@ id{
                 "0"{"Rab. ini"}
                 "1"{"Rab. berikutnya"}
             }
-            relativeTime{
-                future{
-                    other{"dlm {0} Rab."}
-                }
-                past{
-                    other{"{0} Rab. lalu"}
-                }
-            }
         }
         week{
-            dn{"minggu"}
+            dn{"Minggu"}
             relative{
                 "-1"{"minggu lalu"}
                 "0"{"minggu ini"}
                 "1"{"minggu depan"}
             }
-            relativePeriod{"minggu ke-{0}"}
             relativeTime{
                 future{
-                    other{"dalam {0} minggu"}
+                    other{"Dalam {0} minggu"}
                 }
                 past{
                     other{"{0} minggu yang lalu"}
@@ -3057,57 +2440,31 @@ id{
         }
         week-narrow{
             dn{"mgg."}
-            relativePeriod{"mgg ke-{0}"}
             relativeTime{
                 future{
-                    other{"dlm {0} mgg"}
+                    other{"+{0} mgg."}
                 }
                 past{
-                    other{"{0} mgg lalu"}
+                    other{"-{0} mgg."}
                 }
             }
         }
         week-short{
             dn{"mgg."}
-            relativePeriod{"mgg ke-{0}"}
             relativeTime{
                 future{
-                    other{"dlm {0} mgg"}
+                    other{"Dalam {0} minggu"}
                 }
                 past{
-                    other{"{0} mgg lalu"}
+                    other{"{0} minggu yang lalu"}
                 }
             }
         }
-        weekOfMonth{
-            dn{"minggu"}
-        }
-        weekOfMonth-narrow{
-            dn{"mgg."}
-        }
-        weekOfMonth-short{
-            dn{"mgg."}
-        }
         weekday{
-            dn{"hari dalam seminggu"}
-        }
-        weekday-narrow{
-            dn{"hari dlm seminggu"}
-        }
-        weekday-short{
-            dn{"hari dlm seminggu"}
-        }
-        weekdayOfMonth{
-            dn{"hari kerja"}
-        }
-        weekdayOfMonth-narrow{
-            dn{"hr kerja"}
-        }
-        weekdayOfMonth-short{
-            dn{"hr kerja"}
+            dn{"Hari dalam Seminggu"}
         }
         year{
-            dn{"tahun"}
+            dn{"Tahun"}
             relative{
                 "-1"{"tahun lalu"}
                 "0"{"tahun ini"}
@@ -3115,7 +2472,7 @@ id{
             }
             relativeTime{
                 future{
-                    other{"dalam {0} tahun"}
+                    other{"Dalam {0} tahun"}
                 }
                 past{
                     other{"{0} tahun yang lalu"}
@@ -3126,10 +2483,10 @@ id{
             dn{"thn."}
             relativeTime{
                 future{
-                    other{"dlm {0} thn"}
+                    other{"Dalam {0} tahun"}
                 }
                 past{
-                    other{"{0} thn lalu"}
+                    other{"{0} tahun yang lalu"}
                 }
             }
         }
@@ -3137,37 +2494,19 @@ id{
             dn{"thn."}
             relativeTime{
                 future{
-                    other{"dlm {0} thn"}
+                    other{"Dalam {0} tahun"}
                 }
                 past{
-                    other{"{0} thn lalu"}
+                    other{"{0} tahun yang lalu"}
                 }
             }
         }
         zone{
-            dn{"zona waktu"}
-        }
-        zone-narrow{
-            dn{"zona wkt"}
-        }
-        zone-short{
-            dn{"zona wkt"}
+            dn{"Zona Waktu"}
         }
     }
     listPattern{
-        or{
-            2{"{0} atau {1}"}
-            end{"{0}, atau {1}"}
-            middle{"{0}, {1}"}
-            start{"{0}, {1}"}
-        }
         standard{
-            2{"{0} dan {1}"}
-            end{"{0}, dan {1}"}
-            middle{"{0}, {1}"}
-            start{"{0}, {1}"}
-        }
-        standard-short{
             2{"{0} dan {1}"}
             end{"{0}, dan {1}"}
             middle{"{0}, {1}"}
@@ -3196,5 +2535,17 @@ id{
         UK{"BR"}
         US{"AS"}
         metric{"Metrik"}
+    }
+    transformNames{
+        BGN{"BGN"}
+        Numeric{"Angka"}
+        Tone{"Nada"}
+        UNGEGN{"UNGEGN"}
+        x-Accents{"Aksen"}
+        x-Fullwidth{"Lebar penuh"}
+        x-Halfwidth{"Lebar separuh"}
+        x-Jamo{"Jamo"}
+        x-Pinyin{"Pinyin"}
+        x-Publishing{"Penerbitan"}
     }
 }

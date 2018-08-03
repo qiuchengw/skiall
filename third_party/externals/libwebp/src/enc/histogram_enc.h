@@ -109,7 +109,10 @@ int VP8LGetHistoImageSymbols(int xsize, int ysize,
                              uint16_t* const histogram_symbols);
 
 // Returns the entropy for the symbols in the input array.
-double VP8LBitsEntropy(const uint32_t* const array, int n);
+// Also sets trivial_symbol to the code value, if the array has only one code
+// value. Otherwise, set it to VP8L_NON_TRIVIAL_SYM.
+double VP8LBitsEntropy(const uint32_t* const array, int n,
+                       uint32_t* const trivial_symbol);
 
 // Estimate how many bits the combined entropy of literals and distance
 // approximately maps to.

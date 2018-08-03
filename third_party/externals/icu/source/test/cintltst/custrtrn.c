@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 2001-2016, International Business Machines Corporation and
+ * Copyright (c) 2001-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /********************************************************************************
@@ -670,13 +668,12 @@ static void Test_UChar_UTF8_API(void){
     }
 
     /* test UTF-8 with single surrogates - illegal in Unicode 3.2 */
-    // Since ICU 60, each surrogate byte sequence is treated as 3 single-byte errors.
     {
         static const UChar
             withLead16[]={ 0x1800, 0xd89a, 0x0061 },
             withTrail16[]={ 0x1800, 0xdcba, 0x0061, 0 },
-            withTrail16SubFFFD[]={ 0x1800, 0xfffd, 0xfffd, 0xfffd, 0x0061, 0 }, /* sub==U+FFFD */
-            withTrail16Sub50005[]={ 0x1800, 0xd900, 0xdc05, 0xd900, 0xdc05, 0xd900, 0xdc05, 0x0061, 0 }; /* sub==U+50005 */
+            withTrail16SubFFFD[]={ 0x1800, 0xfffd, 0x0061, 0 }, /* sub==U+FFFD */
+            withTrail16Sub50005[]={ 0x1800, 0xd900, 0xdc05, 0x0061, 0 }; /* sub==U+50005 */
         static const uint8_t
             withLead8[]={ 0xe1, 0xa0, 0x80, 0xed, 0xa2, 0x9a, 0x61 },
             withTrail8[]={ 0xe1, 0xa0, 0x80, 0xed, 0xb2, 0xba, 0x61, 0 },
@@ -707,7 +704,7 @@ static void Test_UChar_UTF8_API(void){
                              &err);
         if(U_FAILURE(err) || uDestLen!=u_strlen(withTrail16Sub50005) ||
                              0!=u_memcmp(withTrail16Sub50005, out16, uDestLen+1) ||
-                             numSubstitutions!=3) {
+                             numSubstitutions!=1) {
             log_err("error: u_strFromUTF8WithSub(length) failed\n");
         }
 
@@ -722,7 +719,7 @@ static void Test_UChar_UTF8_API(void){
                              &err);
         if(U_FAILURE(err) || uDestLen!=u_strlen(withTrail16SubFFFD) ||
                              0!=u_memcmp(withTrail16SubFFFD, out16, uDestLen+1) ||
-                             numSubstitutions!=3) {
+                             numSubstitutions!=1) {
             log_err("error: u_strFromUTF8WithSub(NUL termination) failed\n");
         }
 
@@ -735,7 +732,7 @@ static void Test_UChar_UTF8_API(void){
                              (const char *)withTrail8, -1,
                              0x50005, &numSubstitutions,
                              &err);
-        if(err!=U_BUFFER_OVERFLOW_ERROR || uDestLen!=u_strlen(withTrail16Sub50005) || numSubstitutions!=3) {
+        if(err!=U_BUFFER_OVERFLOW_ERROR || uDestLen!=u_strlen(withTrail16Sub50005) || numSubstitutions!=1) {
             log_err("error: u_strFromUTF8WithSub(preflight/NUL termination) failed\n");
         }
 
@@ -1014,6 +1011,14 @@ Test_FromUTF8Lenient(void) {
     pDest=u_strFromUTF8Lenient(dest, 1, &destLength, (const char *)bytes, -1, &errorCode);
     if(errorCode!=U_MEMORY_ALLOCATION_ERROR || dest[0]!=0x1234) {
         log_err("u_strFromUTF8Lenient(U_MEMORY_ALLOCATION_ERROR) failed\n");
+    }
+
+    dest[0]=0x1234;
+    destLength=-1;
+    errorCode=U_MEMORY_ALLOCATION_ERROR;
+    pDest=u_strFromUTF8Lenient(dest, 1, &destLength, (const char *)bytes, -1, NULL);
+    if(dest[0]!=0x1234) {
+        log_err("u_strFromUTF8Lenient(pErrorCode=NULL) failed\n");
     }
 
     /* test normal behavior */
@@ -1385,15 +1390,15 @@ static void Test_widestrs()
 #if (defined(U_WCHAR_IS_UTF16) || defined(U_WCHAR_IS_UTF32)) || (!UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION)
         wchar_t ws[100];
         UChar rts[100];
-        int32_t wcap = UPRV_LENGTHOF(ws);
+        int32_t wcap = sizeof(ws) / sizeof(*ws);
         int32_t wl;
-        int32_t rtcap = UPRV_LENGTHOF(rts);
+        int32_t rtcap = sizeof(rts) / sizeof(*rts);
         int32_t rtl;
         wchar_t *wcs;
         UChar *cp;
         const char *errname;
         UChar ustr[] = {'h', 'e', 'l', 'l', 'o', 0};
-        int32_t ul = UPRV_LENGTHOF(ustr) -1;
+        int32_t ul = sizeof(ustr)/sizeof(*ustr) -1;
         char astr[100];
 
         UErrorCode err;

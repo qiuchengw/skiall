@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,18 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef SDL_waylandvideo_h_
-#define SDL_waylandvideo_h_
-
-
-/*
-!!! FIXME: xdg_wm_base is the stable replacement for zxdg_shell_v6. While it's
-!!! FIXME:  harmless to leave it here, consider deleting the obsolete codepath
-!!! FIXME:  soon, since Wayland (with xdg_wm_base) will probably be mainline
-!!! FIXME:  by the time people are relying on this SDL target. It's available
-!!! FIXME:  in Ubuntu 18.04 (and other distros).
-*/
-
+#ifndef _SDL_waylandvideo_h
+#define _SDL_waylandvideo_h
 
 #include <EGL/egl.h>
 #include "wayland-util.h"
@@ -53,14 +43,9 @@ typedef struct {
     struct wl_shm *shm;
     struct wl_cursor_theme *cursor_theme;
     struct wl_pointer *pointer;
-    struct {
-        struct xdg_wm_base *xdg;
-        struct zxdg_shell_v6 *zxdg;
-        struct wl_shell *wl;
-    } shell;
+    struct wl_shell *shell;
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
-    struct wl_data_device_manager *data_device_manager;
 
     EGLDisplay edpy;
     EGLContext context;
@@ -80,6 +65,6 @@ typedef struct {
     int relative_mouse_mode;
 } SDL_VideoData;
 
-#endif /* SDL_waylandvideo_h_ */
+#endif /* _SDL_waylandvideo_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

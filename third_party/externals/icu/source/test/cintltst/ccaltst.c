@@ -1,7 +1,5 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
- * Copyright (c) 1997-2016, International Business Machines
+ * Copyright (c) 1997-2014, International Business Machines
  * Corporation and others. All Rights Reserved.
  ********************************************************************
  *
@@ -29,7 +27,6 @@
 #include "cintltst.h"
 #include "ccaltst.h"
 #include "cformtst.h"
-#include "cmemory.h"
 #include "cstring.h"
 #include "ulist.h"
 
@@ -88,12 +85,6 @@ static const UCalGetTypeTest ucalGetTypeTests[] = {
     { "th_TH",                   UCAL_DEFAULT,   "buddhist"  },
     { "th-TH-u-ca-gregory",      UCAL_DEFAULT,   "gregorian" },
     { "ja_JP@calendar=japanese", UCAL_GREGORIAN, "gregorian" },
-    { "fr_CH",                   UCAL_DEFAULT,   "gregorian" },
-    { "fr_SA",                   UCAL_DEFAULT,   "islamic-umalqura" },
-    { "fr_CH@rg=sazzzz",         UCAL_DEFAULT,   "islamic-umalqura" },
-    { "fr_CH@calendar=japanese;rg=sazzzz", UCAL_DEFAULT, "japanese" },
-    { "fr_TH@rg=SA",             UCAL_DEFAULT,   "buddhist"  }, /* ignore malformed rg tag */
-    { "th@rg=SA",                UCAL_DEFAULT,   "buddhist"  }, /* ignore malformed rg tag */
     { "",                        UCAL_GREGORIAN, "gregorian" },
     { NULL,                      UCAL_GREGORIAN, "gregorian" },
     { NULL, 0, NULL } /* terminator */
@@ -111,7 +102,7 @@ static void TestCalendar()
     UDateFormat *datdef = 0;
     UChar *result = 0;
     int32_t resultlength, resultlengthneeded;
-    char tempMsgBuf[1024];  // u_austrcpy() of some formatted dates & times.
+    char tempMsgBuf[256];
     UChar zone1[32], zone2[32];
     const char *tzver = 0;
     UChar canonicalID[64];
@@ -228,7 +219,7 @@ static void TestCalendar()
 
     /*Test ucal_set/getDefaultTimeZone*/
     status = U_ZERO_ERROR;
-    i = ucal_getDefaultTimeZone(zone1, UPRV_LENGTHOF(zone1), &status);
+    i = ucal_getDefaultTimeZone(zone1, sizeof(zone1)/sizeof(zone1[0]), &status);
     if (U_FAILURE(status)) {
         log_err("FAIL: ucal_getDefaultTimeZone() => %s\n",
                 u_errorName(status));
@@ -238,7 +229,7 @@ static void TestCalendar()
             log_err("FAIL: ucal_setDefaultTimeZone(Europe/Paris) => %s\n",
                     u_errorName(status));
         } else {
-            i = ucal_getDefaultTimeZone(zone2, UPRV_LENGTHOF(zone2), &status);
+            i = ucal_getDefaultTimeZone(zone2, sizeof(zone2)/sizeof(zone2[0]), &status);
             if (U_FAILURE(status)) {
                 log_err("FAIL: ucal_getDefaultTimeZone() => %s\n",
                         u_errorName(status));
@@ -266,7 +257,7 @@ static void TestCalendar()
     /*Testing ucal_getCanonicalTimeZoneID*/
     status = U_ZERO_ERROR;
     resultlength = ucal_getCanonicalTimeZoneID(PST, -1,
-        canonicalID, UPRV_LENGTHOF(canonicalID), &isSystemID, &status);
+        canonicalID, sizeof(canonicalID)/sizeof(UChar), &isSystemID, &status);
     if (U_FAILURE(status)) {
         log_data_err("FAIL: error in ucal_getCanonicalTimeZoneID : %s\n", u_errorName(status));
     } else {
@@ -599,7 +590,7 @@ static void TestGetSetDateAPI()
 
     /*testing ucal_setTimeZone() and ucal_getTimeZoneID function*/
     log_verbose("\nTesting if the function ucal_setTimeZone() and ucal_getTimeZoneID work fine\n");
-    idLen = ucal_getTimeZoneID(caldef2, id, UPRV_LENGTHOF(id), &status);
+    idLen = ucal_getTimeZoneID(caldef2, id, sizeof(id)/sizeof(id[0]), &status);
     (void)idLen;    /* Suppress set but not used warning. */
     if (U_FAILURE(status)) {
         log_err("Error in getTimeZoneID : %s\n", u_errorName(status));
@@ -623,7 +614,7 @@ static void TestGetSetDateAPI()
     else
         log_verbose("ucal_setTimeZone worked fine\n");
 
-    idLen = ucal_getTimeZoneID(caldef2, id, UPRV_LENGTHOF(id), &status);
+    idLen = ucal_getTimeZoneID(caldef2, id, sizeof(id)/sizeof(id[0]), &status);
     if (U_FAILURE(status)) {
         log_err("Error in getTimeZoneID : %s\n", u_errorName(status));
     } else if (u_strcmp(id, tzID) != 0) {
@@ -1555,7 +1546,7 @@ void TestGregorianChange() {
 }
 
 static void TestGetKeywordValuesForLocale() {
-#define PREFERRED_SIZE 16
+#define PREFERRED_SIZE 15
 #define MAX_NUMBER_OF_KEYWORDS 5
     const char *PREFERRED[PREFERRED_SIZE][MAX_NUMBER_OF_KEYWORDS+1] = {
             { "root",        "gregorian", NULL, NULL, NULL, NULL },
@@ -1573,9 +1564,8 @@ static void TestGetKeywordValuesForLocale() {
             { "en@calendar=islamic",   "gregorian", NULL, NULL, NULL, NULL },
             { "zh_TW",       "gregorian", "roc", "chinese", NULL, NULL },
             { "ar_IR",       "persian", "gregorian", "islamic", "islamic-civil", "islamic-tbla" },
-            { "th@rg=SAZZZZ", "islamic-umalqura", "gregorian", "islamic", "islamic-rgsa", NULL },
     };
-    const int32_t EXPECTED_SIZE[PREFERRED_SIZE] = { 1, 1, 1, 1, 2, 2, 2, 5, 5, 2, 2, 2, 1, 3, 5, 4 };
+    const int32_t EXPECTED_SIZE[PREFERRED_SIZE] = { 1, 1, 1, 1, 2, 2, 2, 5, 5, 2, 2, 2, 1, 3, 5 };
     UErrorCode status = U_ZERO_ERROR;
     int32_t i, size, j;
     UEnumeration *all, *pref;
@@ -1697,8 +1687,8 @@ static const TestWeekendDates weekendDates_ar_OM[] = {
     { 2000, UCAL_MARCH, 18,  8,  0, 1 }, /* Sat 08:00        */
 };
 static const TestWeekendDatesList testDates[] = {
-    { "en_US", weekendDates_en_US, UPRV_LENGTHOF(weekendDates_en_US) },
-    { "ar_OM", weekendDates_ar_OM, UPRV_LENGTHOF(weekendDates_ar_OM) },
+    { "en_US", weekendDates_en_US, sizeof(weekendDates_en_US)/sizeof(weekendDates_en_US[0]) },
+    { "ar_OM", weekendDates_ar_OM, sizeof(weekendDates_ar_OM)/sizeof(weekendDates_ar_OM[0]) },
 };
 
 typedef struct {
@@ -1731,17 +1721,15 @@ static const TestDaysOfWeek daysOfWeek_hi_IN[] = { /* Sunday only */
     { UCAL_SUNDAY,   UCAL_WEEKEND,       0        },
 };
 static const TestDaysOfWeekList testDays[] = {
-    { "en_US", daysOfWeek_en_US, UPRV_LENGTHOF(daysOfWeek_en_US) },
-    { "ar_OM", daysOfWeek_ar_OM, UPRV_LENGTHOF(daysOfWeek_ar_OM) },
-    { "hi_IN", daysOfWeek_hi_IN, UPRV_LENGTHOF(daysOfWeek_hi_IN) },
-    { "en_US@rg=OMZZZZ", daysOfWeek_ar_OM, UPRV_LENGTHOF(daysOfWeek_ar_OM) },
-    { "hi@rg=USZZZZ",    daysOfWeek_en_US, UPRV_LENGTHOF(daysOfWeek_en_US) },
+    { "en_US", daysOfWeek_en_US, sizeof(daysOfWeek_en_US)/sizeof(daysOfWeek_en_US[0]) },
+    { "ar_OM", daysOfWeek_ar_OM, sizeof(daysOfWeek_ar_OM)/sizeof(daysOfWeek_ar_OM[0]) },
+    { "hi_IN", daysOfWeek_hi_IN, sizeof(daysOfWeek_hi_IN)/sizeof(daysOfWeek_hi_IN[0]) },
 };
 
 static const UChar logDateFormat[] = { 0x0045,0x0045,0x0045,0x0020,0x004D,0x004D,0x004D,0x0020,0x0064,0x0064,0x0020,0x0079,
                                        0x0079,0x0079,0x0079,0x0020,0x0047,0x0020,0x0048,0x0048,0x003A,0x006D,0x006D,0x003A,
                                        0x0073,0x0073,0x002E,0x0053,0x0053,0x0053,0 }; /* "EEE MMM dd yyyy G HH:mm:ss.SSS" */
-enum { kFormattedDateMax = 2*UPRV_LENGTHOF(logDateFormat) };
+enum { kFormattedDateMax = 2*sizeof(logDateFormat)/sizeof(logDateFormat[0]) };
 
 static void TestWeekend() {
     const TestWeekendDatesList * testDatesPtr = testDates;
@@ -1756,7 +1744,7 @@ static void TestWeekend() {
         log_data_err("Unable to create UDateFormat - %s\n", u_errorName(fmtStatus));
         return;
     }
-    for (count = UPRV_LENGTHOF(testDates); count-- > 0; ++testDatesPtr) {
+    for (count = sizeof(testDates)/sizeof(testDates[0]); count-- > 0; ++testDatesPtr) {
         UErrorCode status = U_ZERO_ERROR;
         UCalendar * cal = ucal_open(NULL, 0, testDatesPtr->locale, UCAL_GREGORIAN, &status);
         log_verbose("locale: %s\n", testDatesPtr->locale);
@@ -1800,7 +1788,7 @@ static void TestWeekend() {
         udat_close(fmt);
     }
 
-    for (count = UPRV_LENGTHOF(testDays); count-- > 0; ++testDaysPtr) {
+    for (count = sizeof(testDays)/sizeof(testDays[0]); count-- > 0; ++testDaysPtr) {
         UErrorCode status = U_ZERO_ERROR;
         UCalendar * cal = ucal_open(NULL, 0, testDaysPtr->locale, UCAL_GREGORIAN, &status);
         log_verbose("locale: %s\n", testDaysPtr->locale);
@@ -1965,7 +1953,7 @@ void TestAmbiguousWallTime() {
     UDate t, expected;
 
     u_uastrcpy(tzID, "America/New_York");
-    ucal = ucal_open(tzID, -1, "en_US", UCAL_DEFAULT, &status);
+    ucal = ucal_open(tzID, -1, NULL, UCAL_DEFAULT, &status);
     if (U_FAILURE(status)) {
         log_err("FAIL: Failed to create a calendar");
         return;
@@ -2384,7 +2372,7 @@ void TestGetWindowsTimeZoneID() {
 
     {
         status = U_ZERO_ERROR;
-        len = ucal_getWindowsTimeZoneID(tzNewYork, u_strlen(tzNewYork), winID, UPRV_LENGTHOF(winID), &status);
+        len = ucal_getWindowsTimeZoneID(tzNewYork, u_strlen(tzNewYork), winID, sizeof(winID)/sizeof(winID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: Windows ID for America/New_York, status %s\n", u_errorName(status)); 
         } else if (len != u_strlen(winEastern) || u_strncmp(winID, winEastern, len) != 0) {
@@ -2393,7 +2381,7 @@ void TestGetWindowsTimeZoneID() {
     }
     {
         status = U_ZERO_ERROR;
-        len = ucal_getWindowsTimeZoneID(tzTronto, u_strlen(tzTronto), winID, UPRV_LENGTHOF(winID), &status);
+        len = ucal_getWindowsTimeZoneID(tzTronto, u_strlen(tzTronto), winID, sizeof(winID)/sizeof(winID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: Windows ID for America/Toronto, status %s\n", u_errorName(status)); 
         } else if (len != u_strlen(winEastern) || u_strncmp(winID, winEastern, len) != 0) {
@@ -2402,7 +2390,7 @@ void TestGetWindowsTimeZoneID() {
     }
     {
         status = U_ZERO_ERROR;
-        len = ucal_getWindowsTimeZoneID(sBogus, u_strlen(sBogus), winID, UPRV_LENGTHOF(winID), &status);
+        len = ucal_getWindowsTimeZoneID(sBogus, u_strlen(sBogus), winID, sizeof(winID)/sizeof(winID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: Windows ID for Bogus, status %s\n", u_errorName(status)); 
         } else if (len != 0) {
@@ -2418,7 +2406,7 @@ void TestGetTimeZoneIDByWindowsID() {
 
     {
         status = U_ZERO_ERROR;
-        len = ucal_getTimeZoneIDForWindowsID(winEastern, -1, NULL, tzID, UPRV_LENGTHOF(tzID), &status);
+        len = ucal_getTimeZoneIDForWindowsID(winEastern, -1, NULL, tzID, sizeof(tzID)/sizeof(tzID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: TZ ID for Eastern Standard Time, status %s\n", u_errorName(status)); 
         } else if (len != u_strlen(tzNewYork) || u_strncmp(tzID, tzNewYork, len) != 0) {
@@ -2427,7 +2415,7 @@ void TestGetTimeZoneIDByWindowsID() {
     }
     {
         status = U_ZERO_ERROR;
-        len = ucal_getTimeZoneIDForWindowsID(winEastern, u_strlen(winEastern), "US", tzID, UPRV_LENGTHOF(tzID), &status);
+        len = ucal_getTimeZoneIDForWindowsID(winEastern, u_strlen(winEastern), "US", tzID, sizeof(tzID)/sizeof(tzID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: TZ ID for Eastern Standard Time - US, status %s\n", u_errorName(status)); 
         } else if (len != u_strlen(tzNewYork) || u_strncmp(tzID, tzNewYork, len) != 0) {
@@ -2436,7 +2424,7 @@ void TestGetTimeZoneIDByWindowsID() {
     }
     {
         status = U_ZERO_ERROR;
-        len = ucal_getTimeZoneIDForWindowsID(winEastern, u_strlen(winEastern), "CA", tzID, UPRV_LENGTHOF(tzID), &status);
+        len = ucal_getTimeZoneIDForWindowsID(winEastern, u_strlen(winEastern), "CA", tzID, sizeof(tzID)/sizeof(tzID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: TZ ID for Eastern Standard Time - CA, status %s\n", u_errorName(status)); 
         } else if (len != u_strlen(tzTronto) || u_strncmp(tzID, tzTronto, len) != 0) {
@@ -2446,7 +2434,7 @@ void TestGetTimeZoneIDByWindowsID() {
 
     {
         status = U_ZERO_ERROR;
-        len = ucal_getTimeZoneIDForWindowsID(sBogus, -1, NULL, tzID, UPRV_LENGTHOF(tzID), &status);
+        len = ucal_getTimeZoneIDForWindowsID(sBogus, -1, NULL, tzID, sizeof(tzID)/sizeof(tzID[0]), &status);
         if (U_FAILURE(status)) {
             log_data_err("FAIL: TZ ID for Bogus, status %s\n", u_errorName(status)); 
         } else if (len != 0) {

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ti.xml
+// *
+// ***************************************************************************
 ti{
     Languages{
         af{"አፍሪቃንሰኛ"}
@@ -96,23 +102,9 @@ ti{
         yi{"ዪዲሽ"}
         zu{"ዙሉኛ"}
     }
-    Languages%short{
-        en_GB{"እንግሊዝኛ (GB)"}
-        en_US{"እንግሊዝኛ (US)"}
-    }
     Scripts{
         Ethi{"ፊደል"}
         Latn{"ላቲን"}
     }
-    Version{"2.1.38.72"}
-    codePatterns{
-        language{"{0}"}
-        script{"{0}"}
-        territory{"{0}"}
-    }
-    localeDisplayPattern{
-        keyTypePattern{"{0}: {1}"}
-        pattern{"{0} ({1})"}
-        separator{"{0}, {1}"}
-    }
+    Version{"2.1.19.14"}
 }

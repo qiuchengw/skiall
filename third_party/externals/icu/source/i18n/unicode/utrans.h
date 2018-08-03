@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 1997-2011,2014-2015 International Business Machines
@@ -382,7 +380,7 @@ utrans_openIDs(UErrorCode *pErrorCode);
 U_STABLE void U_EXPORT2 
 utrans_trans(const UTransliterator* trans,
              UReplaceable* rep,
-             const UReplaceableCallbacks* repFunc,
+             UReplaceableCallbacks* repFunc,
              int32_t start,
              int32_t* limit,
              UErrorCode* status);
@@ -433,7 +431,7 @@ utrans_trans(const UTransliterator* trans,
 U_STABLE void U_EXPORT2 
 utrans_transIncremental(const UTransliterator* trans,
                         UReplaceable* rep,
-                        const UReplaceableCallbacks* repFunc,
+                        UReplaceableCallbacks* repFunc,
                         UTransPosition* pos,
                         UErrorCode* status);
 

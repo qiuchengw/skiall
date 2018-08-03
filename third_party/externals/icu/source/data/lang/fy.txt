@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fy.xml
+// *
+// ***************************************************************************
 fy{
     Keys{
         calendar{"Kalender"}
@@ -7,6 +13,7 @@ fy{
         colBackwards{"Omgekeerd sortearje op accenten"}
         colCaseFirst{"Yndiele op haad/lytse letters"}
         colCaseLevel{"Haadlettergefoelich sortearje"}
+        colHiraganaQuaternary{"Kana sortearje"}
         colNormalization{"Genormaliseerd sortearje"}
         colNumeric{"Numeriek sortearje"}
         colStrength{"Sorteervoorrang"}
@@ -15,6 +22,7 @@ fy{
         numbers{"Sifers"}
         timezone{"Tijdzone"}
         va{"Landvariant"}
+        variableTop{"sortearje als symbolen"}
         x{"Privégebruik"}
     }
     Languages{
@@ -168,7 +176,7 @@ fy{
         frr{"Noard-Frysk"}
         frs{"East-Frysk"}
         fur{"Friulysk"}
-        fy{"Frysk"}
+        fy{"West-Frysk"}
         ga{"Iersk"}
         gaa{"Ga"}
         gay{"Gayo"}
@@ -451,8 +459,8 @@ fy{
         sux{"Soemerysk"}
         sv{"Zweeds"}
         sw{"Swahili"}
-        sw_CD{"Congo Swahili"}
         swb{"Shimaore"}
+        swc{"Congo Swahili"}
         syc{"Klassiek Syrysk"}
         syr{"Syrysk"}
         ta{"Tamil"}
@@ -592,7 +600,6 @@ fy{
         Hung{"Aldhongaars"}
         Inds{"Indus"}
         Ital{"Ald-italysk"}
-        Jamo{"Jamo"}
         Java{"Javaansk"}
         Jpan{"Japans"}
         Jurc{"Jurchen"}
@@ -738,6 +745,10 @@ fy{
             no{"Net haadlettergefoelich sortearje"}
             yes{"Hoofdlettergevoelig sortearje"}
         }
+        colHiraganaQuaternary{
+            no{"Kana apart sortearje"}
+            yes{"Kana oars sortearje"}
+        }
         colNormalization{
             no{"Sûnder normalisaasje sortearje"}
             yes{"Unicode genormaliseerd sortearje"}
@@ -768,15 +779,6 @@ fy{
             stroke{"Streeksortearfolgorde"}
             traditional{"Tradisjonele sortearfolgorde"}
             unihan{"Sortearfolgorde radicalen/strepen"}
-        }
-        d0{
-            fwidth{"Volledige breedte"}
-            hwidth{"Halve breedte"}
-            npinyin{"Numeriek"}
-        }
-        m0{
-            bgn{"BGN"}
-            ungegn{"UNGEGN"}
         }
         numbers{
             arab{"Arabysk-Indyske sifers"}
@@ -886,7 +888,7 @@ fy{
         VALLADER{"Vallader"}
         WADEGILE{"Wade-Giles-romanisering"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     codePatterns{
         language{"Taal: {0}"}
         script{"Skrift: {0}"}

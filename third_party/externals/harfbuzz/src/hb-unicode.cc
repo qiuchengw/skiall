@@ -64,7 +64,7 @@ hb_unicode_general_category_nil (hb_unicode_funcs_t *ufuncs    HB_UNUSED,
 
 static hb_codepoint_t
 hb_unicode_mirroring_nil (hb_unicode_funcs_t *ufuncs    HB_UNUSED,
-			  hb_codepoint_t      unicode,
+			  hb_codepoint_t      unicode   HB_UNUSED,
 			  void               *user_data HB_UNUSED)
 {
   return unicode;
@@ -188,7 +188,7 @@ hb_unicode_funcs_create (hb_unicode_funcs_t *parent)
 const hb_unicode_funcs_t _hb_unicode_funcs_nil = {
   HB_OBJECT_HEADER_STATIC,
 
-  nullptr, /* parent */
+  NULL, /* parent */
   true, /* immutable */
   {
 #define HB_UNICODE_FUNC_IMPLEMENT(name) hb_unicode_##name##_nil,
@@ -365,7 +365,7 @@ hb_unicode_funcs_set_##name##_func (hb_unicode_funcs_t		   *ufuncs,	\
   } else {									\
     ufuncs->func.name = ufuncs->parent->func.name;				\
     ufuncs->user_data.name = ufuncs->parent->user_data.name;			\
-    ufuncs->destroy.name = nullptr;						\
+    ufuncs->destroy.name = NULL;						\
   }										\
 }
 

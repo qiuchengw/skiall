@@ -1,8 +1,14 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/es_HN.xml
+// *
+// ***************************************************************************
 es_HN{
     %%Parent{"es_419"}
-    Version{"2.1.38.39"}
+    Version{"2.1.19.14"}
     calendar{
         generic{
             DateTimePatterns{
@@ -12,7 +18,7 @@ es_HN{
                 "HH:mm",
                 "EEEE dd 'de' MMMM 'de' y G",
                 "dd 'de' MMMM 'de' y G",
-                "d 'de' MMM 'de' y G",
+                "d/M/y G",
                 "dd/MM/yy GGGGG",
                 "{1} {0}",
                 "{1}, {0}",
@@ -22,14 +28,6 @@ es_HN{
             }
         }
         gregorian{
-            AmPmMarkers{
-                "a. m.",
-                "p. m.",
-            }
-            AmPmMarkersAbbr{
-                "a. m.",
-                "p. m.",
-            }
             DateTimePatterns{
                 "HH:mm:ss zzzz",
                 "HH:mm:ss z",
@@ -45,32 +43,12 @@ es_HN{
                 "{1} {0}",
                 "{1} {0}",
             }
-            dayPeriod{
-                stand-alone{
-                    abbreviated{
-                        am{"a. m."}
-                        pm{"p. m."}
-                    }
-                    narrow{
-                        am{"a. m."}
-                        pm{"p. m."}
-                    }
-                    wide{
-                        am{"a. m."}
-                        pm{"p. m."}
-                    }
-                }
-            }
         }
     }
     fields{
         day{
             relative{
-                "-1"{"ayer"}
-                "-2"{"anteayer"}
-                "0"{"hoy"}
-                "1"{"mañana"}
-                "2"{"pasado mañana"}
+                "-2"{"antier"}
             }
         }
     }

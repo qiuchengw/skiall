@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  listformattertest.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -33,9 +31,6 @@ class ListFormatterTest : public IntlTest {
     void TestBogus();
     void TestEnglish();
     void TestEnglishUS();
-    void TestEnglishGB();
-    void TestNynorsk();
-    void TestChineseTradHK();
     void TestRussian();
     void TestMalayalam();
     void TestZulu();

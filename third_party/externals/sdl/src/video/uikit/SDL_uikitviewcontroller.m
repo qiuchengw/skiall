@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,27 +40,12 @@
 #endif
 
 #if TARGET_OS_TV
-static void SDLCALL
+static void
 SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     @autoreleasepool {
         SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
         viewcontroller.controllerUserInteractionEnabled = hint && (*hint != '0');
-    }
-}
-#endif
-
-#if !TARGET_OS_TV
-static void SDLCALL
-SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    @autoreleasepool {
-        SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
-        viewcontroller.homeIndicatorHidden = (hint && *hint) ? SDL_atoi(hint) : -1;
-        if (@available(iOS 11.0, *)) {
-            [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
-            [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
-        }
     }
 }
 #endif
@@ -73,7 +58,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 #if SDL_IPHONE_KEYBOARD
     UITextField *textField;
-    BOOL rotatingOrientation;
 #endif
 }
 
@@ -86,18 +70,11 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 #if SDL_IPHONE_KEYBOARD
         [self initKeyboard];
-        rotatingOrientation = FALSE;
 #endif
 
 #if TARGET_OS_TV
         SDL_AddHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                             SDL_AppleTVControllerUIHintChanged,
-                            (__bridge void *) self);
-#endif
-
-#if !TARGET_OS_TV
-        SDL_AddHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
-                            SDL_HideHomeIndicatorHintChanged,
                             (__bridge void *) self);
 #endif
     }
@@ -113,12 +90,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 #if TARGET_OS_TV
     SDL_DelHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                         SDL_AppleTVControllerUIHintChanged,
-                        (__bridge void *) self);
-#endif
-
-#if !TARGET_OS_TV
-    SDL_DelHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
-                        SDL_HideHomeIndicatorHintChanged,
                         (__bridge void *) self);
 #endif
 }
@@ -141,22 +112,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 - (void)startAnimation
 {
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
-
-#ifdef __IPHONE_10_3
-    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-
-    if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)]
-        && data != nil && data.uiwindow != nil
-        && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
-        displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
-    } else
-#endif
-    {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 100300
-        [displayLink setFrameInterval:animationInterval];
-#endif
-    }
-
+    [displayLink setFrameInterval:animationInterval];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
@@ -197,44 +153,14 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     return UIKit_GetSupportedOrientations(window);
 }
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
 {
     return ([self supportedInterfaceOrientations] & (1 << orient)) != 0;
 }
-#endif
 
 - (BOOL)prefersStatusBarHidden
 {
-    BOOL hidden = (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
-    return hidden;
-}
-
-- (BOOL)prefersHomeIndicatorAutoHidden
-{
-    BOOL hidden = NO;
-    if (self.homeIndicatorHidden == 1) {
-        hidden = YES;
-    }
-    return hidden;
-}
-
-- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
-{
-    if (self.homeIndicatorHidden >= 0) {
-        if (self.homeIndicatorHidden == 2) {
-            return UIRectEdgeAll;
-        } else {
-            return UIRectEdgeNone;
-        }
-    }
-
-    /* By default, fullscreen and borderless windows get all screen gestures */
-    if ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0) {
-        return UIRectEdgeAll;
-    } else {
-        return UIRectEdgeNone;
-    }
+    return (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
 }
 #endif
 
@@ -285,29 +211,6 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     }
 }
 
-/* willRotateToInterfaceOrientation and didRotateFromInterfaceOrientation are deprecated in iOS 8+ in favor of viewWillTransitionToSize */
-#if TARGET_OS_TV || __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
-{
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    rotatingOrientation = TRUE;
-    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {}
-                                 completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-                                     rotatingOrientation = FALSE;
-                                 }];
-}
-#else
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    rotatingOrientation = TRUE;
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
-    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    rotatingOrientation = FALSE;
-}
-#endif /* TARGET_OS_TV || __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000 */
-
 - (void)deinitKeyboard
 {
 #if !TARGET_OS_TV
@@ -336,7 +239,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 - (void)keyboardWillShow:(NSNotification *)notification
 {
 #if !TARGET_OS_TV
-    CGRect kbrect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect kbrect = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue];
 
     /* The keyboard rect is in the coordinate space of the screen/window, but we
      * want its height in the coordinate space of the view. */
@@ -348,9 +251,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    if (!rotatingOrientation) {
-        SDL_StopTextInput();
-    }
+    SDL_StopTextInput();
     [self setKeyboardHeight:0];
 }
 
@@ -442,9 +343,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RETURN);
     SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RETURN);
-    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
-         SDL_StopTextInput();
-    }
+    SDL_StopTextInput();
     return YES;
 }
 

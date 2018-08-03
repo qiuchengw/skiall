@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2009-2015, International Business Machines Corporation and
@@ -21,15 +19,12 @@
 #include "plurrule_impl.h"
 #include "uassert.h"
 #include "uhash.h"
-#include "number_decimalquantity.h"
-#include "number_utils.h"
-#include "number_utypes.h"
+#include "precision.h"
+#include "visibledigits.h"
 
 #if !UCONFIG_NO_FORMATTING
 
 U_NAMESPACE_BEGIN
-
-using number::impl::DecimalQuantity;
 
 static const UChar OTHER_STRING[] = {
     0x6F, 0x74, 0x68, 0x65, 0x72, 0  // "other"
@@ -221,14 +216,14 @@ PluralFormat::format(const Formattable& obj,
 
 UnicodeString
 PluralFormat::format(int32_t number, UErrorCode& status) const {
-    FieldPosition fpos(FieldPosition::DONT_CARE);
+    FieldPosition fpos(0);
     UnicodeString result;
     return format(Formattable(number), number, result, fpos, status);
 }
 
 UnicodeString
 PluralFormat::format(double number, UErrorCode& status) const {
-    FieldPosition fpos(FieldPosition::DONT_CARE);
+    FieldPosition fpos(0);
     UnicodeString result;
     return format(Formattable(number), number, result, fpos, status);
 }
@@ -261,33 +256,45 @@ PluralFormat::format(const Formattable& numberObject, double number,
     if (msgPattern.countParts() == 0) {
         return numberFormat->format(numberObject, appendTo, pos, status);
     }
-
     // Get the appropriate sub-message.
     // Select it based on the formatted number-offset.
     double numberMinusOffset = number - offset;
-    // Call NumberFormatter to get both the DecimalQuantity and the string.
-    // This call site needs to use more internal APIs than the Java equivalent.
-    number::impl::UFormattedNumberData data;
-    if (offset == 0) {
-        // could be BigDecimal etc.
-        numberObject.populateDecimalQuantity(data.quantity, status);
-    } else {
-        data.quantity.setToDouble(numberMinusOffset);
-    }
     UnicodeString numberString;
-    auto *decFmt = dynamic_cast<DecimalFormat *>(numberFormat);
-    if(decFmt != nullptr) {
-        decFmt->toNumberFormatter().formatImpl(&data, status); // mutates &data
-        numberString = data.string.toUnicodeString();
-    } else {
-        if (offset == 0) {
-            numberFormat->format(numberObject, numberString, status);
+    FieldPosition ignorePos;
+    FixedPrecision fp;
+    VisibleDigitsWithExponent dec;
+    fp.initVisibleDigitsWithExponent(numberMinusOffset, dec, status);
+    if (U_FAILURE(status)) {
+        return appendTo;
+    }
+    if (offset == 0) {
+        DecimalFormat *decFmt = dynamic_cast<DecimalFormat *>(numberFormat);
+        if(decFmt != NULL) {
+            decFmt->initVisibleDigitsWithExponent(
+                    numberObject, dec, status);
+            if (U_FAILURE(status)) {
+                return appendTo;
+            }
+            decFmt->format(dec, numberString, ignorePos, status);
         } else {
-            numberFormat->format(numberMinusOffset, numberString, status);
+            numberFormat->format(
+                    numberObject, numberString, ignorePos, status);  // could be BigDecimal etc.
+        }
+    } else {
+        DecimalFormat *decFmt = dynamic_cast<DecimalFormat *>(numberFormat);
+        if(decFmt != NULL) {
+            decFmt->initVisibleDigitsWithExponent(
+                    numberMinusOffset, dec, status);
+            if (U_FAILURE(status)) {
+                return appendTo;
+            }
+            decFmt->format(dec, numberString, ignorePos, status);
+        } else {
+            numberFormat->format(
+                    numberMinusOffset, numberString, ignorePos, status);
         }
     }
-
-    int32_t partIndex = findSubMessage(msgPattern, 0, pluralRulesWrapper, &data.quantity, number, status);
+    int32_t partIndex = findSubMessage(msgPattern, 0, pluralRulesWrapper, &dec, number, status);
     if (U_FAILURE(status)) { return appendTo; }
     // Replace syntactic # signs in the top level of this sub-message
     // (not in nested arguments) with the formatted number-offset.
@@ -576,7 +583,7 @@ PluralFormat::PluralSelectorAdapter::~PluralSelectorAdapter() {
 UnicodeString PluralFormat::PluralSelectorAdapter::select(void *context, double number,
                                                           UErrorCode& /*ec*/) const {
     (void)number;  // unused except in the assertion
-    IFixedDecimal *dec=static_cast<IFixedDecimal *>(context);
+    VisibleDigitsWithExponent *dec=static_cast<VisibleDigitsWithExponent *>(context);
     return pluralRules->select(*dec);
 }
 

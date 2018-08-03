@@ -143,18 +143,8 @@ static int CompareAnimatedImagePair(const AnimatedImage* const img1,
   if (!ok) return 0;  // These are fatal failures, can't proceed.
 
   if (is_multi_frame_image) {  // Checks relevant for multi-frame images only.
-    int max_loop_count_workaround = 0;
-    // Transcodes to webp increase the gif loop count by 1 for compatibility.
-    // When the gif has the maximum value the webp value will be off by one.
-    if ((img1->format == ANIM_GIF && img1->loop_count == 65536 &&
-         img2->format == ANIM_WEBP && img2->loop_count == 65535) ||
-        (img1->format == ANIM_WEBP && img1->loop_count == 65535 &&
-         img2->format == ANIM_GIF && img2->loop_count == 65536)) {
-      max_loop_count_workaround = 1;
-    }
-    ok = (max_loop_count_workaround ||
-          CompareValues(img1->loop_count, img2->loop_count,
-                        "Loop count mismatch")) && ok;
+    ok = CompareValues(img1->loop_count, img2->loop_count,
+                       "Loop count mismatch") && ok;
     ok = CompareBackgroundColor(img1->bgcolor, img2->bgcolor,
                                 premultiply) && ok;
   }
@@ -197,11 +187,11 @@ static void Help(void) {
   printf("  -min_psnr <float> ... minimum per-frame PSNR\n");
   printf("  -raw_comparison ..... if this flag is not used, RGB is\n");
   printf("                        premultiplied before comparison\n");
-  printf("  -max_diff <int> ..... maximum allowed difference per channel\n"
-         "                        between corresponding pixels in subsequent\n"
+#ifdef WEBP_EXPERIMENTAL_FEATURES
+  printf("  -max_diff <int> ..... maximum allowed difference per channel "
+         "                        between corresponding pixels in subsequent"
          "                        frames\n");
-  printf("  -h .................. this help\n");
-  printf("  -version ............ print version number and exit\n");
+#endif
 }
 
 int main(int argc, const char* argv[]) {
@@ -216,6 +206,11 @@ int main(int argc, const char* argv[]) {
   int i, c;
   const char* files[2] = { NULL, NULL };
   AnimatedImage images[2];
+
+  if (argc < 3) {
+    Help();
+    return -1;
+  }
 
   for (c = 1; c < argc; ++c) {
     int parse_error = 0;
@@ -241,6 +236,7 @@ int main(int argc, const char* argv[]) {
       }
     } else if (!strcmp(argv[c], "-raw_comparison")) {
       premultiply = 0;
+#ifdef WEBP_EXPERIMENTAL_FEATURES
     } else if (!strcmp(argv[c], "-max_diff")) {
       if (c < argc - 1) {
         const char* const v = argv[++c];
@@ -254,18 +250,7 @@ int main(int argc, const char* argv[]) {
       } else {
         parse_error = 1;
       }
-    } else if (!strcmp(argv[c], "-h") || !strcmp(argv[c], "-help")) {
-      Help();
-      return 0;
-    } else if (!strcmp(argv[c], "-version")) {
-      int dec_version, demux_version;
-      GetAnimatedImageVersions(&dec_version, &demux_version);
-      printf("WebP Decoder version: %d.%d.%d\nWebP Demux version: %d.%d.%d\n",
-             (dec_version >> 16) & 0xff, (dec_version >> 8) & 0xff,
-             (dec_version >> 0) & 0xff,
-             (demux_version >> 16) & 0xff, (demux_version >> 8) & 0xff,
-             (demux_version >> 0) & 0xff);
-      return 0;
+#endif
     } else {
       if (!got_input1) {
         files[0] = argv[c];
@@ -282,12 +267,6 @@ int main(int argc, const char* argv[]) {
       return -1;
     }
   }
-  if (argc < 3) {
-    Help();
-    return -1;
-  }
-
-
   if (!got_input2) {
     Help();
     return -1;

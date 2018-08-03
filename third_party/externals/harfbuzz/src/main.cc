@@ -24,7 +24,7 @@
  * Red Hat Author(s): Behdad Esfahbod
  */
 
-#include "hb-static.cc"
+#include "hb-mutex-private.hh"
 #include "hb-open-file-private.hh"
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsubgpos-private.hh"
@@ -38,6 +38,7 @@
 
 using namespace OT;
 
+
 int
 main (int argc, char **argv)
 {
@@ -46,20 +47,25 @@ main (int argc, char **argv)
     exit (1);
   }
 
-  hb_blob_t *blob = hb_blob_create_from_file (argv[1]);
-  unsigned int len;
-  const char *font_data = hb_blob_get_data (blob, &len);
+  const char *font_data = NULL;
+  int len = 0;
+
+#ifdef HAVE_GLIB
+  GMappedFile *mf = g_mapped_file_new (argv[1], false, NULL);
+  font_data = g_mapped_file_get_contents (mf);
+  len = g_mapped_file_get_length (mf);
+#else
+  FILE *f = fopen (argv[1], "rb");
+  fseek (f, 0, SEEK_END);
+  len = ftell (f);
+  fseek (f, 0, SEEK_SET);
+  font_data = (const char *) malloc (len);
+  len = fread ((char *) font_data, 1, len, f);
+#endif
+
   printf ("Opened font file %s: %d bytes long\n", argv[1], len);
 
-  hb_blob_t *font_blob = hb_sanitize_context_t().sanitize_blob<OpenTypeFontFile> (blob);
-  const OpenTypeFontFile* sanitized = font_blob->as<OpenTypeFontFile> ();
-  if (sanitized == &Null(OpenTypeFontFile))
-  {
-    printf ("Sanitization of the file wasn't successful. Exit");
-    return 1;
-  }
-  const OpenTypeFontFile& ot = *sanitized;
-
+  const OpenTypeFontFile &ot = *CastP<OpenTypeFontFile> (font_data);
 
   switch (ot.get_tag ()) {
   case OpenTypeFontFile::TrueTypeTag:
@@ -77,9 +83,6 @@ main (int argc, char **argv)
   case OpenTypeFontFile::Typ1Tag:
     printf ("Obsolete Apple Type1 font in SFNT container\n");
     break;
-  case OpenTypeFontFile::DFontTag:
-    printf ("DFont Mac Resource Fork\n");
-    break;
   default:
     printf ("Unknown font format\n");
     break;
@@ -96,14 +99,14 @@ main (int argc, char **argv)
     for (int n_table = 0; n_table < num_tables; n_table++) {
       const OpenTypeTable &table = font.get_table (n_table);
       printf ("  Table %2d of %2d: %.4s (0x%08x+0x%08x)\n", n_table, num_tables,
-	      (const char *) table.tag,
+	      (const char *)table.tag,
 	      (unsigned int) table.offset,
 	      (unsigned int) table.length);
 
       switch (table.tag) {
 
-      case HB_OT_TAG_GSUB:
-      case HB_OT_TAG_GPOS:
+      case GSUBGPOS::GSUBTag:
+      case GSUBGPOS::GPOSTag:
 	{
 
 	const GSUBGPOS &g = *CastP<GSUBGPOS> (font_data + table.offset);
@@ -192,3 +195,5 @@ main (int argc, char **argv)
 
   return 0;
 }
+
+

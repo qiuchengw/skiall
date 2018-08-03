@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/uz_Cyrl.xml
+// *
+// ***************************************************************************
 uz_Cyrl{
     %%Parent{"root"}
     Currencies{
@@ -165,7 +171,7 @@ uz_Cyrl{
         }
         PEN{
             "PEN",
-            "Перу сол",
+            "Перу нуево сол",
         }
         PYG{
             "PYG",
@@ -370,8 +376,8 @@ uz_Cyrl{
             other{"Панама бальбоаси"}
         }
         PEN{
-            one{"Перу сол"}
-            other{"Перу сол"}
+            one{"Перу нуево сол"}
+            other{"Перу нуево сол"}
         }
         PYG{
             one{"Парагвай гуарани"}
@@ -414,5 +420,5 @@ uz_Cyrl{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

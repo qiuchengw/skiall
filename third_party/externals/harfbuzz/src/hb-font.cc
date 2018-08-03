@@ -36,7 +36,7 @@
  */
 
 static hb_bool_t
-hb_font_get_font_h_extents_nil (hb_font_t *font HB_UNUSED,
+hb_font_get_font_h_extents_nil (hb_font_t *font,
 				void *font_data HB_UNUSED,
 				hb_font_extents_t *metrics,
 				void *user_data HB_UNUSED)
@@ -60,7 +60,7 @@ hb_font_get_font_h_extents_parent (hb_font_t *font,
 }
 
 static hb_bool_t
-hb_font_get_font_v_extents_nil (hb_font_t *font HB_UNUSED,
+hb_font_get_font_v_extents_nil (hb_font_t *font,
 				void *font_data HB_UNUSED,
 				hb_font_extents_t *metrics,
 				void *user_data HB_UNUSED)
@@ -127,7 +127,7 @@ hb_font_get_variation_glyph_parent (hb_font_t *font,
 
 
 static hb_position_t
-hb_font_get_glyph_h_advance_nil (hb_font_t *font,
+hb_font_get_glyph_h_advance_nil (hb_font_t *font HB_UNUSED,
 				 void *font_data HB_UNUSED,
 				 hb_codepoint_t glyph,
 				 void *user_data HB_UNUSED)
@@ -144,7 +144,7 @@ hb_font_get_glyph_h_advance_parent (hb_font_t *font,
 }
 
 static hb_position_t
-hb_font_get_glyph_v_advance_nil (hb_font_t *font,
+hb_font_get_glyph_v_advance_nil (hb_font_t *font HB_UNUSED,
 				 void *font_data HB_UNUSED,
 				 hb_codepoint_t glyph,
 				 void *user_data HB_UNUSED)
@@ -347,12 +347,12 @@ static const hb_font_funcs_t _hb_font_funcs_nil = {
   true, /* immutable */
 
   {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
+#define HB_FONT_FUNC_IMPLEMENT(name) NULL,
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
   },
   {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
+#define HB_FONT_FUNC_IMPLEMENT(name) NULL,
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
   },
@@ -370,12 +370,12 @@ static const hb_font_funcs_t _hb_font_funcs_parent = {
   true, /* immutable */
 
   {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
+#define HB_FONT_FUNC_IMPLEMENT(name) NULL,
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
   },
   {
-#define HB_FONT_FUNC_IMPLEMENT(name) nullptr,
+#define HB_FONT_FUNC_IMPLEMENT(name) NULL,
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
   },
@@ -563,8 +563,8 @@ hb_font_funcs_set_##name##_func (hb_font_funcs_t             *ffuncs,    \
     ffuncs->destroy.name = destroy;                                      \
   } else {                                                               \
     ffuncs->get.f.name = hb_font_get_##name##_parent;                    \
-    ffuncs->user_data.name = nullptr;                                       \
-    ffuncs->destroy.name = nullptr;                                         \
+    ffuncs->user_data.name = NULL;                                       \
+    ffuncs->destroy.name = NULL;                                         \
   }                                                                      \
 }
 
@@ -1157,20 +1157,8 @@ hb_font_create_sub_font (hb_font_t *parent)
   font->y_scale = parent->y_scale;
   font->x_ppem = parent->x_ppem;
   font->y_ppem = parent->y_ppem;
-  font->ptem = parent->ptem;
 
-  font->num_coords = parent->num_coords;
-  if (!font->num_coords)
-    font->coords = nullptr;
-  else
-  {
-    unsigned int size = parent->num_coords * sizeof (parent->coords[0]);
-    font->coords = (int *) malloc (size);
-    if (unlikely (!font->coords))
-      font->num_coords = 0;
-    else
-      memcpy (font->coords, parent->coords, size);
-  }
+  /* TODO: copy variation coordinates. */
 
   return font;
 }
@@ -1192,7 +1180,7 @@ hb_font_get_empty (void)
 
     true, /* immutable */
 
-    nullptr, /* parent */
+    NULL, /* parent */
     const_cast<hb_face_t *> (&_hb_face_nil),
 
     1000, /* x_scale */
@@ -1200,14 +1188,13 @@ hb_font_get_empty (void)
 
     0, /* x_ppem */
     0, /* y_ppem */
-    0, /* ptem */
 
     0, /* num_coords */
-    nullptr, /* coords */
+    NULL, /* coords */
 
     const_cast<hb_font_funcs_t *> (&_hb_font_funcs_nil), /* klass */
-    nullptr, /* user_data */
-    nullptr, /* destroy */
+    NULL, /* user_data */
+    NULL, /* destroy */
 
     {
 #define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_INVALID,
@@ -1385,32 +1372,6 @@ hb_font_get_parent (hb_font_t *font)
 }
 
 /**
- * hb_font_set_face:
- * @font: a font.
- * @face: new face.
- *
- * Sets font-face of @font.
- *
- * Since: 1.4.3
- **/
-void
-hb_font_set_face (hb_font_t *font,
-		  hb_face_t *face)
-{
-  if (font->immutable)
-    return;
-
-  if (unlikely (!face))
-    face = hb_face_get_empty ();
-
-  hb_face_t *old = font->face;
-
-  font->face = hb_face_reference (face);
-
-  hb_face_destroy (old);
-}
-
-/**
  * hb_font_get_face:
  * @font: a font.
  *
@@ -1575,40 +1536,6 @@ hb_font_get_ppem (hb_font_t *font,
   if (y_ppem) *y_ppem = font->y_ppem;
 }
 
-/**
- * hb_font_set_ptem:
- * @font: a font.
- * @ptem: 
- *
- * Sets "point size" of the font.
- *
- * Since: 1.6.0
- **/
-void
-hb_font_set_ptem (hb_font_t *font, float ptem)
-{
-  if (font->immutable)
-    return;
-
-  font->ptem = ptem;
-}
-
-/**
- * hb_font_get_ptem:
- * @font: a font.
- *
- * Gets the "point size" of the font.  A value of 0 means unset.
- *
- * Return value: Point size.
- *
- * Since: 0.9.2
- **/
-float
-hb_font_get_ptem (hb_font_t *font)
-{
-  return font->ptem;
-}
-
 /*
  * Variations
  */
@@ -1639,13 +1566,13 @@ hb_font_set_variations (hb_font_t *font,
 
   if (!variations_length)
   {
-    hb_font_set_var_coords_normalized (font, nullptr, 0);
+    hb_font_set_var_coords_normalized (font, NULL, 0);
     return;
   }
 
   unsigned int coords_length = hb_ot_var_get_axis_count (font->face);
 
-  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
+  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : NULL;
   if (unlikely (coords_length && !normalized))
     return;
 
@@ -1668,7 +1595,7 @@ hb_font_set_var_coords_design (hb_font_t *font,
   if (font->immutable)
     return;
 
-  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : nullptr;
+  int *normalized = coords_length ? (int *) calloc (coords_length, sizeof (int)) : NULL;
   if (unlikely (coords_length && !normalized))
     return;
 
@@ -1689,7 +1616,7 @@ hb_font_set_var_coords_normalized (hb_font_t *font,
   if (font->immutable)
     return;
 
-  int *copy = coords_length ? (int *) calloc (coords_length, sizeof (coords[0])) : nullptr;
+  int *copy = coords_length ? (int *) calloc (coords_length, sizeof (coords[0])) : NULL;
   if (unlikely (coords_length && !copy))
     return;
 
@@ -1700,7 +1627,7 @@ hb_font_set_var_coords_normalized (hb_font_t *font,
 }
 
 /**
- * hb_font_get_var_coords_normalized:
+ * hb_font_set_var_coords_normalized:
  *
  * Return value is valid as long as variation coordinates of the font
  * are not modified.
@@ -1749,7 +1676,7 @@ trampoline_create (FuncType           func,
   trampoline_t *trampoline = (trampoline_t *) calloc (1, sizeof (trampoline_t));
 
   if (unlikely (!trampoline))
-    return nullptr;
+    return NULL;
 
   trampoline->closure.user_data = user_data;
   trampoline->closure.destroy = destroy;

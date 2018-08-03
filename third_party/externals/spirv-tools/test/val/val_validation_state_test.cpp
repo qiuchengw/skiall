@@ -21,8 +21,6 @@
 #include "unit_spirv.h"
 #include "val_fixtures.h"
 
-namespace spvtools {
-namespace val {
 namespace {
 
 using std::string;
@@ -154,6 +152,4 @@ TEST_F(ValidationStateTest, CheckAccessChainIndexesLimitOption) {
   EXPECT_EQ(100u, options_->universal_limits_.max_access_chain_indexes);
 }
 
-}  // namespace
-}  // namespace val
-}  // namespace spvtools
+}  // anonymous namespace

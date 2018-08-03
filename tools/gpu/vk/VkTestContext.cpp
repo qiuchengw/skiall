@@ -11,6 +11,7 @@
 
 #include "GrContext.h"
 #include "VkTestUtils.h"
+#include "vk/GrVkExtensions.h"
 #include "vk/GrVkInterface.h"
 #include "vk/GrVkUtil.h"
 
@@ -149,10 +150,13 @@ class VkTestContextImpl : public sk_gpu_test::VkTestContext {
 public:
     static VkTestContext* Create(VkTestContext* sharedContext) {
         GrVkBackendContext backendContext;
+        GrVkExtensions* extensions;
         bool ownsContext = true;
         VkDebugReportCallbackEXT debugCallback = VK_NULL_HANDLE;
+        PFN_vkDestroyDebugReportCallbackEXT destroyCallback = nullptr;
         if (sharedContext) {
             backendContext = sharedContext->getVkBackendContext();
+            extensions = const_cast<GrVkExtensions*>(sharedContext->getVkExtensions());
             // We always delete the parent context last so make sure the child does not think they
             // own the vulkan context.
             ownsContext = false;
@@ -162,12 +166,25 @@ public:
             if (!sk_gpu_test::LoadVkLibraryAndGetProcAddrFuncs(&instProc, &devProc)) {
                 return nullptr;
             }
-            if (!sk_gpu_test::CreateVkBackendContext(instProc, devProc, &backendContext,
+            auto getProc = [instProc, devProc](const char* proc_name,
+                                               VkInstance instance, VkDevice device) {
+                if (device != VK_NULL_HANDLE) {
+                    return devProc(device, proc_name);
+                }
+                return instProc(instance, proc_name);
+            };
+            extensions = new GrVkExtensions();
+            if (!sk_gpu_test::CreateVkBackendContext(getProc, &backendContext, extensions,
                                                      &debugCallback)) {
                 return nullptr;
             }
+            if (debugCallback != VK_NULL_HANDLE) {
+                destroyCallback = (PFN_vkDestroyDebugReportCallbackEXT) instProc(
+                        backendContext.fInstance, "vkDestroyDebugReportCallbackEXT");
+            }
         }
-        return new VkTestContextImpl(backendContext, ownsContext, debugCallback);
+        return new VkTestContextImpl(backendContext, extensions, ownsContext, debugCallback,
+                                     destroyCallback);
     }
 
     ~VkTestContextImpl() override { this->teardown(); }
@@ -208,13 +225,16 @@ protected:
             }
 #endif
             grVkDestroyInstance(fVk.fInstance, nullptr);
+            delete fExtensions;
         }
     }
 
 private:
-    VkTestContextImpl(const GrVkBackendContext& backendContext, bool ownsContext,
-                      VkDebugReportCallbackEXT debugCallback)
-            : VkTestContext(backendContext, ownsContext, debugCallback) {
+    VkTestContextImpl(const GrVkBackendContext& backendContext, const GrVkExtensions* extensions,
+                      bool ownsContext, VkDebugReportCallbackEXT debugCallback,
+                      PFN_vkDestroyDebugReportCallbackEXT destroyCallback)
+            : VkTestContext(backendContext, extensions, ownsContext, debugCallback,
+                            destroyCallback) {
         fFenceSync.reset(new VkFenceSync(fVk.fGetProc, fVk.fDevice, fVk.fQueue,
                                          fVk.fGraphicsQueueIndex));
     }

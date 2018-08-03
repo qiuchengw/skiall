@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/pl.xml
+// *
+// ***************************************************************************
 pl{
     Currencies{
         ADP{
@@ -194,13 +200,9 @@ pl{
             "BYB",
             "rubel białoruski (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "rubel białoruski",
-        }
         BYR{
             "BYR",
-            "rubel białoruski (2000–2016)",
+            "rubel białoruski",
         }
         BZD{
             "BZD",
@@ -221,10 +223,6 @@ pl{
         CLP{
             "CLP",
             "peso chilijskie",
-        }
-        CNH{
-            "CNH",
-            "juan chiński (rynek zewnętrzny)",
         }
         CNY{
             "CNY",
@@ -332,7 +330,7 @@ pl{
         }
         FJD{
             "FJD",
-            "dolar fidżyjski",
+            "dolar fidżi",
         }
         FKP{
             "FKP",
@@ -596,10 +594,6 @@ pl{
         }
         MRO{
             "MRO",
-            "ouguiya mauretańska (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "ouguiya mauretańska",
         }
         MTL{
@@ -620,7 +614,7 @@ pl{
         }
         MWK{
             "MWK",
-            "kwacha malawijska",
+            "kwacha malawska",
         }
         MXN{
             "MXN",
@@ -692,11 +686,11 @@ pl{
         }
         PEN{
             "PEN",
-            "sol peruwiański",
+            "nowy sol peruwiański",
         }
         PES{
             "PES",
-            "sol peruwiański (1863–1965)",
+            "sol peruwiański",
         }
         PGK{
             "PGK",
@@ -824,10 +818,6 @@ pl{
         }
         STD{
             "STD",
-            "dobra Wysp Świętego Tomasza i Książęcej (1977–2017)",
-        }
-        STN{
-            "STN",
             "dobra Wysp Świętego Tomasza i Książęcej",
         }
         SUR{
@@ -944,11 +934,11 @@ pl{
         }
         VUV{
             "VUV",
-            "vatu wanuackie",
+            "vatu Vanuatu",
         }
         WST{
             "WST",
-            "tala samoańskie",
+            "tala samoańska",
         }
         XAF{
             "FCFA",
@@ -1080,7 +1070,7 @@ pl{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1090,14 +1080,12 @@ pl{
         CUC{"$"}
         CUP{"$"}
         CZK{"Kč"}
-        DKK{"kr"}
         DOP{"$"}
         EGP{"E£"}
         EUR{"€"}
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -1131,23 +1119,20 @@ pl{
         NAD{"$"}
         NGN{"₦"}
         NIO{"C$"}
-        NOK{"kr"}
         NPR{"Rs"}
         NZD{"$"}
         PHP{"₱"}
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"lej"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
-        SEK{"kr"}
         SGD{"$"}
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1164,7 +1149,6 @@ pl{
         ZMW{"ZK"}
     }
     Currencies%variant{
-        GEL{"₾"}
         TRY{"TL"}
     }
     CurrencyPlurals{
@@ -1366,17 +1350,11 @@ pl{
             one{"pula botswańska"}
             other{"puli botswańskiej"}
         }
-        BYN{
+        BYR{
             few{"ruble białoruskie"}
             many{"rubli białoruskich"}
             one{"rubel białoruski"}
             other{"rubla białoruskiego"}
-        }
-        BYR{
-            few{"ruble białoruskie (2000–2016)"}
-            many{"rubli białoruskich (2000–2016)"}
-            one{"rubel białoruski (2000–2016)"}
-            other{"rubla białoruskiego (2000–2016)"}
         }
         BZD{
             few{"dolary belizeńskie"}
@@ -1407,12 +1385,6 @@ pl{
             many{"pesos chilijskich"}
             one{"peso chilijskie"}
             other{"peso chilijskiego"}
-        }
-        CNH{
-            few{"juany chińskie (rynek zewnętrzny)"}
-            many{"juanów chińskich (rynek zewnętrzny)"}
-            one{"juan chiński (rynek zewnętrzny)"}
-            other{"juana chińskiego (rynek zewnętrzny)"}
         }
         CNY{
             few{"juany chińskie"}
@@ -1823,12 +1795,6 @@ pl{
             other{"pataca Makau"}
         }
         MRO{
-            few{"ouguiya mauretańskie (1973–2017)"}
-            many{"ouguiya mauretańskich (1973–2017)"}
-            one{"ouguiya mauretańska (1973–2017)"}
-            other{"ouguiya mauretańskiej (1973–2017)"}
-        }
-        MRU{
             few{"ouguiya mauretańskie"}
             many{"ouguiya mauretańskich"}
             one{"ouguiya mauretańska"}
@@ -1847,10 +1813,10 @@ pl{
             other{"rupii malediwskiej"}
         }
         MWK{
-            few{"kwacha malawijskie"}
-            many{"kwacha malawijskich"}
-            one{"kwacha malawijska"}
-            other{"kwacha malawijskiej"}
+            few{"kwacha malawskie"}
+            many{"kwacha malawskich"}
+            one{"kwacha malawska"}
+            other{"kwacha malawskiej"}
         }
         MXN{
             few{"pesos meksykańskie"}
@@ -1865,10 +1831,10 @@ pl{
             other{"ringgita malezyjskiego"}
         }
         MZN{
-            few{"meticale mozambickie"}
-            many{"meticali mozambickich"}
-            one{"metical mozambicki"}
-            other{"meticala mozambickiego"}
+            few{"meticale mozambijskie"}
+            many{"meticali mozambijskich"}
+            one{"metical mozambijski"}
+            other{"meticala mozambijskiego"}
         }
         NAD{
             few{"dolary namibijskie"}
@@ -1925,16 +1891,10 @@ pl{
             other{"balboa panamskiego"}
         }
         PEN{
-            few{"sole peruwiańskie"}
-            many{"soli peruwiańskich"}
-            one{"sol peruwiański"}
-            other{"sola peruwiańskiego"}
-        }
-        PES{
-            few{"sole peruwiańskie (1863–1965)"}
-            many{"soli peruwiańskich (1863–1965)"}
-            one{"sol peruwiański (1863–1965)"}
-            other{"sola peruwiańskiego (1863–1965)"}
+            few{"nowe sole peruwiańskie"}
+            many{"nowych soli peruwiańskich"}
+            one{"nowy sol peruwiański"}
+            other{"nowego sola peruwiańskiego"}
         }
         PGK{
             few{"kina papuaskie"}
@@ -2099,12 +2059,6 @@ pl{
             other{"funta południowosudańskiego"}
         }
         STD{
-            few{"dobry Wysp Świętego Tomasza i Książęcej (1977–2017)"}
-            many{"dobr Wysp Świętego Tomasza i Książęcej (1977–2017)"}
-            one{"dobra Wysp Świętego Tomasza i Książęcej (1977–2017)"}
-            other{"dobry Wysp Świętego Tomasza i Książęcej (1977–2017)"}
-        }
-        STN{
             few{"dobry Wysp Świętego Tomasza i Książęcej"}
             many{"dobr Wysp Świętego Tomasza i Książęcej"}
             one{"dobra Wysp Świętego Tomasza i Książęcej"}
@@ -2249,10 +2203,10 @@ pl{
             other{"donga wietnamskiego"}
         }
         VUV{
-            few{"vatu wanuackie"}
-            many{"vatu wanuackich"}
-            one{"vatu wanuackie"}
-            other{"vatu wanuackiego"}
+            few{"vatu vanuatuańskie"}
+            many{"vatu vanuatuańskich"}
+            one{"vatu vanuatuańskie"}
+            other{"vatu vanuatuańskiego"}
         }
         WST{
             few{"tala samoańskie"}
@@ -2321,5 +2275,5 @@ pl{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

@@ -20,22 +20,21 @@
 #include <sstream>
 #include <tuple>
 
-#include "gmock/gmock.h"
 #include "test_fixture.h"
+#include "gmock/gmock.h"
 
-namespace spvtools {
 namespace {
 
+using ::testing::Combine;
+using ::testing::Eq;
+using ::testing::Values;
+using ::testing::ValuesIn;
 using spvtest::EnumCase;
 using spvtest::MakeInstruction;
 using spvtest::MakeVector;
 using spvtest::TextToBinaryTest;
 using std::get;
 using std::tuple;
-using ::testing::Combine;
-using ::testing::Eq;
-using ::testing::Values;
-using ::testing::ValuesIn;
 
 // Test OpDecorate
 
@@ -502,5 +501,4 @@ TEST_F(OpMemberDecorateSimpleTest, ExtraOperandsOnDecorationExpectingTwo) {
 // TODO(dneto): OpDecorationGroup
 // TODO(dneto): OpGroupDecorate
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

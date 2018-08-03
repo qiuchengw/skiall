@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/uz.xml
+// *
+// ***************************************************************************
 uz{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -15,7 +21,7 @@ uz{
                 other{"{0} grav. kuchi"}
             }
             meter-per-second-squared{
-                dnam{"metr/soniya kvadrat"}
+                dnam{"metr taqsim soniyaning kvadrati"}
                 one{"{0} metr/soniya kvadrat"}
                 other{"{0} metr/soniya kvadrat"}
             }
@@ -79,7 +85,6 @@ uz{
                 dnam{"kvadrat kilometr"}
                 one{"{0} kvadrat kilometr"}
                 other{"{0} kvadrat kilometr"}
-                per{"{0} kvadrat kilometr"}
             }
             square-meter{
                 dnam{"kvadrat metr"}
@@ -91,7 +96,6 @@ uz{
                 dnam{"kvadrat mil"}
                 one{"{0} kvadrat mil"}
                 other{"{0} kvadrat mil"}
-                per{"{0}/kvadrat mil"}
             }
             square-yard{
                 dnam{"kvadrat yard"}
@@ -101,28 +105,6 @@ uz{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"karat"}
-                one{"{0} karat"}
-                other{"{0} karat"}
-            }
-            milligram-per-deciliter{
-                dnam{"milligramm/detsilitr"}
-                one{"{0} milligramm/detsilitr"}
-                other{"{0} milligramm/detsilitr"}
-            }
-            millimole-per-liter{
-                dnam{"millimol/litr"}
-                one{"{0} millimol/litr"}
-                other{"{0} millimol/litr"}
-            }
-            part-per-million{
-                dnam{"millionning ulushi"}
-                one{"milliondan {0}"}
-                other{"milliondan {0}"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -140,17 +122,12 @@ uz{
                 one{"{0} mil/gallon"}
                 other{"{0} mil/gallon"}
             }
-            mile-per-gallon-imperial{
-                dnam{"mil/imp. gallon"}
-                one{"{0} mil/imp. gallon"}
-                other{"{0} mil/imp. gallon"}
-            }
         }
         coordinate{
-            east{"{0} sharqiy uzunlik"}
-            north{"{0} shimoliy kenglik"}
-            south{"{0} janubiy kenglik"}
-            west{"{0} g‘arbiy uzunlik"}
+            east{"{0}E"}
+            north{"{0}N"}
+            south{"{0}S"}
+            west{"{0}W"}
         }
         digital{
             bit{
@@ -368,10 +345,9 @@ uz{
                 per{"{0}/fut"}
             }
             inch{
-                dnam{"duym"}
-                one{"{0} duym"}
-                other{"{0} duym"}
-                per{"{0}/duym"}
+                dnam{"dyum"}
+                one{"{0} dyum"}
+                other{"{0} dyum"}
             }
             kilometer{
                 dnam{"kilometr"}
@@ -401,9 +377,9 @@ uz{
                 other{"{0} mil"}
             }
             mile-scandinavian{
-                dnam{"skandinav mili"}
-                one{"{0} skandinav mili"}
-                other{"{0} skandinav mili"}
+                dnam{"Skandinaviya mili"}
+                one{"{0} Skandinaviya mili"}
+                other{"{0} Skandinaviya mili"}
             }
             millimeter{
                 dnam{"millimetr"}
@@ -429,11 +405,6 @@ uz{
                 dnam{"pikometr"}
                 one{"{0} pikometr"}
                 other{"{0} pikometr"}
-            }
-            point{
-                dnam{"nuqta"}
-                one{"{0} nuqta"}
-                other{"{0} nuqta"}
             }
             yard{
                 dnam{"yard"}
@@ -563,11 +534,18 @@ uz{
                 other{"{0} funt/kvadrat duym"}
             }
         }
+        proportion{
+            karat{
+                dnam{"karat"}
+                one{"{0} karat"}
+                other{"{0} karat"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"km/soat"}
-                one{"{0} km/soat"}
-                other{"{0} km/soat"}
+                one{"soatiga {0} kilometr"}
+                other{"soatiga {0} kilometr"}
             }
             knot{
                 dnam{"uzel"}
@@ -681,12 +659,6 @@ uz{
                 other{"{0} gallon"}
                 per{"{0}/gallon"}
             }
-            gallon-imperial{
-                dnam{"imp. gallon"}
-                one{"{0} imp. gallon"}
-                other{"{0} imp. gallon"}
-                per{"{0}/imp. gallon"}
-            }
             hectoliter{
                 dnam{"gektolitr"}
                 one{"{0} gektolitr"}
@@ -793,10 +765,10 @@ uz{
             }
         }
         coordinate{
-            east{"{0} shq. u."}
-            north{"{0} shm. k."}
-            south{"{0} jan. k."}
-            west{"{0} g‘rb. u."}
+            east{"{0}E"}
+            north{"{0}N"}
+            south{"{0}S"}
+            west{"{0}W"}
         }
         duration{
             day{
@@ -806,8 +778,8 @@ uz{
             }
             hour{
                 dnam{"soat"}
-                one{"{0} soat"}
-                other{"{0} soat"}
+                one{"{0} st"}
+                other{"{0} st"}
             }
             millisecond{
                 dnam{"mson"}
@@ -815,9 +787,9 @@ uz{
                 other{"{0} ms"}
             }
             minute{
-                dnam{"daq."}
-                one{"{0} daq."}
-                other{"{0} daq."}
+                dnam{"daq"}
+                one{"{0} d"}
+                other{"{0} d"}
             }
             month{
                 dnam{"oy"}
@@ -825,7 +797,7 @@ uz{
                 other{"{0} oy"}
             }
             second{
-                dnam{"son."}
+                dnam{"son"}
                 one{"{0} s"}
                 other{"{0} s"}
             }
@@ -971,8 +943,8 @@ uz{
             }
             liter{
                 dnam{"litr"}
-                one{"{0}L"}
-                other{"{0}L"}
+                one{"{0} l"}
+                other{"{0} l"}
             }
         }
     }
@@ -1048,7 +1020,6 @@ uz{
                 dnam{"km²"}
                 one{"{0} km²"}
                 other{"{0} km²"}
-                per{"{0}/km²"}
             }
             square-meter{
                 dnam{"m²"}
@@ -1060,7 +1031,6 @@ uz{
                 dnam{"kv. mil"}
                 one{"{0} kv. mil"}
                 other{"{0} kv. mil"}
-                per{"{0}/mil²"}
             }
             square-yard{
                 dnam{"yard²"}
@@ -1070,28 +1040,6 @@ uz{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"karat"}
-                one{"{0} kt"}
-                other{"{0} kt"}
-            }
-            milligram-per-deciliter{
-                dnam{"mg/dL"}
-                one{"{0} mg/dL"}
-                other{"{0} mg/dL"}
-            }
-            millimole-per-liter{
-                dnam{"millimol/litr"}
-                one{"{0} mmol/L"}
-                other{"{0} mmol/L"}
-            }
-            part-per-million{
-                dnam{"ppm"}
-                one{"{0} ppm"}
-                other{"{0} ppm"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1109,17 +1057,12 @@ uz{
                 one{"{0} mil/gal"}
                 other{"{0} mil/gal"}
             }
-            mile-per-gallon-imperial{
-                dnam{"mil/imp. gallon"}
-                one{"{0} mil/imp.gal"}
-                other{"{0} mil/imp.gal"}
-            }
         }
         coordinate{
-            east{"{0} shq. u."}
-            north{"{0} shm. k."}
-            south{"{0} jan. k."}
-            west{"{0} g‘rb. u."}
+            east{"{0}E"}
+            north{"{0}N"}
+            south{"{0}S"}
+            west{"{0}W"}
         }
         digital{
             bit{
@@ -1148,9 +1091,9 @@ uz{
                 other{"{0} kbit"}
             }
             kilobyte{
-                dnam{"KB"}
-                one{"{0} KB"}
-                other{"{0} KB"}
+                dnam{"kB"}
+                one{"{0} kB"}
+                other{"{0} kB"}
             }
             megabit{
                 dnam{"Mbit"}
@@ -1187,9 +1130,9 @@ uz{
             }
             hour{
                 dnam{"soat"}
-                one{"{0} soat"}
-                other{"{0} soat"}
-                per{"{0}/soat"}
+                one{"{0} st"}
+                other{"{0} st"}
+                per{"{0}/st"}
             }
             microsecond{
                 dnam{"mks"}
@@ -1202,10 +1145,10 @@ uz{
                 other{"{0} ms"}
             }
             minute{
-                dnam{"daq."}
-                one{"{0} daq."}
-                other{"{0} daq."}
-                per{"{0}/daq."}
+                dnam{"daq"}
+                one{"{0} daq"}
+                other{"{0} daq"}
+                per{"{0}/daq"}
             }
             month{
                 dnam{"oy"}
@@ -1219,9 +1162,9 @@ uz{
                 other{"{0} ns"}
             }
             second{
-                dnam{"son."}
-                one{"{0} son."}
-                other{"{0} son."}
+                dnam{"son"}
+                one{"{0} son"}
+                other{"{0} son"}
                 per{"{0}/s"}
             }
             week{
@@ -1337,7 +1280,7 @@ uz{
                 per{"{0} fut"}
             }
             inch{
-                dnam{"duym"}
+                dnam{"dyum"}
                 one{"{0} dy"}
                 other{"{0} dy"}
                 per{"{0}/dy"}
@@ -1370,9 +1313,9 @@ uz{
                 other{"{0} mil"}
             }
             mile-scandinavian{
-                dnam{"sk. mili"}
-                one{"{0} sk. mili"}
-                other{"{0} sk. mili"}
+                dnam{"s-mil"}
+                one{"{0} s-mil"}
+                other{"{0} s-mil"}
             }
             millimeter{
                 dnam{"mm"}
@@ -1385,9 +1328,9 @@ uz{
                 other{"{0} nm"}
             }
             nautical-mile{
-                dnam{"den. mili"}
-                one{"{0} den. mili"}
-                other{"{0} den. mili"}
+                dnam{"den.mili"}
+                one{"{0} den.mili"}
+                other{"{0} den.mili"}
             }
             parsec{
                 dnam{"pk"}
@@ -1398,11 +1341,6 @@ uz{
                 dnam{"pm"}
                 one{"{0} pm"}
                 other{"{0} pm"}
-            }
-            point{
-                dnam{"nuqta"}
-                one{"{0} nuqta"}
-                other{"{0} nuqta"}
             }
             yard{
                 dnam{"yard"}
@@ -1532,6 +1470,13 @@ uz{
                 other{"{0} funt/kv.dy"}
             }
         }
+        proportion{
+            karat{
+                dnam{"karat"}
+                one{"{0} kt"}
+                other{"{0} kt"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"km/soat"}
@@ -1650,12 +1595,6 @@ uz{
                 other{"{0} gal"}
                 per{"{0}/gal"}
             }
-            gallon-imperial{
-                dnam{"imp. gal."}
-                one{"{0} imp. gal."}
-                other{"{0} imp. gal."}
-                per{"{0} imp. gal."}
-            }
             hectoliter{
                 dnam{"gL"}
                 one{"{0} gL"}
@@ -1663,9 +1602,9 @@ uz{
             }
             liter{
                 dnam{"litr"}
-                one{"{0} L"}
-                other{"{0} L"}
-                per{"{0}/L"}
+                one{"{0} l"}
+                other{"{0} l"}
+                per{"{0}/l"}
             }
             megaliter{
                 dnam{"ML"}

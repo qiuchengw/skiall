@@ -13,15 +13,13 @@
 // limitations under the License.
 
 #include "freeze_spec_constant_value_pass.h"
-#include "ir_context.h"
 
 namespace spvtools {
 namespace opt {
 
-Pass::Status FreezeSpecConstantValuePass::Process() {
+Pass::Status FreezeSpecConstantValuePass::Process(ir::Module* module) {
   bool modified = false;
-  auto ctx = context();
-  ctx->module()->ForEachInst([&modified, ctx](Instruction* inst) {
+  module->ForEachInst([&modified](ir::Instruction* inst) {
     switch (inst->opcode()) {
       case SpvOp::SpvOpSpecConstant:
         inst->SetOpcode(SpvOp::SpvOpConstant);
@@ -38,7 +36,7 @@ Pass::Status FreezeSpecConstantValuePass::Process() {
       case SpvOp::SpvOpDecorate:
         if (inst->GetSingleWordInOperand(1) ==
             SpvDecoration::SpvDecorationSpecId) {
-          ctx->KillInst(inst);
+          inst->ToNop();
           modified = true;
         }
         break;

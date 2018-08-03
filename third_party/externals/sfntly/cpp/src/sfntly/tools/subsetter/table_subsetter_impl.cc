@@ -31,7 +31,7 @@ bool TableSubsetterImpl::TagHandled(int32_t tag) {
   return tags_.find(tag) != tags_.end();
 }
 
-std::set<int32_t>* TableSubsetterImpl::TagsHandled() {
+IntegerSet* TableSubsetterImpl::TagsHandled() {
   return &tags_;
 }
 

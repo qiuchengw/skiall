@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/th.xml
+// *
+// ***************************************************************************
 th{
     Currencies{
         ADP{
@@ -214,13 +220,9 @@ th{
             "BYB",
             "นิวรูเบิลเบลารุส (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "รูเบิลเบลารุส",
-        }
         BYR{
             "BYR",
-            "รูเบิลเบลารุส (2000–2016)",
+            "รูเบิลเบลารุส",
         }
         BZD{
             "BZD",
@@ -257,10 +259,6 @@ th{
         CLP{
             "CLP",
             "เปโซชิลี",
-        }
-        CNH{
-            "CNH",
-            "หยวน",
         }
         CNY{
             "CN¥",
@@ -520,7 +518,7 @@ th{
         }
         KES{
             "KES",
-            "ชิลลิงเคนยา",
+            "ชิลลิ่งเคนยา",
         }
         KGS{
             "KGS",
@@ -668,10 +666,6 @@ th{
         }
         MRO{
             "MRO",
-            "อูกียามอริเตเนีย (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "อูกียามอริเตเนีย",
         }
         MTL{
@@ -768,11 +762,11 @@ th{
         }
         PEN{
             "PEN",
-            "ซอลเปรู",
+            "นูโวซอลเปรู",
         }
         PES{
             "PES",
-            "ซอลเปรู (1863–1965)",
+            "ซอลเปรู",
         }
         PGK{
             "PGK",
@@ -900,10 +894,6 @@ th{
         }
         STD{
             "STD",
-            "ดอบราเซาตูเมและปรินซิปี (1977–2017)",
-        }
-        STN{
-            "STN",
             "ดอบราเซาตูเมและปรินซิปี",
         }
         SUR{
@@ -924,7 +914,7 @@ th{
         }
         THB{
             "THB",
-            "บาท",
+            "บาทไทย",
         }
         TJR{
             "TJR",
@@ -1188,100 +1178,59 @@ th{
         }
     }
     Currencies%narrow{
-        AOA{"Kz"}
         ARS{"$"}
         AUD{"$"}
-        BAM{"KM"}
         BBD{"$"}
         BDT{"৳"}
         BMD{"$"}
         BND{"$"}
-        BOB{"Bs"}
         BRL{"R$"}
         BSD{"$"}
-        BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
         CNY{"¥"}
         COP{"$"}
         CRC{"₡"}
-        CUC{"$"}
         CUP{"$"}
-        CZK{"Kč"}
-        DKK{"kr"}
         DOP{"$"}
-        EGP{"E£"}
         EUR{"€"}
         FJD{"$"}
-        FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
-        GNF{"FG"}
-        GTQ{"Q"}
         GYD{"$"}
         HKD{"$"}
-        HNL{"L"}
-        HRK{"kn"}
-        HUF{"Ft"}
         IDR{"Rp"}
         ILS{"₪"}
         INR{"₹"}
-        ISK{"kr"}
         JMD{"$"}
         JPY{"¥"}
         KHR{"៛"}
-        KMF{"CF"}
-        KPW{"₩"}
         KRW{"₩"}
         KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
-        LBP{"L£"}
-        LKR{"Rs"}
         LRD{"$"}
-        MGA{"Ar"}
-        MMK{"K"}
         MNT{"₮"}
-        MUR{"Rs"}
         MXN{"$"}
-        MYR{"RM"}
         NAD{"$"}
         NGN{"₦"}
-        NIO{"C$"}
-        NOK{"kr"}
-        NPR{"Rs"}
         NZD{"$"}
         PHP{"₱"}
-        PKR{"Rs"}
-        PLN{"zł"}
         PYG{"₲"}
-        RON{"lei"}
-        RUB{"₽"}
-        RWF{"RF"}
         SBD{"$"}
-        SEK{"kr"}
         SGD{"$"}
-        SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
-        SYP{"£"}
         THB{"฿"}
-        TOP{"T$"}
         TRY{"₺"}
         TTD{"$"}
         TWD{"NT$"}
         UAH{"₴"}
         USD{"$"}
         UYU{"$"}
-        VEF{"Bs"}
         VND{"₫"}
-        XCD{"$"}
-        ZAR{"R"}
-        ZMW{"ZK"}
     }
     Currencies%variant{
         GEL{"₾"}
@@ -1358,11 +1307,8 @@ th{
         BWP{
             other{"ปูลาบอตสวานา"}
         }
-        BYN{
-            other{"รูเบิลเบลารุส"}
-        }
         BYR{
-            other{"รูเบิลเบลารุส (2000–2016)"}
+            other{"รูเบิลเบลารุส"}
         }
         BZD{
             other{"ดอลลาร์เบลีซ"}
@@ -1378,9 +1324,6 @@ th{
         }
         CLP{
             other{"เปโซชิลี"}
-        }
-        CNH{
-            other{"หยวน"}
         }
         CNY{
             other{"หยวนจีน"}
@@ -1500,7 +1443,7 @@ th{
             other{"เยนญี่ปุ่น"}
         }
         KES{
-            other{"ชิลลิงเคนยา"}
+            other{"ชิลลิ่งเคนยา"}
         }
         KGS{
             other{"ซอมคีร์กีซสถาน"}
@@ -1569,9 +1512,6 @@ th{
             other{"ปาตากามาเก๊า"}
         }
         MRO{
-            other{"อูกียามอริเตเนีย (1973–2017)"}
-        }
-        MRU{
             other{"อูกียามอริเตเนีย"}
         }
         MUR{
@@ -1617,10 +1557,7 @@ th{
             other{"บัลบัวปานามา"}
         }
         PEN{
-            other{"ซอลเปรู"}
-        }
-        PES{
-            other{"ซอลเปรู(1863–1965)"}
+            other{"นูโวซอลเปรู"}
         }
         PGK{
             other{"กีนาปาปัวนิวกินี"}
@@ -1686,9 +1623,6 @@ th{
             other{"ปอนด์ซูดานใต้"}
         }
         STD{
-            other{"ดอบราเซาตูเมและปรินซิปี (1977–2017)"}
-        }
-        STN{
             other{"ดอบราเซาตูเมและปรินซิปี"}
         }
         SYP{
@@ -1785,5 +1719,5 @@ th{
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.77"}
 }

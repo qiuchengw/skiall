@@ -16,7 +16,6 @@
 #include "test_fixture.h"
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
 using spvtest::Concatenate;
@@ -44,5 +43,4 @@ TEST_F(TextToBinaryTest, Whitespace) {
                                       MakeVector("GLSL.std.450"))})));
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

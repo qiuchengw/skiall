@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
  * Copyright (c) 2002-2012, International Business Machines Corporation and
@@ -323,10 +321,10 @@ void UPerfTest::setPath( char* pathVal )
     this->path = pathVal;
 }
 
-// call individual tests, to be overridden to call implementations
+// call individual tests, to be overriden to call implementations
 UPerfFunction* UPerfTest::runIndexedTest( int32_t /*index*/, UBool /*exec*/, const char* & /*name*/, char* /*par*/ )
 {
-    // to be overridden by a method like:
+    // to be overriden by a method like:
     /*
     switch (index) {
         case 0: name = "First Test"; if (exec) FirstTest( par ); break;
@@ -334,7 +332,7 @@ UPerfFunction* UPerfTest::runIndexedTest( int32_t /*index*/, UBool /*exec*/, con
         default: name = ""; break;
     }
     */
-    fprintf(stderr,"*** runIndexedTest needs to be overridden! ***");
+    fprintf(stderr,"*** runIndexedTest needs to be overriden! ***");
     return NULL;
 }
 

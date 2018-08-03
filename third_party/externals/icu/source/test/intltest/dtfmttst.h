@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
- * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * COPYRIGHT: 
+ * Copyright (c) 1997-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
 #ifndef _DATEFORMATTEST_
 #define _DATEFORMATTEST_
-
+ 
 #include "unicode/utypes.h"
 
 #if !UCONFIG_NO_FORMATTING
@@ -17,7 +15,7 @@
 #include "unicode/smpdtfmt.h"
 #include "caltztst.h"
 
-/**
+/** 
  * Performs many different tests for DateFormat and SimpleDateFormat
  **/
 class DateFormatTest: public CalendarTimeZoneTest {
@@ -42,23 +40,23 @@ public:
      * Test the parsing of 2-digit years.
      */
     virtual void TestTwoDigitYearDSTParse(void);
-
+ 
 public: // package
     // internal utility routine (genrates escape sequences for characters)
     static UnicodeString& escape(UnicodeString& s);
-
+ 
 public:
     /**
      * Verify that returned field position indices are correct.
      */
     void TestFieldPosition(void);
-
+ 
     void TestGeneral();
 
 public: // package
     // internal utility function
     static void getFieldText(DateFormat* df, int32_t field, UDate date, UnicodeString& str);
-
+ 
 public:
     /**
      * Verify that strings which contain incomplete specifications are parsed
@@ -66,11 +64,11 @@ public:
      * returning an appropriate error.
      */
     virtual void TestPartialParse994(void);
-
+ 
 public: // package
     // internal test subroutine, used by TestPartialParse994
     virtual void tryPat994(SimpleDateFormat* format, const char* pat, const char* str, UDate expected);
-
+ 
 public:
     /**
      * Verify the behavior of patterns in which digits for different fields run together
@@ -82,11 +80,11 @@ public:
      * without intervening separators.
      */
     virtual void TestRunTogetherPattern917(void);
-
+ 
 public: // package
     // internal test subroutine, used by TestRunTogetherPattern917
     virtual void testIt917(SimpleDateFormat* fmt, UnicodeString& str, UDate expected);
-
+ 
 public:
     /**
      * Verify the handling of Czech June and July, which have the unique attribute that
@@ -101,11 +99,11 @@ public:
      * Test the day of year pattern.
      */
     virtual void TestDayOfYearPattern195(void);
-
+ 
 public: // package
     // interl test subroutine, used by TestDayOfYearPattern195
     virtual void tryPattern(SimpleDateFormat& sdf, UDate d, const char* pattern, UDate expected);
-
+ 
 public:
     /**
      * Test the handling of single quotes in patterns.
@@ -115,7 +113,7 @@ public:
      * Verify the correct behavior when handling invalid input strings.
      */
     virtual void TestBadInput135(void);
-
+ 
 public:
     /**
      * Verify the correct behavior when parsing an array of inputs against an
@@ -127,11 +125,11 @@ public:
      * Test the parsing of two-digit years.
      */
     virtual void TestTwoDigitYear(void);
-
+ 
 public: // package
     // internal test subroutine, used by TestTwoDigitYear
     virtual void parse2DigitYear(DateFormat& fmt, const char* str, UDate expected);
-
+ 
 public:
     /**
      * Test the formatting of time zones.
@@ -190,8 +188,6 @@ public: // package
 
     void TestNonGregoFmtParse(void);
 
-    void TestFormatsWithNumberSystems(void);
-
 public:
     /**
      * Test host-specific formatting.
@@ -213,11 +209,11 @@ public:
     void TestStandAloneMonths(void);
 
     void TestQuarters(void);
-
+    
     void TestZTimeZoneParsing(void);
 
     void TestRelativeClone(void);
-
+    
     void TestHostClone(void);
 
     void TestHebrewClone(void);
@@ -254,15 +250,6 @@ public:
     void TestDFSCreateForLocaleWithCalendarInLocale();
     void TestChangeCalendar();
 
-    void TestPatternFromSkeleton();
-
-    void TestAmPmMidnightNoon();
-    void TestFlexibleDayPeriod();
-    void TestDayPeriodWithLocales();
-    void TestMinuteSecondFieldsInOddPlaces();
-    void TestDayPeriodParsing();
-    void TestParseRegression13744();
-
 private:
     UBool showParse(DateFormat &format, const UnicodeString &formattedString);
 
@@ -273,7 +260,7 @@ public:
     void TestNumberAsStringParsing(void);
 
  private:
-      void TestRelative(int daysdelta,
+      void TestRelative(int daysdelta, 
                                   const Locale& loc,
                                   const char *expectChars);
 
@@ -286,10 +273,9 @@ public:
 
     void expectFormat(const char **data, int32_t data_length,
                       const Locale &locale);
-
 };
 
 #endif /* #if !UCONFIG_NO_FORMATTING */
-
+ 
 #endif // _DATEFORMATTEST_
 //eof

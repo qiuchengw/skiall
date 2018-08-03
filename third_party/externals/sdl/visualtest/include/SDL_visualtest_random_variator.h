@@ -8,8 +8,8 @@
 #include "SDL_visualtest_harness_argparser.h"
 #include "SDL_visualtest_variator_common.h"
 
-#ifndef SDL_visualtest_random_variator_h_
-#define SDL_visualtest_random_variator_h_
+#ifndef _SDL_visualtest_random_variator_h
+#define _SDL_visualtest_random_variator_h
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -56,6 +56,4 @@ void SDLVisualTest_FreeRandomVariator(SDLVisualTest_RandomVariator* variator);
 }
 #endif
 
-#endif /* SDL_visualtest_random_variator_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* _SDL_visualtest_random_variator_h */

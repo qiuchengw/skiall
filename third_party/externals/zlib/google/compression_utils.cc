@@ -13,12 +13,7 @@
 #include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
-
-#if defined(USE_SYSTEM_ZLIB)
-#include <zlib.h>
-#else
 #include "third_party/zlib/zlib.h"
-#endif
 
 namespace {
 

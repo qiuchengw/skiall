@@ -33,7 +33,7 @@
 
 #include "hb-font-private.hh"
 #include "hb-buffer-private.hh"
-#include "hb-set-digest-private.hh"
+#include "hb-set-private.hh"
 #include "hb-open-type-private.hh"
 
 
@@ -90,12 +90,12 @@ hb_ot_layout_substitute_start (hb_font_t    *font,
 struct hb_ot_layout_lookup_accelerator_t;
 
 namespace OT {
-  struct hb_ot_apply_context_t;
+  struct hb_apply_context_t;
   struct SubstLookup;
 }
 
 HB_INTERNAL void
-hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
+hb_ot_layout_substitute_lookup (OT::hb_apply_context_t *c,
 				const OT::SubstLookup &lookup,
 				const hb_ot_layout_lookup_accelerator_t &accel);
 
@@ -105,12 +105,12 @@ HB_INTERNAL void
 hb_ot_layout_position_start (hb_font_t    *font,
 			     hb_buffer_t  *buffer);
 
-/* Should be called after all the position_lookup's are done, to fini advances. */
+/* Should be called after all the position_lookup's are done, to finish advances. */
 HB_INTERNAL void
 hb_ot_layout_position_finish_advances (hb_font_t    *font,
 				       hb_buffer_t  *buffer);
 
-/* Should be called after hb_ot_layout_position_finish_advances, to fini offsets. */
+/* Should be called after hb_ot_layout_position_finish_advances, to finish offsets. */
 HB_INTERNAL void
 hb_ot_layout_position_finish_offsets (hb_font_t    *font,
 				      hb_buffer_t  *buffer);
@@ -122,22 +122,12 @@ hb_ot_layout_position_finish_offsets (hb_font_t    *font,
  */
 
 namespace OT {
-  struct BASE;
-  struct COLR;
-  struct CPAL;
   struct GDEF;
   struct GSUB;
   struct GPOS;
   struct MATH;
   struct fvar;
   struct avar;
-}
-
-namespace AAT {
-  struct ankr;
-  struct kerx;
-  struct morx;
-  struct trak;
 }
 
 struct hb_ot_layout_lookup_accelerator_t
@@ -172,11 +162,9 @@ struct hb_ot_layout_t
   const struct OT::GPOS *gpos;
 
   /* TODO Move the following out of this struct. */
-  OT::hb_table_lazy_loader_t<struct OT::BASE> base;
-  OT::hb_table_lazy_loader_t<struct OT::MATH> math;
-  OT::hb_table_lazy_loader_t<struct OT::fvar> fvar;
-  OT::hb_table_lazy_loader_t<struct OT::avar> avar;
-  OT::hb_table_lazy_loader_t<struct AAT::morx> morx;
+  OT::hb_lazy_table_loader_t<struct OT::MATH> math;
+  OT::hb_lazy_table_loader_t<struct OT::fvar> fvar;
+  OT::hb_lazy_table_loader_t<struct OT::avar> avar;
 
   unsigned int gsub_lookup_count;
   unsigned int gpos_lookup_count;
@@ -209,7 +197,8 @@ _hb_ot_layout_destroy (hb_ot_layout_t *layout);
 #define syllable()		var1.u8[3] /* GSUB/GPOS shaping boundaries */
 
 
-/* Loop over syllables. Based on foreach_cluster(). */
+/* loop over syllables */
+
 #define foreach_syllable(buffer, start, end) \
   for (unsigned int \
        _count = buffer->len, \
@@ -238,9 +227,7 @@ _next_syllable (hb_buffer_t *buffer, unsigned int start)
  * - General_Category: 5 bits.
  * - A bit each for:
  *   * Is it Default_Ignorable(); we have a modified Default_Ignorable().
- *   * Whether it's one of the three Mongolian Free Variation Selectors,
- *     CGJ, or other characters that are hidden but should not be ignored
- *     like most other Default_Ignorable()s do during matching.
+ *   * Whether it's one of the three Mongolian Free Variation Selectors.
  *   * One free bit right now.
  *
  * The high-byte has different meanings, switched by the Gen-Cat:
@@ -253,8 +240,7 @@ _next_syllable (hb_buffer_t *buffer, unsigned int start)
 enum hb_unicode_props_flags_t {
   UPROPS_MASK_GEN_CAT	= 0x001Fu,
   UPROPS_MASK_IGNORABLE	= 0x0020u,
-  UPROPS_MASK_HIDDEN	= 0x0040u, /* MONGOLIAN FREE VARIATION SELECTOR 1..3,
-                                    * or TAG characters */
+  UPROPS_MASK_FVS	= 0x0040u, /* MONGOLIAN FREE VARIATION SELECTOR 1..3 */
 
   /* If GEN_CAT=FORMAT, top byte masks: */
   UPROPS_MASK_Cf_ZWJ	= 0x0100u,
@@ -278,25 +264,16 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
       buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
       props |=  UPROPS_MASK_IGNORABLE;
       if (u == 0x200Cu) props |= UPROPS_MASK_Cf_ZWNJ;
-      else if (u == 0x200Du) props |= UPROPS_MASK_Cf_ZWJ;
+      if (u == 0x200Du) props |= UPROPS_MASK_Cf_ZWJ;
       /* Mongolian Free Variation Selectors need to be remembered
        * because although we need to hide them like default-ignorables,
        * they need to non-ignorable during shaping.  This is similar to
        * what we do for joiners in Indic-like shapers, but since the
        * FVSes are GC=Mn, we have use a separate bit to remember them.
        * Fixes:
-       * https://github.com/harfbuzz/harfbuzz/issues/234 */
-      else if (unlikely (hb_in_range (u, 0x180Bu, 0x180Du))) props |= UPROPS_MASK_HIDDEN;
-      /* TAG characters need similar treatment. Fixes:
-       * https://github.com/harfbuzz/harfbuzz/issues/463 */
-      else if (unlikely (hb_in_range (u, 0xE0020u, 0xE007Fu))) props |= UPROPS_MASK_HIDDEN;
-      /* COMBINING GRAPHEME JOINER should not be skipped; at least some times.
-       * https://github.com/harfbuzz/harfbuzz/issues/554 */
-      else if (unlikely (u == 0x034Fu))
-      {
-	buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CGJ;
-	props |= UPROPS_MASK_HIDDEN;
-      }
+       * https://github.com/behdad/harfbuzz/issues/234
+       */
+      if (unlikely (hb_in_range (u, 0x180Bu, 0x180Du))) props |= UPROPS_MASK_FVS;
     }
     else if (unlikely (HB_UNICODE_GENERAL_CATEGORY_IS_NON_ENCLOSING_MARK_OR_MODIFIER_SYMBOL (gen_cat)))
     {
@@ -304,7 +281,7 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
        * processing on. */
 
       /* Only Mn and Mc can have non-zero ccc:
-       * https://unicode.org/policies/stability_policy.html#Property_Value
+       * http://www.unicode.org/policies/stability_policy.html#Property_Value
        * """
        * Canonical_Combining_Class, General_Category
        * All characters other than those with General_Category property values
@@ -321,7 +298,7 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
       /* Recategorize emoji skin-tone modifiers as Unicode mark, so they
        * behave correctly in non-native directionality.  They originally
        * are MODIFIER_SYMBOL.  Fixes:
-       * https://github.com/harfbuzz/harfbuzz/issues/169
+       * https://github.com/behdad/harfbuzz/issues/169
        */
       if (unlikely (hb_in_range (u, 0x1F3FBu, 0x1F3FFu)))
       {
@@ -366,30 +343,6 @@ _hb_glyph_info_get_modified_combining_class (const hb_glyph_info_t *info)
   return _hb_glyph_info_is_unicode_mark (info) ? info->unicode_props()>>8 : 0;
 }
 
-
-/* Loop over grapheme. Based on foreach_cluster(). */
-#define foreach_grapheme(buffer, start, end) \
-  for (unsigned int \
-       _count = buffer->len, \
-       start = 0, end = _count ? _next_grapheme (buffer, 0) : 0; \
-       start < _count; \
-       start = end, end = _next_grapheme (buffer, start))
-
-static inline unsigned int
-_next_grapheme (hb_buffer_t *buffer, unsigned int start)
-{
-  hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
-
-  while (++start < count && _hb_glyph_info_is_unicode_mark (&info[start]))
-    ;
-
-  return start;
-}
-
-
-#define info_cc(info) (_hb_glyph_info_get_modified_combining_class (&(info)))
-
 static inline bool
 _hb_glyph_info_is_unicode_space (const hb_glyph_info_t *info)
 {
@@ -420,16 +373,11 @@ _hb_glyph_info_is_default_ignorable (const hb_glyph_info_t *info)
 	 !_hb_glyph_info_ligated (info);
 }
 static inline hb_bool_t
-_hb_glyph_info_is_default_ignorable_and_not_hidden (const hb_glyph_info_t *info)
+_hb_glyph_info_is_default_ignorable_and_not_fvs (const hb_glyph_info_t *info)
 {
-  return ((info->unicode_props() & (UPROPS_MASK_IGNORABLE|UPROPS_MASK_HIDDEN))
+  return ((info->unicode_props() & (UPROPS_MASK_IGNORABLE|UPROPS_MASK_FVS))
 	  == UPROPS_MASK_IGNORABLE) &&
 	 !_hb_glyph_info_ligated (info);
-}
-static inline void
-_hb_glyph_info_unhide (hb_glyph_info_t *info)
-{
-  info->unicode_props() &= ~ UPROPS_MASK_HIDDEN;
 }
 
 static inline bool
@@ -674,5 +622,6 @@ _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
 #undef unicode_props1
 #undef lig_props
 #undef glyph_props
+
 
 #endif /* HB_OT_LAYOUT_PRIVATE_HH */

@@ -24,11 +24,10 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+#include "options.hh"
+
 #ifndef HB_SHAPE_CONSUMER_HH
 #define HB_SHAPE_CONSUMER_HH
-
-#include "hb-private.hh"
-#include "options.hh"
 
 
 template <typename output_t>
@@ -38,19 +37,16 @@ struct shape_consumer_t
 		  : failed (false),
 		    shaper (parser),
 		    output (parser),
-		    font (nullptr),
-		    buffer (nullptr) {}
+		    font (NULL) {}
 
-  void init (hb_buffer_t  *buffer_,
-	     const font_options_t *font_opts)
+  void init (const font_options_t *font_opts)
   {
     font = hb_font_reference (font_opts->get_font ());
+    output.init (font_opts);
     failed = false;
-    buffer = hb_buffer_reference (buffer_);
-
-    output.init (buffer, font_opts);
   }
-  void consume_line (const char   *text,
+  void consume_line (hb_buffer_t  *buffer,
+		     const char   *text,
 		     unsigned int  text_len,
 		     const char   *text_before,
 		     const char   *text_after)
@@ -59,19 +55,14 @@ struct shape_consumer_t
 
     for (unsigned int n = shaper.num_iterations; n; n--)
     {
-      const char *error = nullptr;
-
       shaper.populate_buffer (buffer, text, text_len, text_before, text_after);
       if (n == 1)
 	output.consume_text (buffer, text, text_len, shaper.utf8_clusters);
-      if (!shaper.shape (font, buffer, &error))
-      {
+      if (!shaper.shape (font, buffer)) {
 	failed = true;
-	output.error (error);
-	if (hb_buffer_get_content_type (buffer) == HB_BUFFER_CONTENT_TYPE_GLYPHS)
-	  break;
-	else
-	  return;
+	hb_buffer_set_length (buffer, 0);
+	output.shape_failed (buffer, text, text_len, shaper.utf8_clusters);
+	return;
       }
     }
 
@@ -79,11 +70,9 @@ struct shape_consumer_t
   }
   void finish (const font_options_t *font_opts)
   {
-    output.finish (buffer, font_opts);
+    output.finish (font_opts);
     hb_font_destroy (font);
-    font = nullptr;
-    hb_buffer_destroy (buffer);
-    buffer = nullptr;
+    font = NULL;
   }
 
   public:
@@ -94,7 +83,6 @@ struct shape_consumer_t
   output_t output;
 
   hb_font_t *font;
-  hb_buffer_t *buffer;
 };
 
 

@@ -741,7 +741,12 @@ extern void VP8DspInitMIPS32(void);
 extern void VP8DspInitMIPSdspR2(void);
 extern void VP8DspInitMSA(void);
 
-WEBP_DSP_INIT_FUNC(VP8DspInit) {
+static volatile VP8CPUInfo dec_last_cpuinfo_used =
+    (VP8CPUInfo)&dec_last_cpuinfo_used;
+
+WEBP_TSAN_IGNORE_FUNCTION void VP8DspInit(void) {
+  if (dec_last_cpuinfo_used == VP8GetCPUInfo) return;
+
   VP8InitClipTables();
 
 #if !WEBP_NEON_OMIT_C_CODE
@@ -884,4 +889,6 @@ WEBP_DSP_INIT_FUNC(VP8DspInit) {
   assert(VP8PredChroma8[5] != NULL);
   assert(VP8PredChroma8[6] != NULL);
   assert(VP8DitherCombine8x8 != NULL);
+
+  dec_last_cpuinfo_used = VP8GetCPUInfo;
 }

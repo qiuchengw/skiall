@@ -137,8 +137,7 @@ class TypeWithoutFormatter {
  public:
   // This default version is called when kTypeKind is kOtherType.
   static void PrintValue(const T& value, ::std::ostream* os) {
-    PrintBytesInObjectTo(static_cast<const unsigned char*>(
-                             reinterpret_cast<const void *>(&value)),
+    PrintBytesInObjectTo(reinterpret_cast<const unsigned char*>(&value),
                          sizeof(value), os);
   }
 };
@@ -461,17 +460,15 @@ void PrintTo(const T& value, ::std::ostream* os) {
   // DefaultPrintTo() is overloaded.  The type of its first argument
   // determines which version will be picked.
   //
-  // Note that we check for recursive and other container types here, prior 
-  // to we check for protocol message types in our operator<<.  The rationale is:
+  // Note that we check for container types here, prior to we check
+  // for protocol message types in our operator<<.  The rationale is:
   //
   // For protocol messages, we want to give people a chance to
   // override Google Mock's format by defining a PrintTo() or
   // operator<<.  For STL containers, other formats can be
   // incompatible with Google Mock's format for the container
   // elements; therefore we check for container types here to ensure
-  // that our format is used. To prevent an infinite runtime recursion
-  // during the output of recursive container types, we check first for
-  // those.
+  // that our format is used.
   //
   // Note that MSVC and clang-cl do allow an implicit conversion from
   // pointer-to-function to pointer-to-object, but clang-cl warns on it.
@@ -480,17 +477,16 @@ void PrintTo(const T& value, ::std::ostream* os) {
   // function pointers so that the `*os << p` in the object pointer overload
   // doesn't cause that warning either.
   DefaultPrintTo(
-      WrapPrinterType<
-          (sizeof(IsContainerTest<T>(0)) == sizeof(IsContainer)) && !IsRecursiveContainer<T>::value
-            ? kPrintContainer : !is_pointer<T>::value
-              ? kPrintOther
+      WrapPrinterType<sizeof(IsContainerTest<T>(0)) == sizeof(IsContainer)
+          ? kPrintContainer : !is_pointer<T>::value
+                ? kPrintOther
 #if GTEST_LANG_CXX11
                 : std::is_function<typename std::remove_pointer<T>::type>::value
 #else
                 : !internal::ImplicitlyConvertible<T, const void*>::value
 #endif
-                    ? kPrintFunctionPointer
-                    : kPrintPointer>(),
+                      ? kPrintFunctionPointer
+                      : kPrintPointer>(),
       value, os);
 }
 

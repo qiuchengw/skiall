@@ -16,9 +16,9 @@
 
 #include "pass_utils.h"
 
-namespace spvtools {
-namespace opt {
 namespace {
+
+using namespace spvtools;
 
 TEST(JoinAllInsts, Cases) {
   EXPECT_EQ("", JoinAllInsts({}));
@@ -43,6 +43,7 @@ TEST(JoinNonDebugInsts, Cases) {
                  "the only remaining string"}));
 }
 
+namespace {
 struct SubstringReplacementTestCase {
   const char* orig_str;
   const char* find_substr;
@@ -50,7 +51,7 @@ struct SubstringReplacementTestCase {
   const char* expected_str;
   bool replace_should_succeed;
 };
-
+}
 using FindAndReplaceTest =
     ::testing::TestWithParam<SubstringReplacementTestCase>;
 
@@ -102,7 +103,4 @@ INSTANTIATE_TEST_CASE_P(
         {"abc", "a", "aab", "aabbc", true},
         {"abc", "abcd", "efg", "abc", false},
     })));
-
-}  // namespace
-}  // namespace opt
-}  // namespace spvtools
+}  // anonymous namespace

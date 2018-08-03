@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+   Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
    This software is provided 'as-is', without any express or implied
    warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,6 @@
 
 SDL_Window *window;
 SDL_Renderer *renderer;
-SDL_Surface *surface;
 int done;
 
 void
@@ -60,20 +59,7 @@ loop()
 {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-       
-       /* Re-create when window has been resized */
-       if ((e.type == SDL_WINDOWEVENT) && (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)) {
-
-          SDL_DestroyRenderer(renderer);
-
-          surface = SDL_GetWindowSurface(window);
-          renderer = SDL_CreateSoftwareRenderer(surface);
-          /* Clear the rendering surface with the specified color */
-          SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-          SDL_RenderClear(renderer);
-       }
-
-       if (e.type == SDL_QUIT) {
+        if (e.type == SDL_QUIT) {
             done = 1;
 #ifdef __EMSCRIPTEN__
             emscripten_cancel_main_loop();
@@ -100,6 +86,8 @@ loop()
 int
 main(int argc, char *argv[])
 {
+    SDL_Surface *surface;
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
@@ -112,7 +100,7 @@ main(int argc, char *argv[])
 
 
     /* Create window and renderer for given surface */
-    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
     if(!window)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n",SDL_GetError());

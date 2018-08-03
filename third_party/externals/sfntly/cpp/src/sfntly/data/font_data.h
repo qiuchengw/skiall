@@ -99,14 +99,14 @@ class FontData : virtual public RefCount {
   // the data.
   // @param offset the offset to get the bound compensated offset for
   // @return the bound compensated offset
-  int32_t BoundOffset(int32_t offset) const;
+  int32_t BoundOffset(int32_t offset);
 
   // Gets the length in the underlying data taking into account any bounds on
   // the data.
   // @param offset the offset that the length is being used at
   // @param length the length to get the bound compensated length for
   // @return the bound compensated length
-  int32_t BoundLength(int32_t offset, int32_t length) const;
+  int32_t BoundLength(int32_t offset, int32_t length);
 
   static const int32_t GROWABLE_SIZE = INT_MAX;
 

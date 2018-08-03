@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  ubidi_props.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -31,40 +29,46 @@ U_CDECL_BEGIN
 
 /* library API -------------------------------------------------------------- */
 
+struct UBiDiProps;
+typedef struct UBiDiProps UBiDiProps;
+
+U_CFUNC const UBiDiProps *
+ubidi_getSingleton(void);
+
 U_CFUNC void
-ubidi_addPropertyStarts(const USetAdder *sa, UErrorCode *pErrorCode);
+ubidi_addPropertyStarts(const UBiDiProps *bdp, const USetAdder *sa, UErrorCode *pErrorCode);
 
 /* property access functions */
 
 U_CFUNC int32_t
-ubidi_getMaxValue(UProperty which);
+ubidi_getMaxValue(const UBiDiProps *bdp, UProperty which);
 
 U_CAPI UCharDirection
-ubidi_getClass(UChar32 c);
+ubidi_getClass(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UBool
-ubidi_isMirrored(UChar32 c);
+ubidi_isMirrored(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UChar32
-ubidi_getMirror(UChar32 c);
+ubidi_getMirror(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UBool
-ubidi_isBidiControl(UChar32 c);
+ubidi_isBidiControl(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UBool
-ubidi_isJoinControl(UChar32 c);
+ubidi_isJoinControl(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UJoiningType
-ubidi_getJoiningType(UChar32 c);
+ubidi_getJoiningType(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UJoiningGroup
-ubidi_getJoiningGroup(UChar32 c);
+ubidi_getJoiningGroup(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UBidiPairedBracketType
-ubidi_getPairedBracketType(UChar32 c);
+ubidi_getPairedBracketType(const UBiDiProps *bdp, UChar32 c);
 
 U_CFUNC UChar32
-ubidi_getPairedBracket(UChar32 c);
+ubidi_getPairedBracket(const UBiDiProps *bdp, UChar32 c);
 
 /* file definitions --------------------------------------------------------- */
 

@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ********************************************************************************
 *   Copyright (C) 1997-2014, International Business Machines
@@ -33,11 +31,17 @@
 U_NAMESPACE_BEGIN
 
 class CharString;
-namespace number {
-namespace impl {
-class DecimalQuantity;
-}
-}
+class DigitList;
+
+/**
+ * \def UNUM_INTERNAL_STACKARRAY_SIZE
+ * @internal
+ */
+#if U_PLATFORM == U_PF_OS400
+#define UNUM_INTERNAL_STACKARRAY_SIZE 144
+#else
+#define UNUM_INTERNAL_STACKARRAY_SIZE 128
+#endif
 
 /**
  * Formattable objects can be passed to the Format class or
@@ -130,7 +134,7 @@ public:
      *                decimal number.
      * @stable ICU 4.4
      */
-    Formattable(StringPiece number, UErrorCode &status);
+    Formattable(const StringPiece &number, UErrorCode &status);
 
     /**
      * Creates a Formattable object with a UnicodeString object to copy from.
@@ -577,7 +581,7 @@ public:
      *                      incoming string is not a valid decimal number.
      * @stable ICU 4.4
      */
-    void             setDecimalNumber(StringPiece numberString,
+    void             setDecimalNumber(const StringPiece &numberString,
                                       UErrorCode &status);
 
     /**
@@ -643,25 +647,24 @@ public:
      * Internal function, do not use.
      * TODO:  figure out how to make this be non-public.
      *        NumberFormat::format(Formattable, ...
-     *        needs to get at the DecimalQuantity, if it exists, for
+     *        needs to get at the DigitList, if it exists, for
      *        big decimal formatting.
      *  @internal
      */
-    number::impl::DecimalQuantity *getDecimalQuantity() const { return fDecimalQuantity;}
+    DigitList *getDigitList() const { return fDecimalNum;}
 
     /**
-     * Export the value of this Formattable to a DecimalQuantity.
-     * @internal
-     */
-    void populateDecimalQuantity(number::impl::DecimalQuantity& output, UErrorCode& status) const;
-
-    /**
-     *  Adopt, and set value from, a DecimalQuantity
-     *     Internal Function, do not use.
-     *  @param dq the DecimalQuantity to be adopted
      *  @internal
      */
-    void adoptDecimalQuantity(number::impl::DecimalQuantity *dq);
+    DigitList *getInternalDigitList();
+
+    /**
+     *  Adopt, and set value from, a DigitList
+     *     Internal Function, do not use.
+     *  @param dl the Digit List to be adopted
+     *  @internal
+     */
+    void adoptDigitList(DigitList *dl);
 
     /**
      * Internal function to return the CharString pointer.
@@ -701,7 +704,9 @@ private:
 
     CharString           *fDecimalStr;
 
-    number::impl::DecimalQuantity *fDecimalQuantity;
+    DigitList            *fDecimalNum;
+
+    char                fStackData[UNUM_INTERNAL_STACKARRAY_SIZE]; // must be big enough for DigitList
 
     Type                fType;
     UnicodeString       fBogus; // Bogus string when it's needed.

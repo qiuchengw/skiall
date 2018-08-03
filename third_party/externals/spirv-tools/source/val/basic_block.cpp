@@ -20,8 +20,7 @@
 
 using std::vector;
 
-namespace spvtools {
-namespace val {
+namespace libspirv {
 
 BasicBlock::BasicBlock(uint32_t label_id)
     : id_(label_id),
@@ -30,9 +29,7 @@ BasicBlock::BasicBlock(uint32_t label_id)
       predecessors_(),
       successors_(),
       type_(0),
-      reachable_(false),
-      label_(nullptr),
-      terminator_(nullptr) {}
+      reachable_(false) {}
 
 void BasicBlock::SetImmediateDominator(BasicBlock* dom_block) {
   immediate_dominator_ = dom_block;
@@ -121,7 +118,7 @@ const BasicBlock::DominatorIterator BasicBlock::pdom_begin() const {
 
 BasicBlock::DominatorIterator BasicBlock::pdom_begin() {
   return DominatorIterator(
-      this, [](const BasicBlock* b) { return b->immediate_post_dominator(); });
+    this, [](const BasicBlock* b) { return b->immediate_post_dominator(); });
 }
 
 const BasicBlock::DominatorIterator BasicBlock::pdom_end() const {
@@ -145,6 +142,4 @@ bool operator!=(const BasicBlock::DominatorIterator& lhs,
 const BasicBlock*& BasicBlock::DominatorIterator::operator*() {
   return current_;
 }
-
-}  // namespace val
-}  // namespace spvtools
+}  // namespace libspirv

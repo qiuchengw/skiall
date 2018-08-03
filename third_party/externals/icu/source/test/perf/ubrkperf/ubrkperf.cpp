@@ -1,14 +1,9 @@
-/***********************************************************************
- * © 2016 and later: Unicode, Inc. and others.
- * License & terms of use: http://www.unicode.org/copyright.html#License
- *
- ***********************************************************************
- ***********************************************************************
+/********************************************************************
  * COPYRIGHT:
- * Copyright (C) 2001-2016 International Business Machines Corporation
+ * Copyright (C) 2001-2011 International Business Machines Corporation
  * and others. All Rights Reserved.
  *
- ***********************************************************************/
+ ********************************************************************/
 /********************************************************************************
 *
 * File ubrkperf.cpp
@@ -20,7 +15,6 @@
 *********************************************************************************
 */
 
-#include "cmemory.h"
 #include "ubrkperf.h"
 #include "uoptions.h"
 #include <stdio.h>
@@ -198,7 +192,7 @@ m_file_(NULL),
 m_fileLen_(0)
 {
 
-    _remainingArgc = u_parseArgs(_remainingArgc, (char**)argv, UPRV_LENGTHOF(options), options);
+    _remainingArgc = u_parseArgs(_remainingArgc, (char**)argv, (int32_t)(sizeof(options)/sizeof(options[0])), options);
 
 
     if(options[0].doesOccur) {

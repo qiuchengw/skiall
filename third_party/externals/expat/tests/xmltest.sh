@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /bin/sh
 
 #   EXPAT TEST SCRIPT FOR W3C XML TEST SUITE
 
@@ -20,19 +20,15 @@
 # produced by xmlwf conforms to an older definition of canonical XML
 # and does not generate notation declarations.
 
-shopt -s nullglob
-
 MYDIR="`dirname \"$0\"`"
 cd "$MYDIR"
 MYDIR="`pwd`"
-XMLWF="${1:-`dirname \"$MYDIR\"`/xmlwf/xmlwf}"
+XMLWF="`dirname \"$MYDIR\"`/xmlwf/xmlwf"
 # XMLWF=/usr/local/bin/xmlwf
-TS="$MYDIR"
+TS="$MYDIR/XML-Test-Suite"
 # OUTPUT must terminate with the directory separator.
 OUTPUT="$TS/out/"
 # OUTPUT=/home/tmp/xml-testsuite-out/
-# Unicode-aware diff utility
-DIFF="$TS/udiffer.py"
 
 
 # RunXmlwfNotWF file reldir
@@ -55,11 +51,11 @@ RunXmlwfNotWF() {
 RunXmlwfWF() {
   file="$1"
   reldir="$2"
-  $XMLWF -p -N -d "$OUTPUT$reldir" "$file" > outfile || return $?
+  $XMLWF -p -d "$OUTPUT$reldir" "$file" > outfile || return $?
   read outdata < outfile 
   if test "$outdata" = "" ; then 
       if [ -f "out/$file" ] ; then 
-          $DIFF "$OUTPUT$reldir$file" "out/$file" > outfile 
+          diff -u "$OUTPUT$reldir$file" "out/$file" > outfile 
           if [ -s outfile ] ; then 
               cp outfile "$OUTPUT$reldir$file.diff"
               echo "Output differs: $reldir$file"
@@ -100,12 +96,11 @@ for xmldir in ibm/valid/P* \
               sun/invalid ; do
   cd "$TS/xmlconf/$xmldir"
   mkdir -p "$OUTPUT$xmldir"
-  for xmlfile in $(ls -1 *.xml | sort -d) ; do
-      [[ -f "$xmlfile" ]] || continue
+  for xmlfile in *.xml ; do
       RunXmlwfWF "$xmlfile" "$xmldir/"
       UpdateStatus $?
   done
-  rm -f outfile
+  rm outfile
 done
 
 cd "$TS/xmlconf/oasis"

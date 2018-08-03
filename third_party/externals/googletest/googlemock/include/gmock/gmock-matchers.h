@@ -646,7 +646,7 @@ class SafeMatcherCastImpl {
     // type U.
     GTEST_COMPILE_ASSERT_(
         internal::is_reference<T>::value || !internal::is_reference<U>::value,
-        cannot_convert_non_reference_arg_to_reference);
+        cannot_convert_non_referentce_arg_to_reference);
     // In case both T and U are arithmetic types, enforce that the
     // conversion is not lossy.
     typedef GTEST_REMOVE_REFERENCE_AND_CONST_(T) RawT;
@@ -2232,10 +2232,7 @@ class FieldMatcher {
 
 // Implements the Property() matcher for matching a property
 // (i.e. return value of a getter method) of an object.
-//
-// Property is a const-qualified member function of Class returning
-// PropertyType.
-template <typename Class, typename PropertyType, typename Property>
+template <typename Class, typename PropertyType>
 class PropertyMatcher {
  public:
   // The property may have a reference type, so 'const PropertyType&'
@@ -2244,7 +2241,8 @@ class PropertyMatcher {
   // PropertyType being a reference or not.
   typedef GTEST_REFERENCE_TO_CONST_(PropertyType) RefToConstProperty;
 
-  PropertyMatcher(Property property, const Matcher<RefToConstProperty>& matcher)
+  PropertyMatcher(PropertyType (Class::*property)() const,
+                  const Matcher<RefToConstProperty>& matcher)
       : property_(property), matcher_(matcher) {}
 
   void DescribeTo(::std::ostream* os) const {
@@ -2297,7 +2295,7 @@ class PropertyMatcher {
     return MatchAndExplainImpl(false_type(), *p, listener);
   }
 
-  Property property_;
+  PropertyType (Class::*property_)() const;
   const Matcher<RefToConstProperty> matcher_;
 
   GTEST_DISALLOW_ASSIGN_(PropertyMatcher);
@@ -3910,13 +3908,11 @@ inline PolymorphicMatcher<
 //   Property(&Foo::str, StartsWith("hi"))
 // matches a Foo object x iff x.str() starts with "hi".
 template <typename Class, typename PropertyType, typename PropertyMatcher>
-inline PolymorphicMatcher<internal::PropertyMatcher<
-    Class, PropertyType, PropertyType (Class::*)() const> >
-Property(PropertyType (Class::*property)() const,
-         const PropertyMatcher& matcher) {
+inline PolymorphicMatcher<
+  internal::PropertyMatcher<Class, PropertyType> > Property(
+    PropertyType (Class::*property)() const, const PropertyMatcher& matcher) {
   return MakePolymorphicMatcher(
-      internal::PropertyMatcher<Class, PropertyType,
-                                PropertyType (Class::*)() const>(
+      internal::PropertyMatcher<Class, PropertyType>(
           property,
           MatcherCast<GTEST_REFERENCE_TO_CONST_(PropertyType)>(matcher)));
   // The call to MatcherCast() is required for supporting inner
@@ -3924,21 +3920,6 @@ Property(PropertyType (Class::*property)() const,
   //   Property(&Foo::bar, m)
   // to compile where bar() returns an int32 and m is a matcher for int64.
 }
-
-#if GTEST_LANG_CXX11
-// The same as above but for reference-qualified member functions.
-template <typename Class, typename PropertyType, typename PropertyMatcher>
-inline PolymorphicMatcher<internal::PropertyMatcher<
-    Class, PropertyType, PropertyType (Class::*)() const &> >
-Property(PropertyType (Class::*property)() const &,
-         const PropertyMatcher& matcher) {
-  return MakePolymorphicMatcher(
-      internal::PropertyMatcher<Class, PropertyType,
-                                PropertyType (Class::*)() const &>(
-          property,
-          MatcherCast<GTEST_REFERENCE_TO_CONST_(PropertyType)>(matcher)));
-}
-#endif
 
 // Creates a matcher that matches an object iff the result of applying
 // a callable to x matches 'matcher'.

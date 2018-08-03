@@ -23,20 +23,12 @@
 
 #ifdef WEBP_HAVE_GIF
 
-#if defined(HAVE_UNISTD_H) && HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 #include <gif_lib.h>
 #include "webp/encode.h"
 #include "webp/mux.h"
 #include "../examples/example_util.h"
 #include "../imageio/imageio_util.h"
 #include "./gifdec.h"
-
-#if !defined(STDIN_FILENO)
-#define STDIN_FILENO 0
-#endif
 
 //------------------------------------------------------------------------------
 
@@ -271,11 +263,9 @@ int main(int argc, const char *argv[]) {
 
   // Start the decoder object
 #if LOCAL_GIF_PREREQ(5,0)
-  gif = !strcmp(in_file, "-") ? DGifOpenFileHandle(STDIN_FILENO, &gif_error)
-                              : DGifOpenFileName(in_file, &gif_error);
+  gif = DGifOpenFileName(in_file, &gif_error);
 #else
-  gif = !strcmp(in_file, "-") ? DGifOpenFileHandle(STDIN_FILENO)
-                              : DGifOpenFileName(in_file);
+  gif = DGifOpenFileName(in_file);
 #endif
   if (gif == NULL) goto End;
 
@@ -360,14 +350,6 @@ int main(int argc, const char *argv[]) {
         // Update canvases.
         GIFDisposeFrame(orig_dispose, &gif_rect, &prev_canvas, &curr_canvas);
         GIFCopyPixels(&curr_canvas, &prev_canvas);
-
-        // Force frames with a small or no duration to 100ms to be consistent
-        // with web browsers and other transcoding tools. This also avoids
-        // incorrect durations between frames when padding frames are
-        // discarded.
-        if (frame_duration <= 10) {
-          frame_duration = 100;
-        }
 
         // Update timestamp (for next frame).
         frame_timestamp += frame_duration;
@@ -478,7 +460,7 @@ int main(int argc, const char *argv[]) {
         stored_loop_count = 1;
         loop_count = 1;
       }
-    } else if (loop_count > 0 && loop_count < 65535) {
+    } else if (loop_count > 0) {
       // adapt GIF's semantic to WebP's (except in the infinite-loop case)
       loop_count += 1;
     }
@@ -550,13 +532,8 @@ int main(int argc, const char *argv[]) {
       goto End;
     }
     if (!quiet) {
-      if (!strcmp(out_file, "-")) {
-        fprintf(stderr, "Saved %d bytes to STDIO\n",
-                (int)webp_data.size);
-      } else {
-        fprintf(stderr, "Saved output file (%d bytes): %s\n",
-                (int)webp_data.size, out_file);
-      }
+      fprintf(stderr, "Saved output file (%d bytes): %s\n",
+              (int)webp_data.size, out_file);
     }
   } else {
     if (!quiet) {

@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 ******************************************************************************
 *   file name:  uobject.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -27,6 +25,7 @@
  */
 
 /**
+ * @{
  * \def U_NO_THROW
  *         Define this to define the throw() specification so
  *                 certain functions do not throw any exceptions
@@ -42,6 +41,8 @@
 #ifndef U_NO_THROW
 #define U_NO_THROW throw()
 #endif
+
+/** @} */
 
 /*===========================================================================*/
 /* UClassID-based RTTI */

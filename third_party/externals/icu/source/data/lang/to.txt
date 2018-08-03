@@ -1,9 +1,14 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/to.xml
+// *
+// ***************************************************************************
 to{
     Keys{
         calendar{"tohi māhina"}
-        cf{"anga paʻanga"}
         collation{"tohi hokohoko"}
         currency{"paʻanga"}
         hc{"takai houa"}
@@ -78,7 +83,7 @@ to{
         bkm{"lea fakakome"}
         bla{"lea fakasikesikā"}
         bm{"lea fakapamipala"}
-        bn{"lea fakapāngilā"}
+        bn{"lea fakapengikali"}
         bo{"lea fakatipeti"}
         bpy{"lea fakapisinupilia"}
         bqi{"lea fakapakitiāli"}
@@ -117,7 +122,6 @@ to{
         cps{"lea fakakapiseno"}
         cr{"lea fakakelī"}
         crh{"lea fakatoake-kilimea"}
-        crs{"lea fakaseselua-falanisē"}
         cs{"lea fakaseki"}
         csb{"lea fakakasiupia"}
         cu{"lea fakasilavia-fakasiasi"}
@@ -143,7 +147,7 @@ to{
         dv{"lea fakativehi"}
         dyo{"lea fakaiola-fonī"}
         dyu{"lea fakatiula"}
-        dz{"lea fakatisōngika"}
+        dz{"lea fakaputeni"}
         dzg{"lea fakatasaka"}
         ebu{"lea fakaʻemipū"}
         ee{"lea fakaʻeue"}
@@ -359,7 +363,7 @@ to{
         mg{"lea fakamalakasi"}
         mga{"lea fakaʻaelani-lotoloto"}
         mgh{"lea fakamakūa-meʻeto"}
-        mgo{"lea fakametā"}
+        mgo{"lea fakameta"}
         mh{"lea fakamāsolo"}
         mi{"lea fakamauli"}
         mic{"lea fakamikemaki"}
@@ -422,7 +426,7 @@ to{
         oc{"lea fakaʻokitane"}
         oj{"lea fakaʻosipiuā"}
         om{"lea fakaʻolomo"}
-        or{"lea faka-ʻotia"}
+        or{"lea fakaʻinitia-ʻolāea"}
         os{"lea fakaʻosetiki"}
         osa{"lea fakaʻosēse"}
         ota{"lea fakatoake-ʻotomani"}
@@ -433,7 +437,6 @@ to{
         pap{"lea fakapapiamēnito"}
         pau{"lea fakapalau"}
         pcd{"lea fakapikāti"}
-        pcm{"lea fakanaisilia"}
         pdc{"lea fakasiamane-penisilivania"}
         pdt{"lea fakasiamane-lafalafa"}
         peo{"lea fakapēsia-motuʻa"}
@@ -518,7 +521,7 @@ to{
         sog{"lea fakasokitiana"}
         sq{"lea fakaʻalapēnia"}
         sr{"lea fakasēpia"}
-        srn{"lea fakasulanane-tongikō"}
+        srn{"lea fakasuranane-tongikō"}
         srr{"lea fakasēlēle"}
         ss{"lea fakasuati"}
         ssy{"lea fakasaho"}
@@ -530,8 +533,8 @@ to{
         sux{"lea fakasumelia"}
         sv{"lea fakasuēteni"}
         sw{"lea fakasuahili"}
-        sw_CD{"lea fakasuahili-kongikō"}
         swb{"lea fakakomolo"}
+        swc{"lea fakasuahili-kongikō"}
         syc{"lea fakasuliāiā-muʻa"}
         syr{"lea fakasuliāiā"}
         szl{"lea fakasilesia"}
@@ -555,7 +558,7 @@ to{
         tli{"lea fakatilingikīte"}
         tly{"lea fakatalisi"}
         tmh{"lea fakatamasieki"}
-        tn{"lea fakatisuana"}
+        tn{"lea suana"}
         to{"lea fakatonga"}
         tog{"lea fakaniasa-tonga"}
         tpi{"lea fakatoki-pisini"}
@@ -630,7 +633,7 @@ to{
     Languages%short{
         az{"lea fakaʻasapaisani"}
         en_GB{"lea fakapilitānia"}
-        en_US{"lea fakapālangi-ʻAmelika"}
+        en_US{"lea fakapālangi (ʻAmelika)"}
     }
     Scripts{
         Afak{"tohinima fakaʻafaka"}
@@ -643,7 +646,7 @@ to{
         Bamu{"tohinima fakapamumi"}
         Bass{"tohinima fakapasa-vā"}
         Batk{"tohinima fakapātaki"}
-        Beng{"tohinima fakapāngilā"}
+        Beng{"tohinima fakapengikali"}
         Blis{"tohinima fakaʻilonga-pilisi"}
         Bopo{"tohinima fakapopomofo"}
         Brah{"tohinima fakapalāmī"}
@@ -676,7 +679,6 @@ to{
         Grek{"tohinima fakakalisi"}
         Gujr{"tohinima fakaʻinitia-kutalati"}
         Guru{"tohinima fakakūmuki"}
-        Hanb{"tohinima fakahānipi"}
         Hang{"tohinima fakakōlea-hāngūlu"}
         Hani{"tohinima fakasiaina"}
         Hano{"tohinima fakahanunōʻo"}
@@ -690,7 +692,6 @@ to{
         Hung{"tohinima fakahungakalia-motuʻa"}
         Inds{"tohinima fakaʻinitusi"}
         Ital{"tohinima fakaʻītali-motuʻa"}
-        Jamo{"tohinima fakasamo"}
         Java{"tohinima fakasava"}
         Jpan{"tohinima fakasiapani"}
         Jurc{"tohinima fakaiūkeni"}
@@ -738,7 +739,7 @@ to{
         Ogam{"tohinima fakaʻokami"}
         Olck{"tohinima fakaʻolisiki"}
         Orkh{"tohinima fakaʻolikoni"}
-        Orya{"tohinima fakaʻotia"}
+        Orya{"tohinima fakaʻinitia-ʻolāea"}
         Osma{"tohinima fakaʻosimānia"}
         Palm{"tohinima fakapalamilene"}
         Pauc{"tohinima fakapausinihau"}
@@ -795,7 +796,6 @@ to{
         Yiii{"tohinima fakaīī"}
         Zinh{"tohinima hokosi"}
         Zmth{"tohinima fakamatematika"}
-        Zsye{"tohinima fakatātā"}
         Zsym{"tohinima fakaʻilonga"}
         Zxxx{"tohinima taʻetohitohiʻi"}
         Zyyy{"tohinima fakatatau"}
@@ -819,11 +819,7 @@ to{
             iso8601{"faka-iso8601"}
             japanese{"fakasiapani"}
             persian{"fakapēsia"}
-            roc{"fakalepupelika siaina"}
-        }
-        cf{
-            account{"anga paʻanga-kalake"}
-            standard{"anga paʻanga-sīpinga"}
+            roc{"fakalēpupelika siaina"}
         }
         collation{
             ducet{"ʻunikōti"}
@@ -836,7 +832,7 @@ to{
             h11{"takai houa 0–11"}
             h12{"takai houa 1–12"}
             h23{"takai houa 0–23"}
-            h24{"takai houa 1–24"}
+            h24{"taki houa 1–24"}
         }
         lb{
             loose{"fesiʻilaine ngaloku"}
@@ -853,7 +849,7 @@ to{
             arabext{"fika fakaʻalepea fakalahi"}
             armn{"fika fakaʻāmenia"}
             armnlow{"fika fakaʻāmenia fakalalo"}
-            beng{"faka fakapāngilā"}
+            beng{"fika fakapengikali"}
             deva{"fika fakatevanākalī"}
             ethi{"fika fakaʻītiōpia"}
             fullwide{"fika laulahi"}
@@ -876,8 +872,7 @@ to{
             latn{"fika fakalatina"}
             mlym{"fika fakamalāialami"}
             mymr{"fika fakapema"}
-            nkoo{"fika fakanikō"}
-            orya{"fika fakaʻotia"}
+            orya{"fika fakaʻolia"}
             roman{"fika fakaloma"}
             romanlow{"fika fakaloma fakalalo"}
             taml{"fika fakatamili tukufakaholo"}
@@ -887,7 +882,7 @@ to{
             tibt{"fika fakatipeti"}
         }
     }
-    Version{"2.1.38.39"}
+    Version{"2.1.19.14"}
     codePatterns{
         language{"Lea: {0}"}
         script{"Tohinima: {0}"}

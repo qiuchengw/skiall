@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 ******************************************************************************
 *   file name:  unisetspan.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -502,7 +500,7 @@ spanOneBack(const UnicodeSet &set, const UChar *s, int32_t length) {
 static inline int32_t
 spanOneUTF8(const UnicodeSet &set, const uint8_t *s, int32_t length) {
     UChar32 c=*s;
-    if(U8_IS_SINGLE(c)) {
+    if((int8_t)c>=0) {
         return set.contains(c) ? 1 : -1;
     }
     // Take advantage of non-ASCII fastpaths in U8_NEXT_OR_FFFD().
@@ -514,7 +512,7 @@ spanOneUTF8(const UnicodeSet &set, const uint8_t *s, int32_t length) {
 static inline int32_t
 spanOneBackUTF8(const UnicodeSet &set, const uint8_t *s, int32_t length) {
     UChar32 c=s[length-1];
-    if(U8_IS_SINGLE(c)) {
+    if((int8_t)c>=0) {
         return set.contains(c) ? 1 : -1;
     }
     int32_t i=length-1;
@@ -1006,9 +1004,11 @@ int32_t UnicodeSetStringSpan::spanUTF8(const uint8_t *s, int32_t length, USetSpa
                     // Try to match if the increment is not listed already.
                     // Match at code point boundaries. (The UTF-8 strings were converted
                     // from UTF-16 and are guaranteed to be well-formed.)
-                    if(!U8_IS_TRAIL(s[pos-overlap]) &&
-                            !offsets.containsOffset(inc) &&
-                            matches8(s+pos-overlap, s8, length8)) {
+                    if( !U8_IS_TRAIL(s[pos-overlap]) &&
+                        !offsets.containsOffset(inc) &&
+                        matches8(s+pos-overlap, s8, length8)
+                        
+                    ) {
                         if(inc==rest) {
                             return length;  // Reached the end of the string.
                         }
@@ -1050,10 +1050,11 @@ int32_t UnicodeSetStringSpan::spanUTF8(const uint8_t *s, int32_t length, USetSpa
                     // Try to match if the string is longer or starts earlier.
                     // Match at code point boundaries. (The UTF-8 strings were converted
                     // from UTF-16 and are guaranteed to be well-formed.)
-                    if(!U8_IS_TRAIL(s[pos-overlap]) &&
-                            (overlap>maxOverlap ||
-                                /* redundant overlap==maxOverlap && */ inc>maxInc) &&
-                            matches8(s+pos-overlap, s8, length8)) {
+                    if( !U8_IS_TRAIL(s[pos-overlap]) &&
+                        (overlap>maxOverlap || /* redundant overlap==maxOverlap && */ inc>maxInc) &&
+                        matches8(s+pos-overlap, s8, length8)
+                        
+                    ) {
                         maxInc=inc;  // Longest match from earliest start.
                         maxOverlap=overlap;
                         break;

@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/lt.xml
+// *
+// ***************************************************************************
 lt{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidžanas"}
@@ -303,9 +309,6 @@ lt{
         "America:El_Salvador"{
             ec{"Salvadoras"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelsonas"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -507,9 +510,6 @@ lt{
         "America:Puerto_Rico"{
             ec{"Puerto Rikas"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenasas"}
-        }
         "America:Rainy_River"{
             ec{"Reini Riveris"}
         }
@@ -660,9 +660,6 @@ lt{
         "Asia:Ashgabat"{
             ec{"Ašchabadas"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdadas"}
         }
@@ -674,9 +671,6 @@ lt{
         }
         "Asia:Bangkok"{
             ec{"Bankokas"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaulas"}
         }
         "Asia:Beirut"{
             ec{"Beirutas"}
@@ -713,9 +707,6 @@ lt{
         }
         "Asia:Dushanbe"{
             ec{"Dušanbė"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gazos ruožas"}
@@ -858,9 +849,6 @@ lt{
         "Asia:Tokyo"{
             ec{"Tokijas"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomskas"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulan Batoras"}
         }
@@ -951,9 +939,6 @@ lt{
         "Australia:Sydney"{
             ec{"Sidnėjus"}
         }
-        "Etc:UTC"{
-            ls{"pasaulio suderintasis laikas"}
-        }
         "Etc:Unknown"{
             ec{"nežinomas miestas"}
         }
@@ -962,9 +947,6 @@ lt{
         }
         "Europe:Andorra"{
             ec{"Andora"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrachanė"}
         }
         "Europe:Athens"{
             ec{"Atėnai"}
@@ -1024,9 +1006,6 @@ lt{
         "Europe:Kiev"{
             ec{"Kijevas"}
         }
-        "Europe:Kirov"{
-            ec{"Kirovas"}
-        }
         "Europe:Lisbon"{
             ec{"Lisabona"}
         }
@@ -1085,9 +1064,6 @@ lt{
         "Europe:Sarajevo"{
             ec{"Sarajevas"}
         }
-        "Europe:Saratov"{
-            ec{"Saratovas"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopolis"}
         }
@@ -1105,9 +1081,6 @@ lt{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovskas"}
         }
         "Europe:Uzhgorod"{
             ec{"Užhorodas"}
@@ -1810,9 +1783,6 @@ lt{
         }
         "meta:Ponape"{
             ls{"Ponapės laikas"}
-        }
-        "meta:Pyongyang"{
-            ls{"Pchenjano laikas"}
         }
         "meta:Qyzylorda"{
             ld{"Kyzylordos vasaros laikas"}

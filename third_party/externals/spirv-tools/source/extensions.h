@@ -20,10 +20,10 @@
 #include "enum_set.h"
 #include "spirv-tools/libspirv.h"
 
-namespace spvtools {
+namespace libspirv {
 
 // The known SPIR-V extensions.
-enum Extension {
+enum class Extension {
 #include "extension_enum.inc"
 };
 
@@ -35,6 +35,6 @@ std::string GetExtensionString(const spv_parsed_instruction_t* inst);
 // Returns text string listing |extensions| separated by whitespace.
 std::string ExtensionSetToString(const ExtensionSet& extensions);
 
-}  // namespace spvtools
+}  // namespace libspirv
 
 #endif  // LIBSPIRV_EXTENSIONS_H_

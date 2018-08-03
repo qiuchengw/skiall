@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
-*   Copyright (C) 2002-2016, International Business Machines
+*   Copyright (C) 2002-2012, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 **********************************************************************
 *   file name:  iotest.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -22,7 +20,6 @@
 #include "unicode/uchar.h"
 #include "unicode/unistr.h"
 #include "unicode/ustring.h"
-#include "cmemory.h"
 #include "ustr_cnv.h"
 #include "iotest.h"
 #include "unicode/tstdtmod.h"
@@ -240,14 +237,14 @@ static void U_CALLCONV DataDrivenPrintf(void)
                             STANDARD_TEST_FILE);
                     continue;
                 }
-                u_memset(uBuffer, 0x2A, UPRV_LENGTHOF(uBuffer));
-                uBuffer[UPRV_LENGTHOF(uBuffer)-1] = 0;
+                u_memset(uBuffer, 0x2A, sizeof(uBuffer)/sizeof(uBuffer[0]));
+                uBuffer[sizeof(uBuffer)/sizeof(uBuffer[0])-1] = 0;
                 tempStr=testCase->getString("format", errorCode);
-                tempStr.extract(format, UPRV_LENGTHOF(format), errorCode);
+                tempStr.extract(format, sizeof(format)/sizeof(format[0]), errorCode);
                 tempStr=testCase->getString("result", errorCode);
-                tempStr.extract(expectedResult, UPRV_LENGTHOF(expectedResult), errorCode);
+                tempStr.extract(expectedResult, sizeof(expectedResult)/sizeof(expectedResult[0]), errorCode);
                 tempStr=testCase->getString("argument", errorCode);
-                tempStr.extract(argument, UPRV_LENGTHOF(argument), errorCode);
+                tempStr.extract(argument, sizeof(argument)/sizeof(argument[0]), errorCode);
                 u_austrncpy(cBuffer, format, sizeof(cBuffer));
                 if(U_FAILURE(errorCode)) {
                     log_err("error retrieving icuio/printf test case %d - %s\n",
@@ -324,7 +321,7 @@ static void U_CALLCONV DataDrivenPrintf(void)
                             STANDARD_TEST_FILE);
                 }
                 uBuffer[0]=0;
-                u_fgets(uBuffer, UPRV_LENGTHOF(uBuffer), testFile.getAlias());
+                u_fgets(uBuffer, sizeof(uBuffer)/sizeof(uBuffer[0]), testFile.getAlias());
                 if (u_strcmp(uBuffer, expectedResult) != 0) {
                     u_austrncpy(cBuffer, uBuffer, sizeof(cBuffer));
                     u_austrncpy(cFormat, format, sizeof(cFormat));
@@ -405,14 +402,14 @@ static void U_CALLCONV DataDrivenScanf(void)
                     log_err("Can't open test file - %s\n",
                             STANDARD_TEST_FILE);
                 }*/
-                u_memset(uBuffer, 0x2A, UPRV_LENGTHOF(uBuffer));
-                uBuffer[UPRV_LENGTHOF(uBuffer)-1] = 0;
+                u_memset(uBuffer, 0x2A, sizeof(uBuffer)/sizeof(uBuffer[0]));
+                uBuffer[sizeof(uBuffer)/sizeof(uBuffer[0])-1] = 0;
                 tempStr=testCase->getString("format", errorCode);
-                tempStr.extract(format, UPRV_LENGTHOF(format), errorCode);
+                tempStr.extract(format, sizeof(format)/sizeof(format[0]), errorCode);
                 tempStr=testCase->getString("result", errorCode);
-                tempStr.extract(expectedResult, UPRV_LENGTHOF(expectedResult), errorCode);
+                tempStr.extract(expectedResult, sizeof(expectedResult)/sizeof(expectedResult[0]), errorCode);
                 tempStr=testCase->getString("argument", errorCode);
-                tempStr.extract(argument, UPRV_LENGTHOF(argument), errorCode);
+                tempStr.extract(argument, sizeof(argument)/sizeof(argument[0]), errorCode);
                 u_austrncpy(cBuffer, format, sizeof(cBuffer));
                 if(U_FAILURE(errorCode)) {
                     log_err("error retrieving icuio/printf test case %d - %s\n",
@@ -525,7 +522,7 @@ static void U_CALLCONV DataDrivenScanf(void)
                             STANDARD_TEST_FILE);
                 }
                 uBuffer[0];
-                u_fgets(uBuffer, UPRV_LENGTHOF(uBuffer), testFile);
+                u_fgets(uBuffer, sizeof(uBuffer)/sizeof(uBuffer[0]), testFile);
                 if (u_strcmp(uBuffer, expectedResult) != 0) {
                     u_austrncpy(cBuffer, uBuffer, sizeof(cBuffer));
                     u_austrncpy(cFormat, format, sizeof(cFormat));
@@ -599,14 +596,14 @@ static void U_CALLCONV DataDrivenPrintfPrecision(void)
                     errorCode=U_ZERO_ERROR;
                     continue;
                 }
-                u_memset(uBuffer, 0x2A, UPRV_LENGTHOF(uBuffer));
-                uBuffer[UPRV_LENGTHOF(uBuffer)-1] = 0;
+                u_memset(uBuffer, 0x2A, sizeof(uBuffer)/sizeof(uBuffer[0]));
+                uBuffer[sizeof(uBuffer)/sizeof(uBuffer[0])-1] = 0;
                 tempStr=testCase->getString("format", errorCode);
-                tempStr.extract(format, UPRV_LENGTHOF(format), errorCode);
+                tempStr.extract(format, sizeof(format)/sizeof(format[0]), errorCode);
                 tempStr=testCase->getString("result", errorCode);
-                tempStr.extract(expectedResult, UPRV_LENGTHOF(expectedResult), errorCode);
+                tempStr.extract(expectedResult, sizeof(expectedResult)/sizeof(expectedResult[0]), errorCode);
                 tempStr=testCase->getString("argument", errorCode);
-                tempStr.extract(argument, UPRV_LENGTHOF(argument), errorCode);
+                tempStr.extract(argument, sizeof(argument)/sizeof(argument[0]), errorCode);
                 precision=testCase->getInt28("precision", errorCode);
                 u_austrncpy(cBuffer, format, sizeof(cBuffer));
                 if(U_FAILURE(errorCode)) {
@@ -698,7 +695,9 @@ static void addAllTests(TestNode** root) {
     addTest(root, &DataDrivenPrintfPrecision, "datadriv/DataDrivenPrintfPrecision");
     addTest(root, &DataDrivenScanf, "datadriv/DataDrivenScanf");
 #endif
+#if U_IOSTREAM_SOURCE >= 199711
     addStreamTests(root);
+#endif
 }
 
 /* returns the path to icu/source/data/out */

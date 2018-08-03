@@ -27,9 +27,7 @@
 /* This file tests that all headers can be included from .c files */
 
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
 
 #include <hb.h>
 

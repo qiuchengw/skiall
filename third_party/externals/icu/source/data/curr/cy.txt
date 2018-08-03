@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/cy.xml
+// *
+// ***************************************************************************
 cy{
     Currencies{
         AED{
@@ -96,15 +102,15 @@ cy{
         }
         BEC{
             "BEC",
-            "Ffranc Gwlad Belg (arnewidiol)",
+            "BEC",
         }
         BEF{
             "BEF",
-            "Ffranc Gwlad Belg",
+            "BEF",
         }
         BEL{
             "BEL",
-            "Ffranc Gwlad Belg (ariannol)",
+            "BEL",
         }
         BGM{
             "BGM",
@@ -194,13 +200,9 @@ cy{
             "BWP",
             "Pula Botswana",
         }
-        BYN{
-            "BYN",
-            "Rwbl Belarws",
-        }
         BYR{
             "BYR",
-            "Rwbl Belarws (2000–2016)",
+            "Rwbl Belarws",
         }
         BZD{
             "BZD",
@@ -216,7 +218,7 @@ cy{
         }
         CHE{
             "CHE",
-            "Ewro WIR",
+            "CHE",
         }
         CHF{
             "CHF",
@@ -224,7 +226,7 @@ cy{
         }
         CHW{
             "CHW",
-            "Ffranc WIR",
+            "CHW",
         }
         CLE{
             "CLE",
@@ -237,10 +239,6 @@ cy{
         CLP{
             "CLP",
             "Peso Chile",
-        }
-        CNH{
-            "CNH",
-            "Yuan Tsieina (ar y môr)",
         }
         CNX{
             "CNX",
@@ -256,7 +254,7 @@ cy{
         }
         COU{
             "COU",
-            "Uned Gwir Werth Colombia",
+            "COU",
         }
         CRC{
             "CRC",
@@ -284,15 +282,15 @@ cy{
         }
         CZK{
             "CZK",
-            "Koruna’r Weriniaeth Tsiec",
+            "Koruna Tsiec",
         }
         DDM{
             "DDM",
-            "Marc Dwyrain yr Almaen",
+            "DDM",
         }
         DEM{
             "DEM",
-            "Marc yr Almaen",
+            "DEM",
         }
         DJF{
             "DJF",
@@ -313,14 +311,6 @@ cy{
         ECS{
             "ECS",
             "Sucre Ecuador",
-        }
-        ECV{
-            "ECV",
-            "Uned Gwerth Gyson Ecuador",
-        }
-        EEK{
-            "EEK",
-            "Kroon Estonia",
         }
         EGP{
             "EGP",
@@ -344,7 +334,7 @@ cy{
         }
         FIM{
             "FIM",
-            "Markka’r Ffindir",
+            "FIM",
         }
         FJD{
             "FJD",
@@ -356,7 +346,7 @@ cy{
         }
         FRF{
             "FRF",
-            "Ffranc Ffrainc",
+            "FRF",
         }
         GBP{
             "£",
@@ -474,10 +464,6 @@ cy{
             "IRR",
             "Rial Iran",
         }
-        ISJ{
-            "ISJ",
-            "Króna Gwlad yr Iâ (1918 – 1981)",
-        }
         ISK{
             "ISK",
             "Króna Gwlad yr Iâ",
@@ -576,7 +562,7 @@ cy{
         }
         LUF{
             "LUF",
-            "Ffranc Lwcsembwrg",
+            "LUF",
         }
         LUL{
             "LUL",
@@ -588,7 +574,7 @@ cy{
         }
         LVR{
             "LVR",
-            "Rwbl Latfia",
+            "LVR",
         }
         LYD{
             "LYD",
@@ -644,10 +630,6 @@ cy{
         }
         MRO{
             "MRO",
-            "Ouguiya Mauritania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Ouguiya Mauritania",
         }
         MTL{
@@ -748,7 +730,7 @@ cy{
         }
         PEN{
             "PEN",
-            "Sol Periw",
+            "Nuevo Sol Periw",
         }
         PES{
             "PES",
@@ -836,7 +818,7 @@ cy{
         }
         SHP{
             "SHP",
-            "Punt St Helena",
+            "Punt Saint Helena",
         }
         SIT{
             "SIT",
@@ -864,10 +846,6 @@ cy{
         }
         STD{
             "STD",
-            "Dobra São Tomé a Príncipe (1977–2017)",
-        }
-        STN{
-            "STN",
             "Dobra São Tomé a Príncipe",
         }
         SVC{
@@ -1002,49 +980,21 @@ cy{
             "FCFA",
             "Ffranc CFA Canol Affrica",
         }
-        XAG{
-            "XAG",
-            "Arian",
-        }
-        XAU{
-            "XAU",
-            "Aur",
-        }
-        XBA{
-            "XBA",
-            "Uned Cyfansawdd Ewropeaidd",
-        }
-        XBB{
-            "XBB",
-            "Uned Ariannol Ewropeaidd",
-        }
         XCD{
             "EC$",
             "Doler Dwyrain y Caribî",
         }
         XEU{
             "XEU",
-            "Uned Arian Cyfred Ewropeaidd",
+            "XEU",
         }
         XOF{
             "CFA",
             "Ffranc CFA Gorllewin Affrica",
         }
-        XPD{
-            "XPD",
-            "Paladiwm",
-        }
         XPF{
             "CFPF",
             "Ffranc CFP",
-        }
-        XPT{
-            "XPT",
-            "Platinwm",
-        }
-        XSU{
-            "XSU",
-            "Sucre",
         }
         XXX{
             "XXX",
@@ -1124,7 +1074,7 @@ cy{
         BRL{"R$"}
         BSD{"$"}
         BWP{"BWP"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1141,7 +1091,6 @@ cy{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -1182,7 +1131,6 @@ cy{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"lei"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
@@ -1191,7 +1139,7 @@ cy{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1229,12 +1177,12 @@ cy{
             zero{"afghani Afghanistan (1927–2002)"}
         }
         AFN{
-            few{"afghani Afghanistan"}
-            many{"afghani Afghanistan"}
-            one{"afghani Afghanistan"}
-            other{"afghani Afghanistan"}
-            two{"afghani Afghanistan"}
-            zero{"afghani Afghanistan"}
+            few{"Afghani Afghanistan"}
+            many{"Afghani Afghanistan"}
+            one{"Afghani Afghanistan"}
+            other{"Afghani Afghanistan"}
+            two{"Afghani Afghanistan"}
+            zero{"Afghani Afghanistan"}
         }
         ALL{
             few{"lek Albania"}
@@ -1269,28 +1217,28 @@ cy{
             zero{"kwanza Angola"}
         }
         AOK{
-            few{"kwanza Angola (1977 – 1991)"}
-            many{"kwanza Angola (1977 – 1991)"}
-            one{"kwanza Angola (1977 – 1991)"}
-            other{"kwanza Angola (1977 – 1991)"}
-            two{"kwanza Angola (1977 – 1991)"}
-            zero{"kwanza Angola (1977 – 1991)"}
+            few{"Kwanza Angola (1977–1991)"}
+            many{"Kwanza Angola (1977–1991)"}
+            one{"Kwanza Angola (1977–1991)"}
+            other{"Kwanza Angola (1977–1991)"}
+            two{"Kwanza Angola (1977–1991)"}
+            zero{"Kwanza Angola (1977–1991)"}
         }
         AON{
-            few{"kwanza newydd Angola (1999 – 2000)"}
-            many{"kwanza newydd Angola (1999 – 2000)"}
-            one{"kwanza newydd Angola (1999 – 2000)"}
-            other{"kwanza newydd Angola (1999 – 2000)"}
-            two{"kwanza newydd Angola (1999 – 2000)"}
-            zero{"kwanza newydd Angola (1999 – 2000)"}
+            few{"Kwanza Newydd Angola (1990–2000)"}
+            many{"Kwanza Newydd Angola (1990–2000)"}
+            one{"Kwanza Newydd Angola (1990–2000)"}
+            other{"Kwanza Newydd Angola (1990–2000)"}
+            two{"Kwanza Newydd Angola (1990–2000)"}
+            zero{"Kwanza Newydd Angola (1990–2000)"}
         }
         AOR{
-            few{"kwanza ailgymhwysedig Angola (1995 – 1999)"}
-            many{"kwanza ailgymhwysedig Angola (1995 – 1999)"}
-            one{"kwanza ailgymhwysedig Angola (1995 – 1999)"}
-            other{"kwanza ailgymhwysedig Angola (1995 – 1999)"}
-            two{"kwanza ailgymhwysedig Angola (1995 – 1999)"}
-            zero{"kwanza ailgymhwysedig Angola (1995 – 1999)"}
+            few{"Kwanza Ailgymhwysedig Angola (1995–1999)"}
+            many{"Kwanza Ailgymhwysedig Angola (1995–1999)"}
+            one{"Kwanza Ailgymhwysedig Angola (1995–1999)"}
+            other{"Kwanza Ailgymhwysedig Angola (1995–1999)"}
+            two{"Kwanza Ailgymhwysedig Angola (1995–1999)"}
+            zero{"Kwanza Ailgymhwysedig Angola (1995–1999)"}
         }
         ARA{
             few{"austral yr Ariannin"}
@@ -1341,12 +1289,12 @@ cy{
             zero{"swllt Awstria"}
         }
         AUD{
-            few{"doler Awstralia"}
-            many{"doler Awstralia"}
-            one{"ddoler Awstralia"}
-            other{"doler Awstralia"}
-            two{"ddoler Awstralia"}
-            zero{"doler Awstralia"}
+            few{"Doler Awstralia"}
+            many{"Doler Awstralia"}
+            one{"Doler Awstralia"}
+            other{"Doler Awstralia"}
+            two{"Doler Awstralia"}
+            zero{"Doler Awstralia"}
         }
         AWG{
             few{"fflorin Aruba"}
@@ -1368,7 +1316,7 @@ cy{
             few{"manat Azerbaijan"}
             many{"manat Azerbaijan"}
             one{"manat Azerbaijan"}
-            other{"manat Azerbaijan"}
+            other{"Manat Azerbaijan"}
             two{"manat Azerbaijan"}
             zero{"manat Azerbaijan"}
         }
@@ -1377,7 +1325,7 @@ cy{
             many{"marc trosadwy Bosnia a Hercegovina"}
             one{"marc trosadwy Bosnia a Hercegovina"}
             other{"marc trosadwy Bosnia a Hercegovina"}
-            two{"farc trosiadwy Bosnia a Hercegovina"}
+            two{"marc trosadwy Bosnia a Hercegovina"}
             zero{"marc trosadwy Bosnia a Hercegovina"}
         }
         BBD{
@@ -1389,36 +1337,12 @@ cy{
             zero{"doler Barbados"}
         }
         BDT{
-            few{"taka Bangladesh"}
-            many{"taka Bangladesh"}
-            one{"taka Bangladesh"}
-            other{"taka Bangladesh"}
-            two{"taka Bangladesh"}
-            zero{"taka Bangladesh"}
-        }
-        BEC{
-            few{"ffranc Gwlad Belg (arnewidiol)"}
-            many{"ffranc Gwlad Belg (arnewidiol)"}
-            one{"ffranc Gwlad Belg (arnewidiol)"}
-            other{"ffranc Gwlad Belg (arnewidiol)"}
-            two{"ffranc Gwlad Belg (arnewidiol)"}
-            zero{"ffranc Gwlad Belg (arnewidiol)"}
-        }
-        BEF{
-            few{"ffranc Gwlad Belg"}
-            many{"ffranc Gwlad Belg"}
-            one{"ffranc Gwlad Belg"}
-            other{"ffranc Gwlad Belg"}
-            two{"ffranc Gwlad Belg"}
-            zero{"ffranc Gwlad Belg"}
-        }
-        BEL{
-            few{"ffranc Gwlad Belg (ariannol)"}
-            many{"ffranc Gwlad Belg (ariannol)"}
-            one{"ffranc Gwlad Belg (ariannol)"}
-            other{"ffranc Gwlad Belg (ariannol)"}
-            two{"ffranc Gwlad Belg (ariannol)"}
-            zero{"ffranc Gwlad Belg (ariannol)"}
+            few{"Taka Bangladesh"}
+            many{"Taka Bangladesh"}
+            one{"Taka Bangladesh"}
+            other{"Taka Bangladesh"}
+            two{"Taka Bangladesh"}
+            zero{"Taka Bangladesh"}
         }
         BGM{
             few{"lev sosialaidd Bwlgaria"}
@@ -1437,12 +1361,12 @@ cy{
             zero{"lev Bwlgaria"}
         }
         BGO{
-            few{"lev Bwlgaria (1879 – 1952)"}
-            many{"lev Bwlgaria (1879 – 1952)"}
-            one{"lev Bwlgaria (1879 – 1952)"}
-            other{"lev Bwlgaria (1879 – 1952)"}
-            two{"lev Bwlgaria (1879 – 1952)"}
-            zero{"lev Bwlgaria (1879 – 1952)"}
+            few{"Lev Bwlgaria (1879–1952)"}
+            many{"Lev Bwlgaria (1879–1952)"}
+            one{"Lev Bwlgaria (1879–1952)"}
+            other{"Lev Bwlgaria (1879–1952)"}
+            two{"Lev Bwlgaria (1879–1952)"}
+            zero{"Lev Bwlgaria (1879–1952)"}
         }
         BHD{
             few{"dinar Bahrain"}
@@ -1469,12 +1393,12 @@ cy{
             zero{"doler Bermuda"}
         }
         BND{
-            few{"doler Brunei"}
-            many{"doler Brunei"}
-            one{"ddoler Brunei"}
-            other{"doler Brunei"}
-            two{"ddoler Brunei"}
-            zero{"doler Brunei"}
+            few{"Doler Brunei"}
+            many{"Doler Brunei"}
+            one{"Doler Brunei"}
+            other{"Doler Brunei"}
+            two{"Doler Brunei"}
+            zero{"Doler Brunei"}
         }
         BOB{
             few{"boliviano Bolifia"}
@@ -1569,16 +1493,16 @@ cy{
             many{"doler y Bahamas"}
             one{"doler y Bahamas"}
             other{"doler y Bahamas"}
-            two{"ddoler y Bahamas"}
+            two{"doler y Bahamas"}
             zero{"doler y Bahamas"}
         }
         BTN{
-            few{"ngultrum Bhutan"}
-            many{"ngultrum Bhutan"}
-            one{"ngultrum Bhutan"}
-            other{"ngultrum Bhutan"}
-            two{"ngultrum Bhutan"}
-            zero{"ngultrum Bhutan"}
+            few{"Ngultrum Bhutan"}
+            many{"Ngultrum Bhutan"}
+            one{"Ngultrum Bhutan"}
+            other{"Ngultrum Bhutan"}
+            two{"Ngultrum Bhutan"}
+            zero{"Ngultrum Bhutan"}
         }
         BUK{
             few{"kyat Byrma"}
@@ -1596,21 +1520,13 @@ cy{
             two{"pula Botswana"}
             zero{"pula Botswana"}
         }
-        BYN{
+        BYR{
             few{"rwbl Belarws"}
             many{"rwbl Belarws"}
             one{"rwbl Belarws"}
             other{"rwbl Belarws"}
             two{"rwbl Belarws"}
             zero{"rwbl Belarws"}
-        }
-        BYR{
-            few{"rwbl Belarws (2000–2016)"}
-            many{"rwbl Belarws (2000–2016)"}
-            one{"rwbl Belarws (2000–2016)"}
-            other{"rwbl Belarws (2000–2016)"}
-            two{"rwbl Belarws (2000–2016)"}
-            zero{"rwbl Belarws (2000–2016)"}
         }
         BZD{
             few{"doler Belize"}
@@ -1636,14 +1552,6 @@ cy{
             two{"ffranc Congo"}
             zero{"ffranc Congo"}
         }
-        CHE{
-            few{"ewro WIR"}
-            many{"ewro WIR"}
-            one{"ewro WIR"}
-            other{"ewro WIR"}
-            two{"ewro WIR"}
-            zero{"ewro WIR"}
-        }
         CHF{
             few{"ffranc y Swistir"}
             many{"ffranc y Swistir"}
@@ -1651,14 +1559,6 @@ cy{
             other{"ffranc y Swistir"}
             two{"ffranc y Swistir"}
             zero{"ffranc y Swistir"}
-        }
-        CHW{
-            few{"ffranc WIR"}
-            many{"ffranc WIR"}
-            one{"ffranc WIR"}
-            other{"ffranc WIR"}
-            two{"ffranc WIR"}
-            zero{"ffranc WIR"}
         }
         CLE{
             few{"escudo Chile"}
@@ -1684,14 +1584,6 @@ cy{
             two{"peso Chile"}
             zero{"peso Chile"}
         }
-        CNH{
-            few{"yuan Tsieina (ar y môr)"}
-            many{"yuan Tsieina (ar y môr)"}
-            one{"yuan Tsieina (ar y môr)"}
-            other{"yuan Tsieina (ar y môr)"}
-            two{"yuan Tsieina (ar y môr)"}
-            zero{"yuan Tsieina (ar y môr)"}
-        }
         CNX{
             few{"doler Banc Pobl Tsieina"}
             many{"doler Banc Pobl Tsieina"}
@@ -1715,14 +1607,6 @@ cy{
             other{"peso Colombia"}
             two{"peso Colombia"}
             zero{"peso Colombia"}
-        }
-        COU{
-            few{"uned gwir werth Colombia"}
-            many{"uned gwir werth Colombia"}
-            one{"uned gwir werth Colombia"}
-            other{"uned gwir werth Colombia"}
-            two{"uned gwir werth Colombia"}
-            zero{"uned gwir werth Colombia"}
         }
         CRC{
             few{"colón Costa Rica"}
@@ -1772,22 +1656,6 @@ cy{
             two{"koruna’r Weriniaeth Tsiec"}
             zero{"koruna’r Weriniaeth Tsiec"}
         }
-        DDM{
-            few{"marc Dwyrain yr Almaen"}
-            many{"marc Dwyrain yr Almaen"}
-            one{"marc Dwyrain yr Almaen"}
-            other{"marc Dwyrain yr Almaen"}
-            two{"marc Dwyrain yr Almaen"}
-            zero{"marc Dwyrain yr Almaen"}
-        }
-        DEM{
-            few{"marc yr Almaen"}
-            many{"marc yr Almaen"}
-            one{"marc yr Almaen"}
-            other{"marc yr Almaen"}
-            two{"marc yr Almaen"}
-            zero{"marc yr Almaen"}
-        }
         DJF{
             few{"ffranc Djibouti"}
             many{"ffranc Djibouti"}
@@ -1828,22 +1696,6 @@ cy{
             two{"sucre Ecuador"}
             zero{"sucre Ecuador"}
         }
-        ECV{
-            few{"uned gwerth gyson Ecuador"}
-            many{"uned gwerth gyson Ecuador"}
-            one{"uned gwerth gyson Ecuador"}
-            other{"uned gwerth gyson Ecuador"}
-            two{"uned gwerth gyson Ecuador"}
-            zero{"uned gwerth gyson Ecuador"}
-        }
-        EEK{
-            few{"kroon Estonia"}
-            many{"kroon Estonia"}
-            one{"kroon Estonia"}
-            other{"kroon Estonia"}
-            two{"kroon Estonia"}
-            zero{"kroon Estonia"}
-        }
         EGP{
             few{"punt yr Aifft"}
             many{"phunt yr Aifft"}
@@ -1869,44 +1721,28 @@ cy{
             zero{"birr Ethiopia"}
         }
         EUR{
-            few{"ewro"}
-            many{"ewro"}
-            one{"ewro"}
-            other{"ewro"}
-            two{"ewro"}
-            zero{"ewro"}
-        }
-        FIM{
-            few{"markka’r Ffindir"}
-            many{"markka’r Ffindir"}
-            one{"markka’r Ffindir"}
-            other{"markka’r Ffindir"}
-            two{"markka’r Ffindir"}
-            zero{"markka’r Ffindir"}
+            few{"Ewro"}
+            many{"Ewro"}
+            one{"Ewro"}
+            other{"Ewro"}
+            two{"Ewro"}
+            zero{"Ewro"}
         }
         FJD{
-            few{"doler Ffiji"}
-            many{"doler Ffiji"}
-            one{"ddoler Ffiji"}
-            other{"doler Ffiji"}
-            two{"ddoler Ffiji"}
-            zero{"doler Ffiji"}
+            few{"Doler Ffiji"}
+            many{"Doler Ffiji"}
+            one{"Doler Ffiji"}
+            other{"Doler Ffiji"}
+            two{"Doler Ffiji"}
+            zero{"Doler Ffiji"}
         }
         FKP{
             few{"punt Ynysoedd Falkland/Malvinas"}
             many{"phunt Ynysoedd Falkland/Malvinas"}
-            one{"punt Ynysoedd Falkland/Malvinas"}
+            one{"bunt Ynysoedd Falkland/Malvinas"}
             other{"punt Ynysoedd Falkland/Malvinas"}
             two{"bunt Ynysoedd Falkland/Malvinas"}
             zero{"punt Ynysoedd Falkland/Malvinas"}
-        }
-        FRF{
-            few{"ffranc Ffrainc"}
-            many{"ffranc Ffrainc"}
-            one{"ffranc Ffrainc"}
-            other{"ffranc Ffrainc"}
-            two{"ffranc Ffrainc"}
-            zero{"ffranc Ffrainc"}
         }
         GBP{
             few{"punt Prydain"}
@@ -1951,7 +1787,7 @@ cy{
         GIP{
             few{"punt Gibraltar"}
             many{"phunt Gibraltar"}
-            one{"punt Gibraltar"}
+            one{"bunt Gibraltar"}
             other{"punt Gibraltar"}
             two{"bunt Gibraltar"}
             zero{"punt Gibraltar"}
@@ -1981,12 +1817,12 @@ cy{
             zero{"syli Guinée"}
         }
         GQE{
-            few{"ekwele Guinea Gyhydeddol"}
-            many{"ekwele Guinea Gyhydeddol"}
-            one{"ekwele Guinea Gyhydeddol"}
-            other{"ekwele Guinea Gyhydeddol"}
-            two{"ekwele Guinea Gyhydeddol"}
-            zero{"ekwele Guinea Gyhydeddol"}
+            few{"Ekwele Guinea Gyhydeddol"}
+            many{"Ekwele Guinea Gyhydeddol"}
+            one{"Ekwele Guinea Gyhydeddol"}
+            other{"Ekwele Guinea Gyhydeddol"}
+            two{"Ekwele Guinea Gyhydeddol"}
+            zero{"Ekwele Guinea Gyhydeddol"}
         }
         GTQ{
             few{"quetzal Guatemala"}
@@ -2053,12 +1889,12 @@ cy{
             zero{"fforint Hwngari"}
         }
         IDR{
-            few{"rupiah Indonesia"}
-            many{"rupiah Indonesia"}
-            one{"rupiah Indonesia"}
-            other{"rupiah Indonesia"}
-            two{"rupiah Indonesia"}
-            zero{"rupiah Indonesia"}
+            few{"Rupiah Indonesia"}
+            many{"Rupiah Indonesia"}
+            one{"Rupiah Indonesia"}
+            other{"Rupiah Indonesia"}
+            two{"Rupiah Indonesia"}
+            zero{"Rupiah Indonesia"}
         }
         IEP{
             few{"punt Iwerddon"}
@@ -2093,12 +1929,12 @@ cy{
             zero{"shegel newydd Israel"}
         }
         INR{
-            few{"rwpî India"}
-            many{"rwpî India"}
-            one{"rwpî India"}
-            other{"rwpî India"}
-            two{"rwpî India"}
-            zero{"rwpî India"}
+            few{"Rwpî India"}
+            many{"Rwpî India"}
+            one{"Rwpî India"}
+            other{"Rwpî India"}
+            two{"Rwpî India"}
+            zero{"Rwpî India"}
         }
         IQD{
             few{"dinar Irac"}
@@ -2109,20 +1945,12 @@ cy{
             zero{"dinar Irac"}
         }
         IRR{
-            few{"rial Iran"}
-            many{"rial Iran"}
-            one{"rial Iran"}
-            other{"rial Iran"}
-            two{"rial Iran"}
-            zero{"rial Iran"}
-        }
-        ISJ{
-            few{"króna Gwlad yr Iâ (1918 – 1981)"}
-            many{"króna Gwlad yr Iâ (1918 – 1981)"}
-            one{"króna Gwlad yr Iâ (1918 – 1981)"}
-            other{"króna Gwlad yr Iâ (1918 – 1981)"}
-            two{"króna Gwlad yr Iâ (1918 – 1981)"}
-            zero{"króna Gwlad yr Iâ (1918 – 1981)"}
+            few{"Rial Iran"}
+            many{"Rial Iran"}
+            one{"Rial Iran"}
+            other{"Rial Iran"}
+            two{"Rial Iran"}
+            zero{"Rial Iran"}
         }
         ISK{
             few{"króna Gwlad yr Iâ"}
@@ -2165,20 +1993,20 @@ cy{
             zero{"swllt Kenya"}
         }
         KGS{
-            few{"som Kyrgyzstan"}
-            many{"som Kyrgyzstan"}
-            one{"som Kyrgyzstan"}
-            other{"som Kyrgyzstan"}
-            two{"som Kyrgyzstan"}
-            zero{"som Kyrgyzstan"}
+            few{"Som Kyrgyzstan"}
+            many{"Som Kyrgyzstan"}
+            one{"Som Kyrgyzstan"}
+            other{"Som Kyrgyzstan"}
+            two{"Som Kyrgyzstan"}
+            zero{"Som Kyrgyzstan"}
         }
         KHR{
-            few{"riel Cambodia"}
-            many{"riel Cambodia"}
-            one{"riel Cambodia"}
-            other{"riel Cambodia"}
-            two{"riel Cambodia"}
-            zero{"riel Cambodia"}
+            few{"Riel Cambodia"}
+            many{"Riel Cambodia"}
+            one{"Riel Cambodia"}
+            other{"Riel Cambodia"}
+            two{"Riel Cambodia"}
+            zero{"Riel Cambodia"}
         }
         KMF{
             few{"ffranc Comoros"}
@@ -2237,36 +2065,36 @@ cy{
             zero{"doler Ynysoedd Cayman"}
         }
         KZT{
-            few{"tenge Kazakstan"}
-            many{"tenge Kazakstan"}
-            one{"tenge Kazakstan"}
-            other{"tenge Kazakstan"}
-            two{"tenge Kazakstan"}
-            zero{"tenge Kazakstan"}
+            few{"Tenge Kazakstan"}
+            many{"Tenge Kazakstan"}
+            one{"Tenge Kazakstan"}
+            other{"Tenge Kazakstan"}
+            two{"Tenge Kazakstan"}
+            zero{"Tenge Kazakstan"}
         }
         LAK{
-            few{"kip Laos"}
-            many{"kip Laos"}
-            one{"kip Laos"}
-            other{"kip Laos"}
-            two{"kip Laos"}
-            zero{"kip Laos"}
+            few{"Kip Laos"}
+            many{"Kip Laos"}
+            one{"Kip Laos"}
+            other{"Kip Laos"}
+            two{"Kip Laos"}
+            zero{"Kip Laos"}
         }
         LBP{
             few{"punt Libanus"}
             many{"phunt Libanus"}
-            one{"punt Libanus"}
+            one{"bunt Libanus"}
             other{"punt Libanus"}
             two{"bunt Libanus"}
             zero{"punt Libanus"}
         }
         LKR{
-            few{"rwpî Sri Lanka"}
-            many{"rwpî Sri Lanka"}
-            one{"rwpî Sri Lanka"}
-            other{"rwpî Sri Lanka"}
-            two{"rwpî Sri Lanka"}
-            zero{"rwpî Sri Lanka"}
+            few{"Rwpî Sri Lanka"}
+            many{"Rwpî Sri Lanka"}
+            one{"Rwpî Sri Lanka"}
+            other{"Rwpî Sri Lanka"}
+            two{"Rwpî Sri Lanka"}
+            zero{"Rwpî Sri Lanka"}
         }
         LRD{
             few{"doler Liberia"}
@@ -2285,12 +2113,12 @@ cy{
             zero{"loti Lesotho"}
         }
         LTL{
-            few{"litas Lithwania"}
-            many{"litas Lithwania"}
-            one{"litas Lithwania"}
-            other{"litas Lithwania"}
-            two{"litas Lithwania"}
-            zero{"litas Lithwania"}
+            few{"Litas Lithwania"}
+            many{"Litas Lithwania"}
+            one{"Litas Lithwania"}
+            other{"Litas Lithwania"}
+            two{"Litas Lithwania"}
+            zero{"Litas Lithwania"}
         }
         LTT{
             few{"talonas Lithwania"}
@@ -2300,29 +2128,13 @@ cy{
             two{"talonas Lithwania"}
             zero{"talonas Lithwania"}
         }
-        LUF{
-            few{"ffranc Lwcsembwrg"}
-            many{"ffranc Lwcsembwrg"}
-            one{"ffranc Lwcsembwrg"}
-            other{"ffranc Lwcsembwrg"}
-            two{"ffranc Lwcsembwrg"}
-            zero{"ffranc Lwcsembwrg"}
-        }
         LVL{
-            few{"lats Latfia"}
-            many{"lats Latfia"}
-            one{"lats Latfia"}
-            other{"lats Latfia"}
-            two{"lats Latfia"}
-            zero{"lats Latfia"}
-        }
-        LVR{
-            few{"rwbl Latfia"}
-            many{"rwbl Latfia"}
-            one{"rwbl Latfia"}
-            other{"rwbl Latfia"}
-            two{"rwbl Latfia"}
-            zero{"rwbl Latfia"}
+            few{"Lats Latfia"}
+            many{"Lats Latfia"}
+            one{"Lats Latfia"}
+            other{"Lats Latfia"}
+            two{"Lats Latfia"}
+            zero{"Lats Latfia"}
         }
         LYD{
             few{"dinar Libya"}
@@ -2397,12 +2209,12 @@ cy{
             zero{"ffranc Mali"}
         }
         MMK{
-            few{"kyat Myanmar"}
-            many{"kyat Myanmar"}
-            one{"kyat Myanmar"}
-            other{"kyat Myanmar"}
-            two{"kyat Myanmar"}
-            zero{"kyat Myanmar"}
+            few{"Kyat Myanmar"}
+            many{"Kyat Myanmar"}
+            one{"Kyat Myanmar"}
+            other{"Kyat Myanmar"}
+            two{"Kyat Myanmar"}
+            zero{"Kyat Myanmar"}
         }
         MNT{
             few{"tugrik Mongolia"}
@@ -2421,14 +2233,6 @@ cy{
             zero{"pataca Macau"}
         }
         MRO{
-            few{"ouguiya Mauritania (1973–2017)"}
-            many{"ouguiya Mauritania (1973–2017)"}
-            one{"ouguiya Mauritania (1973–2017)"}
-            other{"ouguiya Mauritania (1973–2017)"}
-            two{"ouguiya Mauritania (1973–2017)"}
-            zero{"ouguiya Mauritania (1973–2017)"}
-        }
-        MRU{
             few{"ouguiya Mauritania"}
             many{"ouguiya Mauritania"}
             one{"ouguiya Mauritania"}
@@ -2453,12 +2257,12 @@ cy{
             zero{"rwpî’r Maldives (1947–1981)"}
         }
         MVR{
-            few{"rufiyaa’r Maldives"}
-            many{"rufiyaa’r Maldives"}
-            one{"rufiyaa’r Maldives"}
-            other{"rufiyaa’r Maldives"}
-            two{"rufiyaa’r Maldives"}
-            zero{"rufiyaa’r Maldives"}
+            few{"Rufiyaa’r Maldives"}
+            many{"Rufiyaa’r Maldives"}
+            one{"Rufiyaa’r Maldives"}
+            other{"Rufiyaa’r Maldives"}
+            two{"Rufiyaa’r Maldives"}
+            zero{"Rufiyaa’r Maldives"}
         }
         MWK{
             few{"kwacha Malawi"}
@@ -2493,12 +2297,12 @@ cy{
             zero{"uned fuddsoddi México"}
         }
         MYR{
-            few{"ringgit Malaysia"}
-            many{"ringgit Malaysia"}
-            one{"ringgit Malaysia"}
-            other{"ringgit Malaysia"}
-            two{"ringgit Malaysia"}
-            zero{"ringgit Malaysia"}
+            few{"Ringgit Malaysia"}
+            many{"Ringgit Malaysia"}
+            one{"Ringgit Malaysia"}
+            other{"Ringgit Malaysia"}
+            two{"Ringgit Malaysia"}
+            zero{"Ringgit Malaysia"}
         }
         MZE{
             few{"escudo Mozambique"}
@@ -2549,12 +2353,12 @@ cy{
             zero{"córdoba Nicaragua (1988–1991)"}
         }
         NIO{
-            few{"cordoba Nicaragwa"}
-            many{"cordoba Nicaragwa"}
-            one{"cordoba Nicaragwa"}
-            other{"cordoba Nicaragwa"}
-            two{"cordoba Nicaragwa"}
-            zero{"cordoba Nicaragwa"}
+            few{"Cordoba Nicaragwa"}
+            many{"Cordoba Nicaragwa"}
+            one{"Cordoba Nicaragwa"}
+            other{"Cordoba Nicaragwa"}
+            two{"Cordoba Nicaragwa"}
+            zero{"Cordoba Nicaragwa"}
         }
         NLG{
             few{"guilder yr Iseldiroedd"}
@@ -2573,20 +2377,20 @@ cy{
             zero{"krone Norwy"}
         }
         NPR{
-            few{"rwpî Nepal"}
-            many{"rwpî Nepal"}
-            one{"rwpî Nepal"}
-            other{"rwpî Nepal"}
-            two{"rwpî Nepal"}
-            zero{"rwpî Nepal"}
+            few{"Rwpî Nepal"}
+            many{"Rwpî Nepal"}
+            one{"Rwpî Nepal"}
+            other{"Rwpî Nepal"}
+            two{"Rwpî Nepal"}
+            zero{"Rwpî Nepal"}
         }
         NZD{
-            few{"doler Seland Newydd"}
-            many{"doler Seland Newydd"}
-            one{"ddoler Seland Newydd"}
-            other{"doler Seland Newydd"}
-            two{"ddoler Seland Newydd"}
-            zero{"doler Seland Newydd"}
+            few{"Doler Seland Newydd"}
+            many{"Doler Seland Newydd"}
+            one{"Doler Seland Newydd"}
+            other{"Doler Seland Newydd"}
+            two{"Doler Seland Newydd"}
+            zero{"Doler Seland Newydd"}
         }
         OMR{
             few{"rial Oman"}
@@ -2613,12 +2417,12 @@ cy{
             zero{"inti Periw"}
         }
         PEN{
-            few{"sol Periw"}
-            many{"sol Periw"}
-            one{"sol Periw"}
-            other{"sol Periw"}
-            two{"sol Periw"}
-            zero{"sol Periw"}
+            few{"nuevo sol Periw"}
+            many{"nuevo sol Periw"}
+            one{"nuevo sol Periw"}
+            other{"nuevo sol Periw"}
+            two{"nuevo sol Periw"}
+            zero{"nuevo sol Periw"}
         }
         PES{
             few{"sol Periw (1863–1965)"}
@@ -2629,28 +2433,28 @@ cy{
             zero{"sol Periw (1863–1965)"}
         }
         PGK{
-            few{"kina Papua Guinea Newydd"}
-            many{"kina Papua Guinea Newydd"}
-            one{"kina Papua Guinea Newydd"}
-            other{"kina Papua Guinea Newydd"}
-            two{"kina Papua Guinea Newydd"}
-            zero{"kina Papua Guinea Newydd"}
+            few{"Kina Papua Guinea Newydd"}
+            many{"Kina Papua Guinea Newydd"}
+            one{"Kina Papua Guinea Newydd"}
+            other{"Kina Papua Guinea Newydd"}
+            two{"Kina Papua Guinea Newydd"}
+            zero{"Kina Papua Guinea Newydd"}
         }
         PHP{
-            few{"peso Philipinas"}
-            many{"peso Philipinas"}
-            one{"peso Philipinas"}
-            other{"peso Philipinas"}
-            two{"peso Philipinas"}
-            zero{"peso Philipinas"}
+            few{"Peso Pilipinas"}
+            many{"Peso Pilipinas"}
+            one{"Peso Pilipinas"}
+            other{"Peso Pilipinas"}
+            two{"Peso Pilipinas"}
+            zero{"Peso Pilipinas"}
         }
         PKR{
-            few{"rwpî Pacistan"}
-            many{"rwpî Pacistan"}
-            one{"rwpî Pacistan"}
-            other{"rwpî Pacistan"}
-            two{"rwpî Pacistan"}
-            zero{"rwpî Pacistan"}
+            few{"Rwpî Pacistan"}
+            many{"Rwpî Pacistan"}
+            one{"Rwpî Pacistan"}
+            other{"Rwpî Pacistan"}
+            two{"Rwpî Pacistan"}
+            zero{"Rwpî Pacistan"}
         }
         PLN{
             few{"zloty Gwlad Pwyl"}
@@ -2719,18 +2523,18 @@ cy{
         SAR{
             few{"riyal Saudi Arabia"}
             many{"riyal Saudi Arabia"}
-            one{"riyal Saudi Arabia"}
+            one{"Riyal Saudi Arabia"}
             other{"riyal Saudi Arabia"}
             two{"riyal Saudi Arabia"}
             zero{"riyal Saudi Arabia"}
         }
         SBD{
-            few{"doler Ynysoedd Solomon"}
-            many{"doler Ynysoedd Solomon"}
-            one{"ddoler Ynysoedd Solomon"}
-            other{"doler Ynysoedd Solomon"}
-            two{"ddoler Ynysoedd Solomon"}
-            zero{"doler Ynysoedd Solomon"}
+            few{"Doler Ynysoedd Solomon"}
+            many{"Doler Ynysoedd Solomon"}
+            one{"Doler Ynysoedd Solomon"}
+            other{"Doler Ynysoedd Solomon"}
+            two{"Doler Ynysoedd Solomon"}
+            zero{"Doler Ynysoedd Solomon"}
         }
         SCR{
             few{"rwpî Seychelles"}
@@ -2773,12 +2577,12 @@ cy{
             zero{"krona Sweden"}
         }
         SGD{
-            few{"doler Singapore"}
-            many{"doler Singapore"}
-            one{"ddoler Singapore"}
-            other{"doler Singapore"}
-            two{"ddoler Singapore"}
-            zero{"doler Singapore"}
+            few{"Doler Singapore"}
+            many{"Doler Singapore"}
+            one{"Doler Singapore"}
+            other{"Doler Singapore"}
+            two{"Doler Singapore"}
+            zero{"Doler Singapore"}
         }
         SHP{
             few{"punt St. Helena"}
@@ -2823,26 +2627,18 @@ cy{
         SSP{
             few{"punt De Sudan"}
             many{"phunt De Sudan"}
-            one{"punt De Sudan"}
+            one{"bunt De Sudan"}
             other{"punt De Sudan"}
             two{"bunt De Sudan"}
             zero{"punt De Sudan"}
         }
         STD{
-            few{"dobra São Tomé a Príncipe (1977–2017)"}
-            many{"dobra São Tomé a Príncipe (1977–2017)"}
-            one{"dobra São Tomé a Príncipe (1977–2017)"}
-            other{"dobra São Tomé a Príncipe (1977–2017)"}
-            two{"dobra São Tomé a Príncipe (1977–2017)"}
-            zero{"dobra São Tomé a Príncipe (1977–2017)"}
-        }
-        STN{
-            few{"dobra São Tomé a Príncipe"}
-            many{"dobra São Tomé a Príncipe"}
-            one{"dobra São Tomé a Príncipe"}
-            other{"dobra São Tomé a Príncipe"}
-            two{"dobra São Tomé a Príncipe"}
-            zero{"dobra São Tomé a Príncipe"}
+            few{"Dobra São Tomé a Príncipe"}
+            many{"Dobra São Tomé a Príncipe"}
+            one{"Dobra São Tomé a Príncipe"}
+            other{"Dobra São Tomé a Príncipe"}
+            two{"Dobra São Tomé a Príncipe"}
+            zero{"Dobra São Tomé a Príncipe"}
         }
         SVC{
             few{"colón El Salvador"}
@@ -2853,12 +2649,12 @@ cy{
             zero{"colón El Salvador"}
         }
         SYP{
-            few{"punt Syria"}
-            many{"punt Syria"}
-            one{"punt Syria"}
-            other{"punt Syria"}
-            two{"bunt Syria"}
-            zero{"punt Syria"}
+            few{"Punt Syria"}
+            many{"Punt Syria"}
+            one{"Punt Syria"}
+            other{"Punt Syria"}
+            two{"Punt Syria"}
+            zero{"Punt Syria"}
         }
         SZL{
             few{"lilangeni Gwlad Swazi"}
@@ -2869,12 +2665,12 @@ cy{
             zero{"lilangeni Gwlad Swazi"}
         }
         THB{
-            few{"baht Gwlad Thai"}
-            many{"baht Gwlad Thai"}
-            one{"baht Gwlad Thai"}
-            other{"baht Gwlad Thai"}
-            two{"baht Gwlad Thai"}
-            zero{"baht Gwlad Thai"}
+            few{"Baht Gwlad Thai"}
+            many{"Baht Gwlad Thai"}
+            one{"Baht Gwlad Thai"}
+            other{"Baht Gwlad Thai"}
+            two{"Baht Gwlad Thai"}
+            zero{"Baht Gwlad Thai"}
         }
         TJR{
             few{"rwbl Tajikistan"}
@@ -2885,12 +2681,12 @@ cy{
             zero{"rwbl Tajikistan"}
         }
         TJS{
-            few{"somoni Tajikstan"}
-            many{"somoni Tajikstan"}
-            one{"somoni Tajikstan"}
-            other{"somoni Tajikstan"}
-            two{"somoni Tajikstan"}
-            zero{"somoni Tajikstan"}
+            few{"Somoni Tajikistan"}
+            many{"Somoni Tajikistan"}
+            one{"Somoni Tajikistan"}
+            other{"Somoni Tajikistan"}
+            two{"Somoni Tajikistan"}
+            zero{"Somoni Tajikistan"}
         }
         TMM{
             few{"manat Turkmenistan (1993–2009)"}
@@ -2901,12 +2697,12 @@ cy{
             zero{"manat Turkmenistan (1993–2009)"}
         }
         TMT{
-            few{"manat Turkmenistan"}
-            many{"manat Turkmenistan"}
-            one{"manat Turkmenistan"}
-            other{"manat Turkmenistan"}
-            two{"manat Turkmenistan"}
-            zero{"manat Turkmenistan"}
+            few{"Manat Turkmenistan"}
+            many{"Manat Turkmenistan"}
+            one{"Manat Turkmenistan"}
+            other{"Manat Turkmenistan"}
+            two{"Manat Turkmenistan"}
+            zero{"Manat Turkmenistan"}
         }
         TND{
             few{"dinar Tunisia"}
@@ -2917,12 +2713,12 @@ cy{
             zero{"dinar Tunisia"}
         }
         TOP{
-            few{"paʻanga Tonga"}
-            many{"paʻanga Tonga"}
-            one{"paʻanga Tonga"}
-            other{"paʻanga Tonga"}
-            two{"paʻanga Tonga"}
-            zero{"paʻanga Tonga"}
+            few{"Paʻanga Tonga"}
+            many{"Paʻanga Tonga"}
+            one{"Paʻanga Tonga"}
+            other{"Paʻanga Tonga"}
+            two{"Paʻanga Tonga"}
+            zero{"Paʻanga Tonga"}
         }
         TPE{
             few{"escudo Timor"}
@@ -2941,12 +2737,12 @@ cy{
             zero{"lira Twrci (1922–2005)"}
         }
         TRY{
-            few{"lira Twrci"}
-            many{"lira Twrci"}
-            one{"lira Twrci"}
-            other{"lira Twrci"}
-            two{"lira Twrci"}
-            zero{"lira Twrci"}
+            few{"Lira Twrci"}
+            many{"Lira Twrci"}
+            one{"Lira Twrci"}
+            other{"Lira Twrci"}
+            two{"Lira Twrci"}
+            zero{"Lira Twrci"}
         }
         TTD{
             few{"doler Trinidad a Tobago"}
@@ -3007,17 +2803,17 @@ cy{
         USN{
             few{"doler UDA (y diwrnod nesaf)"}
             many{"doler UDA (y diwrnod nesaf)"}
-            one{"ddoler UDA (y diwrnod nesaf)"}
+            one{"doler UDA (y diwrnod nesaf)"}
             other{"doler UDA (y diwrnod nesaf)"}
-            two{"ddoler UDA (y diwrnod nesaf)"}
+            two{"doler UDA (y diwrnod nesaf)"}
             zero{"doler UDA (y diwrnod nesaf)"}
         }
         USS{
             few{"doler UDA (yr un diwrnod)"}
             many{"doler UDA (yr un diwrnod)"}
-            one{"ddoler UDA (yr un diwrnod)"}
+            one{"doler UDA (yr un diwrnod)"}
             other{"doler UDA (yr un diwrnod)"}
-            two{"ddoler UDA (yr un diwrnod)"}
+            two{"doler UDA (yr un diwrnod)"}
             zero{"doler UDA (yr un diwrnod)"}
         }
         UYP{
@@ -3037,12 +2833,12 @@ cy{
             zero{"peso Uruguay"}
         }
         UZS{
-            few{"som Uzbekistan"}
-            many{"som Uzbekistan"}
-            one{"som Uzbekistan"}
-            other{"som Uzbekistan"}
-            two{"som Uzbekistan"}
-            zero{"som Uzbekistan"}
+            few{"Som Uzbekistan"}
+            many{"Som Uzbekistan"}
+            one{"Som Uzbekistan"}
+            other{"Som Uzbekistan"}
+            two{"Som Uzbekistan"}
+            zero{"Som Uzbekistan"}
         }
         VEB{
             few{"bolívar Venezuela (1871–2008)"}
@@ -3053,20 +2849,20 @@ cy{
             zero{"bolívar Venezuela (1871–2008)"}
         }
         VEF{
-            few{"bolívar Venezuela"}
-            many{"bolívar Venezuela"}
-            one{"bolívar Venezuela"}
-            other{"bolívar Venezuela"}
-            two{"bolívar Venezuela"}
-            zero{"bolívar Venezuela"}
+            few{"Bolívar Venezuela"}
+            many{"bolivar Venezuela"}
+            one{"Bolívar Venezuela"}
+            other{"bolivar Venezuela"}
+            two{"Bolívar Venezuela"}
+            zero{"Bolívar Venezuela"}
         }
         VND{
-            few{"dong Fietnam"}
-            many{"dong Fietnam"}
-            one{"dong Fietnam"}
-            other{"dong Fietnam"}
-            two{"dong Fietnam"}
-            zero{"dong Fietnam"}
+            few{"Dong Fietnam"}
+            many{"Dong Fietnam"}
+            one{"Dong Fietnam"}
+            other{"Dong Fietnam"}
+            two{"Dong Fietnam"}
+            zero{"Dong Fietnam"}
         }
         VNN{
             few{"dong Fietnam (1978–1985)"}
@@ -3077,20 +2873,20 @@ cy{
             zero{"dong Fietnam (1978–1985)"}
         }
         VUV{
-            few{"vatu Vanuatu"}
-            many{"vatu Vanuatu"}
-            one{"vatu Vanuatu"}
-            other{"vatu Vanuatu"}
-            two{"vatu Vanuatu"}
-            zero{"vatu Vanuatu"}
+            few{"Vatu Vanuatu"}
+            many{"Vatu Vanuatu"}
+            one{"Vatu Vanuatu"}
+            other{"Vatu Vanuatu"}
+            two{"Vatu Vanuatu"}
+            zero{"Vatu Vanuatu"}
         }
         WST{
-            few{"tala Samoa"}
-            many{"tala Samoa"}
-            one{"tala Samoa"}
-            other{"tala Samoa"}
-            two{"tala Samoa"}
-            zero{"tala Samoa"}
+            few{"Tala Samoa"}
+            many{"Tala Samoa"}
+            one{"Tala Samoa"}
+            other{"Tala Samoa"}
+            two{"Tala Samoa"}
+            zero{"Tala Samoa"}
         }
         XAF{
             few{"ffranc CFA Canol Affrica"}
@@ -3100,22 +2896,6 @@ cy{
             two{"ffranc CFA Canol Affrica"}
             zero{"ffranc CFA Canol Affrica"}
         }
-        XBA{
-            few{"uned cyfansawdd Ewropeaidd"}
-            many{"uned cyfansawdd Ewropeaidd"}
-            one{"uned cyfansawdd Ewropeaidd"}
-            other{"uned cyfansawdd Ewropeaidd"}
-            two{"uned cyfansawdd Ewropeaidd"}
-            zero{"uned cyfansawdd Ewropeaidd"}
-        }
-        XBB{
-            few{"uned ariannol Ewropeaidd"}
-            many{"uned ariannol Ewropeaidd"}
-            one{"uned ariannol Ewropeaidd"}
-            other{"uned ariannol Ewropeaidd"}
-            two{"uned ariannol Ewropeaidd"}
-            zero{"uned ariannol Ewropeaidd"}
-        }
         XCD{
             few{"doler Dwyrain y Caribî"}
             many{"doler Dwyrain y Caribî"}
@@ -3123,14 +2903,6 @@ cy{
             other{"doler Dwyrain y Caribî"}
             two{"ddoler Dwyrain y Caribî"}
             zero{"doler Dwyrain y Caribî"}
-        }
-        XEU{
-            few{"uned arian cyfred Ewropeaidd"}
-            many{"uned arian cyfred Ewropeaidd"}
-            one{"uned arian cyfred Ewropeaidd"}
-            other{"uned arian cyfred Ewropeaidd"}
-            two{"uned arian cyfred Ewropeaidd"}
-            zero{"uned arian cyfred Ewropeaidd"}
         }
         XOF{
             few{"ffranc CFA Gorllewin Affrica"}
@@ -3141,20 +2913,12 @@ cy{
             zero{"ffranc CFA Gorllewin Affrica"}
         }
         XPF{
-            few{"ffranc CPF"}
-            many{"ffranc CPF"}
-            one{"ffranc CPF"}
-            other{"ffranc CPF"}
-            two{"ffranc CPF"}
-            zero{"ffranc CPF"}
-        }
-        XSU{
-            few{"sucre"}
-            many{"sucre"}
-            one{"sucre"}
-            other{"sucre"}
-            two{"sucre"}
-            zero{"sucre"}
+            few{"Ffranc CPF"}
+            many{"Ffranc CPF"}
+            one{"Ffranc CPF"}
+            other{"Ffranc CPF"}
+            two{"Ffranc CPF"}
+            zero{"Ffranc CPF"}
         }
         XXX{
             few{"(arian cyfred anhysbys)"}
@@ -3173,12 +2937,12 @@ cy{
             zero{"dinar Yemen"}
         }
         YER{
-            few{"rial Yemen"}
-            many{"rial Yemen"}
-            one{"rial Yemen"}
-            other{"rial Yemen"}
-            two{"rial Yemen"}
-            zero{"rial Yemen"}
+            few{"Rial Yemen"}
+            many{"Rial Yemen"}
+            one{"Rial Yemen"}
+            other{"Rial Yemen"}
+            two{"Rial Yemen"}
+            zero{"Rial Yemen"}
         }
         ZAL{
             few{"rand (ariannol) De Affrica"}
@@ -3213,20 +2977,20 @@ cy{
             zero{"kwacha Zambia"}
         }
         ZRN{
-            few{"zaire newydd Zaire (1993 – 1998)"}
-            many{"zaire newydd Zaire (1993 – 1998)"}
-            one{"zaire newydd Zaire (1993 – 1998)"}
-            other{"zaire newydd Zaire (1993 – 1998)"}
-            two{"zaire newydd Zaire (1993 – 1998)"}
-            zero{"zaire newydd Zaire (1993 – 1998)"}
+            few{"Zaire Newydd Zaire (1993–1998)"}
+            many{"Zaire Newydd Zaire (1993–1998)"}
+            one{"Zaire Newydd Zaire (1993–1998)"}
+            other{"Zaire Newydd Zaire (1993–1998)"}
+            two{"Zaire Newydd Zaire (1993–1998)"}
+            zero{"Zaire Newydd Zaire (1993–1998)"}
         }
         ZRZ{
-            few{"zaire Zaire (1971 – 1993)"}
-            many{"zaire Zaire (1971 – 1993)"}
-            one{"zaire Zaire (1971 – 1993)"}
-            other{"zaire Zaire (1971 – 1993)"}
-            two{"zaire Zaire (1971 – 1993)"}
-            zero{"zaire Zaire (1971 – 1993)"}
+            few{"Zaire Zaire (1971–1993)"}
+            many{"Zaire Zaire (1971–1993)"}
+            one{"Zaire Zaire (1971–1993)"}
+            other{"Zaire Zaire (1971–1993)"}
+            two{"Zaire Zaire (1971–1993)"}
+            zero{"Zaire Zaire (1971–1993)"}
         }
         ZWD{
             few{"doler Zimbabwe (1980–2008)"}
@@ -3261,5 +3025,5 @@ cy{
         two{"{0} {1}"}
         zero{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
 }

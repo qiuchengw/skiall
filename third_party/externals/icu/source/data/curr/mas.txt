@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/mas.xml
+// *
+// ***************************************************************************
 mas{
     Currencies{
         AED{
@@ -124,10 +130,6 @@ mas{
         }
         MRO{
             "MRO",
-            "Iropiyianí e Moritania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Iropiyianí e Moritania",
         }
         MUR{
@@ -180,10 +182,6 @@ mas{
         }
         STD{
             "STD",
-            "Iropiyianí e Saotome (1977–2017)",
-        }
-        STN{
-            "STN",
             "Iropiyianí e Saotome",
         }
         SZL{
@@ -231,5 +229,5 @@ mas{
             "Iropiyianí e Simbabwe",
         }
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

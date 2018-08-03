@@ -416,14 +416,13 @@ iPhone 3GS-4S/iPad 1st-3rd Generation and newer:
     IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
     export CFLAGS="-mfloat-abi=softfp -march=armv7 -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -miphoneos-version-min=3.0"
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Darwin)
     set(CMAKE_SYSTEM_PROCESSOR arm)
     set(CMAKE_C_COMPILER ${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2)
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
       [additional CMake flags] {source_directory}
@@ -442,14 +441,13 @@ Same as above, but replace the first line with:
     export CFLAGS="-mfloat-abi=softfp -arch armv7 -miphoneos-version-min=3.0"
     export ASMFLAGS="-no-integrated-as"
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Darwin)
     set(CMAKE_SYSTEM_PROCESSOR arm)
     set(CMAKE_C_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang)
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
       [additional CMake flags] {source_directory}
@@ -469,14 +467,13 @@ iPhone 5/iPad 4th Generation and newer:
     IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
     export CFLAGS="-Wall -mfloat-abi=softfp -march=armv7s -mcpu=swift -mtune=swift -mfpu=neon -miphoneos-version-min=6.0"
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Darwin)
     set(CMAKE_SYSTEM_PROCESSOR arm)
     set(CMAKE_C_COMPILER ${IOS_PLATFORMDIR}/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2)
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
       [additional CMake flags] {source_directory}
@@ -501,14 +498,13 @@ iPhone 5S/iPad Mini 2/iPad Air and newer.
     IOS_SYSROOT=($IOS_PLATFORMDIR/Developer/SDKs/iPhoneOS*.sdk)
     export CFLAGS="-Wall -arch arm64 -miphoneos-version-min=7.0 -funwind-tables"
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Darwin)
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
     set(CMAKE_C_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang)
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_OSX_SYSROOT=${IOS_SYSROOT[0]} \
       [additional CMake flags] {source_directory}
@@ -549,8 +545,6 @@ needs.
     export LDFLAGS=-pie
     TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Linux)
     set(CMAKE_SYSTEM_PROCESSOR arm)
@@ -558,6 +552,7 @@ needs.
     set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
       [additional CMake flags] {source_directory}
@@ -587,8 +582,6 @@ needs.
     export LDFLAGS=-pie
     TOOLCHAIN=${NDK_PATH}/toolchains/${HOST}-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Linux)
     set(CMAKE_SYSTEM_PROCESSOR aarch64)
@@ -596,6 +589,7 @@ needs.
     set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
       [additional CMake flags] {source_directory}
@@ -625,8 +619,6 @@ needs.
     export LDFLAGS=-pie
     TOOLCHAIN=${NDK_PATH}/toolchains/x86-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Linux)
     set(CMAKE_SYSTEM_PROCESSOR i386)
@@ -634,6 +626,7 @@ needs.
     set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
       [additional CMake flags] {source_directory}
@@ -663,8 +656,6 @@ needs.
     export LDFLAGS=-pie
     TOOLCHAIN=${NDK_PATH}/toolchains/x86_64-${TOOLCHAIN_VERSION}/prebuilt/${BUILD_PLATFORM}
 
-    cd {build_directory}
-
     cat <<EOF >toolchain.cmake
     set(CMAKE_SYSTEM_NAME Linux)
     set(CMAKE_SYSTEM_PROCESSOR x86_64)
@@ -672,6 +663,7 @@ needs.
     set(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN}/${HOST})
     EOF
 
+    cd {build_directory}
     cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake \
       -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
       [additional CMake flags] {source_directory}
@@ -681,8 +673,6 @@ needs.
 If building for Android 4.0.x (API level < 16) or earlier, remove
 `-DCMAKE_POSITION_INDEPENDENT_CODE=1` from the CMake arguments and `-pie` from
 `LDFLAGS`.
-
-If building on Windows, add `.exe` to the end of `CMAKE_C_COMPILER`.
 
 
 Advanced CMake Options

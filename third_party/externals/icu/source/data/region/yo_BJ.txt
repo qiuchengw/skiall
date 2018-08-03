@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/yo_BJ.xml
+// *
+// ***************************************************************************
 yo_BJ{
     Countries{
         AD{"Orílɛ́ède Ààndórà"}
@@ -9,6 +15,7 @@ yo_BJ{
         AI{"Orílɛ́ède Ààngúlílà"}
         AL{"Orílɛ́ède Àlùbàníánì"}
         AM{"Orílɛ́ède Améníà"}
+        AN{"Orílɛ́ède Nedalandi ti Antelisi"}
         AO{"Orílɛ́ède Ààngólà"}
         AR{"Orílɛ́ède Agentínà"}
         AS{"Sámóánì ti Orílɛ́ède Àméríkà"}
@@ -212,6 +219,7 @@ yo_BJ{
         US{"Orílɛ́ède Orilɛede Amerika"}
         UY{"Orílɛ́ède Nruguayi"}
         UZ{"Orílɛ́ède Nshibɛkisitani"}
+        VA{"Orílɛ́ède Fatikani"}
         VC{"Orílɛ́ède Fisɛnnti ati Genadina"}
         VE{"Orílɛ́ède Fɛnɛshuɛla"}
         VG{"Orílɛ́ède Etíkun Fágínì ti ìlú Bírítísì"}
@@ -226,5 +234,5 @@ yo_BJ{
         ZM{"Orílɛ́ède shamibia"}
         ZW{"Orílɛ́ède shimibabe"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.80"}
 }

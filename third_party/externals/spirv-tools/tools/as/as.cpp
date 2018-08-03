@@ -41,14 +41,13 @@ Options:
                   Numeric IDs in the binary will have the same values as in the
                   source. Non-numeric IDs are allocated by filling in the gaps,
                   starting with 1 and going up.
-  --target-env {vulkan1.0|vulkan1.1|spv1.0|spv1.1|spv1.2|spv1.3}
-                  Use Vulkan 1.0, Vulkan 1.1, SPIR-V 1.0, SPIR-V 1.1,
-                  SPIR-V 1.2, or SPIR-V 1.3
+  --target-env {vulkan1.0|spv1.0|spv1.1|spv1.2}
+                  Use Vulkan1.0/SPIR-V1.0/SPIR-V1.1/SPIR-V1.2
 )",
       argv0, argv0);
 }
 
-static const auto kDefaultEnvironment = SPV_ENV_UNIVERSAL_1_3;
+static const auto kDefaultEnvironment = SPV_ENV_UNIVERSAL_1_2;
 
 int main(int argc, char** argv) {
   const char* inFile = nullptr;
@@ -86,12 +85,15 @@ int main(int argc, char** argv) {
             printf("Target: %s\n",
                    spvTargetEnvDescription(kDefaultEnvironment));
             return 0;
-          } else if (0 == strcmp(argv[argi], "--help")) {
+          }
+          if (0 == strcmp(argv[argi], "--help")) {
             print_usage(argv[0]);
             return 0;
-          } else if (0 == strcmp(argv[argi], "--preserve-numeric-ids")) {
+          }
+          if (0 == strcmp(argv[argi], "--preserve-numeric-ids")) {
             options |= SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS;
-          } else if (0 == strcmp(argv[argi], "--target-env")) {
+          }
+          if (0 == strcmp(argv[argi], "--target-env")) {
             if (argi + 1 < argc) {
               const auto env_str = argv[++argi];
               if (!spvParseTargetEnv(env_str, &target_env)) {
@@ -103,14 +105,9 @@ int main(int argc, char** argv) {
               fprintf(stderr, "error: Missing argument to --target-env\n");
               return 1;
             }
-          } else {
-            fprintf(stderr, "error: Unrecognized option: %s\n\n", argv[argi]);
-            print_usage(argv[0]);
-            return 1;
           }
         } break;
         default:
-          fprintf(stderr, "error: Unrecognized option: %s\n\n", argv[argi]);
           print_usage(argv[0]);
           return 1;
       }

@@ -65,8 +65,6 @@ libwebpdsp_avx2_la_CFLAGS = $(AM_CFLAGS) $(AVX2_FLAGS)
 libwebpdspdecode_sse41_la_SOURCES =
 libwebpdspdecode_sse41_la_SOURCES += alpha_processing_sse41.c
 libwebpdspdecode_sse41_la_SOURCES += dec_sse41.c
-libwebpdspdecode_sse41_la_SOURCES += upsampling_sse41.c
-libwebpdspdecode_sse41_la_SOURCES += yuv_sse41.c
 libwebpdspdecode_sse41_la_CPPFLAGS = $(libwebpdsp_la_CPPFLAGS)
 libwebpdspdecode_sse41_la_CFLAGS = $(AM_CFLAGS) $(SSE41_FLAGS)
 
@@ -141,7 +139,7 @@ noinst_HEADERS += ../webp/decode.h
 
 libwebpdsp_la_CPPFLAGS =
 libwebpdsp_la_CPPFLAGS += $(AM_CPPFLAGS)
-libwebpdsp_la_CPPFLAGS += $(USE_SWAP_16BIT_CSP)
+libwebpdsp_la_CPPFLAGS += $(USE_EXPERIMENTAL_CODE) $(USE_SWAP_16BIT_CSP)
 libwebpdsp_la_LDFLAGS = -lm
 libwebpdsp_la_LIBADD =
 libwebpdsp_la_LIBADD += libwebpdsp_avx2.la

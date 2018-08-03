@@ -29,14 +29,6 @@
 
 #include "hb-open-type-private.hh"
 
-/*
- * fvar -- Font Variations
- * https://docs.microsoft.com/en-us/typography/opentype/spec/fvar
- */
-
-#define HB_OT_TAG_fvar HB_TAG('f','v','a','r')
-
-
 namespace OT {
 
 
@@ -50,11 +42,11 @@ struct InstanceRecord
   }
 
   protected:
-  NameID	subfamilyNameID;/* The name ID for entries in the 'name' table
+  USHORT	subfamilyNameID;/* The name ID for entries in the 'name' table
 				 * that provide subfamily names for this instance. */
-  HBUINT16	reserved;	/* Reserved for future use — set to 0. */
+  USHORT	reserved;	/* Reserved for future use — set to 0. */
   Fixed		coordinates[VAR];/* The coordinates array for this instance. */
-  //NameID	postScriptNameIDX;/*Optional. The name ID for entries in the 'name'
+  //USHORT	postScriptNameIDX;/*Optional. The name ID for entries in the 'name'
   //				  * table that provide PostScript names for this
   //				  * instance. */
 
@@ -75,13 +67,20 @@ struct AxisRecord
   Fixed		minValue;	/* The minimum coordinate value for the axis. */
   Fixed		defaultValue;	/* The default coordinate value for the axis. */
   Fixed		maxValue;	/* The maximum coordinate value for the axis. */
-  HBUINT16	reserved;	/* Reserved for future use — set to 0. */
-  NameID	axisNameID;	/* The name ID for entries in the 'name' table that
+  USHORT	reserved;	/* Reserved for future use — set to 0. */
+  USHORT	axisNameID;	/* The name ID for entries in the 'name' table that
 				 * provide a display name for this axis. */
 
   public:
   DEFINE_SIZE_STATIC (20);
 };
+
+
+/*
+ * fvar — Font Variations Table
+ */
+
+#define HB_OT_TAG_fvar HB_TAG('f','v','a','r')
 
 struct fvar
 {
@@ -187,16 +186,16 @@ struct fvar
   protected:
   FixedVersion<>version;	/* Version of the fvar table
 				 * initially set to 0x00010000u */
-  Offset16	things;		/* Offset in bytes from the beginning of the table
+  Offset<>	things;		/* Offset in bytes from the beginning of the table
 				 * to the start of the AxisRecord array. */
-  HBUINT16	reserved;	/* This field is permanently reserved. Set to 2. */
-  HBUINT16	axisCount;	/* The number of variation axes in the font (the
+  USHORT	reserved;	/* This field is permanently reserved. Set to 2. */
+  USHORT	axisCount;	/* The number of variation axes in the font (the
 				 * number of records in the axes array). */
-  HBUINT16	axisSize;	/* The size in bytes of each VariationAxisRecord —
+  USHORT	axisSize;	/* The size in bytes of each VariationAxisRecord —
 				 * set to 20 (0x0014) for this version. */
-  HBUINT16	instanceCount;	/* The number of named instances defined in the font
+  USHORT	instanceCount;	/* The number of named instances defined in the font
 				 * (the number of records in the instances array). */
-  HBUINT16	instanceSize;	/* The size in bytes of each InstanceRecord — set
+  USHORT	instanceSize;	/* The size in bytes of each InstanceRecord — set
 				 * to either axisCount * sizeof(Fixed) + 4, or to
 				 * axisCount * sizeof(Fixed) + 6. */
 

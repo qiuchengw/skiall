@@ -20,6 +20,11 @@
         # We don't use ICU plugins and dyload is only necessary for them.
         # NaCl-related builds also fail looking for dlfcn.h when it's enabled.
         'U_ENABLE_DYLOAD=0',
+        # With exception disabled, MSVC emits C4577 warning on coming across
+        # 'noexcept'. See http://bugs.icu-project.org/trac/ticket/12406
+        # TODO(jshin): Remove this when updating to a newer version with this
+        # fixed.
+        'U_NOEXCEPT=',
       ],
     },
     'defines': [
@@ -37,34 +42,15 @@
           'U_STATIC_IMPLEMENTATION',
         ],
       }],
-      ['OS=="win"', {
-        'defines': [
-          'UCHAR_TYPE=wchar_t',
-        ],
-	'cflags': [ '/utf-8' ],
-      },{
-        'defines': [
-          'UCHAR_TYPE=uint16_t',
-        ],
-      }],
       ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
         (target_arch=="arm" or target_arch=="ia32" or \
-         target_arch=="mipsel" or target_arch=="mips" or \
-         target_arch=="ppc" or target_arch=="s390")', {
+         target_arch=="mipsel" or target_arch=="mips")', {
         'target_conditions': [
           ['_toolset=="host"', {
-            'conditions': [
-              ['host_arch=="s390" or host_arch=="s390x"', {
-                'cflags': [ '-m31' ],
-                'ldflags': [ '-m31' ],
-                'asflags': [ '-31' ],
-              },{
-               'cflags': [ '-m32' ],
-               'ldflags': [ '-m32' ],
-               'asflags': [ '-32' ],
-              }],
-            ],
+            'cflags': [ '-m32' ],
+            'ldflags': [ '-m32' ],
+            'asflags': [ '-32' ],
             'xcode_settings': {
               'ARCHS': [ 'i386' ],
             },
@@ -74,8 +60,7 @@
       ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
          or OS=="netbsd" or OS=="mac" or OS=="android" or OS=="qnx") and \
         (target_arch=="arm64" or target_arch=="x64" or \
-         target_arch=="mips64el" or target_arch=="mips64" or \
-         target_arch=="ppc64" or target_arch=="s390x")', {
+         target_arch=="mips64el" or target_arch=="mips64")', {
         'target_conditions': [
           ['_toolset=="host"', {
             'cflags': [ '-m64' ],
@@ -92,7 +77,7 @@
       'source/common',
       'source/i18n',
     ],
-    'msvs_disabled_warnings': [4005, 4068, 4267],
+    'msvs_disabled_warnings': [4005, 4068, 4355, 4996, 4267],
   },
   'conditions': [
     ['use_system_icu==0 or want_separate_host_toolset==1', {
@@ -115,8 +100,7 @@
               } , { # else: OS != android
                 'conditions': [
                   # Big Endian
-                  [ 'v8_host_byteorder=="big" or target_arch=="mips" or \
-                     target_arch=="mips64"', {
+                  [ 'target_arch=="mips" or target_arch=="mips64"', {
                     'files': [
                       'common/icudtb.dat',
                     ],
@@ -134,8 +118,7 @@
           'target_name': 'data_assembly',
           'type': 'none',
           'conditions': [
-            [ 'v8_host_byteorder=="big" or target_arch=="mips" or \
-               target_arch=="mips64"', { # Big Endian
+            [ 'target_arch=="mips" or target_arch=="mips64"', { # Big Endian
               'data_assembly_inputs': [
                 'common/icudtb.dat',
               ],
@@ -198,15 +181,10 @@
              '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S',
           ],
           'conditions': [
-            [ 'v8_host_byteorder=="big" or target_arch=="mips" or \
-               target_arch=="mips64"', {
-              'sources!': [
-                '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S'
-              ],
+            [ 'target_arch=="mips" or target_arch=="mips64"', {
+              'sources!': ['<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtl_dat.S'],
             }, {
-              'sources!': [
-                '<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S'
-              ],
+              'sources!': ['<(SHARED_INTERMEDIATE_DIR)/third_party/icu/icudtb_dat.S'],
             }],
             [ 'use_system_icu==1 and want_separate_host_toolset==1', {
               'toolsets': ['host'],
@@ -337,6 +315,8 @@
               'msvs_settings': {
                 'VCCLCompilerTool': {
                   'AdditionalOptions': [
+                    # See http://bugs.icu-project.org/trac/ticket/11122
+                    '-Wno-inline-new-delete',
                     '-Wno-implicit-exception-spec-mismatch',
                   ],
                 },
@@ -436,7 +416,7 @@
             }],
             [ 'OS == "win" or icu_use_data_file_flag==1', {
               'sources': [
-                'source/stubdata/stubdata.cpp',
+                'source/stubdata/stubdata.c',
               ],
               'defines': [
                 'U_ICUDATAENTRY_IN_COMMON',
@@ -448,6 +428,8 @@
               'msvs_settings': {
                 'VCCLCompilerTool': {
                   'AdditionalOptions': [
+                    # See http://bugs.icu-project.org/trac/ticket/11122
+                    '-Wno-inline-new-delete',
                     '-Wno-implicit-exception-spec-mismatch',
                   ],
                 },
@@ -499,9 +481,9 @@
             'headers_root_path': 'source/i18n',
             'header_filenames': [
               # This list can easily be updated using the command below:
-              # ls source/i18n/unicode/*h | sort | \
-              # sed "s/^.*i18n\/\(.*\)$/              '\1',/"
-	      # I18N_HDR_START
+              # find source/i18n/unicode -iname '*.h' \
+              # -printf "              '%p',\n" | \
+              # sed -e 's|source/i18n/||' | sort -u
               'unicode/alphaindex.h',
               'unicode/basictz.h',
               'unicode/calendar.h',
@@ -521,17 +503,17 @@
               'unicode/dtptngen.h',
               'unicode/dtrule.h',
               'unicode/fieldpos.h',
+              'unicode/filteredbrk.h',
               'unicode/fmtable.h',
               'unicode/format.h',
               'unicode/fpositer.h',
               'unicode/gender.h',
               'unicode/gregocal.h',
+              'unicode/locdspnm.h',
               'unicode/measfmt.h',
               'unicode/measunit.h',
               'unicode/measure.h',
               'unicode/msgfmt.h',
-              'unicode/nounit.h',
-              'unicode/numberformatter.h',
               'unicode/numfmt.h',
               'unicode/numsys.h',
               'unicode/plurfmt.h',
@@ -541,7 +523,7 @@
               'unicode/regex.h',
               'unicode/region.h',
               'unicode/reldatefmt.h',
-              'unicode/scientificnumberformatter.h',
+              'unicode/scientificformathelper.h',
               'unicode/search.h',
               'unicode/selfmt.h',
               'unicode/simpletz.h',
@@ -562,32 +544,31 @@
               'unicode/ucoleitr.h',
               'unicode/ucol.h',
               'unicode/ucsdet.h',
+              'unicode/ucurr.h',
               'unicode/udateintervalformat.h',
               'unicode/udat.h',
               'unicode/udatpg.h',
-              'unicode/ufieldpositer.h',
+              'unicode/udisplaycontext.h',
               'unicode/uformattable.h',
               'unicode/ugender.h',
+              'unicode/uldnames.h',
               'unicode/ulocdata.h',
               'unicode/umsg.h',
               'unicode/unirepl.h',
-              'unicode/unumberformatter.h',
               'unicode/unum.h',
               'unicode/unumsys.h',
               'unicode/upluralrules.h',
               'unicode/uregex.h',
               'unicode/uregion.h',
-              'unicode/ureldatefmt.h',
               'unicode/usearch.h',
               'unicode/uspoof.h',
               'unicode/utmscale.h',
               'unicode/utrans.h',
               'unicode/vtzone.h',
-	      # I18N_HDR_END
             ],
           },
           'includes': [
-            'shim_headers.gypi',
+            '../../build/shim_headers.gypi',
           ],
           'toolsets': ['target'],
         },
@@ -600,31 +581,26 @@
             'headers_root_path': 'source/common',
             'header_filenames': [
               # This list can easily be updated using the command below:
-              # ls source/common/unicode/*h | sort | \
-              # sed "s/^.*common\/\(.*\)$/              '\1',/"
-	      # COMMON_HDR_START
+              # find source/common/unicode -iname '*.h' \
+              # -printf "              '%p',\n" | \
+              # sed -e 's|source/common/||' | sort -u
               'unicode/appendable.h',
               'unicode/brkiter.h',
               'unicode/bytestream.h',
               'unicode/bytestriebuilder.h',
               'unicode/bytestrie.h',
               'unicode/caniter.h',
-              'unicode/casemap.h',
-              'unicode/char16ptr.h',
               'unicode/chariter.h',
               'unicode/dbbi.h',
               'unicode/docmain.h',
               'unicode/dtintrv.h',
-              'unicode/edits.h',
               'unicode/enumset.h',
               'unicode/errorcode.h',
-              'unicode/filteredbrk.h',
               'unicode/icudataver.h',
               'unicode/icuplug.h',
               'unicode/idna.h',
               'unicode/listformatter.h',
               'unicode/localpointer.h',
-              'unicode/locdspnm.h',
               'unicode/locid.h',
               'unicode/messagepattern.h',
               'unicode/normalizer2.h',
@@ -638,15 +614,12 @@
               'unicode/rep.h',
               'unicode/resbund.h',
               'unicode/schriter.h',
-              'unicode/simpleformatter.h',
               'unicode/std_string.h',
               'unicode/strenum.h',
-              'unicode/stringoptions.h',
               'unicode/stringpiece.h',
               'unicode/stringtriebuilder.h',
               'unicode/symtable.h',
               'unicode/ubidi.h',
-              'unicode/ubiditransform.h',
               'unicode/ubrk.h',
               'unicode/ucasemap.h',
               'unicode/ucat.h',
@@ -660,14 +633,10 @@
               'unicode/ucnv.h',
               'unicode/ucnvsel.h',
               'unicode/uconfig.h',
-              'unicode/ucurr.h',
               'unicode/udata.h',
-              'unicode/udisplaycontext.h',
               'unicode/uenum.h',
               'unicode/uidna.h',
               'unicode/uiter.h',
-              'unicode/uldnames.h',
-              'unicode/ulistformatter.h',
               'unicode/uloc.h',
               'unicode/umachine.h',
               'unicode/umisc.h',
@@ -699,11 +668,10 @@
               'unicode/utypes.h',
               'unicode/uvernum.h',
               'unicode/uversion.h',
-	      # COMMON_HDR_END
             ],
           },
           'includes': [
-            'shim_headers.gypi',
+            '../../build/shim_headers.gypi',
           ],
           'toolsets': ['target'],
         },

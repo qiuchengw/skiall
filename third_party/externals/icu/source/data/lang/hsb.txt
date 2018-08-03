@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/hsb.xml
+// *
+// ***************************************************************************
 hsb{
     Keys{
         calendar{"protyka"}
@@ -231,7 +237,7 @@ hsb{
         su{"sundanezišćina"}
         sv{"šwedšćina"}
         sw{"suahelšćina"}
-        sw_CD{"kongoska suahelšćina"}
+        swc{"kongoska suahelšćina"}
         ta{"tamilšćina"}
         te{"telugu"}
         teo{"teso"}
@@ -378,7 +384,7 @@ hsb{
             tibt{"tibetske cyfry"}
         }
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     codePatterns{
         language{"rěč: {0}"}
         script{"pismo: {0}"}

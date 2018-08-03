@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fi.xml
+// *
+// ***************************************************************************
 fi{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -303,9 +309,6 @@ fi{
         "America:El_Salvador"{
             ec{"El Salvador"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -508,9 +511,6 @@ fi{
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -663,9 +663,6 @@ fi{
         "Asia:Ashgabat"{
             ec{"Ašgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atıraw"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -677,9 +674,6 @@ fi{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -716,9 +710,6 @@ fi{
         }
         "Asia:Dushanbe"{
             ec{"Dušanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -784,7 +775,7 @@ fi{
             ec{"Manila"}
         }
         "Asia:Muscat"{
-            ec{"Masqat"}
+            ec{"Muscat"}
         }
         "Asia:Nicosia"{
             ec{"Nikosia"}
@@ -860,9 +851,6 @@ fi{
         }
         "Asia:Tokyo"{
             ec{"Tokio"}
-        }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
         }
         "Asia:Ulaanbaatar"{
             ec{"Ulan Bator"}
@@ -954,9 +942,6 @@ fi{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"UTC-yleisaika"}
-        }
         "Etc:Unknown"{
             ec{"tuntematon"}
         }
@@ -965,9 +950,6 @@ fi{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrahan"}
         }
         "Europe:Athens"{
             ec{"Ateena"}
@@ -991,7 +973,7 @@ fi{
             ec{"Budapest"}
         }
         "Europe:Busingen"{
-            ec{"Büsingen"}
+            ec{"Busingen"}
         }
         "Europe:Chisinau"{
             ec{"Chişinău"}
@@ -1026,9 +1008,6 @@ fi{
         }
         "Europe:Kiev"{
             ec{"Kiova"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lissabon"}
@@ -1089,9 +1068,6 @@ fi{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1109,9 +1085,6 @@ fi{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Užgorod"}
@@ -1240,7 +1213,7 @@ fi{
             ec{"Marquesassaaret"}
         }
         "Pacific:Midway"{
-            ec{"Midwaysaaret"}
+            ec{"Midway"}
         }
         "Pacific:Nauru"{
             ec{"Nauru"}
@@ -1500,7 +1473,7 @@ fi{
             ls{"Davisin aika"}
         }
         "meta:DumontDUrville"{
-            ls{"Dumont d’Urvillen aika"}
+            ls{"Dumont-d’Urvillen aika"}
         }
         "meta:East_Timor"{
             ls{"Itä-Timorin aika"}
@@ -1554,7 +1527,7 @@ fi{
             ls{"Galápagossaarten aika"}
         }
         "meta:Gambier"{
-            ls{"Gambiersaarten aika"}
+            ls{"Gambierin aika"}
         }
         "meta:Georgia"{
             ld{"Georgian kesäaika"}
@@ -1694,7 +1667,7 @@ fi{
             ls{"Malediivien aika"}
         }
         "meta:Marquesas"{
-            ls{"Marquesassaarten aika"}
+            ls{"Marquesasin aika"}
         }
         "meta:Marshall_Islands"{
             ls{"Marshallinsaarten aika"}
@@ -1755,7 +1728,7 @@ fi{
             ls{"Niuen aika"}
         }
         "meta:Norfolk"{
-            ls{"Norfolkinsaaren aika"}
+            ls{"Norfolkinsaarten aika"}
         }
         "meta:Noronha"{
             ld{"Fernando de Noronhan kesäaika"}
@@ -1815,9 +1788,6 @@ fi{
         "meta:Ponape"{
             ls{"Pohnpein aika"}
         }
-        "meta:Pyongyang"{
-            ls{"Pjongjangin aika"}
-        }
         "meta:Qyzylorda"{
             ld{"Qızılordan kesäaika"}
             lg{"Qızılordan aika"}
@@ -1857,7 +1827,7 @@ fi{
             ls{"Etelä-Georgian aika"}
         }
         "meta:Suriname"{
-            ls{"Surinamen aika"}
+            ls{"Surinamin aika"}
         }
         "meta:Syowa"{
             ls{"Syowan aika"}

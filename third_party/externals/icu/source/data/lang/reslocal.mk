@@ -1,5 +1,5 @@
-# © 2016 and later: Unicode, Inc. and others.
-# License & terms of use: http://www.unicode.org/copyright.html#License
+# *   Copyright (C) 1998-2010, International Business Machines
+# *   Corporation and others.  All Rights Reserved.
 LANG_CLDR_VERSION = %version%
 # A list of txt's to build
 # The downstream packager may not need this file at all if their package is not
@@ -25,21 +25,21 @@ LANG_ALIAS_SOURCE = $(LANG_SYNTHETIC_ALIAS)\
 # Ordinary resources
 LANG_SOURCE =\
  am.txt\
- ar.txt ar_SA.txt ar_LY.txt ar_EG.txt\
+ ar.txt\
  bg.txt\
  bn.txt\
  ca.txt\
  cs.txt\
  da.txt\
- de.txt de_AT.txt de_CH.txt\
+ de.txt\
  el.txt\
- en.txt en_GB.txt en_CA.txt en_AU.txt en_IN.txt en_001.txt en_NZ.txt\
+ en.txt en_GB.txt\
  es.txt es_419.txt\
  et.txt\
  fa.txt\
  fi.txt\
  fil.txt\
- fr.txt fr_CA.txt fr_CH.txt\
+ fr.txt\
  gu.txt\
  he.txt\
  hi.txt\

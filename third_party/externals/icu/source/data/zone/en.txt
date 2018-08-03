@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/en.xml
+// *
+// ***************************************************************************
 en{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.72"}
     zoneStrings{
         "Africa:Sao_Tome"{
             ec{"São Tomé"}
@@ -20,9 +26,6 @@ en{
         }
         "Asia:Saigon"{
             ec{"Ho Chi Minh City"}
-        }
-        "Etc:UTC"{
-            ls{"Coordinated Universal Time"}
         }
         "Etc:Unknown"{
             ec{"Unknown City"}
@@ -434,7 +437,7 @@ en{
             ls{"Krasnoyarsk Standard Time"}
         }
         "meta:Kyrgystan"{
-            ls{"Kyrgyzstan Time"}
+            ls{"Kyrgystan Time"}
         }
         "meta:Lanka"{
             ls{"Lanka Time"}
@@ -491,9 +494,9 @@ en{
             ls{"Mexican Pacific Standard Time"}
         }
         "meta:Mongolia"{
-            ld{"Ulaanbaatar Summer Time"}
-            lg{"Ulaanbaatar Time"}
-            ls{"Ulaanbaatar Standard Time"}
+            ld{"Ulan Bator Summer Time"}
+            lg{"Ulan Bator Time"}
+            ls{"Ulan Bator Standard Time"}
         }
         "meta:Moscow"{
             ld{"Moscow Summer Time"}
@@ -588,16 +591,13 @@ en{
         "meta:Ponape"{
             ls{"Ponape Time"}
         }
-        "meta:Pyongyang"{
-            ls{"Pyongyang Time"}
-        }
         "meta:Qyzylorda"{
             ld{"Qyzylorda Summer Time"}
             lg{"Qyzylorda Time"}
             ls{"Qyzylorda Standard Time"}
         }
         "meta:Reunion"{
-            ls{"Réunion Time"}
+            ls{"Reunion Time"}
         }
         "meta:Rothera"{
             ls{"Rothera Time"}

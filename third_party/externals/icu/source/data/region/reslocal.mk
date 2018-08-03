@@ -1,5 +1,5 @@
-# © 2016 and later: Unicode, Inc. and others.
-# License & terms of use: http://www.unicode.org/copyright.html#License
+# *   Copyright (C) 1998-2010, International Business Machines
+# *   Corporation and others.  All Rights Reserved.
 REGION_CLDR_VERSION = %version%
 # A list of txt's to build
 # The downstream packager may not need this file at all if their package is not
@@ -39,7 +39,7 @@ REGION_SOURCE =\
  fa.txt\
  fi.txt\
  fil.txt\
- fr.txt fr_CA.txt\
+ fr.txt\
  gu.txt\
  he.txt\
  hi.txt\

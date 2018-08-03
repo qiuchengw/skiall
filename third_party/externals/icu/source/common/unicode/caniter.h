@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  *******************************************************************************
  * Copyright (C) 1996-2014, International Business Machines Corporation and
@@ -153,13 +151,13 @@ private:
 
     /**
      * Copy constructor. Private for now.
-     * @internal (private)
+     * @internal
      */
     CanonicalIterator(const CanonicalIterator& other);
 
     /**
      * Assignment operator. Private for now.
-     * @internal (private)
+     * @internal
      */
     CanonicalIterator& operator=(const CanonicalIterator& other);
 

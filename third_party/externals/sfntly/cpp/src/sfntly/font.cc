@@ -18,13 +18,12 @@
 
 #include <stdio.h>
 
-#include <algorithm>
 #include <functional>
-#include <iterator>
-#include <limits>
+#include <algorithm>
 #include <map>
 #include <string>
 #include <typeinfo>
+#include <iterator>
 
 #include "sfntly/data/font_input_stream.h"
 #include "sfntly/font_factory.h"
@@ -41,33 +40,24 @@
 
 namespace sfntly {
 
-namespace {
-
-const int32_t kSFNTVersionMajor = 1;
-const int32_t kSFNTVersionMinor = 0;
-
-const int32_t kMaxTableSize = 200 * 1024 * 1024;
-
-bool IsValidHeaderRegion(int32_t data_length, int32_t offset, int32_t length) {
-  return offset >= 0 && length >= 0 &&
-         offset <= std::numeric_limits<int32_t>::max() - length &&
-         offset + length <= data_length;
-}
-
-}  // namespace
+const int32_t SFNTVERSION_MAJOR = 1;
+const int32_t SFNTVERSION_MINOR = 0;
 
 /******************************************************************************
  * Font class
  ******************************************************************************/
 Font::~Font() {}
 
-bool Font::HasTable(int32_t tag) const {
-  return tables_.find(tag) != tables_.end();
+bool Font::HasTable(int32_t tag) {
+  TableMap::const_iterator result = tables_.find(tag);
+  TableMap::const_iterator end = tables_.end();
+  return (result != end);
 }
 
 Table* Font::GetTable(int32_t tag) {
-  if (!HasTable(tag))
+  if (!HasTable(tag)) {
     return NULL;
+  }
   return tables_[tag];
 }
 
@@ -75,9 +65,9 @@ const TableMap* Font::GetTableMap() {
   return &tables_;
 }
 
-void Font::Serialize(OutputStream* os, std::vector<int32_t>* table_ordering) {
+void Font::Serialize(OutputStream* os, IntegerList* table_ordering) {
   assert(table_ordering);
-  std::vector<int32_t> final_table_ordering;
+  IntegerList final_table_ordering;
   GenerateTableOrdering(table_ordering, &final_table_ordering);
   TableHeaderList table_records;
   BuildTableHeadersForSerialization(&final_table_ordering, &table_records);
@@ -87,32 +77,36 @@ void Font::Serialize(OutputStream* os, std::vector<int32_t>* table_ordering) {
   SerializeTables(&fos, &table_records);
 }
 
-Font::Font(int32_t sfnt_version, std::vector<uint8_t>* digest)
+Font::Font(int32_t sfnt_version, ByteVector* digest)
     : sfnt_version_(sfnt_version) {
   // non-trivial assignments that makes debugging hard if placed in
   // initialization list
   digest_ = *digest;
 }
 
-void Font::BuildTableHeadersForSerialization(std::vector<int32_t>* table_ordering,
+void Font::BuildTableHeadersForSerialization(IntegerList* table_ordering,
                                              TableHeaderList* table_headers) {
   assert(table_headers);
   assert(table_ordering);
 
-  std::vector<int32_t> final_table_ordering;
+  IntegerList final_table_ordering;
   GenerateTableOrdering(table_ordering, &final_table_ordering);
   int32_t table_offset = Offset::kTableRecordBegin + num_tables() *
                          Offset::kTableRecordSize;
-  for (size_t i = 0; i < final_table_ordering.size(); ++i) {
-    int32_t tag = final_table_ordering[i];
-    TablePtr table = GetTable(tag);
-    if (table == NULL)
+  for (IntegerList::iterator tag = final_table_ordering.begin(),
+                             tag_end = final_table_ordering.end();
+                             tag != tag_end; ++tag) {
+    if (tables_.find(*tag) == tables_.end()) {
       continue;
-
-    HeaderPtr header = new Header(tag, table->CalculatedChecksum(),
-                                  table_offset, table->header()->length());
-    table_headers->push_back(header);
-    table_offset += (table->DataLength() + 3) & ~3;
+    }
+    TablePtr table = tables_[*tag];
+    if (table != NULL) {
+      HeaderPtr header =
+          new Header(*tag, table->CalculatedChecksum(), table_offset,
+                     table->header()->length());
+      table_headers->push_back(header);
+      table_offset += (table->DataLength() + 3) & ~3;
+    }
   }
 }
 
@@ -145,9 +139,10 @@ void Font::SerializeTables(FontOutputStream* fos,
                            TableHeaderList* table_headers) {
   assert(fos);
   assert(table_headers);
-  for (size_t i = 0; i < table_headers->size(); ++i) {
-    const HeaderPtr& record = (*table_headers)[i];
-    TablePtr target_table = GetTable(record->tag());
+  for (TableHeaderList::iterator record = table_headers->begin(),
+                                 end_of_headers = table_headers->end();
+                                 record != end_of_headers; ++record) {
+    TablePtr target_table = GetTable((*record)->tag());
     if (target_table == NULL) {
 #if !defined (SFNTLY_NO_EXCEPTION)
       throw IOException("Table out of sync with font header.");
@@ -155,17 +150,18 @@ void Font::SerializeTables(FontOutputStream* fos,
       return;
     }
     int32_t table_size = target_table->Serialize(fos);
-    assert(table_size == record->length());
-
+    if (table_size != (*record)->length()) {
+      assert(false);
+    }
     int32_t filler_size = ((table_size + 3) & ~3) - table_size;
     for (int32_t i = 0; i < filler_size; ++i) {
-      fos->Write(static_cast<uint8_t>(0));
+      fos->Write(static_cast<byte_t>(0));
     }
   }
 }
 
-void Font::GenerateTableOrdering(std::vector<int32_t>* default_table_ordering,
-                                 std::vector<int32_t>* table_ordering) {
+void Font::GenerateTableOrdering(IntegerList* default_table_ordering,
+                                 IntegerList* table_ordering) {
   assert(default_table_ordering);
   assert(table_ordering);
   table_ordering->clear();
@@ -180,7 +176,7 @@ void Font::GenerateTableOrdering(std::vector<int32_t>* default_table_ordering,
                           table != table_end; ++table) {
     tables_in_font.insert(Int2BoolEntry(table->first, false));
   }
-  for (std::vector<int32_t>::iterator tag = default_table_ordering->begin(),
+  for (IntegerList::iterator tag = default_table_ordering->begin(),
                              tag_end = default_table_ordering->end();
                              tag != tag_end; ++tag) {
     if (HasTable(*tag)) {
@@ -196,7 +192,7 @@ void Font::GenerateTableOrdering(std::vector<int32_t>* default_table_ordering,
   }
 }
 
-void Font::DefaultTableOrdering(std::vector<int32_t>* default_table_ordering) {
+void Font::DefaultTableOrdering(IntegerList* default_table_ordering) {
   assert(default_table_ordering);
   default_table_ordering->clear();
   if (HasTable(Tag::CFF)) {
@@ -269,7 +265,7 @@ CALLER_ATTACH Font* Font::Builder::Build() {
   return font.Detach();
 }
 
-void Font::Builder::SetDigest(std::vector<uint8_t>* digest) {
+void Font::Builder::SetDigest(ByteVector* digest) {
   digest_.clear();
   digest_ = *digest;
 }
@@ -312,12 +308,15 @@ Table::Builder* Font::Builder::NewTableBuilder(int32_t tag,
 }
 
 void Font::Builder::RemoveTableBuilder(int32_t tag) {
-  table_builders_.erase(tag);
+  TableBuilderMap::iterator target = table_builders_.find(tag);
+  if (target != table_builders_.end()) {
+    table_builders_.erase(target);
+  }
 }
 
 Font::Builder::Builder(FontFactory* factory)
     : factory_(factory),
-      sfnt_version_(Fixed1616::Fixed(kSFNTVersionMajor, kSFNTVersionMinor)) {
+      sfnt_version_(Fixed1616::Fixed(SFNTVERSION_MAJOR, SFNTVERSION_MINOR)) {
 }
 
 void Font::Builder::LoadFont(InputStream* is) {
@@ -394,88 +393,75 @@ void Font::Builder::BuildTablesFromBuilders(Font* font,
 }
 
 static Table::Builder* GetBuilder(TableBuilderMap* builder_map, int32_t tag) {
-  if (!builder_map)
-    return NULL;
+  if (builder_map) {
+    TableBuilderMap::iterator target = builder_map->find(tag);
+    if (target != builder_map->end()) {
+      return target->second.p_;
+    }
+  }
 
-  TableBuilderMap::iterator target = builder_map->find(tag);
-  if (target == builder_map->end())
-    return NULL;
-
-  return target->second.p_;
-}
-
-// Like GetBuilder(), but the returned Builder must be able to support reads.
-static Table::Builder* GetReadBuilder(TableBuilderMap* builder_map, int32_t tag) {
-  Table::Builder* builder = GetBuilder(builder_map, tag);
-  if (!builder || !builder->InternalReadData())
-    return NULL;
-
-  return builder;
+  return NULL;
 }
 
 void Font::Builder::InterRelateBuilders(TableBuilderMap* builder_map) {
-  Table::Builder* raw_head_builder = GetReadBuilder(builder_map, Tag::head);
+  Table::Builder* raw_head_builder = GetBuilder(builder_map, Tag::head);
   FontHeaderTableBuilderPtr header_table_builder;
   if (raw_head_builder != NULL) {
-    header_table_builder =
-        down_cast<FontHeaderTable::Builder*>(raw_head_builder);
+      header_table_builder =
+          down_cast<FontHeaderTable::Builder*>(raw_head_builder);
   }
 
-  Table::Builder* raw_hhea_builder = GetReadBuilder(builder_map, Tag::hhea);
+  Table::Builder* raw_hhea_builder = GetBuilder(builder_map, Tag::hhea);
   HorizontalHeaderTableBuilderPtr horizontal_header_builder;
   if (raw_head_builder != NULL) {
-    horizontal_header_builder =
-        down_cast<HorizontalHeaderTable::Builder*>(raw_hhea_builder);
+      horizontal_header_builder =
+          down_cast<HorizontalHeaderTable::Builder*>(raw_hhea_builder);
   }
 
-  Table::Builder* raw_maxp_builder = GetReadBuilder(builder_map, Tag::maxp);
+  Table::Builder* raw_maxp_builder = GetBuilder(builder_map, Tag::maxp);
   MaximumProfileTableBuilderPtr max_profile_builder;
   if (raw_maxp_builder != NULL) {
-    max_profile_builder =
-        down_cast<MaximumProfileTable::Builder*>(raw_maxp_builder);
+      max_profile_builder =
+          down_cast<MaximumProfileTable::Builder*>(raw_maxp_builder);
   }
 
   Table::Builder* raw_loca_builder = GetBuilder(builder_map, Tag::loca);
   LocaTableBuilderPtr loca_table_builder;
   if (raw_loca_builder != NULL) {
-    loca_table_builder = down_cast<LocaTable::Builder*>(raw_loca_builder);
+      loca_table_builder = down_cast<LocaTable::Builder*>(raw_loca_builder);
   }
 
-  Table::Builder* raw_hmtx_builder = GetReadBuilder(builder_map, Tag::hmtx);
+  Table::Builder* raw_hmtx_builder = GetBuilder(builder_map, Tag::hmtx);
   HorizontalMetricsTableBuilderPtr horizontal_metrics_builder;
   if (raw_hmtx_builder != NULL) {
-    horizontal_metrics_builder =
-        down_cast<HorizontalMetricsTable::Builder*>(raw_hmtx_builder);
+      horizontal_metrics_builder =
+          down_cast<HorizontalMetricsTable::Builder*>(raw_hmtx_builder);
   }
 
 #if defined (SFNTLY_EXPERIMENTAL)
   Table::Builder* raw_hdmx_builder = GetBuilder(builder_map, Tag::hdmx);
   HorizontalDeviceMetricsTableBuilderPtr hdmx_table_builder;
   if (raw_hdmx_builder != NULL) {
-    hdmx_table_builder =
-        down_cast<HorizontalDeviceMetricsTable::Builder*>(raw_hdmx_builder);
+      hdmx_table_builder =
+          down_cast<HorizontalDeviceMetricsTable::Builder*>(raw_hdmx_builder);
   }
 #endif
 
   // set the inter table data required to build certain tables
   if (horizontal_metrics_builder != NULL) {
     if (max_profile_builder != NULL) {
-      int32_t num_glyphs = max_profile_builder->NumGlyphs();
-      if (num_glyphs >= 0)
-        horizontal_metrics_builder->SetNumGlyphs(num_glyphs);
+      horizontal_metrics_builder->SetNumGlyphs(
+          max_profile_builder->NumGlyphs());
     }
     if (horizontal_header_builder != NULL) {
-      int32_t num_hmetrics = horizontal_header_builder->NumberOfHMetrics();
-      if (num_hmetrics >= 0)
-        horizontal_metrics_builder->SetNumberOfHMetrics(num_hmetrics);
+      horizontal_metrics_builder->SetNumberOfHMetrics(
+          horizontal_header_builder->NumberOfHMetrics());
     }
   }
 
   if (loca_table_builder != NULL) {
     if (max_profile_builder != NULL) {
-      int32_t num_glyphs = max_profile_builder->NumGlyphs();
-      if (num_glyphs >= 0)
-        loca_table_builder->SetNumGlyphs(num_glyphs);
+      loca_table_builder->SetNumGlyphs(max_profile_builder->NumGlyphs());
     }
     if (header_table_builder != NULL) {
       loca_table_builder->set_format_version(
@@ -507,9 +493,6 @@ void Font::Builder::ReadHeader(FontInputStream* is,
     int64_t checksum = is->ReadULong();
     int32_t offset = is->ReadULongAsInt();
     int32_t length = is->ReadULongAsInt();
-    if (!IsValidHeaderRegion(is->Length(), offset, length))
-      continue;
-
     HeaderPtr table = new Header(tag, checksum, offset, length);
     records->insert(table);
   }
@@ -525,9 +508,6 @@ void Font::Builder::ReadHeader(ReadableFontData* fd,
   entry_selector_ = fd->ReadUShort(offset + Offset::kEntrySelector);
   range_shift_ = fd->ReadUShort(offset + Offset::kRangeShift);
 
-  if (num_tables_ > fd->Size() / Offset::kTableRecordSize)
-    return;
-
   int32_t table_offset = offset + Offset::kTableRecordBegin;
   for (int32_t table_number = 0;
        table_number < num_tables_;
@@ -536,9 +516,6 @@ void Font::Builder::ReadHeader(ReadableFontData* fd,
     int64_t checksum = fd->ReadULong(table_offset + Offset::kTableCheckSum);
     int32_t offset = fd->ReadULongAsInt(table_offset + Offset::kTableOffset);
     int32_t length = fd->ReadULongAsInt(table_offset + Offset::kTableLength);
-    if (!IsValidHeaderRegion(fd->Size(), offset, length))
-      continue;
-
     HeaderPtr table = new Header(tag, checksum, offset, length);
     records->insert(table);
   }
@@ -548,38 +525,32 @@ void Font::Builder::LoadTableData(HeaderOffsetSortedSet* headers,
                                   FontInputStream* is,
                                   DataBlockMap* table_data) {
   assert(table_data);
-  for (HeaderOffsetSortedSet::iterator it = headers->begin(),
+  for (HeaderOffsetSortedSet::iterator table_header = headers->begin(),
                                        table_end = headers->end();
-                                       it != table_end;
-                                       ++it) {
-    const Ptr<Header> header = *it;
-    is->Skip(header->offset() - is->position());
-    if (header->length() > kMaxTableSize)
-      continue;
-
-    FontInputStream table_is(is, header->length());
+                                       table_header != table_end;
+                                       ++table_header) {
+    is->Skip((*table_header)->offset() - is->position());
+    FontInputStream table_is(is, (*table_header)->length());
     WritableFontDataPtr data;
-    data.Attach(WritableFontData::CreateWritableFontData(header->length()));
-    data->CopyFrom(&table_is, header->length());
-    table_data->insert(DataBlockEntry(header, data));
+    data.Attach(
+        WritableFontData::CreateWritableFontData((*table_header)->length()));
+    data->CopyFrom(&table_is, (*table_header)->length());
+    table_data->insert(DataBlockEntry(*table_header, data));
   }
 }
 
 void Font::Builder::LoadTableData(HeaderOffsetSortedSet* headers,
                                   WritableFontData* fd,
                                   DataBlockMap* table_data) {
-  for (HeaderOffsetSortedSet::iterator it = headers->begin(),
+  for (HeaderOffsetSortedSet::iterator table_header = headers->begin(),
                                        table_end = headers->end();
-                                       it != table_end;
-                                       ++it) {
-    const Ptr<Header> header = *it;
-    if (header->length() > kMaxTableSize)
-      continue;
-
+                                       table_header != table_end;
+                                       ++table_header) {
     FontDataPtr sliced_data;
-    sliced_data.Attach(fd->Slice(header->offset(), header->length()));
+    sliced_data.Attach(
+        fd->Slice((*table_header)->offset(), (*table_header)->length()));
     WritableFontDataPtr data = down_cast<WritableFontData*>(sliced_data.p_);
-    table_data->insert(DataBlockEntry(header, data));
+    table_data->insert(DataBlockEntry(*table_header, data));
   }
 }
 

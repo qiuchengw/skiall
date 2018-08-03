@@ -1,4 +1,4 @@
-// Copyright 2007-2010 Baptiste Lepilleur and The JsonCpp Authors
+// Copyright 2007-2010 Baptiste Lepilleur
 // Distributed under MIT license, or public domain if desired and
 // recognized in your jurisdiction.
 // See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
@@ -6,12 +6,12 @@
 #ifndef JSONTEST_H_INCLUDED
 #define JSONTEST_H_INCLUDED
 
-#include <deque>
 #include <json/config.h>
 #include <json/value.h>
 #include <json/writer.h>
-#include <sstream>
 #include <stdio.h>
+#include <deque>
+#include <sstream>
 #include <string>
 
 // //////////////////////////////////////////////////////////////////
@@ -32,8 +32,8 @@ class Failure {
 public:
   const char* file_;
   unsigned int line_;
-  JSONCPP_STRING expr_;
-  JSONCPP_STRING message_;
+  std::string expr_;
+  std::string message_;
   unsigned int nestingLevel_;
 };
 
@@ -65,7 +65,7 @@ public:
   /// \internal Implementation detail for predicate macros
   PredicateContext* predicateStackTail_;
 
-  void setTestName(const JSONCPP_STRING& name);
+  void setTestName(const std::string& name);
 
   /// Adds an assertion failure.
   TestResult&
@@ -82,7 +82,7 @@ public:
 
   // Generic operator that will work with anything ostream can deal with.
   template <typename T> TestResult& operator<<(const T& value) {
-    JSONCPP_OSTRINGSTREAM oss;
+    std::ostringstream oss;
     oss.precision(16);
     oss.setf(std::ios_base::floatfield);
     oss << value;
@@ -96,18 +96,19 @@ public:
   TestResult& operator<<(Json::UInt64 value);
 
 private:
-  TestResult& addToLastFailure(const JSONCPP_STRING& message);
+  TestResult& addToLastFailure(const std::string& message);
+  unsigned int getAssertionNestingLevel() const;
   /// Adds a failure or a predicate context
   void addFailureInfo(const char* file,
                       unsigned int line,
                       const char* expr,
                       unsigned int nestingLevel);
-  static JSONCPP_STRING indentText(const JSONCPP_STRING& text,
-                                   const JSONCPP_STRING& indent);
+  static std::string indentText(const std::string& text,
+                                const std::string& indent);
 
   typedef std::deque<Failure> Failures;
   Failures failures_;
-  JSONCPP_STRING name_;
+  std::string name_;
   PredicateContext rootPredicateNode_;
   PredicateContext::Id lastUsedPredicateId_;
   /// Failure which is the target of the messages added using operator <<
@@ -154,7 +155,7 @@ public:
   unsigned int testCount() const;
 
   /// Returns the name of the test case at the specified index
-  JSONCPP_STRING testNameAt(unsigned int index) const;
+  std::string testNameAt(unsigned int index) const;
 
   /// Runs the test case at the specified index using the specified TestResult
   void runTestAt(unsigned int index, TestResult& result) const;
@@ -167,7 +168,7 @@ private: // prevents copy construction and assignment
 
 private:
   void listTests() const;
-  bool testIndex(const JSONCPP_STRING& testName, unsigned int& indexOut) const;
+  bool testIndex(const std::string& testName, unsigned int& index) const;
   static void preventDialogOnCrash();
 
 private:
@@ -177,8 +178,8 @@ private:
 
 template <typename T, typename U>
 TestResult& checkEqual(TestResult& result,
-                       T expected,
-                       U actual,
+                       const T& expected,
+                       const U& actual,
                        const char* file,
                        unsigned int line,
                        const char* expr) {
@@ -190,15 +191,9 @@ TestResult& checkEqual(TestResult& result,
   return result;
 }
 
-JSONCPP_STRING ToJsonString(const char* toConvert);
-JSONCPP_STRING ToJsonString(JSONCPP_STRING in);
-#if JSONCPP_USING_SECURE_MEMORY
-JSONCPP_STRING ToJsonString(std::string in);
-#endif
-
 TestResult& checkStringEqual(TestResult& result,
-                             const JSONCPP_STRING& expected,
-                             const JSONCPP_STRING& actual,
+                             const std::string& expected,
+                             const std::string& actual,
                              const char* file,
                              unsigned int line,
                              const char* expr);
@@ -211,7 +206,7 @@ TestResult& checkStringEqual(TestResult& result,
 #define JSONTEST_ASSERT(expr)                                                  \
   if (expr) {                                                                  \
   } else                                                                       \
-    result_->addFailure(__FILE__, __LINE__, #expr)
+  result_->addFailure(__FILE__, __LINE__, #expr)
 
 /// \brief Asserts that the given predicate is true.
 /// The predicate may do other assertions and be a member function of the
@@ -219,7 +214,7 @@ TestResult& checkStringEqual(TestResult& result,
 #define JSONTEST_ASSERT_PRED(expr)                                             \
   {                                                                            \
     JsonTest::PredicateContext _minitest_Context = {                           \
-      result_->predicateId_, __FILE__, __LINE__, #expr, NULL, NULL             \
+      result_->predicateId_, __FILE__, __LINE__, #expr                         \
     };                                                                         \
     result_->predicateStackTail_->next_ = &_minitest_Context;                  \
     result_->predicateId_ += 1;                                                \
@@ -230,14 +225,21 @@ TestResult& checkStringEqual(TestResult& result,
 
 /// \brief Asserts that two values are equals.
 #define JSONTEST_ASSERT_EQUAL(expected, actual)                                \
-  JsonTest::checkEqual(*result_, expected, actual, __FILE__, __LINE__,         \
+  JsonTest::checkEqual(*result_,                                               \
+                       expected,                                               \
+                       actual,                                                 \
+                       __FILE__,                                               \
+                       __LINE__,                                               \
                        #expected " == " #actual)
 
 /// \brief Asserts that two values are equals.
 #define JSONTEST_ASSERT_STRING_EQUAL(expected, actual)                         \
-  JsonTest::checkStringEqual(*result_, JsonTest::ToJsonString(expected),       \
-                             JsonTest::ToJsonString(actual), __FILE__,         \
-                             __LINE__, #expected " == " #actual)
+  JsonTest::checkStringEqual(*result_,                                         \
+                             std::string(expected),                            \
+                             std::string(actual),                              \
+                             __FILE__,                                         \
+                             __LINE__,                                         \
+                             #expected " == " #actual)
 
 /// \brief Asserts that a given expression throws an exception
 #define JSONTEST_ASSERT_THROWS(expr)                                           \
@@ -245,12 +247,13 @@ TestResult& checkStringEqual(TestResult& result,
     bool _threw = false;                                                       \
     try {                                                                      \
       expr;                                                                    \
-    } catch (...) {                                                            \
+    }                                                                          \
+    catch (...) {                                                              \
       _threw = true;                                                           \
     }                                                                          \
     if (!_threw)                                                               \
-      result_->addFailure(__FILE__, __LINE__,                                  \
-                          "expected exception thrown: " #expr);                \
+      result_->addFailure(                                                     \
+          __FILE__, __LINE__, "expected exception thrown: " #expr);            \
   }
 
 /// \brief Begin a fixture test case.
@@ -261,11 +264,9 @@ TestResult& checkStringEqual(TestResult& result,
       return new Test##FixtureType##name();                                    \
     }                                                                          \
                                                                                \
-  public: /* overridden from TestCase */                                       \
-    const char* testName() const JSONCPP_OVERRIDE {                            \
-      return #FixtureType "/" #name;                                           \
-    }                                                                          \
-    void runTestCase() JSONCPP_OVERRIDE;                                       \
+  public: /* overidden from TestCase */                                        \
+    virtual const char* testName() const { return #FixtureType "/" #name; }    \
+    virtual void runTestCase();                                                \
   };                                                                           \
                                                                                \
   void Test##FixtureType##name::runTestCase()

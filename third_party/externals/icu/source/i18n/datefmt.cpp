@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  *******************************************************************************
  * Copyright (C) 1997-2015, International Business Machines Corporation and    *
@@ -80,7 +78,7 @@ public:
             fSkeleton(other.fSkeleton) { }
     virtual ~DateFmtBestPatternKey();
     virtual int32_t hashCode() const {
-        return (int32_t)(37u * (uint32_t)LocaleCacheKey<DateFmtBestPattern>::hashCode() + (uint32_t)fSkeleton.hashCode());
+        return 37 * LocaleCacheKey<DateFmtBestPattern>::hashCode() + fSkeleton.hashCode();
     }
     virtual UBool operator==(const CacheKeyBase &other) const {
        // reflexive
@@ -319,7 +317,7 @@ DateFormat::format(UDate date, UnicodeString& appendTo) const
 {
     // Note that any error information is just lost.  That's okay
     // for this convenience method.
-    FieldPosition fpos(FieldPosition::DONT_CARE);
+    FieldPosition fpos(0);
     return format(date, appendTo, fpos);
 }
 
@@ -498,7 +496,7 @@ DateFormat* U_EXPORT2
 DateFormat::create(EStyle timeStyle, EStyle dateStyle, const Locale& locale)
 {
     UErrorCode status = U_ZERO_ERROR;
-#if U_PLATFORM_USES_ONLY_WIN32_API
+#if U_PLATFORM_HAS_WIN32_API
     char buffer[8];
     int32_t count = locale.getKeywordValue("compat", buffer, sizeof(buffer), status);
 
@@ -586,7 +584,6 @@ DateFormat::adoptNumberFormat(NumberFormat* newNumberFormat)
     delete fNumberFormat;
     fNumberFormat = newNumberFormat;
     newNumberFormat->setParseIntegerOnly(TRUE);
-    newNumberFormat->setGroupingUsed(FALSE);
 }
 //----------------------------------------------------------------------
 
@@ -739,7 +736,7 @@ DateFormat::setBooleanAttribute(UDateFormatBooleanAttribute attr,
 UBool 
 DateFormat::getBooleanAttribute(UDateFormatBooleanAttribute attr, UErrorCode &/*status*/) const {
 
-    return static_cast<UBool>(fBoolFlags.get(attr));
+    return fBoolFlags.get(attr);
 }
 
 U_NAMESPACE_END

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/brx.xml
+// *
+// ***************************************************************************
 brx{
     Countries{
         001{"दुनिया"}
@@ -39,6 +45,7 @@ brx{
         AI{"एंगीला"}
         AL{"अल्बानिया"}
         AM{"आर्मेनिया"}
+        AN{"नीदरलैंड्स एंटिलीज़"}
         AO{"अंगोला"}
         AQ{"अंटार्कटिका"}
         AR{"अर्जेण्टिना"}
@@ -281,5 +288,5 @@ brx{
         ZW{"ज़ीम्बाब्वे"}
         ZZ{"अज्ञात या अवैध प्रदेश"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.74"}
 }

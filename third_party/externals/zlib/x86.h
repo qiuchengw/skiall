@@ -8,7 +8,6 @@
 
 #include "zlib.h"
 
-extern int x86_cpu_enable_ssse3;
 extern int x86_cpu_enable_simd;
 
 void x86_check_features(void);

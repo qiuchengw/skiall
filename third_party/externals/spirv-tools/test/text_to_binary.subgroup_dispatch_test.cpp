@@ -17,27 +17,23 @@
 
 #include "unit_spirv.h"
 
-#include "gmock/gmock.h"
 #include "test_fixture.h"
+#include "gmock/gmock.h"
 
-namespace spvtools {
 namespace {
 
 using ::spvtest::MakeInstruction;
-using std::vector;
 using ::testing::Eq;
+using std::vector;
 
 using OpGetKernelLocalSizeForSubgroupCountTest = spvtest::TextToBinaryTest;
 
-// We should be able to assemble it.  Validation checks are in another test
-// file.
-TEST_F(OpGetKernelLocalSizeForSubgroupCountTest, OpcodeAssemblesInV10) {
+TEST_F(OpGetKernelLocalSizeForSubgroupCountTest, OpcodeUnrecognizedInV10) {
   EXPECT_THAT(
-      CompiledInstructions("%res = OpGetKernelLocalSizeForSubgroupCount %type "
-                           "%sgcount %invoke %param %param_size %param_align",
-                           SPV_ENV_UNIVERSAL_1_0),
-      Eq(MakeInstruction(SpvOpGetKernelLocalSizeForSubgroupCount,
-                         {1, 2, 3, 4, 5, 6, 7})));
+      CompileFailure("%res = OpGetKernelLocalSizeForSubgroupCount %type "
+                     "%sgcount %invoke %param %param_size %param_align",
+                     SPV_ENV_UNIVERSAL_1_0),
+      Eq("Invalid Opcode name 'OpGetKernelLocalSizeForSubgroupCount'"));
 }
 
 TEST_F(OpGetKernelLocalSizeForSubgroupCountTest, ArgumentCount) {
@@ -79,12 +75,11 @@ TEST_F(OpGetKernelLocalSizeForSubgroupCountTest, ArgumentTypes) {
 
 using OpGetKernelMaxNumSubgroupsTest = spvtest::TextToBinaryTest;
 
-TEST_F(OpGetKernelMaxNumSubgroupsTest, OpcodeAssemblesInV10) {
-  EXPECT_THAT(
-      CompiledInstructions("%res = OpGetKernelMaxNumSubgroups %type "
-                           "%invoke %param %param_size %param_align",
-                           SPV_ENV_UNIVERSAL_1_0),
-      Eq(MakeInstruction(SpvOpGetKernelMaxNumSubgroups, {1, 2, 3, 4, 5, 6})));
+TEST_F(OpGetKernelMaxNumSubgroupsTest, OpcodeUnrecognizedInV10) {
+  EXPECT_THAT(CompileFailure("%res = OpGetKernelLocalSizeForSubgroupCount "
+                             "%type %invoke %param %param_size %param_align",
+                             SPV_ENV_UNIVERSAL_1_0),
+              Eq("Invalid Opcode name 'OpGetKernelLocalSizeForSubgroupCount'"));
 }
 
 TEST_F(OpGetKernelMaxNumSubgroupsTest, ArgumentCount) {
@@ -119,5 +114,4 @@ TEST_F(OpGetKernelMaxNumSubgroupsTest, ArgumentTypes) {
       Eq("Expected id to start with %."));
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

@@ -3480,8 +3480,7 @@
     if ( !face )
       return FT_THROW( Invalid_Face_Handle );
 
-    /* FT_ENCODING_NONE is a valid encoding for BDF, PCF, and Windows FNT */
-    if ( encoding == FT_ENCODING_NONE && !face->num_charmaps )
+    if ( encoding == FT_ENCODING_NONE )
       return FT_THROW( Invalid_Argument );
 
     /* FT_ENCODING_UNICODE is special.  We try to find the `best' Unicode */
@@ -3502,7 +3501,7 @@
       if ( cur[0]->encoding == encoding )
       {
         face->charmap = cur[0];
-        return FT_Err_Ok;
+        return 0;
       }
     }
 

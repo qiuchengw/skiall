@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/sl.xml
+// *
+// ***************************************************************************
 sl{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidžan"}
@@ -166,7 +172,7 @@ sl{
             ec{"Anchorage"}
         }
         "America:Anguilla"{
-            ec{"Angvila"}
+            ec{"Anguilla"}
         }
         "America:Antigua"{
             ec{"Antigua"}
@@ -262,7 +268,7 @@ sl{
             ec{"Atikokan"}
         }
         "America:Cordoba"{
-            ec{"Cordoba"}
+            ec{"Kordova"}
         }
         "America:Costa_Rica"{
             ec{"Kostarika"}
@@ -303,9 +309,6 @@ sl{
         "America:El_Salvador"{
             ec{"Salvador"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -325,7 +328,7 @@ sl{
             ec{"Grenada"}
         }
         "America:Guadeloupe"{
-            ec{"Guadeloupe"}
+            ec{"Gvadelup"}
         }
         "America:Guatemala"{
             ec{"Gvatemala"}
@@ -439,7 +442,7 @@ sl{
             ec{"Metlakatla"}
         }
         "America:Mexico_City"{
-            ec{"Ciudad de Mexico"}
+            ec{"Ciudad Mexico"}
         }
         "America:Miquelon"{
             ec{"Miquelon"}
@@ -506,9 +509,6 @@ sl{
         }
         "America:Puerto_Rico"{
             ec{"Portoriko"}
-        }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
         }
         "America:Rainy_River"{
             ec{"Rainy River"}
@@ -658,10 +658,7 @@ sl{
             ec{"Aktobe"}
         }
         "Asia:Ashgabat"{
-            ec{"Ašhabad"}
-        }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
+            ec{"Ašgabat"}
         }
         "Asia:Baghdad"{
             ec{"Bagdad"}
@@ -674,9 +671,6 @@ sl{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Bejrut"}
@@ -691,7 +685,7 @@ sl{
             ec{"Kolkata"}
         }
         "Asia:Chita"{
-            ec{"Čita"}
+            ec{"Chita"}
         }
         "Asia:Choibalsan"{
             ec{"Čojbalsan"}
@@ -713,9 +707,6 @@ sl{
         }
         "Asia:Dushanbe"{
             ec{"Dušanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -832,13 +823,13 @@ sl{
             ec{"Seul"}
         }
         "Asia:Shanghai"{
-            ec{"Šanghaj"}
+            ec{"Šangaj"}
         }
         "Asia:Singapore"{
             ec{"Singapur"}
         }
         "Asia:Srednekolymsk"{
-            ec{"Srednekolimsk"}
+            ec{"Srednekolymsk"}
         }
         "Asia:Taipei"{
             ec{"Tajpej"}
@@ -853,13 +844,10 @@ sl{
             ec{"Teheran"}
         }
         "Asia:Thimphu"{
-            ec{"Timpu"}
+            ec{"Thimphu"}
         }
         "Asia:Tokyo"{
             ec{"Tokio"}
-        }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
         }
         "Asia:Ulaanbaatar"{
             ec{"Ulan Bator"}
@@ -951,9 +939,6 @@ sl{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Univerzalni koordinirani čas"}
-        }
         "Etc:Unknown"{
             ec{"neznano mesto"}
         }
@@ -962,9 +947,6 @@ sl{
         }
         "Europe:Andorra"{
             ec{"Andora"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrahan"}
         }
         "Europe:Athens"{
             ec{"Atene"}
@@ -1024,9 +1006,6 @@ sl{
         "Europe:Kiev"{
             ec{"Kijev"}
         }
-        "Europe:Kirov"{
-            ec{"Kirov"}
-        }
         "Europe:Lisbon"{
             ec{"Lizbona"}
         }
@@ -1085,9 +1064,6 @@ sl{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1105,9 +1081,6 @@ sl{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Užgorod"}
@@ -1592,9 +1565,9 @@ sl{
             ls{"Iranski standardni čas"}
         }
         "meta:Irkutsk"{
-            ld{"Irkutski poletni čas"}
-            lg{"Irkutski čas"}
-            ls{"Irkutski standardni čas"}
+            ld{"Irkutški poletni čas"}
+            lg{"Irkutški čas"}
+            ls{"Irkutški standardni čas"}
         }
         "meta:Israel"{
             ld{"Izraelski poletni čas"}
@@ -1626,9 +1599,9 @@ sl{
             ls{"Kosrajški čas"}
         }
         "meta:Krasnoyarsk"{
-            ld{"Krasnojarski poletni čas"}
-            lg{"Krasnojarski čas"}
-            ls{"Krasnojarski standardni čas"}
+            ld{"Krasnojarški poletni čas"}
+            lg{"Krasnojarški čas"}
+            ls{"Krasnojarški standardni čas"}
         }
         "meta:Kyrgystan"{
             ls{"Kirgizistanski čas"}
@@ -1670,14 +1643,14 @@ sl{
             ls{"Mawsonski čas"}
         }
         "meta:Mexico_Northwest"{
-            ld{"Mehiški severozahodni poletni čas"}
-            lg{"Mehiški severozahodni čas"}
-            ls{"Mehiški severozahodni standardni čas"}
+            ld{"Poletni čas: severozahod Mehike"}
+            lg{"Čas: severozahod Mehike"}
+            ls{"Standardni čas: severozahod Mehike"}
         }
         "meta:Mexico_Pacific"{
-            ld{"Mehiški pacifiški poletni čas"}
-            lg{"Mehiški pacifiški čas"}
-            ls{"Mehiški pacifiški standardni čas"}
+            ld{"Poletni čas: pacifiška obala Mehike"}
+            lg{"Čas: pacifiška obala Mehike"}
+            ls{"Standardni čas: pacifiška obala Mehike"}
         }
         "meta:Mongolia"{
             ld{"Ulanbatorski poletni čas"}
@@ -1725,14 +1698,14 @@ sl{
             ls{"Fernando de Noronški standardni čas"}
         }
         "meta:Novosibirsk"{
-            ld{"Novosibirski poletni čas"}
-            lg{"Novosibirski čas"}
-            ls{"Novosibirski standardni čas"}
+            ld{"Novosibirški poletni čas"}
+            lg{"Novosibirški čas"}
+            ls{"Novosibirški standardni čas"}
         }
         "meta:Omsk"{
-            ld{"Omski poletni čas"}
-            lg{"Omski čas"}
-            ls{"Omski standardni čas"}
+            ld{"Omški poletni čas"}
+            lg{"Omški čas"}
+            ls{"Omški standardni čas"}
         }
         "meta:Pakistan"{
             ld{"Pakistanski poletni čas"}
@@ -1773,9 +1746,6 @@ sl{
         }
         "meta:Ponape"{
             ls{"Ponapski čas"}
-        }
-        "meta:Pyongyang"{
-            ls{"Pjongjanški čas"}
         }
         "meta:Reunion"{
             ls{"Reunionski čas"}
@@ -1875,7 +1845,7 @@ sl{
             ls{"Volgograjski standardni čas"}
         }
         "meta:Vostok"{
-            ls{"Vostoški čas"}
+            ls{"Čas: Vostok"}
         }
         "meta:Wake"{
             ls{"Čas: Otok Wake"}

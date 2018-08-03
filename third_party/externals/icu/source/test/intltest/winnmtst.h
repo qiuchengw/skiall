@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ********************************************************************************
 *   Copyright (C) 2005-2011, International Business Machines
@@ -25,12 +23,12 @@
  * \brief C++ API: Format dates using Windows API.
  */
 
-class NumberFormatTest;
+class TestLog;
 
 class Win32NumberTest
 {
 public:
-    static void testLocales(NumberFormatTest *log);
+    static void testLocales(TestLog *log);
 
 private:
     Win32NumberTest();

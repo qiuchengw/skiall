@@ -12,7 +12,7 @@
 // Author: James Zern (jzern@google.com)
 
 #ifdef HAVE_CONFIG_H
-#include "src/webp/config.h"
+#include "webp/config.h"
 #endif
 
 #if defined(WEBP_HAVE_SDL)
@@ -20,7 +20,7 @@
 #include "webp_to_sdl.h"
 
 #include <stdio.h>
-#include "src/webp/decode.h"
+#include "webp/decode.h"
 
 #if defined(WEBP_HAVE_JUST_SDL_H)
 #include <SDL.h>
@@ -40,7 +40,7 @@ int WebpToSDL(const char* data, unsigned int data_size) {
 
   if (!WebPInitDecoderConfig(&config)) {
     fprintf(stderr, "Library version mismatch!\n");
-    return 0;
+    return 1;
   }
 
   if (!init_ok) {

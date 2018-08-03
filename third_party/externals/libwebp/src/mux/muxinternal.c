@@ -111,6 +111,27 @@ WebPChunk* ChunkSearchList(WebPChunk* first, uint32_t nth, uint32_t tag) {
   return ((nth > 0) && (iter > 0)) ? NULL : first;
 }
 
+// Outputs a pointer to 'prev_chunk->next_',
+//   where 'prev_chunk' is the pointer to the chunk at position (nth - 1).
+// Returns true if nth chunk was found.
+static int ChunkSearchListToSet(WebPChunk** chunk_list, uint32_t nth,
+                                WebPChunk*** const location) {
+  uint32_t count = 0;
+  assert(chunk_list != NULL);
+  *location = chunk_list;
+
+  while (*chunk_list != NULL) {
+    WebPChunk* const cur_chunk = *chunk_list;
+    ++count;
+    if (count == nth) return 1;  // Found.
+    chunk_list = &cur_chunk->next_;
+    *location = chunk_list;
+  }
+
+  // *chunk_list is ok to be NULL if adding at last location.
+  return (nth == 0 || (count == nth - 1)) ? 1 : 0;
+}
+
 //------------------------------------------------------------------------------
 // Chunk writer methods.
 
@@ -135,12 +156,11 @@ WebPMuxError ChunkAssignData(WebPChunk* chunk, const WebPData* const data,
   return WEBP_MUX_OK;
 }
 
-WebPMuxError ChunkSetHead(WebPChunk* const chunk,
-                          WebPChunk** const chunk_list) {
+WebPMuxError ChunkSetNth(WebPChunk* chunk, WebPChunk** chunk_list,
+                         uint32_t nth) {
   WebPChunk* new_chunk;
 
-  assert(chunk_list != NULL);
-  if (*chunk_list != NULL) {
+  if (!ChunkSearchListToSet(chunk_list, nth, &chunk_list)) {
     return WEBP_MUX_NOT_FOUND;
   }
 
@@ -148,23 +168,8 @@ WebPMuxError ChunkSetHead(WebPChunk* const chunk,
   if (new_chunk == NULL) return WEBP_MUX_MEMORY_ERROR;
   *new_chunk = *chunk;
   chunk->owner_ = 0;
-  new_chunk->next_ = NULL;
+  new_chunk->next_ = *chunk_list;
   *chunk_list = new_chunk;
-  return WEBP_MUX_OK;
-}
-
-WebPMuxError ChunkAppend(WebPChunk* const chunk,
-                         WebPChunk*** const chunk_list) {
-  assert(chunk_list != NULL && *chunk_list != NULL);
-
-  if (**chunk_list == NULL) {
-    ChunkSetHead(chunk, *chunk_list);
-  } else {
-    WebPChunk* last_chunk = **chunk_list;
-    while (last_chunk->next_ != NULL) last_chunk = last_chunk->next_;
-    ChunkSetHead(chunk, &last_chunk->next_);
-    *chunk_list = &last_chunk->next_;
-  }
   return WEBP_MUX_OK;
 }
 
@@ -227,11 +232,9 @@ void MuxImageInit(WebPMuxImage* const wpi) {
 WebPMuxImage* MuxImageRelease(WebPMuxImage* const wpi) {
   WebPMuxImage* next;
   if (wpi == NULL) return NULL;
-  // There should be at most one chunk of header_, alpha_, img_ but we call
-  // ChunkListDelete to be safe
-  ChunkListDelete(&wpi->header_);
-  ChunkListDelete(&wpi->alpha_);
-  ChunkListDelete(&wpi->img_);
+  ChunkDelete(wpi->header_);
+  ChunkDelete(wpi->alpha_);
+  ChunkDelete(wpi->img_);
   ChunkListDelete(&wpi->unknown_);
 
   next = wpi->next_;

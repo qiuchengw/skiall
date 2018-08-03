@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************
  * File TMSGFMT.CPP
@@ -32,7 +30,6 @@
 #include "unicode/messagepattern.h"
 #include "unicode/selfmt.h"
 #include "unicode/gregocal.h"
-#include "unicode/strenum.h"
 #include <stdio.h>
 
 void
@@ -70,8 +67,6 @@ TestMessageFormat::runIndexedTest(int32_t index, UBool exec,
     TESTCASE_AUTO(TestTrimArgumentName);
     TESTCASE_AUTO(TestSelectOrdinal);
     TESTCASE_AUTO(TestDecimals);
-    TESTCASE_AUTO(TestArgIsPrefixOfAnother);
-    TESTCASE_AUTO(TestMessageFormatNumberSkeleton);
     TESTCASE_AUTO_END;
 }
 
@@ -143,7 +138,7 @@ void TestMessageFormat::testBug3()
             continue;
         }
         Formattable result;
-        FieldPosition pos(FieldPosition::DONT_CARE);
+        FieldPosition pos(0);
         buffer.remove();
         form->format(myNumber, buffer, pos);
         success = U_ZERO_ERROR;
@@ -165,7 +160,7 @@ void TestMessageFormat::testBug1()
                                "1.0<=Arg<2.0",
                                "2.0<-Arg"};
     ChoiceFormat *cf = new ChoiceFormat(limit, formats, 3);
-    FieldPosition status(FieldPosition::DONT_CARE);
+    FieldPosition status(0);
     UnicodeString toAppendTo;
     cf->format((int32_t)1, toAppendTo, status);
     if (toAppendTo != "1.0<=Arg<2.0") {
@@ -195,7 +190,7 @@ void TestMessageFormat::testBug2()
 }
 
 #if 0
-#if defined(_DEBUG)
+#if defined(_DEBUG) && U_IOSTREAM_SOURCE >= 199711
 //----------------------------------------------------
 // console I/O
 //----------------------------------------------------
@@ -246,7 +241,7 @@ operator<<( IntlTest&           stream,
     }
     return stream;
 }
-#endif /* defined(_DEBUG) */
+#endif /* defined(_DEBUG) && U_IOSTREAM_SOURCE >= 199711 */
 #endif
 
 void TestMessageFormat::PatternTest() 
@@ -323,7 +318,7 @@ void TestMessageFormat::PatternTest()
         //it_out << "Pat out: " << form->toPattern(buffer));
         UnicodeString result;
         int32_t count = 4;
-        FieldPosition fieldpos(FieldPosition::DONT_CARE);
+        FieldPosition fieldpos(0);
         form->format(testArgs, count, result, fieldpos, success);
         if (U_FAILURE(success)) {
             dataerrln("MessageFormat failed test #3 - %s", u_errorName(success));
@@ -383,7 +378,7 @@ void TestMessageFormat::sample()
     UnicodeString abc("abc");
     UnicodeString def("def");
     Formattable testArgs1[] = { abc, def };
-    FieldPosition fieldpos(FieldPosition::DONT_CARE);
+    FieldPosition fieldpos(0);
     assertEquals("format",
                  "There are abc files on def",
                  form->format(testArgs1, 2, buffer2, fieldpos, success));
@@ -782,7 +777,6 @@ void TestMessageFormat::testMsgFormatSelect(/* char* par */)
     err = U_ZERO_ERROR;
     //Create the MessageFormat with Plural format with embedded select format(nested pattern)
     MessageFormat* msgFmt5 = internalCreate(t5.unescape(), Locale("fr"),err,(char*)"From TestMessageFormat::TestSelectFormat create t5");
-    // with no data the above should fail but it seems to construct an invalid MessageFormat with no reported error. See #13079
     if (!U_FAILURE(err)) {
         //Arguments 
         Formattable testArgs10[] = {"Kirti",(int32_t)6,"female"};  
@@ -991,8 +985,8 @@ void TestMessageFormat::testSetLocale()
     // {sfb} to get $, would need Locale::US, not Locale::ENGLISH
     // Just use unlocalized currency symbol.
     //UnicodeString compareStrEng = "At <time> on Aug 8, 1997, you made a deposit of $456.83.";
-    UnicodeString compareStrEng = "At <time> on Aug 8, 1997, you made a deposit of XXX";
-    compareStrEng += (UChar) 0x00a0;
+    UnicodeString compareStrEng = "At <time> on Aug 8, 1997, you made a deposit of ";
+    compareStrEng += (UChar) 0x00a4;
     compareStrEng += "456.83.";
     // {sfb} to get DM, would need Locale::GERMANY, not Locale::GERMAN
     // Just use unlocalized currency symbol.
@@ -1000,11 +994,12 @@ void TestMessageFormat::testSetLocale()
     UnicodeString compareStrGer = "At <time> on 08.08.1997, you made a deposit of ";
     compareStrGer += "456,83";
     compareStrGer += (UChar) 0x00a0;
-    compareStrGer += "XXX.";
+    compareStrGer += (UChar) 0x00a4;
+    compareStrGer += ".";
 
     MessageFormat msg( formatStr, err);
     result = "";
-    FieldPosition pos(FieldPosition::DONT_CARE);
+    FieldPosition pos(0);
     result = msg.format(
         arguments,
         3,
@@ -1063,7 +1058,7 @@ void TestMessageFormat::testFormat()
     {
         Formattable( UDate(8.71068e+011), Formattable::kIsDate )
     };
-    const int32_t ft_cnt = UPRV_LENGTHOF(ftarray);
+    const int32_t ft_cnt = sizeof(ftarray) / sizeof(Formattable);
     Formattable ft_arr( ftarray, ft_cnt );
 
     Formattable* fmt = new Formattable(UDate(8.71068e+011), Formattable::kIsDate);
@@ -1076,7 +1071,7 @@ void TestMessageFormat::testFormat()
 
     err = U_ZERO_ERROR;
     MessageFormat msg( formatStr, err);
-    FieldPosition fp(FieldPosition::DONT_CARE);
+    FieldPosition fp(0);
 
     result = "";
     fp = 0;
@@ -1408,7 +1403,7 @@ static void _testCopyConstructor2()
     UnicodeString formatStr("Hello World on {0,date,full}", "");
     UnicodeString resultStr(" ", "");
     UnicodeString result;
-    FieldPosition fp(FieldPosition::DONT_CARE);
+    FieldPosition fp(0);
     UDate d = Calendar::getNow();
     const Formattable fargs( d, Formattable::kIsDate );
 
@@ -1491,7 +1486,7 @@ void TestMessageFormat::TestUnlimitedArgsAndSubformats() {
         Formattable("of course"),
         Formattable("Horace"),
     };
-    const int32_t ARGS_LENGTH = UPRV_LENGTHOF(ARGS);
+    const int32_t ARGS_LENGTH = sizeof(ARGS) / sizeof(ARGS[0]);
     Formattable ARGS_OBJ(ARGS, ARGS_LENGTH);
 
     UnicodeString expected =
@@ -1524,7 +1519,7 @@ void TestMessageFormat::TestRBNF(void) {
         // do not always parse, so do not include them
         "0", "1", "12", "100", "123", "1001", "123,456", "-17",
     };
-    int32_t values_count = UPRV_LENGTHOF(values);
+    int32_t values_count = sizeof(values)/sizeof(values[0]);
 
     UnicodeString formats[] = {
         "There are {0,spellout} files to search.",
@@ -1534,7 +1529,7 @@ void TestMessageFormat::TestRBNF(void) {
         "Searching this file will take {0,duration} to complete.",
         "Searching this file will take {0,duration,%with-words} to complete.",
     };
-    int32_t formats_count = UPRV_LENGTHOF(formats);
+    int32_t formats_count = sizeof(formats)/sizeof(formats[0]);
 
     Formattable args[1];
 
@@ -1554,7 +1549,7 @@ void TestMessageFormat::TestRBNF(void) {
             if (U_FAILURE(ec)) {
                 errln((UnicodeString)"Failed to parse test argument " + values[j]);
             } else {
-                FieldPosition fp(FieldPosition::DONT_CARE);
+                FieldPosition fp(0);
                 UnicodeString result;
                 fmt->format(args, 1, result, fp, ec);
                 logln((UnicodeString)"value: " + toString(args[0]) + " --> " + result + UnicodeString(" ec: ") + u_errorName(ec));
@@ -1646,7 +1641,7 @@ void TestMessageFormat::TestCompatibleApostrophe() {
     }
 
     Formattable zero0[] = { (int32_t)0 };
-    FieldPosition fieldpos(FieldPosition::DONT_CARE);
+    FieldPosition fieldpos(0);
     UnicodeString buffer1, buffer2;
     assertEquals("incompatible ICU MessageFormat compatibility-apostrophe behavior",
             "ab12'3'4''.yz",
@@ -1705,7 +1700,7 @@ void TestMessageFormat::testAutoQuoteApostrophe(void) {
         "'} '{'}'", "'} '{'}''",
         "'} {{{''", "'} {{{'''",
     };
-    int32_t pattern_count = UPRV_LENGTHOF(patterns);
+    int32_t pattern_count = sizeof(patterns)/sizeof(patterns[0]);
 
     for (int i = 0; i < pattern_count; i += 2) {
         UErrorCode status = U_ZERO_ERROR;
@@ -1800,11 +1795,11 @@ void TestMessageFormat::testCoverage(void) {
 void TestMessageFormat::testGetFormatNames() {
     IcuTestErrorCode errorCode(*this, "testGetFormatNames");
     MessageFormat msgfmt("Hello, {alice,number} {oops,date,full}  {zip,spellout} World.", Locale::getRoot(), errorCode);
-    if(errorCode.errDataIfFailureAndReset("MessageFormat() failed")) {
+    if(errorCode.logDataIfFailureAndReset("MessageFormat() failed")) {
         return;
     }
     LocalPointer<StringEnumeration> names(msgfmt.getFormatNames(errorCode));
-    if(errorCode.errIfFailureAndReset("msgfmt.getFormatNames() failed")) {
+    if(errorCode.logIfFailureAndReset("msgfmt.getFormatNames() failed")) {
         return;
     }
     const UnicodeString *name;
@@ -1846,11 +1841,11 @@ void TestMessageFormat::TestTrimArgumentName() {
     // ICU 4.8 allows and ignores white space around argument names and numbers.
     IcuTestErrorCode errorCode(*this, "TestTrimArgumentName");
     MessageFormat m("a { 0 , number , '#,#'#.0 } z", Locale::getEnglish(), errorCode);
-    if (errorCode.errDataIfFailureAndReset("Unable to instantiate MessageFormat")) {
+    if (errorCode.logDataIfFailureAndReset("Unable to instantiate MessageFormat")) {
         return;
     }
     Formattable args[1] = { (int32_t)2 };
-    FieldPosition ignore(FieldPosition::DONT_CARE);
+    FieldPosition ignore(0);
     UnicodeString result;
     assertEquals("trim-numbered-arg format() failed", "a  #,#2.0  z",
                  m.format(args, 1, result, ignore, errorCode));
@@ -1871,11 +1866,11 @@ void TestMessageFormat::TestSelectOrdinal() {
         "{0,plural,one{1 file}other{# files}}, "
         "{0,selectordinal,one{#st file}two{#nd file}few{#rd file}other{#th file}}",
         Locale::getEnglish(), errorCode);
-    if (errorCode.errDataIfFailureAndReset("Unable to instantiate MessageFormat")) {
+    if (errorCode.logDataIfFailureAndReset("Unable to instantiate MessageFormat")) {
         return;
     }
     Formattable args[1] = { (int32_t)21 };
-    FieldPosition ignore(FieldPosition::DONT_CARE);
+    FieldPosition ignore(0);
     UnicodeString result;
     assertEquals("plural-and-ordinal format(21) failed", "21 files, 21st file",
                  m.format(args, 1, result, ignore, errorCode), TRUE);
@@ -1892,7 +1887,7 @@ void TestMessageFormat::TestSelectOrdinal() {
     assertEquals("plural-and-ordinal format(3) failed", "3 files, 3rd file",
                  m.format(args, 1, result.remove(), ignore, errorCode), TRUE);
 
-    errorCode.errDataIfFailureAndReset("");
+    errorCode.logDataIfFailureAndReset("");
 }
 
 void TestMessageFormat::TestDecimals() {
@@ -1964,67 +1959,6 @@ void TestMessageFormat::TestDecimals() {
     assertEquals("offset-decimals format(1)", "2.5 meters",
             m2.format(args, 1, result, ignore, errorCode), TRUE);
     errorCode.reset();
-}
-
-void TestMessageFormat::TestArgIsPrefixOfAnother() {
-    IcuTestErrorCode errorCode(*this, "TestArgIsPrefixOfAnother");
-    // Ticket #11952
-    MessageFormat mf1("{0,select,a{A}ab{AB}abc{ABC}other{?}}", Locale::getEnglish(), errorCode);
-    Formattable args[3];
-    FieldPosition ignore;
-    UnicodeString result;
-    args[0].setString("a");
-    assertEquals("a", "A", mf1.format(args, 1, result, ignore, errorCode));
-    args[0].setString("ab");
-    assertEquals("ab", "AB", mf1.format(args, 1, result.remove(), ignore, errorCode));
-    args[0].setString("abc");
-    assertEquals("abc", "ABC", mf1.format(args, 1, result.remove(), ignore, errorCode));
-
-    // Ticket #12172
-    MessageFormat mf2("{a} {aa} {aaa}", Locale::getEnglish(), errorCode);
-    UnicodeString argNames[3] = { "a", "aa", "aaa" };
-    args[0].setString("A");
-    args[1].setString("AB");
-    args[2].setString("ABC");
-    assertEquals("a aa aaa", "A AB ABC", mf2.format(argNames, args, 3, result.remove(), errorCode));
-
-    // Ticket #12172
-    MessageFormat mf3("{aa} {aaa}", Locale::getEnglish(), errorCode);
-    assertEquals("aa aaa", "AB ABC", mf3.format(argNames + 1, args + 1, 2, result.remove(), errorCode));
-}
-
-void TestMessageFormat::TestMessageFormatNumberSkeleton() {
-    IcuTestErrorCode status(*this, "TestMessageFormatNumberSkeleton");
-
-    static const struct TestCase {
-        const UChar* messagePattern;
-        const char* localeName;
-        double arg;
-        const UChar* expected;
-    } cases[] = {
-            { u"{0,number,::percent}", "en", 50, u"50%" },
-            { u"{0,number,::percent scale/100}", "en", 0.5, u"50%" },
-            { u"{0,number,   ::   percent   scale/100   }", "en", 0.5, u"50%" },
-            { u"{0,number,::currency/USD}", "en", 23, u"$23.00" },
-            { u"{0,number,::precision-integer}", "en", 514.23, u"514" },
-            { u"{0,number,::.000}", "en", 514.23, u"514.230" },
-            { u"{0,number,::.}", "en", 514.23, u"514" },
-            { u"{0,number,::}", "fr", 514.23, u"514,23" },
-            { u"Cost: {0,number,::currency/EUR}.", "en", 4.3, u"Cost: €4.30." },
-            { u"{0,number,'::'0.00}", "en", 50, u"::50.00" }, // pattern literal
-    };
-
-    for (auto& cas : cases) {
-        status.setScope(cas.messagePattern);
-        MessageFormat msgf(cas.messagePattern, cas.localeName, status);
-        UnicodeString sb;
-        FieldPosition fpos(0);
-        Formattable argsArray[] = {{cas.arg}};
-        Formattable args(argsArray, 1);
-        msgf.format(args, sb, status);
-
-        assertEquals(cas.messagePattern, cas.expected, sb);
-    }
 }
 
 #endif /* #if !UCONFIG_NO_FORMATTING */

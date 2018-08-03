@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/id.xml
+// *
+// ***************************************************************************
 id{
     Currencies{
         ADP{
@@ -214,13 +220,9 @@ id{
             "BYB",
             "Rubel Baru Belarus (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "Rubel Belarusia",
-        }
         BYR{
             "BYR",
-            "Rubel Belarusia (2000–2016)",
+            "Rubel Belarusia",
         }
         BZD{
             "BZD",
@@ -258,13 +260,9 @@ id{
             "CLP",
             "Peso Cile",
         }
-        CNH{
-            "CNH",
-            "Yuan Tiongkok (luar negeri)",
-        }
         CNY{
             "CN¥",
-            "Yuan Tiongkok",
+            "Yuan China",
         }
         COP{
             "COP",
@@ -676,10 +674,6 @@ id{
         }
         MRO{
             "MRO",
-            "Ouguiya Mauritania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Ouguiya Mauritania",
         }
         MTL{
@@ -780,7 +774,7 @@ id{
         }
         PEN{
             "PEN",
-            "Sol Peru",
+            "Nuevo Sol Peru",
         }
         PES{
             "PES",
@@ -912,10 +906,6 @@ id{
         }
         STD{
             "STD",
-            "Dobra Sao Tome dan Principe (1977–2017)",
-        }
-        STN{
-            "STN",
             "Dobra Sao Tome dan Principe",
         }
         SUR{
@@ -1204,7 +1194,7 @@ id{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1221,7 +1211,6 @@ id{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -1262,7 +1251,6 @@ id{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"lei"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
@@ -1271,7 +1259,7 @@ id{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1417,11 +1405,8 @@ id{
         BYB{
             other{"Rubel Baru Belarus (1994–1999)"}
         }
-        BYN{
-            other{"Rubel Belarusia"}
-        }
         BYR{
-            other{"Rubel Belarusia (2000–2016)"}
+            other{"Rubel Belarusia"}
         }
         BZD{
             other{"Dolar Belize"}
@@ -1438,11 +1423,8 @@ id{
         CLP{
             other{"Peso Cile"}
         }
-        CNH{
-            other{"Yuan Tiongkok (luar negeri)"}
-        }
         CNY{
-            other{"Yuan Tiongkok"}
+            other{"Yuan China"}
         }
         COP{
             other{"Peso Kolombia"}
@@ -1649,9 +1631,6 @@ id{
             other{"Pataca Makau"}
         }
         MRO{
-            other{"Ouguiya Mauritania (1973–2017)"}
-        }
-        MRU{
             other{"Ouguiya Mauritania"}
         }
         MUR{
@@ -1709,7 +1688,7 @@ id{
             other{"Balboa Panama"}
         }
         PEN{
-            other{"Sol Peru"}
+            other{"Nuevo Sol Peru"}
         }
         PES{
             other{"Sol Peru (1863–1965)"}
@@ -1793,9 +1772,6 @@ id{
             other{"Pound Sudan Selatan"}
         }
         STD{
-            other{"Dobra Sao Tome dan Principe (1977–2017)"}
-        }
-        STN{
             other{"Dobra Sao Tome dan Principe"}
         }
         SYP{
@@ -1889,7 +1865,7 @@ id{
             other{"Franc CFP"}
         }
         XXX{
-            other{"(mata uang tidak dikenal)"}
+            other{"Mata Uang Tidak Dikenal"}
         }
         YER{
             other{"Rial Yaman"}
@@ -1928,5 +1904,5 @@ id{
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

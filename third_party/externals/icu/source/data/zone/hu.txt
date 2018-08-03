@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/hu.xml
+// *
+// ***************************************************************************
 hu{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -274,7 +280,7 @@ hu{
             ec{"Cuiabá"}
         }
         "America:Curacao"{
-            ec{"Curaçao"}
+            ec{"Curacao"}
         }
         "America:Danmarkshavn"{
             ec{"Danmarkshavn"}
@@ -302,9 +308,6 @@ hu{
         }
         "America:El_Salvador"{
             ec{"Salvador"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -475,7 +478,7 @@ hu{
             ec{"Beulah, Észak-Dakota"}
         }
         "America:North_Dakota:Center"{
-            ec{"Center, Észak-Dakota"}
+            ec{"Középső, Észak-Dakota"}
         }
         "America:North_Dakota:New_Salem"{
             ec{"New Salem, Észak-Dakota"}
@@ -506,9 +509,6 @@ hu{
         }
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
-        }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
         }
         "America:Rainy_River"{
             ec{"Rainy River"}
@@ -660,9 +660,6 @@ hu{
         "Asia:Ashgabat"{
             ec{"Asgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -674,9 +671,6 @@ hu{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Bejrút"}
@@ -703,7 +697,7 @@ hu{
             ec{"Damaszkusz"}
         }
         "Asia:Dhaka"{
-            ec{"Dakka"}
+            ec{"Dháka"}
         }
         "Asia:Dili"{
             ec{"Dili"}
@@ -713,9 +707,6 @@ hu{
         }
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gáza"}
@@ -814,7 +805,7 @@ hu{
             ec{"Kizilorda"}
         }
         "Asia:Rangoon"{
-            ec{"Yangon"}
+            ec{"Rangoon"}
         }
         "Asia:Riyadh"{
             ec{"Rijád"}
@@ -858,9 +849,6 @@ hu{
         "Asia:Tokyo"{
             ec{"Tokió"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomszk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulánbátor"}
         }
@@ -895,10 +883,10 @@ hu{
             ec{"Kanári-szigetek"}
         }
         "Atlantic:Cape_Verde"{
-            ec{"Zöld-foki szigetek"}
+            ec{"Zöld-Foki Szigetek"}
         }
         "Atlantic:Faeroe"{
-            ec{"Feröer"}
+            ec{"Faroe"}
         }
         "Atlantic:Madeira"{
             ec{"Madeira"}
@@ -951,9 +939,6 @@ hu{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"egyezményes koordinált világidő"}
-        }
         "Etc:Unknown"{
             ec{"Ismeretlen város"}
         }
@@ -962,9 +947,6 @@ hu{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Asztrahán"}
         }
         "Europe:Athens"{
             ec{"Athén"}
@@ -1024,9 +1006,6 @@ hu{
         "Europe:Kiev"{
             ec{"Kijev"}
         }
-        "Europe:Kirov"{
-            ec{"Kirov"}
-        }
         "Europe:Lisbon"{
             ec{"Lisszabon"}
         }
@@ -1085,9 +1064,6 @@ hu{
         "Europe:Sarajevo"{
             ec{"Szarajevó"}
         }
-        "Europe:Saratov"{
-            ec{"Szaratov"}
-        }
         "Europe:Simferopol"{
             ec{"Szimferopol"}
         }
@@ -1105,9 +1081,6 @@ hu{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovszk"}
         }
         "Europe:Uzhgorod"{
             ec{"Ungvár"}
@@ -1281,7 +1254,7 @@ hu{
             ec{"Tongatapu"}
         }
         "Pacific:Truk"{
-            ec{"Truk"}
+            ec{"Chuuk"}
         }
         "Pacific:Wake"{
             ec{"Wake-sziget"}
@@ -1372,7 +1345,7 @@ hu{
             ls{"arab téli idő"}
         }
         "meta:Argentina"{
-            ld{"argentínai nyári idő"}
+            ld{"Argentínai nyári idő"}
             lg{"argentínai idő"}
             ls{"argentínai téli idő"}
         }
@@ -1413,7 +1386,7 @@ hu{
         }
         "meta:Azerbaijan"{
             ld{"azerbajdzsáni nyári idő"}
-            lg{"azerbajdzsáni idő"}
+            lg{"Azerbajdzsáni idő"}
             ls{"azerbajdzsáni téli idő"}
         }
         "meta:Azores"{
@@ -1544,7 +1517,7 @@ hu{
             ls{"fidzsi téli idő"}
         }
         "meta:French_Guiana"{
-            ls{"francia-guyanai idő"}
+            ls{"francia-guianai idő"}
         }
         "meta:French_Southern"{
             ls{"francia déli és antarktiszi idő"}
@@ -1588,7 +1561,7 @@ hu{
         }
         "meta:Hawaii_Aleutian"{
             ld{"hawaii-aleuti nyári idő"}
-            lg{"hawaii-aleuti időzóna"}
+            lg{"hawaii-aleut időzóna"}
             ls{"hawaii-aleuti téli idő"}
         }
         "meta:Hong_Kong"{
@@ -1808,18 +1781,15 @@ hu{
             ls{"phoenix-szigeteki téli idő"}
         }
         "meta:Pierre_Miquelon"{
-            ld{"Saint-Pierre és Miquelon-i nyári idő"}
-            lg{"Saint-Pierre és Miquelon-i idő"}
-            ls{"Saint-Pierre és Miquelon-i zónaidő"}
+            ld{"Saint Pierre és Miquelon-i nyári idő"}
+            lg{"Saint Pierre és Miquelon-i idő"}
+            ls{"Saint Pierre és Miquelon-i zónaidő"}
         }
         "meta:Pitcairn"{
             ls{"pitcairn-szigeteki idő"}
         }
         "meta:Ponape"{
             ls{"ponape-szigeti idő"}
-        }
-        "meta:Pyongyang"{
-            ls{"phenjani idő"}
         }
         "meta:Qyzylorda"{
             ld{"Qyzylordai nyári idő"}
@@ -1933,13 +1903,13 @@ hu{
             ls{"Wallis és Futuna-i idő"}
         }
         "meta:Yakutsk"{
-            ld{"jakutszki nyári idő"}
+            ld{"Jakutszki nyári idő"}
             lg{"jakutszki idő"}
             ls{"jakutszki téli idő"}
         }
         "meta:Yekaterinburg"{
-            ld{"jekatyerinburgi nyári idő"}
-            lg{"jekatyerinburgi idő"}
+            ld{"Jekatyerinburgi nyári idő"}
+            lg{"Jekatyerinburgi idő"}
             ls{"jekatyerinburgi téli idő"}
         }
         fallbackFormat{"{1} ({0})"}

@@ -1780,11 +1780,11 @@
       }
 
       if ( coord < a->def )
-        normalized[i] = -FT_DivFix( SUB_LONG( coord, a->def ),
-                                    SUB_LONG( a->minimum, a->def ) );
+        normalized[i] = -FT_DivFix( coord - a->def,
+                                    a->minimum - a->def );
       else if ( coord > a->def )
-        normalized[i] = FT_DivFix( SUB_LONG( coord, a->def ),
-                                   SUB_LONG( a->maximum, a->def ) );
+        normalized[i] = FT_DivFix( coord - a->def,
+                                   a->maximum - a->def );
       else
         normalized[i] = 0;
     }
@@ -2533,14 +2533,11 @@
 
       if ( FT_IS_NAMED_INSTANCE( FT_FACE( face ) ) )
       {
-        FT_UInt  instance_index = (FT_UInt)face->root.face_index >> 16;
+        FT_UInt  idx = (FT_UInt)face->root.face_index >> 16;
 
 
         c = blend->normalizedcoords + i;
-        n = blend->normalized_stylecoords            +
-            ( instance_index - 1 ) * mmvar->num_axis +
-            i;
-
+        n = blend->normalized_stylecoords + idx * mmvar->num_axis + i;
         for ( j = i; j < mmvar->num_axis; j++, n++, c++ )
           if ( *c != *n )
             have_diff = 1;
@@ -2555,11 +2552,7 @@
 
       /* return value -1 indicates `no change' */
       if ( !have_diff )
-      {
-        face->doblend = TRUE;
-
         return -1;
-      }
 
       for ( ; i < mmvar->num_axis; i++ )
       {

@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 2010-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  charstr.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -15,25 +13,12 @@
 */
 
 #include "unicode/utypes.h"
-#include "unicode/putil.h"
 #include "charstr.h"
 #include "cmemory.h"
 #include "cstring.h"
 #include "uinvchar.h"
 
 U_NAMESPACE_BEGIN
-
-CharString::CharString(CharString&& src) U_NOEXCEPT
-        : buffer(std::move(src.buffer)), len(src.len) {
-    src.len = 0;  // not strictly necessary because we make no guarantees on the source string
-}
-
-CharString& CharString::operator=(CharString&& src) U_NOEXCEPT {
-    buffer = std::move(src.buffer);
-    len = src.len;
-    src.len = 0;  // not strictly necessary because we make no guarantees on the source string
-    return *this;
-}
 
 CharString &CharString::copyFrom(const CharString &s, UErrorCode &errorCode) {
     if(U_SUCCESS(errorCode) && this!=&s && ensureCapacity(s.len+1, 0, errorCode)) {
@@ -159,7 +144,7 @@ UBool CharString::ensureCapacity(int32_t capacity,
     return TRUE;
 }
 
-CharString &CharString::appendPathPart(StringPiece s, UErrorCode &errorCode) {
+CharString &CharString::appendPathPart(const StringPiece &s, UErrorCode &errorCode) {
     if(U_FAILURE(errorCode)) {
         return *this;
     }

@@ -11,7 +11,6 @@ Contributors
     Debalina Bhattacharjee
     Michael Chock
     James Jones
-    Daniel Kartch
 
 Contact
 
@@ -23,7 +22,7 @@ Status
 
 Version
 
-    Version 2, June 28, 2018
+    Version 1, June 20, 2014
 
 Number
 
@@ -35,14 +34,10 @@ Extension Type
 
 Dependencies
 
-    This extension is written against the language of EGL 1.5 and the
-    EGL_EXT_sync_reuse extension.
+    This extension is written against the language of EGL 1.5.
 
     Either EGL_KHR_fence_sync and the EGLAttrib type or EGL 1.5 are
     required.
-
-    This extension interacts with, but does not require,
-    EGL_EXT_sync_reuse.
 
     This extension interacts with EGL_NV_device_cuda.
 
@@ -82,31 +77,31 @@ New Tokens
 
         EGL_SYNC_CUDA_EVENT_COMPLETE_NV 0x323D
 
-Add to section 3.8.1 (Sync Objects) of the EGL 1.5 specification, after
-the sixth paragraph:
+Changes to Chapter 3 of the EGL 1.5 Specification (EGL Functions and
+Errors)
 
-    Likewise, a <CUDA event sync object> reflects the status of a
-    corresponding CUDA object. Waiting on this type of sync object is
-    equivalent to waiting for completion of the corresponding linked
-    CUDA event object.
+    In section 3.8.1 (Sync Objects) Replace the sixth paragraph:
 
-Add a new section following section 3.8.1.2 (Creating and Signaling
-OpenCL Event Sync Objects):
+   "A <OpenCL event sync object> reflects the status of a corresponding
+    OpenCL object to which the sync object is linked. Likewise, a <CUDA
+    event sync object> reflects the status of a corresponding CUDA
+    object. These provide another method of sharing images or compute
+    results between EGL and the CUDA and OpenCL client APIs (see
+    Chapter 9 of the OpenCL Specification and the cl_khr_egl_image
+    extension for a second method of synchronization with OpenCL).
+    Waiting on either type of sync object is equivalent to waiting for
+    completion of the corresponding linked CUDA or OpenCL event object."
 
-    Section 3.8.1.X Creating and Signaling CUDA Event Sync Objects
+    Add a new section following section 3.8.1.2 (Creating OpenCL Event
+    Sync Objects):
+
+   "Section 3.8.1.X Creating CUDA Event Sync Objects
 
     If <type> is EGL_SYNC_CUDA_EVENT_NV, a CUDA event sync object is
-    created. The <attrib_list> may contain the attribute
+    created. In this case <attrib_list> must contain the attribute
     EGL_CUDA_EVENT_HANDLE_NV, set to a pointer to a cudaEvent_t object.
-    If it does not contain this attribute, the sync object will start in
-    the signaled state, and an event attribute must be provided the
-    first time eglUnsignalSyncEXT is called. Otherwise, a call to
-    eglUnsignalSyncEXT may replace this event attribute or leave it
-    unspecified, causing the previous object to be reused.
-
-    A cudaEvent_t object provided to eglCreateSync or eglUnsignalSyncEXT
-    must be properly initialized and recorded by the CUDA API (using
-    cudaEventCreate and cudaEventRecord), and the CUDA device
+    The object must be properly initialized and recorded by the CUDA API
+    (using cudaCreateEvent and cudaEventRecord), and the CUDA device
     used to create the event must correspond to <dpy>[fn1]. Note that
     EGL_CUDA_EVENT_HANDLE_NV is not a queryable property of a sync
     object.
@@ -124,57 +119,47 @@ OpenCL Event Sync Objects):
         EGL_SYNC_STATUS         Depends on status of <event>
         EGL_SYNC_CONDITION      EGL_SYNC_CUDA_EVENT_COMPLETE_NV
 
-    If an <event> is linked to the sync object, the status of this type
-    of sync object depends on the state of <event> evaluated at the time
-    of the most recent call to eglCreateSync or eglUnsignalSyncEXT. If
-    all device work preceding the most recent call to cudaEventRecord on
-    the event has not yet completed, the status of the linked sync
-    object will be EGL_UNSIGNALED. If all such work has completed, the
-    status of the linked sync object will be EGL_SIGNALED. Calling
-    cudaEventRecord to modify an event has no effect on the sync object
-    while its status is EGL_UNSIGNALED, but will have an effect if the
-    event is reevaluated at a subsequent eglUnsignalSyncEXT call.
+    The status of such a sync object depends on the state of <event> at
+    the time eglCreateSync was called. If all device work preceding the
+    most recent call to cudaEventRecord on the event has not yet
+    completed, the status of the linked sync object will be
+    EGL_UNSIGNALED. If all such work has completed, the status of the
+    linked sync object will be EGL_SIGNALED. Calling cudaEventRecord has
+    no effect on a previously created sync object.
 
     The only condition supported for CUDA event sync objects is
     EGL_SYNC_CUDA_EVENT_COMPLETE_NV. It is satisfied when all device
     work prior to the most recent call to cudaEventRecord at sync
-    unsignaling time has completed.
+    creation time has completed."
 
-If EGL_EXT_sync_reuse is not present, then change the second sentence of
-3.8.1.X above to "The <attrib_list> must contain ..." and omit the
-remaining sentences in the paragraph. Omit all references to
-eglUnsignalSyncEXT.
+    Add to the list of errors following 3.8.1.X:
 
-In 3.8.1 (Sync Objects), if EGL_EXT_sync_reuse is present, then add the
-following to the error list for eglUnsignalSyncEXT. Otherwise add it to
-the error list for eglCreateSync:
-
-    If <type> is EGL_SYNC_CUDA_EVENT_NV and a EGL_CUDA_EVENT_HANDLE_NV
-    is not linked to the sync object, then an EGL_BAD_ATTRIBUTE error is
+   "If <type> is EGL_SYNC_CUDA_EVENT_NV and EGL_CUDA_EVENT_HANDLE_NV is
+    not specified in <attrib_list>, then an EGL_BAD_ATTRIBUTE error is
     generated. If its attribute value is not a valid CUDA event pointer
     or has not been initialized as described above, then
     EGL_BAD_ATTRIBUTE may be generated, but the results are undefined
-    and may include program termination.
+    and may include program termination."
 
-Modify the third paragraph of section 3.8.1.4 (Querying Sync Object
-Attributes):
+    Modify the third paragraph of section 3.8.1.4 (Querying Sync Object
+    Attributes):
 
-    If any eglClientWaitSync or eglWaitSync commands are blocking on
+   "If any eglClientWaitSync or eglWaitSync commands are blocking on
     <sync> when eglDestroySync is called, <sync> is flagged for deletion
     and will be deleted when the associated fence command, OpenCL event
     object, or CUDA event object has completed, and <sync> is no longer
     blocking any such egl*WaitSync command. Otherwise, the sync object
     is destroyed immediately.
 
-Replace the EGL_SYNC_CONDITION row of table 3.9 with:
+    Replace the EGL_SYNC_CONDITION row of table 3.9 with:
 
-    Attribute           Description              Supported Sync Objects
-    ------------------  -----------------------  ----------------------
-    EGL_SYNC_CONDITION  Signaling condition      EGL_SYNC_FENCE,
-                                                 EGL_SYNC_CL_EVENT, or
-                                                 EGL_SYNC_CUDA_EVENT_NV
+   "Attribute              Description                Supported Sync Objects
+    -----------------      -----------------------    ----------------------
+    EGL_SYNC_CONDITION     Signaling condition        EGL_SYNC_FENCE,
+                                                      EGL_SYNC_CL_EVENT, or
+                                                      EGL_SYNC_CUDA_EVENT_NV
 
-    Table 3.9  Attributes Accepted by eglGetSyncAttrib
+    Table 3.9  Attributes Accepted by eglGetSyncAttrib"
 
 
 Interactions with EGL versions prior to 1.5
@@ -195,12 +180,6 @@ Issues
     None
 
 Revision History
-
-    Version 2, 2018/06/28 (Daniel Kartch)
-        - Rewritten to clearly define interactions with
-          EGL_EXT_sync_reuse, without requiring it
-        - Fixed incorrect CUDA function name
-        - Fixed table spacing
 
     Version 1, 2014/06/20 (Michael Chock)
         - initial version.

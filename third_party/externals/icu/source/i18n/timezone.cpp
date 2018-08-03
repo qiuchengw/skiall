@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-* Copyright (C) 1997-2016, International Business Machines Corporation and
+* Copyright (C) 1997-2015, International Business Machines Corporation and
 * others. All Rights Reserved.
 *******************************************************************************
 *
@@ -739,7 +737,8 @@ private:
         len = mapLen;
     }
 
-    UBool getID(int32_t i, UErrorCode& ec) {
+    UBool getID(int32_t i) {
+        UErrorCode ec = U_ZERO_ERROR;
         int32_t idLen = 0;
         const UChar* id = NULL;
         UResourceBundle *top = ures_openDirect(0, kZONEINFO, &ec);
@@ -929,7 +928,7 @@ public:
 
     virtual const UnicodeString* snext(UErrorCode& status) {
         if (U_SUCCESS(status) && map != NULL && pos < len) {
-            getID(map[pos], status);
+            getID(map[pos]);
             ++pos;
             return &unistr;
         }

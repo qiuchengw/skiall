@@ -491,7 +491,7 @@ static int GetCoeffsAlt(VP8BitReader* const br,
   return 16;
 }
 
-static WEBP_TSAN_IGNORE_FUNCTION void InitGetCoeffs(void) {
+WEBP_TSAN_IGNORE_FUNCTION static void InitGetCoeffs(void) {
   if (GetCoeffs == NULL) {
     if (VP8GetCPUInfo != NULL && VP8GetCPUInfo(kSlowSSSE3)) {
       GetCoeffs = GetCoeffsAlt;

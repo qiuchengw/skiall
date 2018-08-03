@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/kk.xml
+// *
+// ***************************************************************************
 kk{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -22,14 +28,14 @@ kk{
         }
         angle{
             arc-minute{
-                dnam{"аркминут"}
-                one{"{0} аркминут"}
-                other{"{0} аркминут"}
+                dnam{"минут"}
+                one{"{0} минут"}
+                other{"{0} минут"}
             }
             arc-second{
-                dnam{"арксекунд"}
-                one{"{0} арксекунд"}
-                other{"{0} арксекунд"}
+                dnam{"секунд"}
+                one{"{0} секунд"}
+                other{"{0} секунд"}
             }
             degree{
                 dnam{"градус"}
@@ -79,7 +85,6 @@ kk{
                 dnam{"шаршы километр"}
                 one{"{0} шаршы километр"}
                 other{"{0} шаршы километр"}
-                per{"{0}/км²"}
             }
             square-meter{
                 dnam{"шаршы метр"}
@@ -91,7 +96,6 @@ kk{
                 dnam{"шаршы миля"}
                 one{"{0} шаршы миля"}
                 other{"{0} шаршы миля"}
-                per{"{0}/миля²"}
             }
             square-yard{
                 dnam{"шаршы ярд"}
@@ -101,28 +105,6 @@ kk{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"карат"}
-                one{"{0} карат"}
-                other{"{0} карат"}
-            }
-            milligram-per-deciliter{
-                dnam{"миллиграмм/децилитр"}
-                one{"{0} миллиграмм/децилитр"}
-                other{"{0} миллиграмм/децилитр"}
-            }
-            millimole-per-liter{
-                dnam{"миллимоль/литр"}
-                one{"{0} миллимоль/литр"}
-                other{"{0} миллимоль/литр"}
-            }
-            part-per-million{
-                dnam{"миллиондық үлес"}
-                one{"{0} миллиондық үлес"}
-                other{"{0} миллиондық үлес"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -138,12 +120,7 @@ kk{
             mile-per-gallon{
                 dnam{"миля/галлон"}
                 one{"{0} миля/галлон"}
-                other{"{0} миля/галлон"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"миля/имп. галлон"}
-                one{"{0} миля/имп. галлон"}
-                other{"{0} миля/имп. галлон"}
+                other{"{0} миля/галллон"}
             }
         }
         coordinate{
@@ -297,9 +274,9 @@ kk{
                 other{"{0} калория"}
             }
             foodcalorie{
-                dnam{"калория"}
-                one{"{0} калория"}
-                other{"{0} калория"}
+                dnam{"Калория"}
+                one{"{0} Калория"}
+                other{"{0} Калория"}
             }
             joule{
                 dnam{"джоуль"}
@@ -430,11 +407,6 @@ kk{
                 one{"{0} пикометр"}
                 other{"{0} пикометр"}
             }
-            point{
-                dnam{"ұпай"}
-                one{"{0} ұпай"}
-                other{"{0} ұпай"}
-            }
             yard{
                 dnam{"ярд"}
                 one{"{0} ярд"}
@@ -563,6 +535,13 @@ kk{
                 other{"{0} фунт/шаршы дюйм"}
             }
         }
+        proportion{
+            karat{
+                dnam{"карат"}
+                one{"{0} карат"}
+                other{"{0} карат"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"километр/сағат"}
@@ -680,12 +659,6 @@ kk{
                 one{"{0} галлон"}
                 other{"{0} галлон"}
                 per{"{0}/галлон"}
-            }
-            gallon-imperial{
-                dnam{"имперлік галлон"}
-                one{"{0} имперлік галлон"}
-                other{"{0} имперлік галлон"}
-                per{"{0}/имперлік галлон"}
             }
             hectoliter{
                 dnam{"гектолитр"}
@@ -805,9 +778,9 @@ kk{
                 other{"{0} к."}
             }
             hour{
-                dnam{"сағ"}
-                one{"{0} сағ"}
-                other{"{0} сағ"}
+                dnam{"сағ."}
+                one{"{0} сағ."}
+                other{"{0} сағ."}
             }
             millisecond{
                 dnam{"мс"}
@@ -815,9 +788,9 @@ kk{
                 other{"{0} мс"}
             }
             minute{
-                dnam{"мин"}
-                one{"{0} мин"}
-                other{"{0} мин"}
+                dnam{"мин."}
+                one{"{0} мин."}
+                other{"{0} мин."}
             }
             month{
                 dnam{"ай"}
@@ -991,14 +964,14 @@ kk{
         }
         angle{
             arc-minute{
-                dnam{"аркмин"}
-                one{"{0} аркмин"}
-                other{"{0} аркмин"}
+                dnam{"минут"}
+                one{"{0} мин."}
+                other{"{0} мин."}
             }
             arc-second{
-                dnam{"арксек"}
-                one{"{0} арксек"}
-                other{"{0} арксек"}
+                dnam{"секунд"}
+                one{"{0} сек."}
+                other{"{0} сек."}
             }
             degree{
                 dnam{"градус"}
@@ -1048,7 +1021,6 @@ kk{
                 dnam{"км²"}
                 one{"{0} км²"}
                 other{"{0} км²"}
-                per{"{0}/км²"}
             }
             square-meter{
                 dnam{"метр²"}
@@ -1060,7 +1032,6 @@ kk{
                 dnam{"шаршы миля"}
                 one{"{0} миля²"}
                 other{"{0} миля²"}
-                per{"{0}/миля²"}
             }
             square-yard{
                 dnam{"ярд²"}
@@ -1070,28 +1041,6 @@ kk{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"карат"}
-                one{"{0} КТ"}
-                other{"{0} КТ"}
-            }
-            milligram-per-deciliter{
-                dnam{"мг/дл"}
-                one{"{0} мг/дл"}
-                other{"{0} мг/дл"}
-            }
-            millimole-per-liter{
-                dnam{"ммоль/л"}
-                one{"{0} ммоль/л"}
-                other{"{0} ммоль/л"}
-            }
-            part-per-million{
-                dnam{"ppm"}
-                one{"{0} ppm"}
-                other{"{0} ppm"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1105,14 +1054,9 @@ kk{
                 other{"{0} л/км"}
             }
             mile-per-gallon{
-                dnam{"миля/галлон"}
+                dnam{"миля/галллон"}
                 one{"{0} mpg"}
                 other{"{0} mpg"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"mpg Imp."}
-                one{"{0} mpg Imp."}
-                other{"{0} mpg Imp."}
             }
         }
         coordinate{
@@ -1187,9 +1131,9 @@ kk{
             }
             hour{
                 dnam{"сағат"}
-                one{"{0} сағ"}
-                other{"{0} сағ"}
-                per{"{0}/сағ"}
+                one{"{0} сағ."}
+                other{"{0} сағ."}
+                per{"{0}/сағ."}
             }
             microsecond{
                 dnam{"мкс"}
@@ -1197,15 +1141,15 @@ kk{
                 other{"{0} мкс"}
             }
             millisecond{
-                dnam{"мс"}
+                dnam{"мсек."}
                 one{"{0} мс"}
                 other{"{0} мс"}
             }
             minute{
-                dnam{"мин"}
-                one{"{0} мин"}
-                other{"{0} мин"}
-                per{"{0}/мин"}
+                dnam{"мин."}
+                one{"{0} мин."}
+                other{"{0} мин."}
+                per{"{0}/мин."}
             }
             month{
                 dnam{"ай"}
@@ -1219,9 +1163,9 @@ kk{
                 other{"{0} нс"}
             }
             second{
-                dnam{"с"}
-                one{"{0} с"}
-                other{"{0} с"}
+                dnam{"сек."}
+                one{"{0} сек."}
+                other{"{0} сек."}
                 per{"{0}/с"}
             }
             week{
@@ -1266,9 +1210,9 @@ kk{
                 other{"{0} кал"}
             }
             foodcalorie{
-                dnam{"кал"}
-                one{"{0} кал"}
-                other{"{0} кал"}
+                dnam{"Кал"}
+                one{"{0} Кал"}
+                other{"{0} Кал"}
             }
             joule{
                 dnam{"джоуль"}
@@ -1399,11 +1343,6 @@ kk{
                 one{"{0} пм"}
                 other{"{0} пм"}
             }
-            point{
-                dnam{"ұпай"}
-                one{"{0} ұпай"}
-                other{"{0} ұпай"}
-            }
             yard{
                 dnam{"ярд"}
                 one{"{0} ярд"}
@@ -1532,6 +1471,13 @@ kk{
                 other{"{0} psi"}
             }
         }
+        proportion{
+            karat{
+                dnam{"карат"}
+                one{"{0} КТ"}
+                other{"{0} КТ"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"км/сағ"}
@@ -1626,8 +1572,8 @@ kk{
             }
             cup{
                 dnam{"кесе"}
-                one{"{0} к."}
-                other{"{0} к."}
+                one{"{0} c"}
+                other{"{0} c"}
             }
             cup-metric{
                 dnam{"м. кесе"}
@@ -1649,12 +1595,6 @@ kk{
                 one{"{0} gal"}
                 other{"{0} gal"}
                 per{"{0}/gal"}
-            }
-            gallon-imperial{
-                dnam{"имп. галлон"}
-                one{"{0} gal Imp."}
-                other{"{0} gal Imp."}
-                per{"{0}/имп. галлон"}
             }
             hectoliter{
                 dnam{"гл"}

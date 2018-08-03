@@ -1,7 +1,5 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
- * Copyright (c) 2008-2016, International Business Machines Corporation and
+ * Copyright (c) 2008-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -103,7 +101,7 @@ static UBool tmaEqual(const TimeUnitAmount& left, const TimeUnitAmount& right) {
 void TimeUnitTest::testBasic() {
     const char* locales[] = {"en", "sl", "fr", "zh", "ar", "ru", "zh_Hant", "pa"};
     for ( unsigned int locIndex = 0; 
-          locIndex < UPRV_LENGTHOF(locales); 
+          locIndex < sizeof(locales)/sizeof(locales[0]); 
           ++locIndex ) {
         UErrorCode status = U_ZERO_ERROR;
         Locale loc(locales[locIndex]);
@@ -125,7 +123,7 @@ void TimeUnitTest::testBasic() {
             std::cout << "time unit: " << j << "\n";
 #endif
             double tests[] = {0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 5, 10, 100, 101.35};
-            for (unsigned int i = 0; i < UPRV_LENGTHOF(tests); ++i) {
+            for (unsigned int i = 0; i < sizeof(tests)/sizeof(tests[0]); ++i) {
 #ifdef TUFMTTS_DEBUG
                 std::cout << "number: " << tests[i] << "\n";
 #endif
@@ -369,21 +367,21 @@ void TimeUnitTest::testGreekWithFallback() {
 
     int counter = 0;
     for ( unsigned int locIndex = 0;
-        locIndex < UPRV_LENGTHOF(locales);
+        locIndex < sizeof(locales)/sizeof(locales[0]);
         ++locIndex ) {
 
         Locale l = Locale::createFromName(locales[locIndex]);
 
         for ( unsigned int numberIndex = 0;
-            numberIndex < UPRV_LENGTHOF(numbers);
+            numberIndex < sizeof(numbers)/sizeof(int);
             ++numberIndex ) {
 
             for ( unsigned int styleIndex = 0;
-                styleIndex < UPRV_LENGTHOF(styles);
+                styleIndex < sizeof(styles)/sizeof(styles[0]);
                 ++styleIndex ) {
 
                 for ( unsigned int unitIndex = 0;
-                    unitIndex < UPRV_LENGTHOF(tunits);
+                    unitIndex < sizeof(tunits)/sizeof(tunits[0]);
                     ++unitIndex ) {
 
                     TimeUnitAmount *tamt = new TimeUnitAmount(numbers[numberIndex], tunits[unitIndex], status);
@@ -524,7 +522,7 @@ void TimeUnitTest::TestBritishShortHourFallback() {
     UnicodeString result;
     formatter.format(oneHour, result, status);
     assertSuccess("TestBritishShortHourFallback()", status);
-    assertEquals("TestBritishShortHourFallback()", UNICODE_STRING_SIMPLE("1 hr"), result, TRUE);
+    assertEquals("TestBritishShortHourFallback()", UNICODE_STRING_SIMPLE("1 hr"), result);
 }
 
 #endif

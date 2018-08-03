@@ -988,7 +988,7 @@ MHD_connection_update_event_loop_info (struct MHD_Connection *connection)
         {
 #if HTTPS_SUPPORT
 	case MHD_TLS_CONNECTION_INIT:
-	  if (SSL_want_read (connection->tls_session))
+	  if (0 == gnutls_record_get_direction (connection->tls_session))
             connection->event_loop_info = MHD_EVENT_LOOP_INFO_READ;
 	  else
             connection->event_loop_info = MHD_EVENT_LOOP_INFO_WRITE;
@@ -2781,14 +2781,14 @@ MHD_get_connection_info (struct MHD_Connection *connection,
     case MHD_CONNECTION_INFO_CIPHER_ALGO:
       if (connection->tls_session == NULL)
 	return NULL;
-      connection->cipher = SSL_CIPHER_get_name (SSL_get_current_cipher (connection->tls_session));
+      connection->cipher = gnutls_cipher_get (connection->tls_session);
       return (const union MHD_ConnectionInfo *) &connection->cipher;
     case MHD_CONNECTION_INFO_PROTOCOL:
       if (connection->tls_session == NULL)
 	return NULL;
-      connection->protocol = SSL_CIPHER_get_version (SSL_get_current_cipher (connection->tls_session));
+      connection->protocol = gnutls_protocol_get_version (connection->tls_session);
       return (const union MHD_ConnectionInfo *) &connection->protocol;
-    case MHD_CONNECTION_INFO_TLS_SESSION:
+    case MHD_CONNECTION_INFO_GNUTLS_SESSION:
       if (connection->tls_session == NULL)
 	return NULL;
       return (const union MHD_ConnectionInfo *) &connection->tls_session;

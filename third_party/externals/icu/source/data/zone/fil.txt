@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fil.xml
+// *
+// ***************************************************************************
 fil{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -303,9 +309,6 @@ fil{
         "America:El_Salvador"{
             ec{"El Salvador"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -507,9 +510,6 @@ fil{
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -550,7 +550,7 @@ fil{
             ec{"Sitka"}
         }
         "America:St_Barthelemy"{
-            ec{"St. Barthélemy"}
+            ec{"Saint Barthélemy"}
         }
         "America:St_Johns"{
             ec{"St. John’s"}
@@ -660,9 +660,6 @@ fil{
         "Asia:Ashgabat"{
             ec{"Ashgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Baghdad"}
         }
@@ -674,9 +671,6 @@ fil{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -713,9 +707,6 @@ fil{
         }
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -778,7 +769,7 @@ fil{
             ec{"Makassar"}
         }
         "Asia:Manila"{
-            ec{"Manila"}
+            ec{"Maynila"}
         }
         "Asia:Muscat"{
             ec{"Muscat"}
@@ -858,9 +849,6 @@ fil{
         "Asia:Tokyo"{
             ec{"Tokyo"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulaanbaatar"}
         }
@@ -907,7 +895,7 @@ fil{
             ec{"Reykjavik"}
         }
         "Atlantic:South_Georgia"{
-            ec{"South Georgia"}
+            ec{"Timog Georgia"}
         }
         "Atlantic:St_Helena"{
             ec{"St. Helena"}
@@ -951,9 +939,6 @@ fil{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Coordinated Universal Time"}
-        }
         "Etc:Unknown"{
             ec{"Di-kilalang Lungsod"}
         }
@@ -962,9 +947,6 @@ fil{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrakhan"}
         }
         "Europe:Athens"{
             ec{"Athens"}
@@ -1024,9 +1006,6 @@ fil{
         "Europe:Kiev"{
             ec{"Kiev"}
         }
-        "Europe:Kirov"{
-            ec{"Kirov"}
-        }
         "Europe:Lisbon"{
             ec{"Lisbon"}
         }
@@ -1085,9 +1064,6 @@ fil{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1105,9 +1081,6 @@ fil{
         }
         "Europe:Tirane"{
             ec{"Tirane"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Ulyanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Uzhgorod"}
@@ -1319,7 +1292,7 @@ fil{
         "meta:America_Central"{
             ld{"Sentral na Daylight Time"}
             lg{"Sentral na Oras"}
-            ls{"Sentral na Karaniwang Oras"}
+            ls{"Sentral na Standard na Oras"}
         }
         "meta:America_Eastern"{
             ld{"Eastern Daylight Time"}
@@ -1342,9 +1315,9 @@ fil{
             ls{"Standard Time sa Anadyr"}
         }
         "meta:Apia"{
-            ld{"Daylight Time sa Apia"}
+            ld{"Apia Daylight Time"}
             lg{"Oras sa Apia"}
-            ls{"Standard na Oras sa Apia"}
+            ls{"Apia Standard Time"}
         }
         "meta:Arabian"{
             ld{"Daylight Time sa Arabia"}
@@ -1372,24 +1345,24 @@ fil{
             ls{"Standard na Oras sa Atlantiko"}
         }
         "meta:Australia_Central"{
-            ld{"Daylight Time sa Gitnang Australya"}
-            lg{"Oras sa Gitnang Australya"}
-            ls{"Standard na Oras sa Gitnang Australya"}
+            ld{"Daylight Time ng Gitnang Australya"}
+            lg{"Oras ng Gitnang Australya"}
+            ls{"Standard Time ng Gitnang Australya"}
         }
         "meta:Australia_CentralWestern"{
-            ld{"Daylight Time sa Gitnang Kanlurang Australya"}
+            ld{"Daylight Time ng Gitnang Kanluran ng Australya"}
             lg{"Oras ng Gitnang Kanluran ng Australya"}
             ls{"Standard Time ng Gitnang Kanluran ng Australya"}
         }
         "meta:Australia_Eastern"{
-            ld{"Daylight Time sa Silangang Australya"}
-            lg{"Oras sa Silangang Australya"}
-            ls{"Standard na Oras sa Silangang Australya"}
+            ld{"Daylight Time ng Silangang Australya"}
+            lg{"Oras ng Silangang Australya"}
+            ls{"Standard Time ng Silangang Australya"}
         }
         "meta:Australia_Western"{
             ld{"Daylight Time sa Kanlurang Australya"}
-            lg{"Oras sa Kanlurang Australya"}
-            ls{"Standard na Oras sa Kanlurang Australya"}
+            lg{"Oras ng Kanlurang Australya"}
+            ls{"Standard Time ng Kanlurang Australya"}
         }
         "meta:Azerbaijan"{
             ld{"Oras sa Tag-init ng Azerbaijan"}
@@ -1418,7 +1391,7 @@ fil{
             ls{"Standard na Oras sa Brasilia"}
         }
         "meta:Brunei"{
-            ls{"Oras sa Brunei Darussalam"}
+            ls{"Oras ng Brunei Darussalam"}
         }
         "meta:Cape_Verde"{
             ld{"Oras sa Tag-init ng Cape Verde"}
@@ -1476,7 +1449,7 @@ fil{
             ls{"Oras sa Dumont-d’Urville"}
         }
         "meta:East_Timor"{
-            ls{"Oras sa East Timor"}
+            ls{"Oras ng East Timor"}
         }
         "meta:Easter"{
             ld{"Oras sa Tag-init ng Easter Island"}
@@ -1575,16 +1548,16 @@ fil{
             ls{"Oras sa Indian Ocean"}
         }
         "meta:Indochina"{
-            ls{"Oras sa Indochina"}
+            ls{"Oras ng Indochina"}
         }
         "meta:Indonesia_Central"{
-            ls{"Oras sa Gitnang Indonesia"}
+            ls{"Oras ng Gitnang Indonesiya"}
         }
         "meta:Indonesia_Eastern"{
-            ls{"Oras sa Silangang Indonesia"}
+            ls{"Oras ng Silangang Indonesiya"}
         }
         "meta:Indonesia_Western"{
-            ls{"Oras sa Kanlurang Indonesia"}
+            ls{"Oras ng Kanlurang Indonesiya"}
         }
         "meta:Iran"{
             ld{"Daylight Time sa Iran"}
@@ -1650,7 +1623,7 @@ fil{
             ls{"Standard na Oras sa Magadan"}
         }
         "meta:Malaysia"{
-            ls{"Oras sa Malaysia"}
+            ls{"Oras ng Malaysia"}
         }
         "meta:Maldives"{
             ls{"Oras sa Maldives"}
@@ -1690,7 +1663,7 @@ fil{
             ls{"Standard na Oras sa Moscow"}
         }
         "meta:Myanmar"{
-            ls{"Oras sa Myanmar"}
+            ls{"Oras ng Myanmar"}
         }
         "meta:Nauru"{
             ls{"Oras sa Nauru"}
@@ -1764,18 +1737,15 @@ fil{
             ls{"Oras sa Phoenix Islands"}
         }
         "meta:Pierre_Miquelon"{
-            ld{"Daylight Time sa Saint Pierre & Miquelon"}
-            lg{"Oras sa Saint Pierre & Miquelon"}
-            ls{"Standard na Oras sa Saint Pierre & Miquelon"}
+            ld{"Daylight Time sa Saint Pierre and Miquelon"}
+            lg{"Oras sa Saint Pierre and Miquelon"}
+            ls{"Standard na Oras sa Saint Pierre and Miquelon"}
         }
         "meta:Pitcairn"{
             ls{"Oras sa Pitcairn"}
         }
         "meta:Ponape"{
             ls{"Oras sa Ponape"}
-        }
-        "meta:Pyongyang"{
-            ls{"Oras sa Pyongyang"}
         }
         "meta:Reunion"{
             ls{"Oras sa Reunion"}
@@ -1881,7 +1851,7 @@ fil{
             ls{"Oras sa Wake Island"}
         }
         "meta:Wallis"{
-            ls{"Oras sa Wallis & Futuna"}
+            ls{"Oras sa Wallis and Futuna"}
         }
         "meta:Yakutsk"{
             ld{"Oras sa Tag-init ng Yakutsk"}
@@ -1897,8 +1867,8 @@ fil{
         gmtFormat{"GMT{0}"}
         gmtZeroFormat{"GMT"}
         hourFormat{"+HH:mm;-HH:mm"}
-        regionFormat{"Oras sa {0}"}
+        regionFormat{"{0}"}
         regionFormatDaylight{"Daylight Time ng {0}"}
-        regionFormatStandard{"Standard na Oras sa {0}"}
+        regionFormatStandard{"{0} (+0)"}
     }
 }

@@ -20,10 +20,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "assembly_grammar.h"
 #include "spirv-tools/libspirv.h"
+#include "assembly_grammar.h"
 
-namespace spvtools {
+namespace libspirv {
 
 // A NameMapper maps SPIR-V Id values to names.  Each name is valid to use in
 // SPIR-V assembly.  The mapping is one-to-one, i.e. no two Ids map to the same
@@ -41,8 +41,7 @@ NameMapper GetTrivialNameMapper();
 //  - If an Id has a debug name (via OpName), then that will be used when
 //    possible.
 //  - Well known scalar types map to friendly names.  For example,
-//    OpTypeVoid should be %void.  Scalar types map to their names in OpenCL
-//    when
+//    OpTypeVoid should be %void.  Scalar types map to their names in OpenCL when
 //    there is a correspondence, and otherwise as follows:
 //    - unsigned integer type of n bits map to "u" followed by n
 //    - signed integer type of n bits map to "i" followed by n
@@ -114,9 +113,9 @@ class FriendlyNameMapper {
   // The set of names that have a mapping in name_for_id_;
   std::unordered_set<std::string> used_names_;
   // The assembly grammar for the current context.
-  const AssemblyGrammar grammar_;
+  const libspirv::AssemblyGrammar grammar_;
 };
 
-}  // namespace spvtools
+}  // namespace libspirv
 
 #endif  // _LIBSPIRV_NAME_MAPPER_H_

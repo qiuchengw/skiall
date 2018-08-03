@@ -15,7 +15,7 @@
 #ifndef LIBSPIRV_VAL_BASICBLOCK_H_
 #define LIBSPIRV_VAL_BASICBLOCK_H_
 
-#include "latest_version_spirv_header.h"
+#include "spirv/1.2/spirv.h"
 
 #include <cstdint>
 
@@ -24,8 +24,7 @@
 #include <memory>
 #include <vector>
 
-namespace spvtools {
-namespace val {
+namespace libspirv {
 
 enum BlockType : uint32_t {
   kBlockTypeUndefined,
@@ -37,8 +36,6 @@ enum BlockType : uint32_t {
   kBlockTypeReturn,
   kBlockTypeCOUNT  ///< Total number of block types. (must be the last element)
 };
-
-class Instruction;
 
 // This class represents a basic block in a SPIR-V module
 class BasicBlock {
@@ -110,21 +107,8 @@ class BasicBlock {
   /// Ends the block without a successor
   void RegisterBranchInstruction(SpvOp branch_instruction);
 
-  /// Returns the label instruction for the block, or nullptr if not set.
-  const Instruction* label() const { return label_; }
-
-  //// Registers the label instruction for the block.
-  void set_label(const Instruction* t) { label_ = t; }
-
-  /// Registers the terminator instruction for the block.
-  void set_terminator(const Instruction* t) { terminator_ = t; }
-
-  /// Returns the terminator instruction for the block.
-  const Instruction* terminator() const { return terminator_; }
-
   /// Adds @p next BasicBlocks as successors of this BasicBlock
-  void RegisterSuccessors(
-      const std::vector<BasicBlock*>& next = std::vector<BasicBlock*>());
+  void RegisterSuccessors(const std::vector<BasicBlock*>& next = std::vector<BasicBlock*>());
 
   /// Returns true if the id of the BasicBlock matches
   bool operator==(const BasicBlock& other) const { return other.id_ == id_; }
@@ -220,16 +204,10 @@ class BasicBlock {
   std::vector<BasicBlock*> successors_;
 
   /// The type of the block
-  std::bitset<kBlockTypeCOUNT> type_;
+  std::bitset<kBlockTypeCOUNT - 1> type_;
 
   /// True if the block is reachable in the CFG
   bool reachable_;
-
-  /// label of this block, if any.
-  const Instruction* label_;
-
-  /// Terminator of this block.
-  const Instruction* terminator_;
 };
 
 /// @brief Returns true if the iterators point to the same element or if both
@@ -242,7 +220,6 @@ bool operator==(const BasicBlock::DominatorIterator& lhs,
 bool operator!=(const BasicBlock::DominatorIterator& lhs,
                 const BasicBlock::DominatorIterator& rhs);
 
-}  // namespace val
-}  // namespace spvtools
+}  /// namespace libspirv
 
 #endif  /// LIBSPIRV_VAL_BASICBLOCK_H_

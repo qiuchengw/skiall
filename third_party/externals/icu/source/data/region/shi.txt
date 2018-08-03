@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/shi.xml
+// *
+// ***************************************************************************
 shi{
     Countries{
         AD{"ⴰⵏⴷⵓⵔⴰ"}
@@ -9,6 +15,7 @@ shi{
         AI{"ⴰⵏⴳⵉⵍⴰ"}
         AL{"ⴰⵍⴱⴰⵏⵢⴰ"}
         AM{"ⴰⵔⵎⵉⵏⵢⴰ"}
+        AN{"ⴰⵏⵜⵉⵢ ⵏ ⵀⵓⵍⴰⵏⴷⴰ"}
         AO{"ⴰⵏⴳⵓⵍⴰ"}
         AR{"ⴰⵔⵊⴰⵏⵜⵉⵏ"}
         AS{"ⵙⴰⵎⵡⴰ ⵜⴰⵎⵉⵔⵉⴽⴰⵏⵉⵜ"}
@@ -227,5 +234,5 @@ shi{
         ZM{"ⵣⴰⵎⴱⵢⴰ"}
         ZW{"ⵣⵉⵎⴱⴰⴱⵡⵉ"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

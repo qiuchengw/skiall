@@ -290,10 +290,9 @@ int main(int argc, const char *argv[]) {
     fprintf(stderr, "Error while computing the distortion.\n");
     goto End;
   }
-  printf("%u %.2f    %.2f %.2f %.2f %.2f [ %.2f bpp ]\n",
+  printf("%u %.2f    %.2f %.2f %.2f %.2f\n",
          (unsigned int)size1,
-         disto[4], disto[0], disto[1], disto[2], disto[3],
-         8.f * size1 / pic1.width / pic1.height);
+         disto[4], disto[0], disto[1], disto[2], disto[3]);
 
   if (output != NULL) {
     uint8_t* data = NULL;

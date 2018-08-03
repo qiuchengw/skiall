@@ -18,13 +18,12 @@
 
 #include "gmock/gmock.h"
 
-namespace spvtools {
-namespace {
-
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::StartsWith;
+
+namespace {
 
 void CheckFormOfHighLevelVersion(const std::string& version) {
   std::istringstream s(version);
@@ -63,5 +62,4 @@ TEST(SoftwareVersion, DetailedIsCorrectForm) {
   // We don't actually care about what comes after the version number.
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

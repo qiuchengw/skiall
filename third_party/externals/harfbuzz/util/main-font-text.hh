@@ -24,11 +24,10 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+#include "options.hh"
+
 #ifndef HB_MAIN_FONT_TEXT_HH
 #define HB_MAIN_FONT_TEXT_HH
-
-#include "hb-private.hh"
-#include "options.hh"
 
 /* main() body for utilities taking font and processing text.*/
 
@@ -36,15 +35,32 @@ static char *
 locale_to_utf8 (char *s)
 {
   char *t;
-  GError *error = nullptr;
+  GError *error = NULL;
 
-  t = g_locale_to_utf8 (s, -1, nullptr, nullptr, &error);
+  t = g_locale_to_utf8 (s, -1, NULL, NULL, &error);
   if (!t)
   {
      fail (true, "Failed converting text to UTF-8");
   }
 
   return t;
+}
+
+static hb_bool_t
+message_func (hb_buffer_t *buffer,
+	      hb_font_t *font,
+	      const char *message,
+	      void *user_data)
+{
+  fprintf (stderr, "HB: %s\n", message);
+  char buf[4096];
+  hb_buffer_serialize_glyphs (buffer, 0, hb_buffer_get_length (buffer),
+			      buf, sizeof (buf), NULL,
+			      font,
+			      HB_BUFFER_SERIALIZE_FORMAT_TEXT,
+			      HB_BUFFER_SERIALIZE_FLAG_DEFAULT);
+  fprintf (stderr, "HB: buffer [%s]\n", buf);
+  return true;
 }
 
 template <typename consumer_t, int default_font_size, int subpixel_bits>
@@ -71,14 +87,16 @@ struct main_font_text_t
     if (!input.text && !input.text_file)
       input.text_file = g_strdup ("-");
 
-    hb_buffer_t *buffer = hb_buffer_create ();
-    consumer.init (buffer, &font_opts);
-    hb_buffer_destroy (buffer);
+    consumer.init (&font_opts);
 
+    hb_buffer_t *buffer = hb_buffer_create ();
+    if (debug)
+      hb_buffer_set_message_func (buffer, message_func, NULL, NULL);
     unsigned int text_len;
     const char *text;
     while ((text = input.get_line (&text_len)))
-      consumer.consume_line (text, text_len, input.text_before, input.text_after);
+      consumer.consume_line (buffer, text, text_len, input.text_before, input.text_after);
+    hb_buffer_destroy (buffer);
 
     consumer.finish (&font_opts);
 

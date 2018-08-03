@@ -1,20 +1,26 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/bs.xml
+// *
+// ***************************************************************************
 bs{
     Countries{
         001{"Svijet"}
         002{"Afrika"}
-        003{"Sjeverna Amerika"}
+        003{"Sjevernoamerički kontinent"}
         005{"Južna Amerika"}
         009{"Okeanija"}
         011{"Zapadna Afrika"}
-        013{"Srednja Amerika"}
+        013{"Centralna Amerika"}
         014{"Istočna Afrika"}
         015{"Sjeverna Afrika"}
-        017{"Srednja Afrika"}
+        017{"Centralna Afrika"}
         018{"Južna Afrika"}
         019{"Amerika"}
-        021{"Sjeverni dio Amerike"}
+        021{"Sjeverna Amerika"}
         029{"Karibi"}
         030{"Istočna Azija"}
         034{"Južna Azija"}
@@ -22,25 +28,25 @@ bs{
         039{"Južna Evropa"}
         053{"Australazija"}
         054{"Melanezija"}
-        057{"Mikronezijska regija"}
+        057{"Mikronezijski Region"}
         061{"Polinezija"}
         142{"Azija"}
-        143{"Srednja Azija"}
+        143{"Centralna Azija"}
         145{"Zapadna Azija"}
         150{"Evropa"}
         151{"Istočna Evropa"}
         154{"Sjeverna Evropa"}
         155{"Zapadna Evropa"}
-        202{"Subsaharska Afrika"}
         419{"Latinska Amerika"}
-        AC{"Ostrvo Ascension"}
+        AC{"Ostrvo Asension"}
         AD{"Andora"}
         AE{"Ujedinjeni Arapski Emirati"}
         AF{"Afganistan"}
         AG{"Antigva i Barbuda"}
         AI{"Angvila"}
         AL{"Albanija"}
-        AM{"Armenija"}
+        AM{"Jermenija"}
+        AN{"Holandski Antili"}
         AO{"Angola"}
         AQ{"Antarktika"}
         AR{"Argentina"}
@@ -48,7 +54,7 @@ bs{
         AT{"Austrija"}
         AU{"Australija"}
         AW{"Aruba"}
-        AX{"Olandska ostrva"}
+        AX{"Alandska Ostrva"}
         AZ{"Azerbejdžan"}
         BA{"Bosna i Hercegovina"}
         BB{"Barbados"}
@@ -67,18 +73,18 @@ bs{
         BR{"Brazil"}
         BS{"Bahami"}
         BT{"Butan"}
-        BV{"Ostrvo Buve"}
+        BV{"Buve Ostrva"}
         BW{"Bocvana"}
         BY{"Bjelorusija"}
         BZ{"Belize"}
         CA{"Kanada"}
-        CC{"Kokosova (Keelingova) ostrva"}
+        CC{"Kokosova (Kilingova) ostrva"}
         CD{"Demokratska Republika Kongo"}
         CF{"Centralnoafrička Republika"}
         CG{"Kongo"}
         CH{"Švicarska"}
         CI{"Obala Slonovače"}
-        CK{"Kukova ostrva"}
+        CK{"Kukova Ostrva"}
         CL{"Čile"}
         CM{"Kamerun"}
         CN{"Kina"}
@@ -88,7 +94,7 @@ bs{
         CU{"Kuba"}
         CV{"Kape Verde"}
         CW{"Kurasao"}
-        CX{"Božićno ostrvo"}
+        CX{"Božićna Ostrva"}
         CY{"Kipar"}
         CZ{"Češka"}
         DE{"Njemačka"}
@@ -106,13 +112,12 @@ bs{
         ER{"Eritreja"}
         ES{"Španija"}
         ET{"Etiopija"}
-        EU{"Evropska unija"}
-        EZ{"Eurozona"}
+        EU{"Evropska Unija"}
         FI{"Finska"}
         FJ{"Fidži"}
-        FK{"Folklandska ostrva"}
+        FK{"Folklandska Ostrva"}
         FM{"Mikronezija"}
-        FO{"Farska ostrva"}
+        FO{"Farska Ostrva"}
         FR{"Francuska"}
         GA{"Gabon"}
         GB{"Velika Britanija"}
@@ -125,16 +130,16 @@ bs{
         GL{"Grenland"}
         GM{"Gambija"}
         GN{"Gvineja"}
-        GP{"Gvadalupe"}
+        GP{"Gvadelupe"}
         GQ{"Ekvatorijalna Gvineja"}
         GR{"Grčka"}
-        GS{"Južna Džordžija i Južna Sendvič ostrva"}
+        GS{"Južna Džordžija i Južna Sendvič Ostrva"}
         GT{"Gvatemala"}
         GU{"Guam"}
         GW{"Gvineja-Bisao"}
         GY{"Gvajana"}
-        HK{"Hong Kong (SAR Kina)"}
-        HM{"Herd i arhipelag MekDonald"}
+        HK{"Hong Kong"}
+        HM{"Heard i arhipelag McDonald"}
         HN{"Honduras"}
         HR{"Hrvatska"}
         HT{"Haiti"}
@@ -145,25 +150,25 @@ bs{
         IL{"Izrael"}
         IM{"Ostrvo Man"}
         IN{"Indija"}
-        IO{"Britanska Teritorija u Indijskom Okeanu"}
+        IO{"Britanska Territorija u Indijskom Okeanu"}
         IQ{"Irak"}
         IR{"Iran"}
         IS{"Island"}
         IT{"Italija"}
-        JE{"Jersey"}
+        JE{"Džersi"}
         JM{"Jamajka"}
         JO{"Jordan"}
         JP{"Japan"}
         KE{"Kenija"}
-        KG{"Kirgistan"}
+        KG{"Kirgizstan"}
         KH{"Kambodža"}
         KI{"Kiribati"}
-        KM{"Komori"}
-        KN{"Sveti Kits i Nevis"}
+        KM{"Komorska Ostrva"}
+        KN{"Sent Kits i Nevis"}
         KP{"Sjeverna Koreja"}
         KR{"Južna Koreja"}
         KW{"Kuvajt"}
-        KY{"Kajmanska ostrva"}
+        KY{"Kajmanska Ostrva"}
         KZ{"Kazahstan"}
         LA{"Laos"}
         LB{"Liban"}
@@ -174,26 +179,26 @@ bs{
         LS{"Lesoto"}
         LT{"Litvanija"}
         LU{"Luksemburg"}
-        LV{"Latvija"}
+        LV{"Letonija"}
         LY{"Libija"}
         MA{"Maroko"}
         MC{"Monako"}
         MD{"Moldavija"}
         ME{"Crna Gora"}
-        MF{"Sveti Martin"}
+        MF{"Sv. Martin"}
         MG{"Madagaskar"}
-        MH{"Maršalova ostrva"}
+        MH{"Maršalska Ostrva"}
         MK{"Makedonija"}
         ML{"Mali"}
-        MM{"Mjanmar"}
+        MM{"Mijanmar"}
         MN{"Mongolija"}
-        MO{"Makao (SAR Kina)"}
-        MP{"Sjeverna Marijanska ostrva"}
+        MO{"Makao"}
+        MP{"Sjeverna Marijanska Ostrva"}
         MQ{"Martinik"}
         MR{"Mauritanija"}
         MS{"Monserat"}
         MT{"Malta"}
-        MU{"Mauricijus"}
+        MU{"Mauricius"}
         MV{"Maldivi"}
         MW{"Malavi"}
         MX{"Meksiko"}
@@ -202,7 +207,7 @@ bs{
         NA{"Namibija"}
         NC{"Nova Kaledonija"}
         NE{"Niger"}
-        NF{"Ostrvo Norfolk"}
+        NF{"Norfolk Ostrvo"}
         NG{"Nigerija"}
         NI{"Nikaragva"}
         NL{"Holandija"}
@@ -220,15 +225,15 @@ bs{
         PK{"Pakistan"}
         PL{"Poljska"}
         PM{"Sveti Petar i Mikelon"}
-        PN{"Pitkernska Ostrva"}
+        PN{"Pitkern"}
         PR{"Porto Riko"}
-        PS{"Palestinska Teritorija"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paragvaj"}
         QA{"Katar"}
-        QO{"Vanjska Okeanija"}
-        RE{"Reunion"}
+        QO{"Ostala Okeanija"}
+        RE{"Rejunion"}
         RO{"Rumunija"}
         RS{"Srbija"}
         RU{"Rusija"}
@@ -254,15 +259,15 @@ bs{
         SX{"Sint Marten"}
         SY{"Sirija"}
         SZ{"Svazilend"}
-        TA{"Tristan da Cunha"}
-        TC{"Ostrva Turks i Kaikos"}
+        TA{"Tristan da Kunja"}
+        TC{"Ostrva Turks i Caicos"}
         TD{"Čad"}
         TF{"Francuske Južne Teritorije"}
         TG{"Togo"}
         TH{"Tajland"}
         TJ{"Tadžikistan"}
         TK{"Tokelau"}
-        TL{"Istočni Timor"}
+        TL{"Timor Leste"}
         TM{"Turkmenistan"}
         TN{"Tunis"}
         TO{"Tonga"}
@@ -273,19 +278,18 @@ bs{
         TZ{"Tanzanija"}
         UA{"Ukrajina"}
         UG{"Uganda"}
-        UM{"Američka Vanjska Ostrva"}
-        UN{"Ujedinjene Nacije"}
+        UM{"Udaljena ostrva SAD"}
         US{"Sjedinjene Američke Države"}
         UY{"Urugvaj"}
         UZ{"Uzbekistan"}
         VA{"Vatikan"}
-        VC{"Sveti Vinsent i Grenadin"}
+        VC{"Sveti Vincent i Grenadini"}
         VE{"Venecuela"}
-        VG{"Britanska Djevičanska ostrva"}
-        VI{"Američka Djevičanska ostrva"}
+        VG{"Britanska Djevičanska Ostrva"}
+        VI{"Djevičanska Ostrva SAD"}
         VN{"Vijetnam"}
         VU{"Vanuatu"}
-        WF{"Ostrva Valis i Futuna"}
+        WF{"Wallis i Futuna"}
         WS{"Samoa"}
         XK{"Kosovo"}
         YE{"Jemen"}
@@ -297,20 +301,15 @@ bs{
     }
     Countries%short{
         GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"Makao"}
-        PS{"Palestina"}
-        UN{"UN"}
         US{"SAD"}
     }
     Countries%variant{
-        CD{"DR Kongo"}
+        CD{"Kongo (DRC)"}
         CG{"Republika Kongo"}
-        CI{"Obala Bjelokosti"}
-        CZ{"Češka Republika"}
-        FK{"Folklandska (Malvinska) ostrva"}
+        CI{"Bjelokosna Obala"}
+        FK{"Falklandska ostrva (Malvinska ostrva)"}
         MK{"Makedonija (BJR)"}
-        TL{"TL"}
+        TL{"Istočni Timor"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.77"}
 }

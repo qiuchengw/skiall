@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
-* Copyright (C) 2001-2016, International Business Machines
+* Copyright (C) 2001-2014, International Business Machines
 *                Corporation and others. All Rights Reserved.
 ******************************************************************************
-*   file name:  ucln_in.h
-*   encoding:   UTF-8
+*   file name:  ucln_cmn.h
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -26,10 +24,8 @@ as the functions are suppose to be called.
 It's usually best to have child dependencies called first. */
 typedef enum ECleanupI18NType {
     UCLN_I18N_START = -1,
-    UCLN_I18N_NUMBER_SKELETONS,
-    UCLN_I18N_CURRENCY_SPACING,
+    UCLN_I18N_IDENTIFIER_INFO,
     UCLN_I18N_SPOOF,
-    UCLN_I18N_SPOOFDATA,
     UCLN_I18N_TRANSLITERATOR,
     UCLN_I18N_REGEX,
     UCLN_I18N_ISLAMIC_CALENDAR,
@@ -44,11 +40,9 @@ typedef enum ECleanupI18NType {
     UCLN_I18N_TIMEZONENAMES,
     UCLN_I18N_ZONEMETA,
     UCLN_I18N_TIMEZONE,
-    UCLN_I18N_DIGITLIST,
+    UCLN_I18N_CURRENCY,
     UCLN_I18N_DECFMT,
     UCLN_I18N_NUMFMT,
-    UCLN_I18N_ALLOWED_HOUR_FORMATS,
-    UCLN_I18N_DAYPERIODRULES,
     UCLN_I18N_SMPDTFMT,
     UCLN_I18N_USEARCH,
     UCLN_I18N_COLLATOR,

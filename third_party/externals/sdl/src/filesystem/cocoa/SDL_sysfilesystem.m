@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -71,15 +71,8 @@ char *
 SDL_GetPrefPath(const char *org, const char *app)
 { @autoreleasepool
 {
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
-
     char *retval = NULL;
+
     NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
 
     if ([array count] > 0) {  /* we only want the first item in the list. */
@@ -92,11 +85,7 @@ SDL_GetPrefPath(const char *org, const char *app)
                 SDL_OutOfMemory();
             } else {
                 char *ptr;
-                if (*org) {
-                    SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
-                } else {
-                    SDL_snprintf(retval, len, "%s/%s/", base, app);
-                }
+                SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
                 for (ptr = retval+1; *ptr; ptr++) {
                     if (*ptr == '/') {
                         *ptr = '\0';

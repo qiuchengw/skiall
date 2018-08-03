@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  utf_old.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -17,12 +15,12 @@
 */
 
 /**
- * \file
+ * \file 
  * \brief C API: Deprecated macros for Unicode string handling
  */
 
 /**
- *
+ * 
  * The macros in utf_old.h are all deprecated and their use discouraged.
  * Some of the design principles behind the set of UTF macros
  * have changed or proved impractical.
@@ -145,22 +143,7 @@
 #ifndef __UTF_OLD_H__
 #define __UTF_OLD_H__
 
-/**
- * \def U_HIDE_OBSOLETE_UTF_OLD_H
- *
- * Hides the obsolete definitions in unicode/utf_old.h.
- * Recommended to be set to 1 at compile time to make sure
- * the long-deprecated macros are no longer used.
- *
- * For reasons for the deprecation see the utf_old.h file comments.
- *
- * @internal
- */
-#ifndef U_HIDE_OBSOLETE_UTF_OLD_H
-#   define U_HIDE_OBSOLETE_UTF_OLD_H 0
-#endif
-
-#if !defined(U_HIDE_DEPRECATED_API) && !U_HIDE_OBSOLETE_UTF_OLD_H
+#ifndef U_HIDE_DEPRECATED_API
 
 #include "unicode/utf.h"
 #include "unicode/utf8.h"
@@ -281,25 +264,6 @@ typedef int32_t UTextOffset;
          !UTF_IS_UNICODE_NONCHAR(c)))
 
 /* Formerly utf8.h ---------------------------------------------------------- */
-
-/**
-* \var utf8_countTrailBytes
-* Internal array with numbers of trail bytes for any given byte used in
-* lead byte position.
-*
-* This is internal since it is not meant to be called directly by external clients;
-* however it is called by public macros in this file and thus must remain stable,
-* and should not be hidden when other internal functions are hidden (otherwise
-* public macros would fail to compile).
-* @internal
-*/
-#ifdef U_UTF8_IMPL
-// No forward declaration if compiling utf_impl.cpp, which defines utf8_countTrailBytes.
-#elif defined(U_STATIC_IMPLEMENTATION) || defined(U_COMMON_IMPLEMENTATION)
-U_CFUNC const uint8_t utf8_countTrailBytes[];
-#else
-U_CFUNC U_IMPORT const uint8_t utf8_countTrailBytes[];    /* U_IMPORT2? */ /*U_IMPORT*/
-#endif
 
 /**
  * Count the trail bytes for a UTF-8 lead byte.
@@ -1199,6 +1163,7 @@ U_CFUNC U_IMPORT const uint8_t utf8_countTrailBytes[];    /* U_IMPORT2? */ /*U_I
  */
 #define UTF_SET_CHAR_LIMIT(s, start, i, length) U16_SET_CP_LIMIT(s, start, i, length)
 
-#endif  // !U_HIDE_DEPRECATED_API && !U_HIDE_OBSOLETE_UTF_OLD_H
+#endif /* U_HIDE_DEPRECATED_API */
 
 #endif
+

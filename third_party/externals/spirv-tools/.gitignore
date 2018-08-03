@@ -1,19 +1,10 @@
-.clang_complete
+/build*
 .ycm_extra_conf.py*
 compile_commands.json
-/build/
-/buildtools/
-/external/googletest
-/external/SPIRV-Headers
-/external/spirv-headers
-/external/effcee
-/external/re2
-/out
+/external/googletest/
+/external/spirv-headers/
 /TAGS
-/third_party/llvm-build/
-/testing/libfuzzer/
-/tools/clang/
-/utils/clang-format-diff.py
+/.clang_complete
 
 # Vim
 [._]*.s[a-w][a-z]

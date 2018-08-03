@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fr_CA.xml
+// *
+// ***************************************************************************
 fr_CA{
     Currencies{
         ARS{
@@ -66,14 +72,6 @@ fr_CA{
             "ILS",
             "nouveau shekel israélien",
         }
-        INR{
-            "INR",
-            "roupie indienne",
-        }
-        IRR{
-            "IRR",
-            "rial iranien",
-        }
         JPY{
             "¥",
             "yen japonais",
@@ -97,14 +95,6 @@ fr_CA{
         NZD{
             "$ NZ",
             "dollar néo-zélandais",
-        }
-        OMR{
-            "OMR",
-            "rial omanais",
-        }
-        SAR{
-            "SAR",
-            "rial saoudien",
         }
         SBD{
             "SBD",
@@ -154,14 +144,8 @@ fr_CA{
             "XXX",
             "Devise inconnue",
         }
-        YER{
-            "YER",
-            "rial yéménite",
-        }
     }
     Currencies%narrow{
-        BYN{"Br"}
-        GEL{"GEL"}
         KMF{"CF"}
         NIO{"C$"}
         ZMW{"ZK"}
@@ -174,17 +158,8 @@ fr_CA{
             one{"livre des Îles Malouines"}
             other{"livres des Îles Malouines"}
         }
-        IRR{
-            one{"rial iranien"}
-            other{"rials iraniens"}
-        }
-        OMR{
-            one{"rial omanais"}
-            other{"rials omanis"}
-        }
-        SAR{
-            one{"rial saoudien"}
-            other{"rials saoudiens"}
+        GEL{
+            one{"lari géorgien"}
         }
         TOP{
             one{"pa’anga"}
@@ -194,10 +169,6 @@ fr_CA{
             one{"(devise inconnue)"}
             other{"(devise inconnue)"}
         }
-        YER{
-            one{"rial yéménite"}
-            other{"rials yéménites"}
-        }
     }
-    Version{"2.1.38.73"}
+    Version{"2.1.19.14"}
 }

@@ -40,24 +40,6 @@ when attempting to load the BMP file into a 4-component image buffer.
 loop when decompressing progressive JPEG images that use vertical chroma
 subsampling (for instance, 4:2:0 or 4:4:0.)
 
-6. Fixed a segfault in `jpeg_skip_scanlines()` that occurred when decompressing
-a 4:2:2 or 4:2:0 JPEG image using the merged (non-fancy) upsampling algorithms
-(that is, when setting `cinfo.do_fancy_upsampling` to `FALSE`.)
-
-7. The new CMake-based build system will now disable the MIPS DSPr2 SIMD
-extensions if it detects that the compiler does not support DSPr2 instructions.
-
-8. Fixed out-of-bounds read in cjpeg that occurred when attempting to compress
-a specially-crafted malformed color-index (8-bit-per-sample) BMP file in which
-some of the samples (color indices) exceeded the bounds of the BMP file's color
-table.
-
-9. Fixed a signed integer overflow in the progressive Huffman decoder, detected
-by the Clang and GCC undefined behavior sanitizers, that could be triggered by
-attempting to decompress a specially-crafted malformed JPEG image.  This issue
-did not pose a security threat, but removing the warning made it easier to
-detect actual security issues, should they arise in the future.
-
 
 1.5.90 (2.0 beta1)
 ==================
@@ -366,8 +348,8 @@ specified.)
 2x2 luminance sampling factors and 2x1 or 1x2 chrominance sampling factors.
 This is a non-standard way of specifying 2x subsampling (normally 4:2:2 JPEGs
 have 2x1 luminance and 1x1 chrominance sampling factors, and 4:4:0 JPEGs have
-1x2 luminance and 1x1 chrominance sampling factors), but the JPEG format and
-the libjpeg API both allow it.
+1x2 luminance and 1x1 chrominance sampling factors), but the JPEG specification
+and the libjpeg API both allow it.
 
 7. Fixed an unsigned integer overflow in the libjpeg memory manager, detected
 by the Clang undefined behavior sanitizer, that could be triggered by

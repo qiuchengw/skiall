@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/mr.xml
+// *
+// ***************************************************************************
 mr{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.53"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"अबिद्जान"}
@@ -187,7 +193,7 @@ mr{
             ec{"सान जुआन"}
         }
         "America:Argentina:San_Luis"{
-            ec{"सान ल्युइस"}
+            ec{"सॅन लुईस"}
         }
         "America:Argentina:Tucuman"{
             ec{"टुकुमान"}
@@ -271,7 +277,7 @@ mr{
             ec{"क्रेस्टन"}
         }
         "America:Cuiaba"{
-            ec{"कुयाबा"}
+            ec{"कुइबा"}
         }
         "America:Curacao"{
             ec{"क्युरासाओ"}
@@ -303,9 +309,6 @@ mr{
         "America:El_Salvador"{
             ec{"एल साल्वाडोर"}
         }
-        "America:Fort_Nelson"{
-            ec{"फोर्ट नेल्सन"}
-        }
         "America:Fortaleza"{
             ec{"फोर्टालेझा"}
         }
@@ -331,7 +334,7 @@ mr{
             ec{"ग्वाटेमाला"}
         }
         "America:Guayaquil"{
-            ec{"गयाक्विल"}
+            ec{"गुआयाक्विल"}
         }
         "America:Guyana"{
             ec{"गयाना"}
@@ -507,9 +510,6 @@ mr{
         "America:Puerto_Rico"{
             ec{"प्युएर्तो रिको"}
         }
-        "America:Punta_Arenas"{
-            ec{"पुंता अरीनास"}
-        }
         "America:Rainy_River"{
             ec{"रेनी नदी"}
         }
@@ -660,9 +660,6 @@ mr{
         "Asia:Ashgabat"{
             ec{"अश्गाबात"}
         }
-        "Asia:Atyrau"{
-            ec{"अतिरॉ"}
-        }
         "Asia:Baghdad"{
             ec{"बगदाद"}
         }
@@ -674,9 +671,6 @@ mr{
         }
         "Asia:Bangkok"{
             ec{"बँकॉक"}
-        }
-        "Asia:Barnaul"{
-            ec{"बर्नौल"}
         }
         "Asia:Beirut"{
             ec{"बैरुत"}
@@ -713,9 +707,6 @@ mr{
         }
         "Asia:Dushanbe"{
             ec{"दुशान्बे"}
-        }
-        "Asia:Famagusta"{
-            ec{"फॅमगुस्ता"}
         }
         "Asia:Gaza"{
             ec{"गाझा"}
@@ -858,9 +849,6 @@ mr{
         "Asia:Tokyo"{
             ec{"टोकियो"}
         }
-        "Asia:Tomsk"{
-            ec{"तोमसक"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"उलानबातर"}
         }
@@ -951,9 +939,6 @@ mr{
         "Australia:Sydney"{
             ec{"सिडनी"}
         }
-        "Etc:UTC"{
-            ls{"समन्वित वैश्विक वेळ"}
-        }
         "Etc:Unknown"{
             ec{"अज्ञात शहर"}
         }
@@ -962,9 +947,6 @@ mr{
         }
         "Europe:Andorra"{
             ec{"अँडोरा"}
-        }
-        "Europe:Astrakhan"{
-            ec{"आस्त्राखान"}
         }
         "Europe:Athens"{
             ec{"अथेन्स"}
@@ -1024,9 +1006,6 @@ mr{
         "Europe:Kiev"{
             ec{"कीव"}
         }
-        "Europe:Kirov"{
-            ec{"किरोव"}
-        }
         "Europe:Lisbon"{
             ec{"लिस्बन"}
         }
@@ -1085,9 +1064,6 @@ mr{
         "Europe:Sarajevo"{
             ec{"साराजेव्हो"}
         }
-        "Europe:Saratov"{
-            ec{"सारातोव"}
-        }
         "Europe:Simferopol"{
             ec{"सिम्फरोपोल"}
         }
@@ -1105,9 +1081,6 @@ mr{
         }
         "Europe:Tirane"{
             ec{"टिराने"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"उल्यानोव्स्क"}
         }
         "Europe:Uzhgorod"{
             ec{"उझहोरोड"}
@@ -1517,7 +1490,7 @@ mr{
             ls{"पूर्व युरोपियन प्रमाण वेळ"}
         }
         "meta:Europe_Further_Eastern"{
-            ls{"अग्र-पौर्वात्य यूरोपीयन वेळ"}
+            ls{"अग्र पुर्व यूरोपीयन वेळ"}
         }
         "meta:Europe_Western"{
             ld{"पश्चिम युरोपियन उन्हाळी वेळ"}
@@ -1799,18 +1772,15 @@ mr{
             ls{"‍फोनिक्स बेटे वेळ"}
         }
         "meta:Pierre_Miquelon"{
-            ld{"सेंट पियरे आणि मिक्वेलोन सूर्यप्रकाश वेळ"}
+            ld{"सेंट पियर आणि मिक्वेलोन सूर्यप्रकाश वेळ"}
             lg{"सेंट पियर आणि मिक्वेलोन वेळ"}
-            ls{"सेंट पियरे आणि मिक्वेलोन प्रमाण वेळ"}
+            ls{"सेंट पियर आणि मिक्वेलोन प्रमाण वेळ"}
         }
         "meta:Pitcairn"{
             ls{"पिटकैर्न वेळ"}
         }
         "meta:Ponape"{
             ls{"पोनॅपे वेळ"}
-        }
-        "meta:Pyongyang"{
-            ls{"प्योंगयांग वेळ"}
         }
         "meta:Qyzylorda"{
             ld{"क़िझीलोर्डा ग्रीष्मकालीन वेळ"}

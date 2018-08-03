@@ -1,7 +1,5 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /******************************************************************************
- *   Copyright (C) 2008-2016, International Business Machines
+ *   Copyright (C) 2008-2012, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  *******************************************************************************
  */
@@ -10,7 +8,6 @@
 #define __PKG_ICU_H__
 
 #include "unicode/utypes.h"
-#include "package.h"
 
 #define U_PKG_RESERVED_CHARS "\"%&'()*+,-./:;<=>?_"
 

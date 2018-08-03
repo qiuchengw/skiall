@@ -17,8 +17,6 @@
 #include <algorithm>
 #include <sstream>
 
-namespace spvtools {
-namespace opt {
 namespace {
 
 // Well, this is another place requiring the knowledge of the grammar and can be
@@ -34,6 +32,8 @@ const char* kDebugOpcodes[] = {
 };
 
 }  // anonymous namespace
+
+namespace spvtools {
 
 bool FindAndReplace(std::string* process_str, const std::string find_str,
                     const std::string replace_str) {
@@ -78,5 +78,4 @@ std::string JoinNonDebugInsts(const std::vector<const char*>& insts) {
       insts, [](const char* inst) { return ContainsDebugOpcode(inst); });
 }
 
-}  // namespace opt
 }  // namespace spvtools

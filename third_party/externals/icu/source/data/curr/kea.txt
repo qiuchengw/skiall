@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/kea.xml
+// *
+// ***************************************************************************
 kea{
     Currencies{
         AED{
@@ -92,7 +98,7 @@ kea{
             {
                 "#,##0.00 ¤",
                 "$",
-                " ",
+                ",",
             }
         }
         CZK{
@@ -285,10 +291,6 @@ kea{
         }
         MRO{
             "MRO",
-            "Ougia (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Ougia",
         }
         MUR{
@@ -417,11 +419,7 @@ kea{
         }
         STD{
             "STD",
-            "Dobra di Sãu Tume i Prínsipi (1977–2017)",
-        }
-        STN{
-            "STN",
-            "Dobra di Sãu Tume i Prínsipi",
+            "Dobra di Sãu Tume i Prinsipi",
         }
         SYP{
             "SYP",
@@ -493,7 +491,7 @@ kea{
         }
         XAF{
             "FCFA",
-            "Franku CFA (BEAC)",
+            "Franku CFA BEAC",
         }
         XCD{
             "EC$",
@@ -501,7 +499,7 @@ kea{
         }
         XOF{
             "CFA",
-            "Franku CFA (BCEAO)",
+            "Franku CFA BCEAO",
         }
         XPF{
             "CFPF",
@@ -655,9 +653,6 @@ kea{
             other{"Ariari di Madagaskar"}
         }
         MRO{
-            other{"Ougia (1973–2017)"}
-        }
-        MRU{
             other{"Ougia"}
         }
         MUR{
@@ -709,9 +704,6 @@ kea{
             other{"Xelin somalianu"}
         }
         STD{
-            other{"Dobra di Sãu Tume i Prinsipi (1977–2017)"}
-        }
-        STN{
             other{"Dobra di Sãu Tume i Prinsipi"}
         }
         SZL{
@@ -739,10 +731,10 @@ kea{
             other{"Dola merkanu"}
         }
         XAF{
-            other{"Franku CFA (BEAC)"}
+            other{"Franku CFA BEAC"}
         }
         XOF{
-            other{"Franku CFA (BCEAO)"}
+            other{"Franku CFA BCEAO"}
         }
         XXX{
             other{"(mueda diskonxedu)"}
@@ -757,5 +749,5 @@ kea{
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.74"}
 }

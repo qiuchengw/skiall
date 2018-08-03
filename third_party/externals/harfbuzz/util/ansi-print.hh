@@ -27,7 +27,6 @@
 #ifndef ANSI_PRINT_HH
 #define ANSI_PRINT_HH
 
-#include "hb-private.hh"
 #include <hb.h> /* for int types */
 
 void

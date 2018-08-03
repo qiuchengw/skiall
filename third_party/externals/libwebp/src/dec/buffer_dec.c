@@ -74,8 +74,7 @@ static VP8StatusCode CheckDecBuffer(const WebPDecBuffer* const buffer) {
   } else {    // RGB checks
     const WebPRGBABuffer* const buf = &buffer->u.RGBA;
     const int stride = abs(buf->stride);
-    const uint64_t size =
-        MIN_BUFFER_SIZE(width * kModeBpp[mode], height, stride);
+    const uint64_t size = MIN_BUFFER_SIZE(width, height, stride);
     ok &= (size <= buf->size);
     ok &= (stride >= width * kModeBpp[mode]);
     ok &= (buf->rgba != NULL);

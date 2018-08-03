@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ********************************************************************************
-*   Copyright (C) 1999-2016 International Business Machines Corporation and
+*   Copyright (C) 1999-2015 International Business Machines Corporation and
 *   others. All Rights Reserved.
 ********************************************************************************
 *   Date        Name        Description
@@ -23,10 +21,7 @@
 #include "unicode/ustring.h"
 #include "unicode/parsepos.h"
 #include "unicode/symtable.h"
-#include "unicode/utf8.h"
-#include "unicode/utf16.h"
 #include "unicode/uversion.h"
-#include "cmemory.h"
 #include "hash.h"
 
 #define TEST_ASSERT_SUCCESS(status) {if (U_FAILURE(status)) { \
@@ -41,6 +36,15 @@ UnicodeString operator+(const UnicodeString& left, const UnicodeSet& set) {
     set.toPattern(pat);
     return left + UnicodeSetTest::escape(pat);
 }
+
+#define CASE(id,test) case id:                          \
+                          name = #test;                 \
+                          if (exec) {                   \
+                              logln(#test "---");       \
+                              logln();                  \
+                              test();                   \
+                          }                             \
+                          break
 
 UnicodeSetTest::UnicodeSetTest() : utf8Cnv(NULL) {
 }
@@ -60,39 +64,35 @@ UnicodeSetTest::~UnicodeSetTest() {
 void
 UnicodeSetTest::runIndexedTest(int32_t index, UBool exec,
                                const char* &name, char* /*par*/) {
-    if (exec) {
-        logln(u"TestSuite UnicodeSetTest");
+    // if (exec) logln((UnicodeString)"TestSuite UnicodeSetTest");
+    switch (index) {
+        CASE(0,TestPatterns);
+        CASE(1,TestAddRemove);
+        CASE(2,TestCategories);
+        CASE(3,TestCloneEqualHash);
+        CASE(4,TestMinimalRep);
+        CASE(5,TestAPI);
+        CASE(6,TestScriptSet);
+        CASE(7,TestPropertySet);
+        CASE(8,TestClone);
+        CASE(9,TestExhaustive);
+        CASE(10,TestToPattern);
+        CASE(11,TestIndexOf);
+        CASE(12,TestStrings);
+        CASE(13,Testj2268);
+        CASE(14,TestCloseOver);
+        CASE(15,TestEscapePattern);
+        CASE(16,TestInvalidCodePoint);
+        CASE(17,TestSymbolTable);
+        CASE(18,TestSurrogate);
+        CASE(19,TestPosixClasses);
+        CASE(20,TestIteration);
+        CASE(21,TestFreezable);
+        CASE(22,TestSpan);
+        CASE(23,TestStringSpan);
+        CASE(24,TestUCAUnsafeBackwards);
+        default: name = ""; break;
     }
-    TESTCASE_AUTO_BEGIN;
-    TESTCASE_AUTO(TestPatterns);
-    TESTCASE_AUTO(TestAddRemove);
-    TESTCASE_AUTO(TestCategories);
-    TESTCASE_AUTO(TestCloneEqualHash);
-    TESTCASE_AUTO(TestMinimalRep);
-    TESTCASE_AUTO(TestAPI);
-    TESTCASE_AUTO(TestScriptSet);
-    TESTCASE_AUTO(TestPropertySet);
-    TESTCASE_AUTO(TestClone);
-    TESTCASE_AUTO(TestExhaustive);
-    TESTCASE_AUTO(TestToPattern);
-    TESTCASE_AUTO(TestIndexOf);
-    TESTCASE_AUTO(TestStrings);
-    TESTCASE_AUTO(Testj2268);
-    TESTCASE_AUTO(TestCloseOver);
-    TESTCASE_AUTO(TestEscapePattern);
-    TESTCASE_AUTO(TestInvalidCodePoint);
-    TESTCASE_AUTO(TestSymbolTable);
-    TESTCASE_AUTO(TestSurrogate);
-    TESTCASE_AUTO(TestPosixClasses);
-    TESTCASE_AUTO(TestIteration);
-    TESTCASE_AUTO(TestFreezable);
-    TESTCASE_AUTO(TestSpan);
-    TESTCASE_AUTO(TestStringSpan);
-    TESTCASE_AUTO(TestUCAUnsafeBackwards);
-    TESTCASE_AUTO(TestIntOverflow);
-    TESTCASE_AUTO(TestUnusedCcc);
-    TESTCASE_AUTO(TestDeepPattern);
-    TESTCASE_AUTO_END;
 }
 
 static const char NOT[] = "%%%%";
@@ -690,7 +690,7 @@ void UnicodeSetTest::TestAPI() {
     if (set != exp) { errln("FAIL: retain('s')"); return; }
 
     uint16_t buf[32];
-    int32_t slen = set.serialize(buf, UPRV_LENGTHOF(buf), status);
+    int32_t slen = set.serialize(buf, sizeof(buf)/sizeof(buf[0]), status);
     if (U_FAILURE(status)) { errln("FAIL: serialize"); return; }
     if (slen != 3 || buf[0] != 2 || buf[1] != 0x73 || buf[2] != 0x74) {
         errln("FAIL: serialize");
@@ -1057,7 +1057,7 @@ void UnicodeSetTest::TestPropertySet() {
         "\\uFDF2"
     };
 
-    static const int32_t DATA_LEN = UPRV_LENGTHOF(DATA);
+    static const int32_t DATA_LEN = sizeof(DATA)/sizeof(DATA[0]);
 
     for (int32_t i=0; i<DATA_LEN; i+=3) {  
         expectContainment(UnicodeString(DATA[i], -1, US_INV), CharsToUnicodeString(DATA[i+1]),
@@ -1461,7 +1461,7 @@ void UnicodeSetTest::TestInvalidCodePoint() {
         (UChar32)-1, 8,           0, 8,
         8, 0x110000,              8, 0x10FFFF
     };
-    const int32_t DATA_LENGTH = UPRV_LENGTHOF(DATA);
+    const int32_t DATA_LENGTH = sizeof(DATA)/sizeof(DATA[0]);
 
     UnicodeString pat;
     int32_t i;
@@ -1524,7 +1524,7 @@ void UnicodeSetTest::TestInvalidCodePoint() {
         (UChar32)-1,
         0x110000
     };
-    const int32_t DATA2_LENGTH = UPRV_LENGTHOF(DATA2);
+    const int32_t DATA2_LENGTH = sizeof(DATA2)/sizeof(DATA2[0]);
 
     for (i=0; i<DATA2_LENGTH; ++i) {
         UChar32 c = DATA2[i], end = 0x10FFFF;
@@ -3921,60 +3921,4 @@ void UnicodeSetTest::TestUCAUnsafeBackwards() {
         checkRoundTrip(*unsafeBackwardSet);
     }
 #endif
-}
-
-void UnicodeSetTest::TestIntOverflow() {
-    // This test triggers undefined double->int conversion behavior
-    // if the implementation is not careful.
-    IcuTestErrorCode errorCode(*this, "TestIntOverflow");
-    UnicodeSet set(u"[:ccc=2222222222222222222:]", errorCode);
-    assertTrue("[:ccc=int_overflow:] -> empty set", set.isEmpty());
-    assertEquals("[:ccc=int_overflow:] -> illegal argument",
-                 U_ILLEGAL_ARGUMENT_ERROR, errorCode.reset());
-}
-
-void UnicodeSetTest::TestUnusedCcc() {
-#if !UCONFIG_NO_NORMALIZATION
-    // All numeric ccc values 0..255 are valid, but many are unused.
-    IcuTestErrorCode errorCode(*this, "TestUnusedCcc");
-    UnicodeSet ccc2(u"[:ccc=2:]", errorCode);
-    assertSuccess("[:ccc=2:]", errorCode);
-    assertTrue("[:ccc=2:] -> empty set", ccc2.isEmpty());
-
-    UnicodeSet ccc255(u"[:ccc=255:]", errorCode);
-    assertSuccess("[:ccc=255:]", errorCode);
-    assertTrue("[:ccc=255:] -> empty set", ccc255.isEmpty());
-
-    // Non-integer values and values outside 0..255 are invalid.
-    UnicodeSet ccc_1(u"[:ccc=-1:]", errorCode);
-    assertEquals("[:ccc=-1:] -> illegal argument",
-                 U_ILLEGAL_ARGUMENT_ERROR, errorCode.reset());
-    assertTrue("[:ccc=-1:] -> empty set", ccc_1.isEmpty());
-
-    UnicodeSet ccc256(u"[:ccc=256:]", errorCode);
-    assertEquals("[:ccc=256:] -> illegal argument",
-                 U_ILLEGAL_ARGUMENT_ERROR, errorCode.reset());
-    assertTrue("[:ccc=256:] -> empty set", ccc256.isEmpty());
-
-    UnicodeSet ccc1_1(u"[:ccc=1.1:]", errorCode);
-    assertEquals("[:ccc=1.1:] -> illegal argument",
-                 U_ILLEGAL_ARGUMENT_ERROR, errorCode.reset());
-    assertTrue("[:ccc=1.1:] -> empty set", ccc1_1.isEmpty());
-#endif
-}
-
-void UnicodeSetTest::TestDeepPattern() {
-    IcuTestErrorCode errorCode(*this, "TestDeepPattern");
-    // Nested ranges are parsed via recursion which can use a lot of stack space.
-    // After a reasonable limit, we should get an error.
-    constexpr int32_t DEPTH = 20000;
-    UnicodeString pattern, suffix;
-    for (int32_t i = 0; i < DEPTH; ++i) {
-        pattern.append(u"[a", 2);
-        suffix.append(']');
-    }
-    pattern.append(suffix);
-    UnicodeSet set(pattern, errorCode);
-    assertTrue("[a[a[a...1000s...]]] -> error", errorCode.isFailure());
-    errorCode.reset();
 }

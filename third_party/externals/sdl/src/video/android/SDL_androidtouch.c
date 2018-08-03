@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,13 +52,16 @@ static void Android_GetWindowCoordinates(float x, float y,
 
 static SDL_bool separate_mouse_and_touch = SDL_FALSE;
 
-static void SDLCALL
+static void
 SeparateEventsHintWatcher(void *userdata, const char *name,
                           const char *oldValue, const char *newValue)
 {
-    separate_mouse_and_touch = (newValue && (SDL_strcmp(newValue, "1") == 0));
+    jclass mActivityClass = Android_JNI_GetActivityClass();
+    JNIEnv *env = Android_JNI_GetEnv();
+    jfieldID fid = (*env)->GetStaticFieldID(env, mActivityClass, "mSeparateMouseAndTouch", "Z");
 
-    Android_JNI_SetSeparateMouseAndTouch(separate_mouse_and_touch);
+    separate_mouse_and_touch = (newValue && (SDL_strcmp(newValue, "1") == 0));
+    (*env)->SetStaticBooleanField(env, mActivityClass, fid, separate_mouse_and_touch ? JNI_TRUE : JNI_FALSE);
 }
 
 void Android_InitTouch(void)

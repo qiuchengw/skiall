@@ -1,12 +1,6 @@
 /*
 *******************************************************************************
 *
-*   © 2016 and later: Unicode, Inc. and others.
-*   License & terms of use: http://www.unicode.org/copyright.html#License
-*
-*******************************************************************************
-*******************************************************************************
-*
 *   Copyright (C) 2003-2004, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
@@ -63,7 +57,7 @@ int c_main(UFILE *out)
   u_fprintf(out, "u_strToLower(%S, turkish) -> %S\n", upper, buffer);
 
 
-  /* ustring.h APIs, UChar * string case mapping with a English locale */
+  /* ustring.h APIs, UChar * string case mapping with a Engish locale */
   /* result buffer = "ABI" latin CAPITAL letter A, latin capital letter B,
      latin capital letter I */
   length = u_strToUpper(buffer, sizeof(buffer)/sizeof(buffer[0]), upper, 

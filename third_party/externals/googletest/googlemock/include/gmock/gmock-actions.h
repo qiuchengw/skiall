@@ -1029,9 +1029,9 @@ class DoBothAction {
 //     return sqrt(x*x + y*y);
 //   }
 //   ...
-//   EXPECT_CALL(mock, Foo("abc", _, _))
+//   EXEPCT_CALL(mock, Foo("abc", _, _))
 //       .WillOnce(Invoke(DistanceToOriginWithLabel));
-//   EXPECT_CALL(mock, Bar(5, _, _))
+//   EXEPCT_CALL(mock, Bar(5, _, _))
 //       .WillOnce(Invoke(DistanceToOriginWithIndex));
 //
 // you could write
@@ -1041,8 +1041,8 @@ class DoBothAction {
 //     return sqrt(x*x + y*y);
 //   }
 //   ...
-//   EXPECT_CALL(mock, Foo("abc", _, _)).WillOnce(Invoke(DistanceToOrigin));
-//   EXPECT_CALL(mock, Bar(5, _, _)).WillOnce(Invoke(DistanceToOrigin));
+//   EXEPCT_CALL(mock, Foo("abc", _, _)).WillOnce(Invoke(DistanceToOrigin));
+//   EXEPCT_CALL(mock, Bar(5, _, _)).WillOnce(Invoke(DistanceToOrigin));
 typedef internal::IgnoredValue Unused;
 
 // This constructor allows us to turn an Action<From> object into an

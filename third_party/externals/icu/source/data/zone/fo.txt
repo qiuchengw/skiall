@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fo.xml
+// *
+// ***************************************************************************
 fo{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -148,7 +154,7 @@ fo{
             ec{"Porto-Novo"}
         }
         "Africa:Sao_Tome"{
-            ec{"São Tomé"}
+            ec{"Sao Tome"}
         }
         "Africa:Tripoli"{
             ec{"Tripoli"}
@@ -302,9 +308,6 @@ fo{
         }
         "America:El_Salvador"{
             ec{"El Salvador"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -507,9 +510,6 @@ fo{
         "America:Puerto_Rico"{
             ec{"Puerto Riko"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -550,7 +550,7 @@ fo{
             ec{"Sitka"}
         }
         "America:St_Barthelemy"{
-            ec{"St. Barthelemy"}
+            ec{"St-Barthélemy"}
         }
         "America:St_Johns"{
             ec{"St. John’s"}
@@ -660,9 +660,6 @@ fo{
         "Asia:Ashgabat"{
             ec{"Ashgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Baghdad"}
         }
@@ -674,9 +671,6 @@ fo{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -713,9 +707,6 @@ fo{
         }
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gasa"}
@@ -858,9 +849,6 @@ fo{
         "Asia:Tokyo"{
             ec{"Tokyo"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulaanbaatar"}
         }
@@ -951,9 +939,6 @@ fo{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Samskipað heimstíð"}
-        }
         "Etc:Unknown"{
             ec{"ókendur býur"}
         }
@@ -962,9 +947,6 @@ fo{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrakhan"}
         }
         "Europe:Athens"{
             ec{"Aten"}
@@ -1024,9 +1006,6 @@ fo{
         "Europe:Kiev"{
             ec{"Kiev"}
         }
-        "Europe:Kirov"{
-            ec{"Kirov"}
-        }
         "Europe:Lisbon"{
             ec{"Lissabon"}
         }
@@ -1085,9 +1064,6 @@ fo{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1106,11 +1082,8 @@ fo{
         "Europe:Tirane"{
             ec{"Tirane"}
         }
-        "Europe:Ulyanovsk"{
-            ec{"Ulyanovsk"}
-        }
         "Europe:Uzhgorod"{
-            ec{"Uzhhorod"}
+            ec{"Uzhgorod"}
         }
         "Europe:Vaduz"{
             ec{"Vaduz"}
@@ -1763,9 +1736,6 @@ fo{
         }
         "meta:Ponape"{
             ls{"Ponape tíð"}
-        }
-        "meta:Pyongyang"{
-            ls{"Pyongyang tíð"}
         }
         "meta:Reunion"{
             ls{"Réunion tíð"}

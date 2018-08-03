@@ -46,15 +46,15 @@ class SmallGlyphMetrics : public GlyphMetrics,
     virtual ~Builder();
 
     int32_t Height();
-    void SetHeight(uint8_t height);
+    void SetHeight(byte_t height);
     int32_t Width();
-    void SetWidth(uint8_t width);
+    void SetWidth(byte_t width);
     int32_t BearingX();
-    void SetBearingX(uint8_t bearing);
+    void SetBearingX(byte_t bearing);
     int32_t BearingY();
-    void SetBearingY(uint8_t bearing);
+    void SetBearingY(byte_t bearing);
     int32_t Advance();
-    void SetAdvance(uint8_t advance);
+    void SetAdvance(byte_t advance);
 
     virtual CALLER_ATTACH FontDataTable* SubBuildTable(ReadableFontData* data);
     virtual void SubDataSet();

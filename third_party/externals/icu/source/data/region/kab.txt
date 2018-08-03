@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/kab.xml
+// *
+// ***************************************************************************
 kab{
     Countries{
         AD{"Undura"}
@@ -9,6 +15,7 @@ kab{
         AI{"Ungiya"}
         AL{"Lalbani"}
         AM{"Arminya"}
+        AN{"Antilles n Tmura-Yessakesren"}
         AO{"Ungula"}
         AR{"Arjuntin"}
         AS{"Samwa Tamarikanit"}
@@ -227,5 +234,5 @@ kab{
         ZM{"Zambya"}
         ZW{"Zimbabwi"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

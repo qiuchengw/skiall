@@ -31,7 +31,10 @@
 #include "microhttpd.h"
 #include "platform_interface.h"
 #if HTTPS_SUPPORT
-#include <openssl/ssl.h>
+#include <gnutls/gnutls.h>
+#if GNUTLS_VERSION_MAJOR >= 3
+#include <gnutls/abstract.h>
+#endif
 #endif
 #if EPOLL_SUPPORT
 #include <sys/epoll.h>
@@ -838,17 +841,17 @@ struct MHD_Connection
   /**
    * State required for HTTPS/SSL/TLS support.
    */
-  SSL* tls_session;
+  gnutls_session_t tls_session;
 
   /**
    * Memory location to return for protocol session info.
    */
-  const char* protocol;
+  int protocol;
 
   /**
    * Memory location to return for protocol session info.
    */
-  const char* cipher;
+  int cipher;
 
   /**
    * Could it be that we are ready to read due to TLS buffers
@@ -1190,14 +1193,42 @@ struct MHD_Daemon
   uint16_t port;
 
 #if HTTPS_SUPPORT
-  SSL_CTX* tls_context;
   /**
-   * Pointer to our SSL/TLS key (in PEM) in memory.
+   * Desired cipher algorithms.
+   */
+  gnutls_priority_t priority_cache;
+
+  /**
+   * What kind of credentials are we offering
+   * for SSL/TLS?
+   */
+  gnutls_credentials_type_t cred_type;
+
+  /**
+   * Server x509 credentials
+   */
+  gnutls_certificate_credentials_t x509_cred;
+
+  /**
+   * Diffie-Hellman parameters
+   */
+  gnutls_dh_params_t dh_params;
+
+#if GNUTLS_VERSION_MAJOR >= 3
+  /**
+   * Function that can be used to obtain the certificate.  Needed
+   * for SNI support.  See #MHD_OPTION_HTTPS_CERT_CALLBACK.
+   */
+  gnutls_certificate_retrieve_function2 *cert_callback;
+#endif
+
+  /**
+   * Pointer to our SSL/TLS key (in ASCII) in memory.
    */
   const char *https_mem_key;
 
   /**
-   * Pointer to our SSL/TLS certificate (in PEM) in memory.
+   * Pointer to our SSL/TLS certificate (in ASCII) in memory.
    */
   const char *https_mem_cert;
 
@@ -1207,19 +1238,19 @@ struct MHD_Daemon
   const char *https_key_password;
 
   /**
-   * Pointer to our SSL/TLS certificate authority (in PEM) in memory.
+   * Pointer to our SSL/TLS certificate authority (in ASCII) in memory.
    */
   const char *https_mem_trust;
 
   /**
-   * Our Diffie-Hellman parameters (in PEM) in memory.
+   * Our Diffie-Hellman parameters in memory.
    */
-  const char *https_mem_dhparams;
+  gnutls_dh_params_t https_mem_dhparams;
 
   /**
-   * Pointer to SSL/TLS cipher string in memory.
+   * #MHD_YES if we have initialized @e https_mem_dhparams.
    */
-  const char *https_mem_cipher;
+  int have_dhparams;
 
   /**
    * For how many connections do we have 'tls_read_ready' set to MHD_YES?

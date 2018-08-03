@@ -31,7 +31,6 @@
 
 #ifdef ICU
 #include "dirent.h"
-#include "sys/stat.h"
 #endif
 
 #ifndef isascii
@@ -429,7 +428,7 @@ main(int argc, char *argv[])
 		}
 		closedir(dp);
 	}
-#endif
+#endif ICU
 
 	if (vflag | Vflag) {
 		intmax_t	lo;
@@ -496,6 +495,7 @@ main(int argc, char *argv[])
 		int count;
 
 		count = getall(&namelist);
+
 		fakeargv = (char **) malloc((size_t) (argc + count) * sizeof *argv);
 		/*
 		if ((fakeargv = (char **) malloc((size_t) (argc + count) * sizeof *argv)) == NULL) {
@@ -1020,9 +1020,9 @@ static void dumptimeICU(FILE * fp, time_t t)
 	min = offset % 60;
 	hour = offset / 60;
 	
-	fprintf(fp, "%02ld", hour);
-	fprintf(fp, "%02ld", min);
-	fprintf(fp, "%02ld", sec);
+	fprintf(fp, "%02d", hour);
+	fprintf(fp, "%02d", min);
+	fprintf(fp, "%02d", sec);
 	fprintf(fp, "[DST=%d]", loc.tm_isdst);
 }
 

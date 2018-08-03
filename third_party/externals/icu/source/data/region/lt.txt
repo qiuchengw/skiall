@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/lt.xml
+// *
+// ***************************************************************************
 lt{
     Countries{
         001{"pasaulis"}
@@ -31,7 +37,6 @@ lt{
         151{"Rytų Europa"}
         154{"Šiaurės Europa"}
         155{"Vakarų Europa"}
-        202{"Užsachario Afrika"}
         419{"Lotynų Amerika"}
         AC{"Dangun Žengimo sala"}
         AD{"Andora"}
@@ -41,6 +46,7 @@ lt{
         AI{"Angilija"}
         AL{"Albanija"}
         AM{"Armėnija"}
+        AN{"Olandijos Antilai"}
         AO{"Angola"}
         AQ{"Antarktida"}
         AR{"Argentina"}
@@ -107,7 +113,6 @@ lt{
         ES{"Ispanija"}
         ET{"Etiopija"}
         EU{"Europos Sąjunga"}
-        EZ{"euro zona"}
         FI{"Suomija"}
         FJ{"Fidžis"}
         FK{"Folklando Salos"}
@@ -115,7 +120,7 @@ lt{
         FO{"Farerų Salos"}
         FR{"Prancūzija"}
         GA{"Gabonas"}
-        GB{"Jungtinė Karalystė"}
+        GB{"Didžioji Britanija"}
         GD{"Grenada"}
         GE{"Gruzija"}
         GF{"Prancūzijos Gviana"}
@@ -133,7 +138,7 @@ lt{
         GU{"Guamas"}
         GW{"Bisau Gvinėja"}
         GY{"Gajana"}
-        HK{"Ypatingasis Administracinis Kinijos Regionas Honkongas"}
+        HK{"Honkongas"}
         HM{"Herdo ir Makdonaldo Salos"}
         HN{"Hondūras"}
         HR{"Kroatija"}
@@ -167,7 +172,7 @@ lt{
         KZ{"Kazachstanas"}
         LA{"Laosas"}
         LB{"Libanas"}
-        LC{"Sent Lusija"}
+        LC{"Šventoji Liucija"}
         LI{"Lichtenšteinas"}
         LK{"Šri Lanka"}
         LR{"Liberija"}
@@ -187,7 +192,7 @@ lt{
         ML{"Malis"}
         MM{"Mianmaras (Birma)"}
         MN{"Mongolija"}
-        MO{"Ypatingasis Administracinis Kinijos Regionas Makao"}
+        MO{"Makao"}
         MP{"Marianos Šiaurinės Salos"}
         MQ{"Martinika"}
         MR{"Mauritanija"}
@@ -214,15 +219,15 @@ lt{
         OM{"Omanas"}
         PA{"Panama"}
         PE{"Peru"}
-        PF{"Prancūzijos Polinezija"}
+        PF{"Prancūzų Polinezija"}
         PG{"Papua Naujoji Gvinėja"}
         PH{"Filipinai"}
         PK{"Pakistanas"}
         PL{"Lenkija"}
         PM{"Sen Pjeras ir Mikelonas"}
-        PN{"Pitkerno salos"}
+        PN{"Pitkernas"}
         PR{"Puerto Rikas"}
-        PS{"Palestinos teritorija"}
+        PS{"Palestina"}
         PT{"Portugalija"}
         PW{"Palau"}
         PY{"Paragvajus"}
@@ -274,7 +279,6 @@ lt{
         UA{"Ukraina"}
         UG{"Uganda"}
         UM{"Jungtinių Valstijų Mažosios Tolimosios Salos"}
-        UN{"Jungtinės Tautos"}
         US{"Jungtinės Valstijos"}
         UY{"Urugvajus"}
         UZ{"Uzbekistanas"}
@@ -285,7 +289,7 @@ lt{
         VI{"Jungtinių Valstijų Mergelių Salos"}
         VN{"Vietnamas"}
         VU{"Vanuatu"}
-        WF{"Volisas ir Futūna"}
+        WF{"Volisas ir Futuna"}
         WS{"Samoa"}
         XK{"Kosovas"}
         YE{"Jemenas"}
@@ -296,20 +300,15 @@ lt{
         ZZ{"nežinoma sritis"}
     }
     Countries%short{
-        GB{"JK"}
-        HK{"Honkongas"}
-        MO{"Makao"}
-        PS{"Palestina"}
-        UN{"JT"}
+        GB{"Didžioji Britanija"}
         US{"JAV"}
     }
     Countries%variant{
         CD{"Kongo Demokratinė Respublika"}
         CG{"Kongo Respublika"}
         CI{"Dramblio Kaulo Kranto Respublika"}
-        CZ{"Čekijos Respublika"}
         FK{"Folklando (Malvinų) Salos"}
         MK{"Makedonijos Respublika"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

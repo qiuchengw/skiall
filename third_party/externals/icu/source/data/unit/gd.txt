@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/gd.xml
+// *
+// ***************************************************************************
 gd{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -104,7 +110,6 @@ gd{
                 few{"{0} cilemeatairean ceàrnagach"}
                 one{"{0} chilemeatair ceàrnagach"}
                 other{"{0} cilemeatair ceàrnagach"}
-                per{"{0} sa chilemeatair cheàrnagach"}
                 two{"{0} chilemeatair ceàrnagach"}
             }
             square-meter{
@@ -120,7 +125,6 @@ gd{
                 few{"{0} mìltean ceàrnagach"}
                 one{"{0} mhìle cheàrnagach"}
                 other{"{0} mìle cheàrnagach"}
-                per{"{0} sa mhìle cheàrnagach"}
                 two{"{0} mhìle cheàrnagach"}
             }
             square-yard{
@@ -133,36 +137,6 @@ gd{
         }
         compound{
             per{"{0} / {1}"}
-        }
-        concentr{
-            karat{
-                dnam{"karat"}
-                few{"{0} karat"}
-                one{"{0} karat"}
-                other{"{0} karat"}
-                two{"{0} karat"}
-            }
-            milligram-per-deciliter{
-                dnam{"mille-ghrama san deicheamh-liotair"}
-                few{"{0} mille-ghramaichean san deicheamh-liotair"}
-                one{"{0} mhille-ghrama san deicheamh-liotair"}
-                other{"{0} mille-ghrama san deicheamh-liotair"}
-                two{"{0} mhille-ghrama san deicheamh-liotair"}
-            }
-            millimole-per-liter{
-                dnam{"mille-mhòl san liotair"}
-                few{"{0} mille-mhòlaichean san liotair"}
-                one{"{0} mhille-mhòl san liotair"}
-                other{"{0} mille-mhòl san liotair"}
-                two{"{0} mhille-mhòl san liotair"}
-            }
-            part-per-million{
-                dnam{"pàirt sa mhillean"}
-                few{"{0} pàirtean sa mhillean"}
-                one{"{0} phàirt sa mhillean"}
-                other{"{0} pàirt sa mhillean"}
-                two{"{0} phàirt sa mhillean"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -185,13 +159,6 @@ gd{
                 one{"{0} mhìle sa ghalan"}
                 other{"{0} mìle sa ghalan"}
                 two{"{0} mhìle sa ghalan"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"mìle sa ghalan impireil"}
-                few{"{0} mìltean sa ghalan impireil"}
-                one{"{0} mhìle sa ghalan impireil"}
-                other{"{0} mìle sa ghalan impireil"}
-                two{"{0} mhìle sa ghalan impireil"}
             }
         }
         coordinate{
@@ -594,13 +561,6 @@ gd{
                 other{"{0} piceo-mheatair"}
                 two{"{0} phiceo-mheatair"}
             }
-            point{
-                dnam{"puing"}
-                few{"{0} puingean"}
-                one{"{0} phuing"}
-                other{"{0} puing"}
-                two{"{0} phuing"}
-            }
             yard{
                 dnam{"slat"}
                 few{"{0} slatan"}
@@ -782,6 +742,15 @@ gd{
                 two{"{0} phunnd san òirleach cheàrnagach"}
             }
         }
+        proportion{
+            karat{
+                dnam{"karat"}
+                few{"{0} karat"}
+                one{"{0} karat"}
+                other{"{0} karat"}
+                two{"{0} karat"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"cilemeatair san uair"}
@@ -951,14 +920,6 @@ gd{
                 per{"{0} sa ghalan"}
                 two{"{0} ghalan"}
             }
-            gallon-imperial{
-                dnam{"galan impireil"}
-                few{"{0} galanan impireil"}
-                one{"{0} ghalan impireil"}
-                other{"{0} galan impireil"}
-                per{"{0} sa ghalan impireil"}
-                two{"{0} ghalan impireil"}
-            }
             hectoliter{
                 dnam{"heactailiotair"}
                 few{"{0} heactailiotairean"}
@@ -1122,7 +1083,6 @@ gd{
                 few{"{0}km²"}
                 one{"{0}km²"}
                 other{"{0}km²"}
-                per{"{0}/km²"}
                 two{"{0}km²"}
             }
             square-meter{
@@ -1138,7 +1098,6 @@ gd{
                 few{"{0}mì²"}
                 one{"{0}mì²"}
                 other{"{0}mì²"}
-                per{"{0}/mì²"}
                 two{"{0}mì²"}
             }
             square-yard{
@@ -1151,36 +1110,6 @@ gd{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"karat"}
-                few{"{0}kt"}
-                one{"{0}kt"}
-                other{"{0}kt"}
-                two{"{0}kt"}
-            }
-            milligram-per-deciliter{
-                dnam{"mg/dL"}
-                few{"{0}mg/dL"}
-                one{"{0}mg/dL"}
-                other{"{0}mg/dL"}
-                two{"{0}mg/dL"}
-            }
-            millimole-per-liter{
-                dnam{"mmòl/L"}
-                few{"{0}mmòl/L"}
-                one{"{0}mmòl/L"}
-                other{"{0}mmòl/L"}
-                two{"{0}mmòl/L"}
-            }
-            part-per-million{
-                dnam{"ppm"}
-                few{"{0}ppm"}
-                one{"{0}ppm"}
-                other{"{0}ppm"}
-                two{"{0}ppm"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1203,13 +1132,6 @@ gd{
                 one{"{0}mì/g"}
                 other{"{0}mì/g"}
                 two{"{0}mì/g"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"mìle/gal RA"}
-                few{"{0}m/gRA"}
-                one{"{0}m/gRA"}
-                other{"{0}m/gRA"}
-                two{"{0}m/gRA"}
             }
         }
         coordinate{
@@ -1612,13 +1534,6 @@ gd{
                 other{"{0}pm"}
                 two{"{0}pm"}
             }
-            point{
-                dnam{"pt"}
-                few{"{0}pt"}
-                one{"{0}pt"}
-                other{"{0}pt"}
-                two{"{0}pt"}
-            }
             yard{
                 dnam{"slat"}
                 few{"{0}yd"}
@@ -1800,6 +1715,15 @@ gd{
                 two{"{0}psi"}
             }
         }
+        proportion{
+            karat{
+                dnam{"karat"}
+                few{"{0}kt"}
+                one{"{0}kt"}
+                other{"{0}kt"}
+                two{"{0}kt"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"km/h"}
@@ -1969,14 +1893,6 @@ gd{
                 per{"{0}/gal"}
                 two{"{0}gal"}
             }
-            gallon-imperial{
-                dnam{"gal imp."}
-                few{"{0} gal i."}
-                one{"{0} ghal i."}
-                other{"{0} gal i."}
-                per{"{0}/gal i."}
-                two{"{0} ghal i."}
-            }
             hectoliter{
                 dnam{"hL"}
                 few{"{0}hL"}
@@ -2140,7 +2056,6 @@ gd{
                 few{"{0} km²"}
                 one{"{0} km²"}
                 other{"{0} km²"}
-                per{"{0}/km²"}
                 two{"{0} km²"}
             }
             square-meter{
@@ -2156,7 +2071,6 @@ gd{
                 few{"{0} mì²"}
                 one{"{0} mì²"}
                 other{"{0} mì²"}
-                per{"{0}/mì²"}
                 two{"{0} mì²"}
             }
             square-yard{
@@ -2169,36 +2083,6 @@ gd{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"karat"}
-                few{"{0} kt"}
-                one{"{0} kt"}
-                other{"{0} kt"}
-                two{"{0} kt"}
-            }
-            milligram-per-deciliter{
-                dnam{"mg/dL"}
-                few{"{0} mg/dL"}
-                one{"{0} mg/dL"}
-                other{"{0} mg/dL"}
-                two{"{0} mg/dL"}
-            }
-            millimole-per-liter{
-                dnam{"mmòl/L"}
-                few{"{0} mmòl/L"}
-                one{"{0} mmòl/L"}
-                other{"{0} mmòl/L"}
-                two{"{0} mmòl/L"}
-            }
-            part-per-million{
-                dnam{"ppm"}
-                few{"{0} ppm"}
-                one{"{0} ppm"}
-                other{"{0} ppm"}
-                two{"{0} ppm"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -2221,13 +2105,6 @@ gd{
                 one{"{0} mì/g"}
                 other{"{0} mì/g"}
                 two{"{0} mì/g"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"mìle/gal imp."}
-                few{"{0} mì/gal imp."}
-                one{"{0} mhì/gal imp."}
-                other{"{0} mì/gal imp."}
-                two{"{0} mhì/gal imp."}
             }
         }
         coordinate{
@@ -2630,13 +2507,6 @@ gd{
                 other{"{0} pm"}
                 two{"{0} pm"}
             }
-            point{
-                dnam{"puing"}
-                few{"{0} pt"}
-                one{"{0} pt"}
-                other{"{0} pt"}
-                two{"{0} pt"}
-            }
             yard{
                 dnam{"slat"}
                 few{"{0} slat"}
@@ -2818,6 +2688,15 @@ gd{
                 two{"{0} psi"}
             }
         }
+        proportion{
+            karat{
+                dnam{"karat"}
+                few{"{0} kt"}
+                one{"{0} kt"}
+                other{"{0} kt"}
+                two{"{0} kt"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"km/uair"}
@@ -2986,14 +2865,6 @@ gd{
                 other{"{0} gal"}
                 per{"{0}/gal"}
                 two{"{0} gal"}
-            }
-            gallon-imperial{
-                dnam{"gal imp."}
-                few{"{0} gal imp."}
-                one{"{0} ghal imp."}
-                other{"{0} gal imp."}
-                per{"{0}/gal imp."}
-                two{"{0} ghal imp."}
             }
             hectoliter{
                 dnam{"hL"}

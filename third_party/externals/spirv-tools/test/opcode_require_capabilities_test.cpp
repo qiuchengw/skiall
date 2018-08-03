@@ -16,9 +16,9 @@
 
 #include "enum_set.h"
 
-namespace spvtools {
 namespace {
 
+using libspirv::CapabilitySet;
 using spvtest::ElementsIn;
 
 // Capabilities required by an Opcode.
@@ -31,15 +31,14 @@ using OpcodeTableCapabilitiesTest =
     ::testing::TestWithParam<ExpectedOpCodeCapabilities>;
 
 TEST_P(OpcodeTableCapabilitiesTest, TableEntryMatchesExpectedCapabilities) {
-  auto env = SPV_ENV_UNIVERSAL_1_1;
   spv_opcode_table opcodeTable;
-  ASSERT_EQ(SPV_SUCCESS, spvOpcodeTableGet(&opcodeTable, env));
+  ASSERT_EQ(SPV_SUCCESS,
+            spvOpcodeTableGet(&opcodeTable, SPV_ENV_UNIVERSAL_1_1));
   spv_opcode_desc entry;
-  ASSERT_EQ(SPV_SUCCESS, spvOpcodeTableValueLookup(env, opcodeTable,
-                                                   GetParam().opcode, &entry));
-  EXPECT_EQ(
-      ElementsIn(GetParam().capabilities),
-      ElementsIn(CapabilitySet(entry->numCapabilities, entry->capabilities)));
+  ASSERT_EQ(SPV_SUCCESS,
+            spvOpcodeTableValueLookup(opcodeTable, GetParam().opcode, &entry));
+  EXPECT_EQ(ElementsIn(GetParam().capabilities),
+            ElementsIn(entry->capabilities));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -74,5 +73,4 @@ INSTANTIATE_TEST_CASE_P(
             SpvOpGetKernelMaxNumSubgroups,
             CapabilitySet{SpvCapabilitySubgroupDispatch}}), );
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

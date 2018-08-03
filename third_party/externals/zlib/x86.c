@@ -4,14 +4,13 @@
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Author:
  *  Jim Kukunas
- *
+ * 
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 #include "x86.h"
 #include "zutil.h"
 
-int ZLIB_INTERNAL x86_cpu_enable_ssse3 = 0;
 int ZLIB_INTERNAL x86_cpu_enable_simd = 0;
 
 #ifndef _MSC_VER
@@ -28,7 +27,6 @@ void x86_check_features(void)
 static void _x86_check_features(void)
 {
     int x86_cpu_has_sse2;
-    int x86_cpu_has_ssse3;
     int x86_cpu_has_sse42;
     int x86_cpu_has_pclmulqdq;
     unsigned eax, ebx, ecx, edx;
@@ -49,11 +47,8 @@ static void _x86_check_features(void)
 #endif  /* (__i386__) */
 
     x86_cpu_has_sse2 = edx & 0x4000000;
-    x86_cpu_has_ssse3 = ecx & 0x000200;
     x86_cpu_has_sse42 = ecx & 0x100000;
     x86_cpu_has_pclmulqdq = ecx & 0x2;
-
-    x86_cpu_enable_ssse3 = x86_cpu_has_ssse3;
 
     x86_cpu_enable_simd = x86_cpu_has_sse2 &&
                           x86_cpu_has_sse42 &&
@@ -79,7 +74,6 @@ static BOOL CALLBACK _x86_check_features(PINIT_ONCE once,
                                          PVOID *context)
 {
     int x86_cpu_has_sse2;
-    int x86_cpu_has_ssse3;
     int x86_cpu_has_sse42;
     int x86_cpu_has_pclmulqdq;
     int regs[4];
@@ -87,11 +81,8 @@ static BOOL CALLBACK _x86_check_features(PINIT_ONCE once,
     __cpuid(regs, 1);
 
     x86_cpu_has_sse2 = regs[3] & 0x4000000;
-    x86_cpu_has_ssse3 = regs[2] & 0x000200;
-    x86_cpu_has_sse42 = regs[2] & 0x100000;
+    x86_cpu_has_sse42= regs[2] & 0x100000;
     x86_cpu_has_pclmulqdq = regs[2] & 0x2;
-
-    x86_cpu_enable_ssse3 = x86_cpu_has_ssse3;
 
     x86_cpu_enable_simd = x86_cpu_has_sse2 &&
                           x86_cpu_has_sse42 &&

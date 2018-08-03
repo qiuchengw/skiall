@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 2012-2016, International Business Machines
+*   Copyright (C) 2012-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
 *   file name:  listformatter.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -33,10 +31,7 @@ class Hashtable;
 struct ListFormatInternal;
 
 /* The following can't be #ifndef U_HIDE_INTERNAL_API, needed for other .h file declarations */
-/**
- * @internal
- * \cond
- */
+/** @internal */
 struct ListFormatData : public UMemory {
     UnicodeString twoPattern;
     UnicodeString startPattern;
@@ -46,7 +41,6 @@ struct ListFormatData : public UMemory {
   ListFormatData(const UnicodeString& two, const UnicodeString& start, const UnicodeString& middle, const UnicodeString& end) :
       twoPattern(two), startPattern(start), middlePattern(middle), endPattern(end) {}
 };
-/** \endcond */
 
 
 /**
@@ -151,7 +145,7 @@ class U_COMMON_API ListFormatter : public UObject{
     /**
      * @internal constructor made public for testing.
      */
-    ListFormatter(const ListFormatData &data, UErrorCode &errorCode);
+    ListFormatter(const ListFormatData &data);
     /**
      * @internal constructor made public for testing.
      */
@@ -161,8 +155,6 @@ class U_COMMON_API ListFormatter : public UObject{
   private:
     static void initializeHash(UErrorCode& errorCode);
     static const ListFormatInternal* getListFormatInternal(const Locale& locale, const char *style, UErrorCode& errorCode);
-    struct ListPatternsSink;
-    static ListFormatInternal* loadListFormatInternal(const Locale& locale, const char* style, UErrorCode& errorCode);
 
     ListFormatter();
 

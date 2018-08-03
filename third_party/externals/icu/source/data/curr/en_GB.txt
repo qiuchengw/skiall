@@ -1,24 +1,32 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/en_GB.xml
+// *
+// ***************************************************************************
 en_GB{
     %%Parent{"en_001"}
     Currencies{
-        SHP{
-            "SHP",
-            "St Helena Pound",
+        ILR{
+            "ILR",
+            "Israeli Shekel (1980–1985)",
+        }
+        ILS{
+            "₪",
+            "Israeli New Shekel",
         }
     }
     CurrencyPlurals{
-        MKD{
-            other{"Macedonian denari"}
+        ILR{
+            one{"Israeli shekel (1980–1985)"}
+            other{"Israeli shekels (1980–1985)"}
         }
-        SHP{
-            one{"St Helena pound"}
-            other{"St Helena pounds"}
-        }
-        XOF{
-            other{"West African CFA francs"}
+        ILS{
+            one{"Israeli new shekel"}
+            other{"Israeli new shekels"}
         }
     }
-    Version{"2.1.38.73"}
+    Version{"2.1.19.79"}
 }

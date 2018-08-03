@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ca.xml
+// *
+// ***************************************************************************
 ca{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -205,7 +211,7 @@ ca{
             ec{"Bahia"}
         }
         "America:Bahia_Banderas"{
-            ec{"Bahía de Banderas"}
+            ec{"bahía de Banderas"}
         }
         "America:Barbados"{
             ec{"Barbados"}
@@ -253,7 +259,7 @@ ca{
             ec{"Caiman"}
         }
         "America:Chicago"{
-            ec{"Chicago"}
+            ec{"Xicago"}
         }
         "America:Chihuahua"{
             ec{"Chihuahua"}
@@ -302,9 +308,6 @@ ca{
         }
         "America:El_Salvador"{
             ec{"El Salvador"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -507,9 +510,6 @@ ca{
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -660,9 +660,6 @@ ca{
         "Asia:Ashgabat"{
             ec{"Ashgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atirau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -674,9 +671,6 @@ ca{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -713,9 +707,6 @@ ca{
         }
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -811,7 +802,7 @@ ca{
             ec{"Qatar"}
         }
         "Asia:Qyzylorda"{
-            ec{"Kizil-Orda"}
+            ec{"Kizilordà"}
         }
         "Asia:Rangoon"{
             ec{"Rangoon"}
@@ -857,9 +848,6 @@ ca{
         }
         "Asia:Tokyo"{
             ec{"Tòquio"}
-        }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
         }
         "Asia:Ulaanbaatar"{
             ec{"Ulaanbaatar"}
@@ -951,9 +939,6 @@ ca{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Temps universal coordinat"}
-        }
         "Etc:Unknown"{
             ec{"Ciutat desconeguda"}
         }
@@ -962,9 +947,6 @@ ca{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrakhan"}
         }
         "Europe:Athens"{
             ec{"Atenes"}
@@ -1024,9 +1006,6 @@ ca{
         "Europe:Kiev"{
             ec{"Kíev"}
         }
-        "Europe:Kirov"{
-            ec{"Kirov"}
-        }
         "Europe:Lisbon"{
             ec{"Lisboa"}
         }
@@ -1085,9 +1064,6 @@ ca{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saràtov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1105,9 +1081,6 @@ ca{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uliànovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Uzhgorod"}
@@ -1788,9 +1761,6 @@ ca{
         }
         "meta:Ponape"{
             ls{"Hora de Ponape"}
-        }
-        "meta:Pyongyang"{
-            ls{"Hora de Pyongyang"}
         }
         "meta:Reunion"{
             ls{"Hora de Reunió"}

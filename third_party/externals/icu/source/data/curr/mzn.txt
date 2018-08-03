@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/mzn.xml
+// *
+// ***************************************************************************
 mzn{
     Currencies{
         AED{
@@ -90,13 +96,9 @@ mzn{
             "BWP",
             "بوتساوانای ِپولا",
         }
-        BYN{
-            "BYN",
-            "بلاروس ِروبل",
-        }
         BYR{
             "BYR",
-            "بلاروس ِروبل (۲۰۰۰–۲۰۱۶)",
+            "بلاروس ِروبل",
         }
         BZD{
             "BZD",
@@ -356,10 +358,6 @@ mzn{
         }
         MRO{
             "MRO",
-            "موریتانی ِاوگوئیا (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "موریتانی ِاوگوئیا",
         }
         MUR{
@@ -416,7 +414,7 @@ mzn{
         }
         PEN{
             "PEN",
-            "پروی ِسول",
+            "پروی ِنوئوو سول",
         }
         PHP{
             "PHP",
@@ -496,10 +494,6 @@ mzn{
         }
         STD{
             "STD",
-            "سائوتومه و پرینسیپ ِدوبرا (1977–2017)",
-        }
-        STN{
-            "STN",
             "سائوتومه و پرینسیپ ِدوبرا",
         }
         SYP{
@@ -607,7 +601,7 @@ mzn{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -669,7 +663,7 @@ mzn{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TRY{"₺"}
@@ -755,11 +749,8 @@ mzn{
         BWP{
             other{"بوتساوانای ِپولا"}
         }
-        BYN{
-            other{"بلاروس ِروبل"}
-        }
         BYR{
-            other{"بلاروس ِروبل (۲۰۰۰–۲۰۱۶)"}
+            other{"بلاروس ِروبل"}
         }
         BZD{
             other{"بلیز دلار"}
@@ -954,9 +945,6 @@ mzn{
             other{"ماکائو ِپاتاجا"}
         }
         MRO{
-            other{"موریتانی ِاوگوئیا (1973–2017)"}
-        }
-        MRU{
             other{"موریتانی ِاوگوئیا"}
         }
         MUR{
@@ -999,7 +987,7 @@ mzn{
             other{"پانامای بالبوا"}
         }
         PEN{
-            other{"پروی ِسول"}
+            other{"پروی ِنوئوو سول"}
         }
         PHP{
             other{"فیلیپین ِپزو"}
@@ -1059,9 +1047,6 @@ mzn{
             other{"جنوبی سودان ِپوند"}
         }
         STD{
-            other{"سائوتومه و پرینسیپ ِدوبرا (1977–2017)"}
-        }
-        STN{
             other{"سائوتومه و پرینسیپ ِدوبرا"}
         }
         SYP{
@@ -1134,5 +1119,5 @@ mzn{
             other{"زامبیای ِکواچا"}
         }
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

@@ -13,18 +13,15 @@
 // limitations under the License.
 
 #include "strip_debug_info_pass.h"
-#include "ir_context.h"
 
 namespace spvtools {
 namespace opt {
 
-Pass::Status StripDebugInfoPass::Process() {
-  bool modified = !context()->debugs1().empty() ||
-                  !context()->debugs2().empty() ||
-                  !context()->debugs3().empty();
-  context()->debug_clear();
+Pass::Status StripDebugInfoPass::Process(ir::Module* module) {
+  bool modified = !module->debugs().empty();
+  module->debug_clear();
 
-  context()->module()->ForEachInst([&modified](Instruction* inst) {
+  module->ForEachInst([&modified](ir::Instruction* inst) {
     modified |= !inst->dbg_line_insts().empty();
     inst->dbg_line_insts().clear();
   });

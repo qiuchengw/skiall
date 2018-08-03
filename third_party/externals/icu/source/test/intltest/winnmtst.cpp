@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ********************************************************************************
-*   Copyright (C) 2005-2016, International Business Machines
+*   Copyright (C) 2005-2011, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 ********************************************************************************
 *
@@ -28,8 +26,6 @@
 #include "winutil.h"
 #include "winnmtst.h"
 
-#include "numfmtst.h"
-
 #include "cmemory.h"
 #include "cstring.h"
 #include "locmap.h"
@@ -48,8 +44,7 @@
 #   include <float.h>
 #   include <locale.h>
 
-#include <algorithm>
-
+#define ARRAY_SIZE(array) (sizeof array / sizeof array[0])
 #define NEW_ARRAY(type,count) (type *) uprv_malloc((count) * sizeof(type))
 #define DELETE_ARRAY(array) uprv_free((void *) (array))
 
@@ -197,7 +192,7 @@ static UnicodeString &getWindowsFormat(int32_t lcid, UBool currency, UnicodeStri
             if (lastError == ERROR_INSUFFICIENT_BUFFER) {
                 int newLength = GetCurrencyFormatW(lcid, 0, nBuffer, NULL, NULL, 0);
 
-                buffer = NEW_ARRAY(wchar_t, newLength);
+                buffer = NEW_ARRAY(UChar, newLength);
                 buffer[0] = 0x0000;
                 GetCurrencyFormatW(lcid, 0, nBuffer, NULL, buffer, newLength);
             }
@@ -211,14 +206,14 @@ static UnicodeString &getWindowsFormat(int32_t lcid, UBool currency, UnicodeStri
             if (lastError == ERROR_INSUFFICIENT_BUFFER) {
                 int newLength = GetNumberFormatW(lcid, 0, nBuffer, NULL, NULL, 0);
 
-                buffer = NEW_ARRAY(wchar_t, newLength);
+                buffer = NEW_ARRAY(UChar, newLength);
                 buffer[0] = 0x0000;
                 GetNumberFormatW(lcid, 0, nBuffer, NULL, buffer, newLength);
             }
         }
     }
 
-    appendTo.append((const UChar *)buffer, (int32_t) wcslen(buffer));
+    appendTo.append(buffer, (int32_t) wcslen(buffer));
 
     if (buffer != stackBuffer) {
         DELETE_ARRAY(buffer);
@@ -272,7 +267,7 @@ static void testLocale(const char *localeID, int32_t lcid, NumberFormat *wnf, UB
     }
 }
 
-void Win32NumberTest::testLocales(NumberFormatTest *log)
+void Win32NumberTest::testLocales(TestLog *log)
 {
     int32_t lcidCount = 0;
     Win32Utilities::LCIDRecord *lcidRecords = Win32Utilities::getLocales(lcidCount);
@@ -283,21 +278,6 @@ void Win32NumberTest::testLocales(NumberFormatTest *log)
 
         // NULL localeID means ICU didn't recognize the lcid
         if (lcidRecords[i].localeID == NULL) {
-            continue;
-        }
-
-        // Some locales have had their names change over various OS releases; skip them in the test for now.
-        int32_t failingLocaleLCIDs[] = {
-            0x040a, /* es-ES_tradnl;es-ES-u-co-trad; */
-            0x048c, /* fa-AF;prs-AF;prs-Arab-AF; */
-            0x046b, /* qu-BO;quz-BO;quz-Latn-BO; */
-            0x086b, /* qu-EC;quz-EC;quz-Latn-EC; */
-            0x0c6b, /* qu-PE;quz-PE;quz-Latn-PE; */
-            0x0492  /* ckb-IQ;ku-Arab-IQ; */
-        };
-        bool skip = (std::find(std::begin(failingLocaleLCIDs), std::end(failingLocaleLCIDs), lcidRecords[i].lcid) != std::end(failingLocaleLCIDs));
-        if (skip && log->logKnownIssue("13119", "Windows '@compat=host' fails on down-level versions of the OS")) {
-            log->logln("ticket:13119 - Skipping LCID = 0x%04x", lcidRecords[i].lcid);
             continue;
         }
 

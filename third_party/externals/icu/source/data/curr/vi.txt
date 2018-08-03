@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/vi.xml
+// *
+// ***************************************************************************
 vi{
     Currencies{
         ADP{
@@ -28,7 +34,7 @@ vi{
         }
         ANG{
             "ANG",
-            "Guilder Antille Hà Lan",
+            "Guilder Tây Ấn Hà Lan",
         }
         AOA{
             "AOA",
@@ -214,13 +220,9 @@ vi{
             "BYB",
             "Đồng Rúp Mới của Belarus (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "Rúp Belarus",
-        }
         BYR{
             "BYR",
-            "Rúp Belarus (2000–2016)",
+            "Rúp Belarus",
         }
         BZD{
             "BZD",
@@ -257,10 +259,6 @@ vi{
         CLP{
             "CLP",
             "Peso Chile",
-        }
-        CNH{
-            "CNH",
-            "Nhân dân tệ (hải ngoại)",
         }
         CNY{
             "CN¥",
@@ -668,10 +666,6 @@ vi{
         }
         MRO{
             "MRO",
-            "Ouguiya Mauritania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Ouguiya Mauritania",
         }
         MTL{
@@ -768,7 +762,7 @@ vi{
         }
         PEN{
             "PEN",
-            "Sol Peru",
+            "Nuevo Sol Peru",
         }
         PES{
             "PES",
@@ -900,10 +894,6 @@ vi{
         }
         STD{
             "STD",
-            "Dobra São Tomé và Príncipe (1977–2017)",
-        }
-        STN{
-            "STN",
             "Dobra São Tomé và Príncipe",
         }
         SUR{
@@ -1192,7 +1182,7 @@ vi{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1209,7 +1199,6 @@ vi{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -1250,7 +1239,6 @@ vi{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"lei"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
@@ -1259,7 +1247,7 @@ vi{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1293,7 +1281,7 @@ vi{
             other{"Dram Armenia"}
         }
         ANG{
-            other{"Guilder Antille Hà Lan"}
+            other{"Guilder Tây Ấn Hà Lan"}
         }
         AOA{
             other{"Kwanza Angola"}
@@ -1349,11 +1337,8 @@ vi{
         BWP{
             other{"Pula Botswana"}
         }
-        BYN{
-            other{"Rúp Belarus"}
-        }
         BYR{
-            other{"Rúp Belarus (2000–2016)"}
+            other{"Rúp Belarus"}
         }
         BZD{
             other{"Đô la Belize"}
@@ -1369,9 +1354,6 @@ vi{
         }
         CLP{
             other{"Peso Chile"}
-        }
-        CNH{
-            other{"Nhân dân tệ (hải ngoại)"}
         }
         CNY{
             other{"Nhân dân tệ"}
@@ -1560,9 +1542,6 @@ vi{
             other{"Pataca Ma Cao"}
         }
         MRO{
-            other{"Ouguiya Mauritania (1973–2017)"}
-        }
-        MRU{
             other{"Ouguiya Mauritania"}
         }
         MUR{
@@ -1608,7 +1587,7 @@ vi{
             other{"Balboa Panama"}
         }
         PEN{
-            other{"Sol Peru"}
+            other{"Nuevo Sol Peru"}
         }
         PGK{
             other{"Kina Papua New Guinean"}
@@ -1674,9 +1653,6 @@ vi{
             other{"Bảng Nam Sudan"}
         }
         STD{
-            other{"Dobra São Tomé và Príncipe (1977–2017)"}
-        }
-        STN{
             other{"Dobra São Tomé và Príncipe"}
         }
         SYP{
@@ -1770,5 +1746,5 @@ vi{
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

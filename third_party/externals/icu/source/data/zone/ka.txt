@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ka.xml
+// *
+// ***************************************************************************
 ka{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"აბიჯანი"}
@@ -303,9 +309,6 @@ ka{
         "America:El_Salvador"{
             ec{"სალვადორი"}
         }
-        "America:Fort_Nelson"{
-            ec{"ფორტ-ნელსონი"}
-        }
         "America:Fortaleza"{
             ec{"ფორტალეზა"}
         }
@@ -325,7 +328,7 @@ ka{
             ec{"გრენადა"}
         }
         "America:Guadeloupe"{
-            ec{"გვადელუპა"}
+            ec{"გვადელუპე"}
         }
         "America:Guatemala"{
             ec{"გვატემალა"}
@@ -478,7 +481,7 @@ ka{
             ec{"ცენტრი, ჩრდილოეთი დაკოტა"}
         }
         "America:North_Dakota:New_Salem"{
-            ec{"ნიუ-სალემი, ჩრდილოეთი დაკოტა"}
+            ec{"ნიუ სალემი, ჩრდილოეთი დაკოტა"}
         }
         "America:Ojinaga"{
             ec{"ოხინაგა"}
@@ -506,9 +509,6 @@ ka{
         }
         "America:Puerto_Rico"{
             ec{"პუერტო-რიკო"}
-        }
-        "America:Punta_Arenas"{
-            ec{"პუნტა-არენასი"}
         }
         "America:Rainy_River"{
             ec{"რეინი რივერი"}
@@ -553,7 +553,7 @@ ka{
             ec{"სენ-ბართელემი"}
         }
         "America:St_Johns"{
-            ec{"სენტ-ჯონსი"}
+            ec{"სენტ ჯონსი"}
         }
         "America:St_Kitts"{
             ec{"სენტ-კიტსი"}
@@ -660,9 +660,6 @@ ka{
         "Asia:Ashgabat"{
             ec{"აშხაბადი"}
         }
-        "Asia:Atyrau"{
-            ec{"ატირაუ"}
-        }
         "Asia:Baghdad"{
             ec{"ბაღდადი"}
         }
@@ -674,9 +671,6 @@ ka{
         }
         "Asia:Bangkok"{
             ec{"ბანგკოკი"}
-        }
-        "Asia:Barnaul"{
-            ec{"ბარნაული"}
         }
         "Asia:Beirut"{
             ec{"ბეირუთი"}
@@ -713,9 +707,6 @@ ka{
         }
         "Asia:Dushanbe"{
             ec{"დუშანბე"}
-        }
-        "Asia:Famagusta"{
-            ec{"ფამაგუსტა"}
         }
         "Asia:Gaza"{
             ec{"გაზა"}
@@ -858,9 +849,6 @@ ka{
         "Asia:Tokyo"{
             ec{"ტოკიო"}
         }
-        "Asia:Tomsk"{
-            ec{"ტომსკი"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"ულანბატარი"}
         }
@@ -951,9 +939,6 @@ ka{
         "Australia:Sydney"{
             ec{"სიდნეი"}
         }
-        "Etc:UTC"{
-            ls{"მსოფლიო კოორდინირებული დრო"}
-        }
         "Etc:Unknown"{
             ec{"უცნობი ქალაქი"}
         }
@@ -962,9 +947,6 @@ ka{
         }
         "Europe:Andorra"{
             ec{"ანდორა"}
-        }
-        "Europe:Astrakhan"{
-            ec{"ასტრახანი"}
         }
         "Europe:Athens"{
             ec{"ათენი"}
@@ -1024,9 +1006,6 @@ ka{
         "Europe:Kiev"{
             ec{"კიევი"}
         }
-        "Europe:Kirov"{
-            ec{"კიროვი"}
-        }
         "Europe:Lisbon"{
             ec{"ლისაბონი"}
         }
@@ -1085,9 +1064,6 @@ ka{
         "Europe:Sarajevo"{
             ec{"სარაევო"}
         }
-        "Europe:Saratov"{
-            ec{"სარატოვი"}
-        }
         "Europe:Simferopol"{
             ec{"სიმფეროპოლი"}
         }
@@ -1105,9 +1081,6 @@ ka{
         }
         "Europe:Tirane"{
             ec{"ტირანა"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"ულიანოვსკი"}
         }
         "Europe:Uzhgorod"{
             ec{"უჟგოროდი"}
@@ -1307,9 +1280,9 @@ ka{
             ls{"დასავლეთ აფრიკის სტანდარტული დრო"}
         }
         "meta:Alaska"{
-            ld{"ალასკის ზაფხულის დრო"}
+            ld{"ალასკას ზაფხულის დრო"}
             lg{"ალასკის დრო"}
-            ls{"ალასკის სტანდარტული დრო"}
+            ls{"ალასკას სტანდარტული დრო"}
         }
         "meta:Amazon"{
             ld{"ამაზონიის ზაფხულის დრო"}
@@ -1549,9 +1522,9 @@ ka{
             ls{"გაიანის დრო"}
         }
         "meta:Hawaii_Aleutian"{
-            ld{"ჰავაისა და ალეუტის ზაფხულის დრო"}
-            lg{"ჰავაისა და ალეუტის დრო"}
-            ls{"ჰავაისა და ალეუტის სტანდარტული დრო"}
+            ld{"ჰავაის და ალეუტის ზაფხულის დრო"}
+            lg{"ჰავაის და ალეუტის დრო"}
+            ls{"ჰავაის და ალეუტის სტანდარტული დრო"}
         }
         "meta:Hong_Kong"{
             ld{"ჰონკონგის ზაფხულის დრო"}
@@ -1763,9 +1736,6 @@ ka{
         }
         "meta:Ponape"{
             ls{"პონაპეს დრო"}
-        }
-        "meta:Pyongyang"{
-            ls{"ფხენიანის დრო"}
         }
         "meta:Reunion"{
             ls{"რეიუნიონის დრო"}

@@ -18,8 +18,7 @@
 
 #include "util/string_utils.h"
 
-namespace spvtools {
-namespace utils {
+namespace spvutils {
 
 std::string CardinalToOrdinal(size_t cardinal) {
   const size_t mod10 = cardinal % 10;
@@ -37,5 +36,4 @@ std::string CardinalToOrdinal(size_t cardinal) {
   return ToString(cardinal) + suffix;
 }
 
-}  // namespace utils
-}  // namespace spvtools
+}  // namespace spvutils

@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/he.xml
+// *
+// ***************************************************************************
 he{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"אביג׳אן"}
@@ -121,7 +127,7 @@ he{
             ec{"מסרו"}
         }
         "Africa:Mbabane"{
-            ec{"מבבנה"}
+            ec{"אמבאבאנה"}
         }
         "Africa:Mogadishu"{
             ec{"מוגדישו"}
@@ -202,7 +208,7 @@ he{
             ec{"אסונסיון"}
         }
         "America:Bahia"{
-            ec{"באהיה"}
+            ec{"בהיאה"}
         }
         "America:Bahia_Banderas"{
             ec{"באהיה בנדרס"}
@@ -302,9 +308,6 @@ he{
         }
         "America:El_Salvador"{
             ec{"אל סלבדור"}
-        }
-        "America:Fort_Nelson"{
-            ec{"פורט נלסון"}
         }
         "America:Fortaleza"{
             ec{"פורטאלזה"}
@@ -406,7 +409,7 @@ he{
             ec{"לואוור פרינסס קוורטר"}
         }
         "America:Maceio"{
-            ec{"מסייאו"}
+            ec{"מאסיו"}
         }
         "America:Managua"{
             ec{"מנגואה"}
@@ -469,7 +472,7 @@ he{
             ec{"נום"}
         }
         "America:Noronha"{
-            ec{"נורוניה"}
+            ec{"נורונהה"}
         }
         "America:North_Dakota:Beulah"{
             ec{"ביולה, צפון דקוטה"}
@@ -502,13 +505,10 @@ he{
             ec{"פורט אוף ספיין"}
         }
         "America:Porto_Velho"{
-            ec{"פורטו וליו"}
+            ec{"פורטו וולהו"}
         }
         "America:Puerto_Rico"{
             ec{"פוארטו ריקו"}
-        }
-        "America:Punta_Arenas"{
-            ec{"פונטה ארנס"}
         }
         "America:Rainy_River"{
             ec{"רייני ריבר"}
@@ -529,7 +529,7 @@ he{
             ec{"ריו ברנקו"}
         }
         "America:Santa_Isabel"{
-            ec{"סנטה איזבל"}
+            ec{"סנטה איסבל"}
         }
         "America:Santarem"{
             ec{"סנטרם"}
@@ -574,7 +574,7 @@ he{
             ec{"טגוסיגלפה"}
         }
         "America:Thule"{
-            ec{"תולה"}
+            ec{"טולה"}
         }
         "America:Thunder_Bay"{
             ec{"ת׳אנדר ביי"}
@@ -607,19 +607,19 @@ he{
             ec{"קאסיי"}
         }
         "Antarctica:Davis"{
-            ec{"דיוויס"}
+            ec{"דייויס"}
         }
         "Antarctica:DumontDUrville"{
-            ec{"דומון ד׳אורוויל"}
+            ec{"דומון ד׳אורווי"}
         }
         "Antarctica:Macquarie"{
             ec{"מקרי"}
         }
         "Antarctica:Mawson"{
-            ec{"מוסון"}
+            ec{"מאוסון"}
         }
         "Antarctica:McMurdo"{
-            ec{"מק-מרדו"}
+            ec{"מקמרדו"}
         }
         "Antarctica:Palmer"{
             ec{"פאלמר"}
@@ -628,7 +628,7 @@ he{
             ec{"רות׳רה"}
         }
         "Antarctica:Syowa"{
-            ec{"סיוואה"}
+            ec{"שויה"}
         }
         "Antarctica:Troll"{
             ec{"טרול"}
@@ -637,7 +637,7 @@ he{
             ec{"ווסטוק"}
         }
         "Arctic:Longyearbyen"{
-            ec{"לונגיירבין"}
+            ec{"לונגיירביאן"}
         }
         "Asia:Aden"{
             ec{"עדן"}
@@ -660,9 +660,6 @@ he{
         "Asia:Ashgabat"{
             ec{"אשגבט"}
         }
-        "Asia:Atyrau"{
-            ec{"אטיראו"}
-        }
         "Asia:Baghdad"{
             ec{"בגדד"}
         }
@@ -674,9 +671,6 @@ he{
         }
         "Asia:Bangkok"{
             ec{"בנגקוק"}
-        }
-        "Asia:Barnaul"{
-            ec{"ברנאול"}
         }
         "Asia:Beirut"{
             ec{"ביירות"}
@@ -694,7 +688,7 @@ he{
             ec{"צ׳יטה"}
         }
         "Asia:Choibalsan"{
-            ec{"צ׳ויבלסן"}
+            ec{"צ׳ואיבלסאן"}
         }
         "Asia:Colombo"{
             ec{"קולומבו"}
@@ -713,9 +707,6 @@ he{
         }
         "Asia:Dushanbe"{
             ec{"דושנבה"}
-        }
-        "Asia:Famagusta"{
-            ec{"פמגוסטה"}
         }
         "Asia:Gaza"{
             ec{"עזה"}
@@ -748,7 +739,7 @@ he{
             ec{"קמצ׳טקה"}
         }
         "Asia:Karachi"{
-            ec{"קראצ׳י"}
+            ec{"קרצ׳י"}
         }
         "Asia:Katmandu"{
             ec{"קטמנדו"}
@@ -853,13 +844,10 @@ he{
             ec{"טהרן"}
         }
         "Asia:Thimphu"{
-            ec{"טהימפהו"}
+            ec{"ת׳ימפו"}
         }
         "Asia:Tokyo"{
             ec{"טוקיו"}
-        }
-        "Asia:Tomsk"{
-            ec{"טומסק"}
         }
         "Asia:Ulaanbaatar"{
             ec{"אולאאנבטאר"}
@@ -907,7 +895,7 @@ he{
             ec{"רייקיאוויק"}
         }
         "Atlantic:South_Georgia"{
-            ec{"דרום ג׳ורג׳יה"}
+            ec{"דרום גיאורגיה"}
         }
         "Atlantic:St_Helena"{
             ec{"סנט הלנה"}
@@ -940,7 +928,7 @@ he{
             ec{"לינדמן"}
         }
         "Australia:Lord_Howe"{
-            ec{"אי הלורד האו"}
+            ec{"לורד האו"}
         }
         "Australia:Melbourne"{
             ec{"מלבורן"}
@@ -951,9 +939,6 @@ he{
         "Australia:Sydney"{
             ec{"סידני"}
         }
-        "Etc:UTC"{
-            ls{"זמן אוניברסלי מתואם"}
-        }
         "Etc:Unknown"{
             ec{"עיר לא ידועה"}
         }
@@ -962,9 +947,6 @@ he{
         }
         "Europe:Andorra"{
             ec{"אנדורה"}
-        }
-        "Europe:Astrakhan"{
-            ec{"אסטרחן"}
         }
         "Europe:Athens"{
             ec{"אתונה"}
@@ -988,7 +970,7 @@ he{
             ec{"בודפשט"}
         }
         "Europe:Busingen"{
-            ec{"ביזינגן"}
+            ec{"בוזינגן"}
         }
         "Europe:Chisinau"{
             ec{"קישינב"}
@@ -998,7 +980,7 @@ he{
         }
         "Europe:Dublin"{
             ec{"דבלין"}
-            ld{"שעון קיץ אירלנד"}
+            ld{"שעון קיץ אירי"}
         }
         "Europe:Gibraltar"{
             ec{"גיברלטר"}
@@ -1016,16 +998,13 @@ he{
             ec{"איסטנבול"}
         }
         "Europe:Jersey"{
-            ec{"ג׳רזי"}
+            ec{"ג׳רסי"}
         }
         "Europe:Kaliningrad"{
             ec{"קלינינגרד"}
         }
         "Europe:Kiev"{
             ec{"קייב"}
-        }
-        "Europe:Kirov"{
-            ec{"קירוב"}
         }
         "Europe:Lisbon"{
             ec{"ליסבון"}
@@ -1035,7 +1014,7 @@ he{
         }
         "Europe:London"{
             ec{"לונדון"}
-            ld{"שעון קיץ בריטניה"}
+            ld{"שעון קיץ בריטי"}
         }
         "Europe:Luxembourg"{
             ec{"לוקסמבורג"}
@@ -1047,7 +1026,7 @@ he{
             ec{"מלטה"}
         }
         "Europe:Mariehamn"{
-            ec{"מרייהאמן"}
+            ec{"מריהמן"}
         }
         "Europe:Minsk"{
             ec{"מינסק"}
@@ -1065,7 +1044,7 @@ he{
             ec{"פריז"}
         }
         "Europe:Podgorica"{
-            ec{"פודגוריצה"}
+            ec{"פודגוריקה"}
         }
         "Europe:Prague"{
             ec{"פראג"}
@@ -1085,9 +1064,6 @@ he{
         "Europe:Sarajevo"{
             ec{"סרייבו"}
         }
-        "Europe:Saratov"{
-            ec{"סראטוב"}
-        }
         "Europe:Simferopol"{
             ec{"סימפרופול"}
         }
@@ -1101,19 +1077,16 @@ he{
             ec{"שטוקהולם"}
         }
         "Europe:Tallinn"{
-            ec{"טאלין"}
+            ec{"טלין"}
         }
         "Europe:Tirane"{
-            ec{"טירנה"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"אוליאנובסק"}
+            ec{"טיראנה"}
         }
         "Europe:Uzhgorod"{
             ec{"אוז׳הורוד"}
         }
         "Europe:Vaduz"{
-            ec{"ואדוץ"}
+            ec{"ואדוז"}
         }
         "Europe:Vatican"{
             ec{"הוותיקן"}
@@ -1134,7 +1107,7 @@ he{
             ec{"זאגרב"}
         }
         "Europe:Zaporozhye"{
-            ec{"זפורוז׳יה"}
+            ec{"זפוריז׳יה"}
         }
         "Europe:Zurich"{
             ec{"ציריך"}
@@ -1146,7 +1119,7 @@ he{
             ec{"צ׳אגוס"}
         }
         "Indian:Christmas"{
-            ec{"האי כריסטמס"}
+            ec{"אי חג המולד"}
         }
         "Indian:Cocos"{
             ec{"קוקוס"}
@@ -1206,7 +1179,7 @@ he{
             ec{"גלפאגוס"}
         }
         "Pacific:Gambier"{
-            ec{"איי גמבייה"}
+            ec{"איי גמביר"}
         }
         "Pacific:Guadalcanal"{
             ec{"גוודלקנאל"}
@@ -1242,7 +1215,7 @@ he{
             ec{"נאורו"}
         }
         "Pacific:Niue"{
-            ec{"ניואה"}
+            ec{"ניווה"}
         }
         "Pacific:Norfolk"{
             ec{"נורפוק"}
@@ -1260,7 +1233,7 @@ he{
             ec{"פיטקרן"}
         }
         "Pacific:Ponape"{
-            ec{"פונפיי"}
+            ec{"פונפה"}
         }
         "Pacific:Port_Moresby"{
             ec{"פורט מורסבי"}
@@ -1269,7 +1242,7 @@ he{
             ec{"רארוטונגה"}
         }
         "Pacific:Saipan"{
-            ec{"סאיפאן"}
+            ec{"סייפן"}
         }
         "Pacific:Tahiti"{
             ec{"טהיטי"}
@@ -1278,13 +1251,13 @@ he{
             ec{"טאראווה"}
         }
         "Pacific:Tongatapu"{
-            ec{"טונגטאפו"}
+            ec{"טונגטפו"}
         }
         "Pacific:Truk"{
-            ec{"צ׳וק"}
+            ec{"טרוק"}
         }
         "Pacific:Wake"{
-            ec{"וייק"}
+            ec{"וואק"}
         }
         "Pacific:Wallis"{
             ec{"ווליס"}
@@ -1332,9 +1305,9 @@ he{
             ls{"שעון אזור ההרים בארה״ב (חורף)"}
         }
         "meta:America_Pacific"{
-            ld{"שעון מערב ארה״ב (קיץ)"}
+            ld{"שעון קיץ, מערב ארה״ב (לוס אנג׳לס)"}
             lg{"שעון מערב ארה״ב"}
-            ls{"שעון מערב ארה״ב (חורף)"}
+            ls{"שעון רגיל האוקיינוס השקט"}
         }
         "meta:Anadyr"{
             ld{"שעון קיץ אנדיר"}
@@ -1399,12 +1372,12 @@ he{
         "meta:Azores"{
             ld{"שעון האיים האזוריים (קיץ)"}
             lg{"שעון האיים האזוריים"}
-            ls{"שעון האיים האזוריים (חורף)"}
+            ls{"האיים האזוריים (חורף)"}
         }
         "meta:Bangladesh"{
-            ld{"שעון בנגלדש (קיץ)"}
+            ld{"שעון קיץ בנגלדש"}
             lg{"שעון בנגלדש"}
-            ls{"שעון בנגלדש (חורף)"}
+            ls{"שעון רגיל בנגלדש"}
         }
         "meta:Bhutan"{
             ls{"שעון בהוטן"}
@@ -1449,7 +1422,7 @@ he{
             ls{"שעון צ׳ויבלסן (חורף)"}
         }
         "meta:Christmas"{
-            ls{"שעון האי כריסטמס"}
+            ls{"שעון אי חג המולד"}
         }
         "meta:Cocos"{
             ls{"שעון איי קוקוס"}
@@ -1518,7 +1491,7 @@ he{
             ls{"שעון גיאנה הצרפתית"}
         }
         "meta:French_Southern"{
-            ls{"שעון הארצות הדרומיות והאנטארקטיות של צרפת"}
+            ls{"שעון דרום צרפת ואנטארקטיקה"}
         }
         "meta:GMT"{
             ls{"שעון גריניץ׳‏"}
@@ -1527,7 +1500,7 @@ he{
             ls{"שעון איי גלאפגוס"}
         }
         "meta:Gambier"{
-            ls{"שעון איי גמבייה"}
+            ls{"שעון גאמבייר"}
         }
         "meta:Georgia"{
             ld{"שעון גאורגיה (קיץ)"}
@@ -1547,19 +1520,16 @@ he{
             lg{"שעון מערב גרינלנד"}
             ls{"שעון מערב גרינלנד (חורף)"}
         }
-        "meta:Guam"{
-            ls{"שעון גואם"}
-        }
         "meta:Gulf"{
             ls{"שעון מדינות המפרץ"}
         }
         "meta:Guyana"{
-            ls{"שעון גיאנה"}
+            ls{"שעון גויאנה"}
         }
         "meta:Hawaii_Aleutian"{
-            ld{"שעון האיים האלאוטיים הוואי (קיץ)"}
+            ld{"שעון קיץ האיים האלאוטיים הוואי"}
             lg{"שעון האיים האלאוטיים הוואי"}
-            ls{"שעון האיים האלאוטיים הוואי (חורף)"}
+            ls{"שעון רגיל האיים האלאוטיים הוואי"}
         }
         "meta:Hong_Kong"{
             ld{"שעון הונג קונג (קיץ)"}
@@ -1698,7 +1668,7 @@ he{
             ls{"שעון מוסקבה (חורף)"}
         }
         "meta:Myanmar"{
-            ls{"שעון מיאנמר"}
+            ls{"שעון בורמה"}
         }
         "meta:Nauru"{
             ls{"שעון נאורו"}
@@ -1725,15 +1695,12 @@ he{
             ls{"שעון ניואה"}
         }
         "meta:Norfolk"{
-            ls{"שעון האי נורפוק"}
+            ls{"שעון איי נורפולק"}
         }
         "meta:Noronha"{
             ld{"שעון פרננדו די נורוניה (קיץ)"}
             lg{"שעון פרננדו די נורוניה"}
-            ls{"שעון פרננדו די נורוניה (חורף)"}
-        }
-        "meta:North_Mariana"{
-            ls{"שעון איי מריאנה הצפוניים"}
+            ls{"פרננדו די נורוניה (חורף)"}
         }
         "meta:Novosibirsk"{
             ld{"שעון נובוסיבירסק (קיץ)"}
@@ -1784,9 +1751,6 @@ he{
         }
         "meta:Ponape"{
             ls{"שעון פונאפי"}
-        }
-        "meta:Pyongyang"{
-            ls{"שעון פיונגיאנג"}
         }
         "meta:Reunion"{
             ls{"שעון ראוניון"}
@@ -1868,7 +1832,7 @@ he{
             ls{"שעון אוזבקיסטן (חורף)"}
         }
         "meta:Vanuatu"{
-            ld{"שעון ונואטו (קיץ)"}
+            ld{"שעון קיץ ונואטו"}
             lg{"שעון ונואטו"}
             ls{"שעון ונואטו (חורף)"}
         }

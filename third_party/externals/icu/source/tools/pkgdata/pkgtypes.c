@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /**************************************************************************
 *
-*   Copyright (C) 2000-2016, International Business Machines
+*   Copyright (C) 2000-2011, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ***************************************************************************
@@ -225,7 +223,7 @@ CharList *pkg_appendUniqueDirToList(CharList *l, CharList** end, const char *str
     if(!rPtr) {
         return l; /* no dir path */
     }
-    if((rPtr-strAlias) >= UPRV_LENGTHOF(aBuf)) {
+    if((rPtr-strAlias) >= (sizeof(aBuf)/sizeof(aBuf[0]))) {
         fprintf(stderr, "## ERR: Path too long [%d chars]: %s\n", (int)sizeof(aBuf), strAlias);
         return l;
     }

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ak.xml
+// *
+// ***************************************************************************
 ak{
     Currencies{
         AED{
@@ -124,10 +130,6 @@ ak{
         }
         MRO{
             "MRO",
-            "Mɔretenia Ouguiya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Mɔretenia Ouguiya",
         }
         MUR{
@@ -184,10 +186,6 @@ ak{
         }
         STD{
             "STD",
-            "Sao Tome ne Principe Dobra (1977–2017)",
-        }
-        STN{
-            "STN",
             "Sao Tome ne Principe Dobra",
         }
         SZL{
@@ -231,5 +229,5 @@ ak{
             "Zimbabwe Dɔla",
         }
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

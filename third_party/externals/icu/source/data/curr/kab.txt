@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/kab.xml
+// *
+// ***************************************************************************
 kab{
     Currencies{
         AED{
@@ -124,10 +130,6 @@ kab{
         }
         MRO{
             "MRO",
-            "Agiya Amuriṭani (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Agiya Amuriṭani",
         }
         MUR{
@@ -180,10 +182,6 @@ kab{
         }
         STD{
             "STD",
-            "Asw Ṭum d Udubra Amenzay (1977–2017)",
-        }
-        STN{
-            "STN",
             "Asw Ṭum d Udubra Amenzay",
         }
         SZL{
@@ -231,5 +229,5 @@ kab{
             "Adular Azimbabwi",
         }
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

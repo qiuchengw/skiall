@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
-*   Copyright (C) 1999-2016, International Business Machines
+*   Copyright (C) 1999-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 **********************************************************************
 *   Date        Name        Description
@@ -21,7 +19,6 @@
 #include "unicode/sortkey.h"
 #include "unicode/tblcoll.h"
 #include "unicode/ustring.h"
-#include "cmemory.h"
 #include "cstring.h"
 #include "filestrm.h"
 #include "textfile.h"
@@ -242,7 +239,7 @@ void CollationThaiTest::TestCornerCases(void) {
         // Periods are ignored entirely
         "\\u0e01.\\u0e01.",                      "<",    "\\u0e01\\u0e32",
     };
-    const int32_t TESTS_length = UPRV_LENGTHOF(TESTS);
+    const int32_t TESTS_length = (int32_t)(sizeof(TESTS)/sizeof(TESTS[0]));
 
     if (coll == 0) {
         errln("Error: could not construct Thai collator");
@@ -379,7 +376,7 @@ void CollationThaiTest::TestInvalidThai(void) {
 
   CollationElementIterator* c = ((RuleBasedCollator *)coll)->createCollationElementIterator( iteratorText );
 
-  for(i = 0; i < UPRV_LENGTHOF(tests); i++) {
+  for(i = 0; i < (int32_t)(sizeof(tests)/sizeof(tests[0])); i++) {
     len = u_unescape(tests[i], strings[i], 20);
     strings[i][len] = 0;
     toSort[i] = strings[i];
@@ -456,7 +453,7 @@ void CollationThaiTest::TestReordering(void) {
     errln("Unable to set the Thai collator clone to secondary strength");
     return;
   }
-  compareArray(*coll2, tests, UPRV_LENGTHOF(tests));
+  compareArray(*coll2, tests, sizeof(tests)/sizeof(tests[0]));
  
   const char *rule = "& c < ab";
   const char *testcontraction[] = { "\\u0E41ab", ">", "\\u0E41c"}; // After UCA 4.1 Thai are normal so won't break a contraction

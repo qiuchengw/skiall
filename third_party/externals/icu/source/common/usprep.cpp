@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  *******************************************************************************
  *
- *   Copyright (C) 2003-2016, International Business Machines
+ *   Copyright (C) 2003-2014, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  *
  *******************************************************************************
  *   file name:  usprep.cpp
- *   encoding:   UTF-8
+ *   encoding:   US-ASCII
  *   tab size:   8 (not used)
  *   indentation:4
  *
@@ -347,6 +345,10 @@ usprep_getProfile(const char* path,
         newProfile->doNFKC = (UBool)((newProfile->indexes[_SPREP_OPTIONS] & _SPREP_NORMALIZATION_ON) > 0);
         newProfile->checkBiDi = (UBool)((newProfile->indexes[_SPREP_OPTIONS] & _SPREP_CHECK_BIDI_ON) > 0);
 
+        if(newProfile->checkBiDi) {
+            newProfile->bdp = ubidi_getSingleton();
+        }
+
         LocalMemory<UStringPrepKey> key;
         LocalMemory<char> keyName;
         LocalMemory<char> keyPath;
@@ -407,7 +409,7 @@ usprep_openByType(UStringPrepProfileType type,
         return NULL;
     }
     int32_t index = (int32_t)type;
-    if (index < 0 || index >= UPRV_LENGTHOF(PROFILE_NAMES)) {
+    if (index < 0 || index >= (int32_t)(sizeof(PROFILE_NAMES)/sizeof(PROFILE_NAMES[0]))) {
         *status = U_ILLEGAL_ARGUMENT_ERROR;
         return NULL;
     }
@@ -726,12 +728,12 @@ usprep_prepare(   const UStringPrepProfile* profile,
             ((result < _SPREP_TYPE_THRESHOLD) && (result & 0x01) /* first bit says it the code point is prohibited*/)
            ){
             *status = U_STRINGPREP_PROHIBITED_ERROR;
-            uprv_syntaxError(b2, b2Index-U16_LENGTH(ch), b2Len, parseError);
+            uprv_syntaxError(b1, b2Index-U16_LENGTH(ch), b2Len, parseError);
             return 0;
         }
 
         if(profile->checkBiDi) {
-            direction = ubidi_getClass(ch);
+            direction = ubidi_getClass(profile->bdp, ch);
             if(firstCharDir == U_CHAR_DIRECTION_COUNT){
                 firstCharDir = direction;
             }

@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/cs.xml
+// *
+// ***************************************************************************
 cs{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidžan"}
@@ -303,9 +309,6 @@ cs{
         "America:El_Salvador"{
             ec{"Salvador"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -439,7 +442,7 @@ cs{
             ec{"Metlakatla"}
         }
         "America:Mexico_City"{
-            ec{"Ciudad de México"}
+            ec{"México"}
         }
         "America:Miquelon"{
             ec{"Miquelon"}
@@ -506,9 +509,6 @@ cs{
         }
         "America:Puerto_Rico"{
             ec{"Portoriko"}
-        }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
         }
         "America:Rainy_River"{
             ec{"Rainy River"}
@@ -660,9 +660,6 @@ cs{
         "Asia:Ashgabat"{
             ec{"Ašchabad"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdád"}
         }
@@ -674,9 +671,6 @@ cs{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Bejrút"}
@@ -713,9 +707,6 @@ cs{
         }
         "Asia:Dushanbe"{
             ec{"Dušanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -858,9 +849,6 @@ cs{
         "Asia:Tokyo"{
             ec{"Tokio"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulánbátar"}
         }
@@ -951,10 +939,6 @@ cs{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Koordinovaný světový čas"}
-            ss{"UTC"}
-        }
         "Etc:Unknown"{
             ec{"Neznámé město"}
         }
@@ -963,9 +947,6 @@ cs{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrachaň"}
         }
         "Europe:Athens"{
             ec{"Athény"}
@@ -1025,9 +1006,6 @@ cs{
         "Europe:Kiev"{
             ec{"Kyjev"}
         }
-        "Europe:Kirov"{
-            ec{"Kirov"}
-        }
         "Europe:Lisbon"{
             ec{"Lisabon"}
         }
@@ -1086,9 +1064,6 @@ cs{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1106,9 +1081,6 @@ cs{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Užhorod"}
@@ -1217,9 +1189,6 @@ cs{
         }
         "Pacific:Honolulu"{
             ec{"Honolulu"}
-            sd{"HDT"}
-            sg{"HST"}
-            ss{"HST"}
         }
         "Pacific:Johnston"{
             ec{"Johnston"}
@@ -1319,9 +1288,6 @@ cs{
             ld{"Aljašský letní čas"}
             lg{"Aljašský čas"}
             ls{"Aljašský standardní čas"}
-            sd{"AKDT"}
-            sg{"AKT"}
-            ss{"AKST"}
         }
         "meta:Almaty"{
             ld{"Almatský letní čas"}
@@ -1337,33 +1303,21 @@ cs{
             ld{"Severoamerický centrální letní čas"}
             lg{"Severoamerický centrální čas"}
             ls{"Severoamerický centrální standardní čas"}
-            sd{"CDT"}
-            sg{"CT"}
-            ss{"CST"}
         }
         "meta:America_Eastern"{
             ld{"Severoamerický východní letní čas"}
             lg{"Severoamerický východní čas"}
             ls{"Severoamerický východní standardní čas"}
-            sd{"EDT"}
-            sg{"ET"}
-            ss{"EST"}
         }
         "meta:America_Mountain"{
             ld{"Severoamerický horský letní čas"}
             lg{"Severoamerický horský čas"}
             ls{"Severoamerický horský standardní čas"}
-            sd{"MDT"}
-            sg{"MT"}
-            ss{"MST"}
         }
         "meta:America_Pacific"{
             ld{"Severoamerický pacifický letní čas"}
             lg{"Severoamerický pacifický čas"}
             ls{"Severoamerický pacifický standardní čas"}
-            sd{"PDT"}
-            sg{"PT"}
-            ss{"PST"}
         }
         "meta:Anadyr"{
             ld{"Anadyrský letní čas"}
@@ -1409,9 +1363,6 @@ cs{
             ld{"Atlantický letní čas"}
             lg{"Atlantický čas"}
             ls{"Atlantický standardní čas"}
-            sd{"ADT"}
-            sg{"AT"}
-            ss{"AST"}
         }
         "meta:Australia_Central"{
             ld{"Středoaustralský letní čas"}
@@ -1835,9 +1786,6 @@ cs{
         }
         "meta:Ponape"{
             ls{"Ponapský čas"}
-        }
-        "meta:Pyongyang"{
-            ls{"Pchjongjangský čas"}
         }
         "meta:Qyzylorda"{
             ld{"Kyzylordský letní čas"}

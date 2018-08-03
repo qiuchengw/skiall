@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  *******************************************************************************
  *
- *   Copyright (C) 2003-2016, International Business Machines
+ *   Copyright (C) 2003-2014, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  *
  *******************************************************************************
  *   file name:  spreptst.c
- *   encoding:   UTF-8
+ *   encoding:   US-ASCII
  *   tab size:   8 (not used)
  *   indentation:4
  *
@@ -25,7 +23,6 @@
 #include "unicode/usprep.h"
 #include "cstring.h"
 #include "cintltst.h"
-#include "cmemory.h"
 #include "nfsprep.h"
 
 void addUStringPrepTest(TestNode** root);
@@ -320,7 +317,7 @@ static void Test_nfs4_cis_prep(void){
         return;
     }
 
-    for(i=0;i< UPRV_LENGTHOF(conformanceTestCases);i++){
+    for(i=0;i< (int32_t)(sizeof(conformanceTestCases)/sizeof(conformanceTestCases[0]));i++){
         const char* src = conformanceTestCases[i].in;
         UErrorCode status = U_ZERO_ERROR;
         UParseError parseError;

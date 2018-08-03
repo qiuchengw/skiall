@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/hu.xml
+// *
+// ***************************************************************************
 hu{
     Currencies{
         ADP{
@@ -186,13 +192,9 @@ hu{
             "BYB",
             "Fehérorosz új rubel (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "fehérorosz rubel",
-        }
         BYR{
             "BYR",
-            "fehérorosz rubel (2000–2016)",
+            "fehérorosz rubel",
         }
         BZD{
             "BZD",
@@ -225,10 +227,6 @@ hu{
         CLP{
             "CLP",
             "chilei peso",
-        }
-        CNH{
-            "CNH",
-            "kínai jüan (offshore)",
         }
         CNY{
             "CNY",
@@ -616,10 +614,6 @@ hu{
         }
         MRO{
             "MRO",
-            "mauritániai ouguiya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "mauritániai ouguiya",
         }
         MTL{
@@ -712,15 +706,15 @@ hu{
         }
         PEI{
             "PEI",
-            "perui inti",
+            "Perui inti",
         }
         PEN{
             "PEN",
-            "perui sol",
+            "perui sol nuevo",
         }
         PES{
             "PES",
-            "perui sol (1863–1965)",
+            "Perui sol",
         }
         PGK{
             "PGK",
@@ -848,10 +842,6 @@ hu{
         }
         STD{
             "STD",
-            "São Tomé és Príncipe-i dobra (1977–2017)",
-        }
-        STN{
-            "STN",
             "São Tomé és Príncipe-i dobra",
         }
         SUR{
@@ -1132,7 +1122,7 @@ hu{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1149,7 +1139,6 @@ hu{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -1190,7 +1179,6 @@ hu{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"lei"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
@@ -1199,7 +1187,7 @@ hu{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -1396,13 +1384,9 @@ hu{
             one{"botswanai pula"}
             other{"botswanai pula"}
         }
-        BYN{
+        BYR{
             one{"fehérorosz rubel"}
             other{"fehérorosz rubel"}
-        }
-        BYR{
-            one{"fehérorosz rubel (2000–2016)"}
-            other{"fehérorosz rubel (2000–2016)"}
         }
         BZD{
             one{"belize-i dollár"}
@@ -1423,10 +1407,6 @@ hu{
         CLP{
             one{"chilei peso"}
             other{"chilei peso"}
-        }
-        CNH{
-            one{"kínai jüan (offshore)"}
-            other{"kínai jüan (offshore)"}
         }
         CNY{
             one{"kínai jüan"}
@@ -1681,10 +1661,6 @@ hu{
             other{"makaói pataca"}
         }
         MRO{
-            one{"mauritániai ouguiya (1973–2017)"}
-            other{"mauritániai ouguiya (1973–2017)"}
-        }
-        MRU{
             one{"mauritániai ouguiya"}
             other{"mauritániai ouguiya"}
         }
@@ -1745,8 +1721,8 @@ hu{
             other{"panamai balboa"}
         }
         PEN{
-            one{"perui sol"}
-            other{"perui sol"}
+            one{"perui sol nuevo"}
+            other{"perui sol nuevo"}
         }
         PGK{
             one{"pápua új-guineai kina"}
@@ -1853,10 +1829,6 @@ hu{
             other{"dél-szudáni font"}
         }
         STD{
-            one{"São Tomé és Príncipe-i dobra (1977–2017)"}
-            other{"São Tomé és Príncipe-i dobra (1977–2017)"}
-        }
-        STN{
             one{"São Tomé és Príncipe-i dobra"}
             other{"São Tomé és Príncipe-i dobra"}
         }
@@ -2037,5 +2009,5 @@ hu{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

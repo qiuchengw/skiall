@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2009-2015, International Business Machines Corporation and    *
@@ -22,16 +20,11 @@ U_NAMESPACE_BEGIN
 // base class, null implementation
 
 class U_I18N_API FieldPositionHandler: public UMemory {
- protected:
-  int32_t fShift = 0;
-
  public:
   virtual ~FieldPositionHandler();
-  virtual void addAttribute(int32_t id, int32_t start, int32_t limit) = 0;
-  virtual void shiftLast(int32_t delta) = 0;
-  virtual UBool isRecording(void) const = 0;
-
-  void setShift(int32_t delta);
+  virtual void addAttribute(int32_t id, int32_t start, int32_t limit);
+  virtual void shiftLast(int32_t delta);
+  virtual UBool isRecording(void) const;
 };
 
 
@@ -44,9 +37,9 @@ class FieldPositionOnlyHandler : public FieldPositionHandler {
   FieldPositionOnlyHandler(FieldPosition& pos);
   virtual ~FieldPositionOnlyHandler();
 
-  void addAttribute(int32_t id, int32_t start, int32_t limit) U_OVERRIDE;
-  void shiftLast(int32_t delta) U_OVERRIDE;
-  UBool isRecording(void) const U_OVERRIDE;
+  virtual void addAttribute(int32_t id, int32_t start, int32_t limit);
+  virtual void shiftLast(int32_t delta);
+  virtual UBool isRecording(void) const;
 };
 
 
@@ -68,9 +61,9 @@ class FieldPositionIteratorHandler : public FieldPositionHandler {
   FieldPositionIteratorHandler(FieldPositionIterator* posIter, UErrorCode& status);
   ~FieldPositionIteratorHandler();
 
-  void addAttribute(int32_t id, int32_t start, int32_t limit) U_OVERRIDE;
-  void shiftLast(int32_t delta) U_OVERRIDE;
-  UBool isRecording(void) const U_OVERRIDE;
+  virtual void addAttribute(int32_t id, int32_t start, int32_t limit);
+  virtual void shiftLast(int32_t delta);
+  virtual UBool isRecording(void) const;
 };
 
 U_NAMESPACE_END

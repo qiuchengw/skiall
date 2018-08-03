@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/my.xml
+// *
+// ***************************************************************************
 my{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -21,29 +27,29 @@ my{
         angle{
             arc-minute{
                 dnam{"မိနစ်"}
-                other{"{0} မိနစ်"}
+                other{"{0}မိနစ်"}
             }
             arc-second{
                 dnam{"စက္ကန့်"}
-                other{"{0} စက္ကန့်"}
+                other{"{0}စက္ကန့်"}
             }
             degree{
                 dnam{"ဒီဂရီ"}
-                other{"{0} ဒီဂရီ"}
+                other{"{0}ဒီဂရီ"}
             }
             radian{
-                dnam{"ရေဒီယဲန်း"}
-                other{"{0} ရေဒီယဲန်း"}
+                dnam{"ရေဒီအန်းစ်"}
+                other{"{0}ရေဒီအန်းစ်"}
             }
             revolution{
-                dnam{"လည်ပတ်ခြင်း"}
-                other{"{0} လည်ပတ်ခြင်း"}
+                dnam{"rev"}
+                other{"{0} rev"}
             }
         }
         area{
             acre{
                 dnam{"ဧက"}
-                other{"{0} ဧက"}
+                other{"{0}ဧက"}
             }
             hectare{
                 dnam{"ဟက်တာ"}
@@ -51,157 +57,132 @@ my{
             }
             square-centimeter{
                 dnam{"စတုရန်းစင်တီမီတာ"}
-                other{"{0} စတုရန်းစင်တီမီတာ"}
-                per{"တစ်စတုရန်းစင်တီမီတာလျှင် {0}"}
+                other{"{0}စတုရန်းစင်တီမီတာ"}
+                per{"{0}/cm²"}
             }
             square-foot{
                 dnam{"စတုရန်းပေ"}
-                other{"{0} စတုရန်းပေ"}
+                other{"{0}စတုရန်းပေ"}
             }
             square-inch{
                 dnam{"စတုရန်းလက်မ"}
-                other{"{0} စတုရန်းလက်မ"}
-                per{"တစ်စတုရန်းလက်မလျှင် {0}"}
+                other{"{0}စတုရန်းလက်မ"}
+                per{"{0}တစ်စတုရန်းလက်မလျှင်"}
             }
             square-kilometer{
                 dnam{"စတုရန်းကီလိုမီတာ"}
-                other{"{0} စတုရန်းကီလိုမီတာ"}
-                per{"တစ်စတုရန်းကီလိုမီတာလျှင် {0}"}
+                other{"{0}စတုရန်းကီလိုမီတာ"}
             }
             square-meter{
                 dnam{"စတုရန်းမီတာ"}
-                other{"{0} စတုရန်းမီတာ"}
-                per{"တစ်စတုရန်းမီတာလျှင် {0}"}
+                other{"{0}စတုရန်းမီတာ"}
             }
             square-mile{
                 dnam{"စတုရန်းမိုင်"}
-                other{"{0} စတုရန်းမိုင်"}
-                per{"တစ်စတုရန်းမိုင်လျှင် {0}"}
+                other{"{0}စတုရန်းမိုင်"}
             }
             square-yard{
                 dnam{"စတုရန်းကိုက်"}
-                other{"{0} စတုရန်းကိုက်"}
+                other{"{0}စတုရန်းကိုက်"}
             }
         }
         compound{
-            per{"တစ်{1} လျှင် {0}"}
-        }
-        concentr{
-            karat{
-                dnam{"ကာရက်"}
-                other{"{0} ကာရက်"}
-            }
-            milligram-per-deciliter{
-                dnam{"တစ်ဒက်စီလီတာရှိ မီလီဂရမ်"}
-                other{"တစ်ဒက်စီလီတာရှိ {0} မီလီဂရမ်"}
-            }
-            millimole-per-liter{
-                dnam{"တစ်လီတာရှိ မီလီမိုးလ်"}
-                other{"တစ်လီတာရှိ {0} မီလီမိုးလ်"}
-            }
-            part-per-million{
-                dnam{"တစ်သန်းပုံ တစ်ပုံ"}
-                other{"တစ်သန်းပုံ {0} ပုံ"}
-            }
+            per{"{0}လျှင်{1}နှုန်း"}
         }
         consumption{
             liter-per-100kilometers{
-                dnam{"တစ်ရာကီလိုမီတာရှိ လီတာ"}
-                other{"တစ်ရာကီလိုမီတာရှိ {0} လီတာ"}
+                dnam{"L/100km"}
+                other{"{0} L/100km"}
             }
             liter-per-kilometer{
-                dnam{"တစ်ကီလိုမီတာရှိ လီတာ"}
-                other{"တစ်ကီလိုမီတာရှိ {0} လီတာ"}
+                dnam{"လီတာ/ကီလိုမီတာ"}
+                other{"၁ကီလိုမီတာ {0}လီတာနှုန်း"}
             }
             mile-per-gallon{
-                dnam{"တစ်ဂါလံ မိုင်နှုန်း"}
-                other{"တစ်ဂါလံလျှင် {0} မိုင်"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"ယူကေတစ်ဂါလံ မိုင်နှုန်း"}
-                other{"ယူကေတစ်ဂါလံလျှင် {0} မိုင်"}
+                dnam{"မိုင်/ဂါလန်"}
+                other{"၁ ဂါလန် {0} မိုင်နှုန်း"}
             }
         }
         coordinate{
-            east{"{0} အရှေ့"}
-            north{"{0} မြောက်"}
-            south{"{0} တောင်"}
-            west{"{0} အနောက်"}
+            east{"{0}E"}
+            north{"{0}N"}
+            south{"{0}S"}
+            west{"{0}W"}
         }
         digital{
             bit{
                 dnam{"ဘစ်"}
-                other{"{0} ဘစ်"}
+                other{"{0}ဘစ်"}
             }
             byte{
                 dnam{"ဘိုက်"}
-                other{"{0} ဘိုက်"}
+                other{"{0}ဘိုက်"}
             }
             gigabit{
-                dnam{"ဂစ်ဂါဘစ်"}
-                other{"{0} ဂစ်ဂါဘစ်"}
+                dnam{"ဂီဂါဘစ်"}
+                other{"{0}ဂီဂါဘစ်"}
             }
             gigabyte{
-                dnam{"ဂစ်ဂါဘိုက်"}
-                other{"{0} ဂစ်ဂါဘိုက်"}
+                dnam{"ဂီဂါဘိုက်"}
+                other{"{0}ဂီဂါဘိုက်"}
             }
             kilobit{
                 dnam{"ကီလိုဘစ်"}
-                other{"{0} ကီလိုဘစ်"}
+                other{"{0}ကီလိုဘစ်"}
             }
             kilobyte{
                 dnam{"ကီလိုဘိုက်"}
-                other{"{0} ကီလိုဘိုက်"}
+                other{"{0}ကီလိုဘိုက်"}
             }
             megabit{
                 dnam{"မီဂါဘစ်"}
-                other{"{0} မီဂါဘစ်"}
+                other{"{0}မီဂါဘစ်"}
             }
             megabyte{
                 dnam{"မီဂါဘိုက်"}
-                other{"{0} မီဂါဘိုက်"}
+                other{"{0}မီဂါဘိုက်"}
             }
             terabit{
-                dnam{"တယ်ရာဘစ်"}
-                other{"{0} တယ်ရာဘစ်"}
+                dnam{"တီရာဘစ်"}
+                other{"{0}တီရာဘစ်"}
             }
             terabyte{
-                dnam{"တယ်ရာဘိုက်"}
-                other{"{0} တယ်ရာဘိုက်"}
+                dnam{"တီရာဘိုက်"}
+                other{"{0}တီရာဘိုက်"}
             }
         }
         duration{
             century{
-                dnam{"ရာစုနှစ်"}
-                other{"{0} ရာစုနှစ်"}
+                dnam{"c"}
+                other{"{0} c"}
             }
             day{
                 dnam{"ရက်"}
-                other{"{0} ရက်"}
-                per{"တစ်ရက်လျှင် {0}"}
+                other{"{0}ရက်"}
+                per{"{0}တစ်နေ့လျှင်"}
             }
             hour{
                 dnam{"နာရီ"}
-                other{"{0} နာရီ"}
-                per{"တစ်နာရီလျှင် {0}"}
+                other{"{0}နာရီ"}
+                per{"တစ်နာရီ {0}နှုန်း"}
             }
             microsecond{
                 dnam{"မိုက်ခရိုစက္ကန့်"}
-                other{"{0} မိုက်ခရိုစက္ကန့်"}
+                other{"{0}မိုက်ခရိုစက္ကန့်"}
             }
             millisecond{
                 dnam{"မီလီစက္ကန့်"}
-                other{"{0} မီလီစက္ကန့်"}
+                other{"{0}မီလီစက္ကန့်"}
             }
             minute{
                 dnam{"မိနစ်"}
                 other{"{0} မိနစ်"}
-                per{"တစ်မိနစ်လျှင် {0}"}
+                per{"{0}မိနစ်လျှင်"}
             }
             month{
                 dnam{"လ"}
-                other{"{0} လ"}
-                per{"တစ်လလျှင် {0}"}
+                other{"{0}လ"}
+                per{"{0}တစ်လလျှင်"}
             }
             nanosecond{
                 dnam{"နာနိုစက္ကန့်"}
@@ -210,35 +191,35 @@ my{
             second{
                 dnam{"စက္ကန့်"}
                 other{"{0} စက္ကန့်"}
-                per{"တစ်စက္ကန့်လျှင် {0}"}
+                per{"တစ်စက္ကန့် {0}နှုန်း"}
             }
             week{
                 dnam{"ပတ်"}
-                other{"{0} ပတ်"}
-                per{"တစ်ပတ်လျှင် {0}"}
+                other{"{0}ပတ်"}
+                per{"{0}တစ်ပတ်လျှင်"}
             }
             year{
                 dnam{"နှစ်"}
-                other{"{0} နှစ်"}
-                per{"တစ်နှစ်လျှင် {0}"}
+                other{"{0}နှစ်"}
+                per{"{0}နှစ်လျှင်"}
             }
         }
         electric{
             ampere{
                 dnam{"အမ်ပီယာ"}
-                other{"{0} အမ်ပီယာ"}
+                other{"{0}အမ်ပီယာ"}
             }
             milliampere{
                 dnam{"မီလီအမ်ပီယာ"}
-                other{"{0} မီလီအမ်ပီယာ"}
+                other{"{0}မီလီအမ်ပီယာ"}
             }
             ohm{
                 dnam{"အုမ်း"}
-                other{"{0} အုမ်း"}
+                other{"{0}အုမ်း"}
             }
             volt{
                 dnam{"ဗို့"}
-                other{"{0} ဗို့"}
+                other{"{0}ဗို့"}
             }
         }
         energy{
@@ -264,25 +245,25 @@ my{
             }
             kilowatt-hour{
                 dnam{"ကီလိုဝပ်-နာရီ"}
-                other{"{0} ကီလိုဝပ်-နာရီ"}
+                other{"{0}ကီလိုဝပ်-နာရီ"}
             }
         }
         frequency{
             gigahertz{
                 dnam{"ဂီဂါဟတ်ဇ်"}
-                other{"{0} ဂီဂါဟတ်ဇ်"}
+                other{"{0}ဂီဂါဟတ်ဇ်"}
             }
             hertz{
                 dnam{"ဟတ်ဇ်"}
-                other{"{0} ဟတ်ဇ်"}
+                other{"{0}ဟတ်ဇ်"}
             }
             kilohertz{
                 dnam{"ကီလိုဟတ်ဇ်"}
-                other{"{0} ကီလိုဟတ်ဇ်"}
+                other{"{0}ကီလိုဟတ်ဇ်"}
             }
             megahertz{
-                dnam{"မီဂါဟတ်ဇ်"}
-                other{"{0} မီဂါဟတ်ဇ်"}
+                dnam{"မက်ဂါဟတ်ဇ်"}
+                other{"{0}မက်ဂါဟတ်ဇ်"}
             }
         }
         length{
@@ -293,26 +274,26 @@ my{
             centimeter{
                 dnam{"စင်တီမီတာ"}
                 other{"{0} စင်တီမီတာ"}
-                per{"တစ်စင်တီမီလာလျှင် {0}"}
+                per{"{0} တစ်စင်တီမီတာလျှင်"}
             }
             decimeter{
-                dnam{"ဒက်စီမီတာ"}
-                other{"{0} ဒက်စီမီတာ"}
+                dnam{"ဒါစီမီတာ"}
+                other{"{0} ဒါစီမီတာ"}
             }
             foot{
                 dnam{"ပေ"}
                 other{"{0} ပေ"}
-                per{"တစ်ပေလျှင် {0}"}
+                per{"{0}/ft"}
             }
             inch{
                 dnam{"လက်မ"}
                 other{"{0} လက်မ"}
-                per{"တစ်လက်မလျှင် {0}"}
+                per{"{0}တစ်လက်မလျှင်"}
             }
             kilometer{
                 dnam{"ကီလိုမီတာ"}
                 other{"{0} ကီလိုမီတာ"}
-                per{"တစ်ကီလိုမီတာလျှင် {0}"}
+                per{"{0}/km"}
             }
             light-year{
                 dnam{"အလင်းနှစ်"}
@@ -320,8 +301,8 @@ my{
             }
             meter{
                 dnam{"မီတာ"}
-                other{"{0} မီတာ"}
-                per{"တစ်မီတာလျှင် {0}"}
+                other{"{0}မီတာ"}
+                per{"{0}တစ်မီတာလျှင်"}
             }
             micrometer{
                 dnam{"မိုက်ခရိုမီတာ"}
@@ -332,8 +313,8 @@ my{
                 other{"{0} မိုင်"}
             }
             mile-scandinavian{
-                dnam{"စကင်ဒီနေဗီးယန်း မိုင်"}
-                other{"{0} စကင်ဒီနေဗီးယန်း မိုင်"}
+                dnam{"စကန်ဒီနေးဗီးရန်း မိုင်"}
+                other{"{0}စကန်ဒီနေးဗီးရန်း မိုင်များ"}
             }
             millimeter{
                 dnam{"မီလီမီတာ"}
@@ -355,10 +336,6 @@ my{
                 dnam{"ပီကိုမီတာ"}
                 other{"{0} ပီကိုမီတာ"}
             }
-            point{
-                dnam{"ပွိုင့်"}
-                other{"{0} ပွိုင့်"}
-            }
             yard{
                 dnam{"ကိုက်"}
                 other{"{0} ကိုက်"}
@@ -372,26 +349,26 @@ my{
         }
         mass{
             carat{
-                dnam{"ကာရက်"}
-                other{"{0} ကာရက်"}
+                dnam{"ကရက်"}
+                other{"{0} ကရက်"}
             }
             gram{
                 dnam{"ဂရမ်"}
                 other{"{0} ဂရမ်"}
-                per{"တစ်ဂရမ်လျှင် {0}"}
+                per{"{0}/g"}
             }
             kilogram{
                 dnam{"ကီလိုဂရမ်"}
-                other{"{0} ကီလိုဂရမ်"}
-                per{"တစ်ကီလိုဂရမ်လျှင် {0}"}
+                other{"{0}ကီလိုဂရမ်"}
+                per{"{0}/kg"}
             }
             metric-ton{
                 dnam{"မက်ထရစ်တန်"}
                 other{"{0} မက်ထရစ်တန်"}
             }
             microgram{
-                dnam{"မိုက်ခရို ဂရမ်"}
-                other{"{0} မိုက်ခရို ဂရမ်"}
+                dnam{"မိုက်ကရိုဂရမ်"}
+                other{"{0}မိုက်ကရိုဂရမ်"}
             }
             milligram{
                 dnam{"မီလီဂရမ်"}
@@ -399,8 +376,8 @@ my{
             }
             ounce{
                 dnam{"အောင်စ"}
-                other{"{0} အောင်စ"}
-                per{"တစ်အောင်စလျှင် {0}"}
+                other{"{0}အောင်စ"}
+                per{"{0}/oz"}
             }
             ounce-troy{
                 dnam{"ထရိုအောင်စ"}
@@ -408,18 +385,18 @@ my{
             }
             pound{
                 dnam{"ပေါင်"}
-                other{"{0} ပေါင်"}
-                per{"တစ်ပေါင်လျှင် {0}"}
+                other{"{0}ပေါင်"}
+                per{"{0}တစ်ပေါင်လျှင်"}
             }
             ton{
                 dnam{"တန်"}
-                other{"{0} တန်"}
+                other{"{0}တန်"}
             }
         }
         power{
             gigawatt{
-                dnam{"ဂစ်ဂါဝပ်"}
-                other{"{0} ဂစ်ဂါဝပ်"}
+                dnam{"ဂီဂါဝပ်"}
+                other{"{0} ဂီဂါဝပ်"}
             }
             horsepower{
                 dnam{"မြင်းကောင်ရေအား"}
@@ -427,7 +404,7 @@ my{
             }
             kilowatt{
                 dnam{"ကီလိုဝပ်"}
-                other{"{0} ကီလိုဝပ်"}
+                other{"{0}ကီလိုဝပ်"}
             }
             megawatt{
                 dnam{"မီဂါဝပ်"}
@@ -439,57 +416,63 @@ my{
             }
             watt{
                 dnam{"ဝပ်"}
-                other{"{0} ဝပ်"}
+                other{"{0}ဝပ်"}
             }
         }
         pressure{
             hectopascal{
                 dnam{"ဟက်တိုပါစကယ်"}
-                other{"{0} ဟက်တိုပါစကယ်"}
+                other{"{0}ဟက်တိုပါစကယ်"}
             }
             inch-hg{
                 dnam{"ပြဒါးလက်မ"}
-                other{"{0} ပြဒါးလက်မ"}
+                other{"ပြဒါး{0}လက်မ"}
             }
             millibar{
                 dnam{"မီလီဘား"}
-                other{"{0} မီလီဘား"}
+                other{"{0}မီလီဘား"}
             }
             millimeter-of-mercury{
                 dnam{"ပြဒါးမီလီမီတာ"}
-                other{"{0} ပြဒါးမီလီမီတာ"}
+                other{"ပြဒါး{0}မီလီမီတာ"}
             }
             pound-per-square-inch{
                 dnam{"ပေါင်/စတုရန်းလက်မ"}
-                other{"တစ်စတုရန်းလက်မလျှင် {0} ပေါင်"}
+                other{"၁စတုရန်းလက်မ {0}ပေါင်နှုန်း"}
+            }
+        }
+        proportion{
+            karat{
+                dnam{"ကရက်"}
+                other{"{0} ကရက်"}
             }
         }
         speed{
             kilometer-per-hour{
                 dnam{"ကီလိုမီတာ/နာရီ"}
-                other{"တစ်နာရီလျှင် {0} ကီလိုမီတာ"}
+                other{"တစ်နာရီလျှင်{0}ကီလိုမီတာနှုန်း"}
             }
             knot{
-                dnam{"နော့တီကယ်မိုင်"}
-                other{"{0} နော့တီကယ်မိုင်"}
+                dnam{"ရေမိုင်နော့"}
+                other{"{0}ရေမိုင်နော့များ"}
             }
             meter-per-second{
                 dnam{"မီတာ/စက္ကန့်"}
-                other{"တစ်စက္ကန့်လျှင် {0} မီတာ"}
+                other{"တစ်စက္ကန့်လျှင်{0}မီတာနှုန်း"}
             }
             mile-per-hour{
                 dnam{"မိုင်/နာရီ"}
-                other{"တစ်နာရီလျှင် {0} မိုင်"}
+                other{"တစ်နာရီလျှင်{0}မိုင်နှုန်း"}
             }
         }
         temperature{
             celsius{
-                dnam{"ဒီဂရီ စင်တီဂရိတ်"}
-                other{"{0} ဒီဂရီ စင်တီဂရိတ်"}
+                dnam{"စင်တီဂရိတ်"}
+                other{"{0}စင်တီဂရိတ်"}
             }
             fahrenheit{
-                dnam{"ဒီဂရီ ဖာရင်ဟိုက်"}
-                other{"{0} ဒီဂရီ ဖာရင်ဟိုက်"}
+                dnam{"ဖာရင်ဟိုက်"}
+                other{"{0}ဖာရင်ဟိုက်"}
             }
             generic{
                 dnam{"°"}
@@ -497,7 +480,7 @@ my{
             }
             kelvin{
                 dnam{"ကယ်လ်ဗင်"}
-                other{"{0} ကယ်လ်ဗင်"}
+                other{"{0}ကယ်လ်ဗင်"}
             }
         }
         volume{
@@ -507,12 +490,12 @@ my{
             }
             centiliter{
                 dnam{"စင်တီလီတာ"}
-                other{"{0} စင်တီလီတာ"}
+                other{"{0}စင်တီလီတာ"}
             }
             cubic-centimeter{
                 dnam{"ကုဗစင်တီမီတာ"}
-                other{"{0} ကုဗစင်တီမီတာ"}
-                per{"တစ်ကုဗစင်တီမီတာလျှင် {0}"}
+                other{"{0}ကုဗစင်တီမီတာ"}
+                per{"{0}/cm³"}
             }
             cubic-foot{
                 dnam{"ကုဗပေ"}
@@ -520,7 +503,7 @@ my{
             }
             cubic-inch{
                 dnam{"ကုဗလက်မ"}
-                other{"{0} ကုဗလက်မ"}
+                other{"{0}ကုဗလက်မ"}
             }
             cubic-kilometer{
                 dnam{"ကုဗကီလိုမီတာ"}
@@ -528,79 +511,74 @@ my{
             }
             cubic-meter{
                 dnam{"ကုဗမီတာ"}
-                other{"{0} ကုဗမီတာ"}
-                per{"တစ်ကုဗမီတာလျှင် {0}"}
+                other{"{0}ကုဗမီတာ"}
+                per{"{0}တစ်ကုဗမီတာလျှင်"}
             }
             cubic-mile{
                 dnam{"ကုဗမိုင်"}
-                other{"{0} ကုဗမိုင်"}
+                other{"{0}ကုဗမိုင်"}
             }
             cubic-yard{
                 dnam{"ကုဗကိုက်"}
-                other{"{0} ကုဗကိုက်"}
+                other{"{0}ကုဗကိုက်"}
             }
             cup{
                 dnam{"ခွက်"}
                 other{"{0} ခွက်"}
             }
             cup-metric{
-                dnam{"မထ္ထရစ် ခွက်"}
-                other{"{0} မထ္ထရစ် ခွက်"}
+                dnam{"မထ္ထရစ်ကပ်"}
+                other{"{0}မထ္ထရစ်ကပ်စ်"}
             }
             deciliter{
-                dnam{"ဒက်စီလီတာ"}
-                other{"{0} ဒက်စီလီတာ"}
+                dnam{"ဒါစီလီတာ"}
+                other{"{0} ဒါစီလီတာ"}
             }
             fluid-ounce{
                 dnam{"အရည်အောင်စ"}
-                other{"{0} အရည်အောင်စ"}
+                other{"{0}အရည်အောင်စ"}
             }
             gallon{
-                dnam{"ဂါလံ"}
-                other{"{0} ဂါလံ"}
-                per{"တစ်ဂါလံလျှင် {0}"}
-            }
-            gallon-imperial{
-                dnam{"ယူကေ ဂါလံ"}
-                other{"{0} ယူကေ ဂါလံ"}
-                per{"တစ် ယူကေ ဂါလံလျှင် {0}"}
+                dnam{"ဂါလန်"}
+                other{"{0}ဂါလန်"}
+                per{"{0}တစ်ဂါလံလျှင်"}
             }
             hectoliter{
                 dnam{"ဟက်တိုလီတာ"}
-                other{"{0} ဟက်တိုမီတာ"}
+                other{"{0}ဟက်တိုလီတာ"}
             }
             liter{
                 dnam{"လီတာ"}
-                other{"{0} လီတာ"}
-                per{"တစ်လီတာလျှင် {0}"}
+                other{"{0}လီတာ"}
+                per{"{0} တစ်လီတာလျှင်"}
             }
             megaliter{
-                dnam{"မီဂါလီတာ"}
-                other{"{0} မီဂါလီတာ"}
+                dnam{"မက်ဂါလီတာ"}
+                other{"{0}မက်ဂါလီတာ"}
             }
             milliliter{
                 dnam{"မီလီလီတာ"}
-                other{"{0} မီလီလီတာ"}
+                other{"{0}မီလီလီတာ"}
             }
             pint{
                 dnam{"ပိုင့်"}
-                other{"{0} ပိုင့်"}
+                other{"{0}ပိုင့်"}
             }
             pint-metric{
-                dnam{"မထ္ထရစ် ပိုင့်"}
-                other{"{0} မထ္ထရစ် ပိုင့်"}
+                dnam{"မထ္ထရစ်ပို့င်"}
+                other{"{0} mpt"}
             }
             quart{
                 dnam{"ကွတ်"}
-                other{"{0} ကွတ်"}
+                other{"{0}ကွတ်"}
             }
             tablespoon{
                 dnam{"စားပွဲဇွန်း"}
-                other{"စားပွဲဇွန်း {0} ဇွန်း"}
+                other{"စားပွဲဇွန်း{0}ဇွန်း"}
             }
             teaspoon{
                 dnam{"လက်ဖက်ရည်ဇွန်း"}
-                other{"လက်ဖက်ရည်ဇွန်း {0} ဇွန်း"}
+                other{"လက်ဖက်ရည်ဇွန်း{0}ဇွန်း"}
             }
         }
     }
@@ -659,11 +637,11 @@ my{
         duration{
             day{
                 dnam{"ရက်"}
-                other{"{0} ရက်"}
+                other{"{0}ရက်"}
             }
             hour{
                 dnam{"နာရီ"}
-                other{"{0} နာရီ"}
+                other{"{0}နာရီ"}
             }
             millisecond{
                 dnam{"မီလီစက္ကန့်"}
@@ -671,11 +649,11 @@ my{
             }
             minute{
                 dnam{"မိနစ်"}
-                other{"{0} မိနစ်"}
+                other{"{0}မိနစ်"}
             }
             month{
                 dnam{"လ"}
-                other{"{0} လ"}
+                other{"{0}လ"}
             }
             second{
                 dnam{"စက္ကန့်"}
@@ -683,16 +661,16 @@ my{
             }
             week{
                 dnam{"ပတ်"}
-                other{"{0} ပတ်"}
+                other{"{0}ပတ်"}
             }
             year{
                 dnam{"နှစ်"}
-                other{"{0} နှစ်"}
+                other{"{0} y"}
             }
         }
         length{
             centimeter{
-                dnam{"cm"}
+                dnam{"စင်တီမီတာ"}
                 other{"{0} cm"}
             }
             foot{
@@ -702,21 +680,21 @@ my{
                 other{"{0} ″"}
             }
             kilometer{
-                dnam{"km"}
-                other{"{0}km"}
+                dnam{"ကီလိုမီတာ"}
+                other{"{0} km"}
             }
             light-year{
                 other{"{0} အလင်းနှစ်"}
             }
             meter{
-                dnam{"m"}
+                dnam{"မီတာ"}
                 other{"{0} m"}
             }
             mile{
                 other{"{0}မိုင်"}
             }
             millimeter{
-                dnam{"mm"}
+                dnam{"မီလီမီတာ"}
                 other{"{0} mm"}
             }
             picometer{
@@ -779,7 +757,7 @@ my{
         temperature{
             celsius{
                 dnam{"°C"}
-                other{"{0}°C"}
+                other{"{0}°"}
             }
             fahrenheit{
                 other{"{0}°F"}
@@ -794,7 +772,7 @@ my{
             }
             liter{
                 dnam{"လီတာ"}
-                other{"{0}L"}
+                other{"{0} l"}
             }
         }
     }
@@ -820,10 +798,10 @@ my{
             }
             degree{
                 dnam{"ဒီဂရီ"}
-                other{"{0} deg"}
+                other{"{0}°"}
             }
             radian{
-                dnam{"ရေဒီယဲန်း"}
+                dnam{"ရေဒီအန်းစ်"}
                 other{"{0} rad"}
             }
             revolution{
@@ -857,7 +835,6 @@ my{
             square-kilometer{
                 dnam{"စတုရန်းကီလိုမီတာ"}
                 other{"{0} km²"}
-                per{"{0}/km²"}
             }
             square-meter{
                 dnam{"စတုရန်းမီတာ"}
@@ -867,7 +844,6 @@ my{
             square-mile{
                 dnam{"စတုရန်းမိုင်"}
                 other{"{0} mi²"}
-                per{"{0}/mi²"}
             }
             square-yard{
                 dnam{"စတုရန်းကိုက်"}
@@ -877,28 +853,10 @@ my{
         compound{
             per{"{0}/{1}"}
         }
-        concentr{
-            karat{
-                dnam{"ကာရက်"}
-                other{"{0} kt"}
-            }
-            milligram-per-deciliter{
-                dnam{"mg/dL"}
-                other{"{0} mg/dL"}
-            }
-            millimole-per-liter{
-                dnam{"mmol/L"}
-                other{"{0} mmol/L"}
-            }
-            part-per-million{
-                dnam{"တစ်သန်းပုံ တစ်ပုံ"}
-                other{"{0} ppm"}
-            }
-        }
         consumption{
             liter-per-100kilometers{
-                dnam{"တစ်ရာကီလိုမီတာရှိ လီတာ"}
-                other{"{0} L/100 km"}
+                dnam{"L/100km"}
+                other{"{0} L/100km"}
             }
             liter-per-kilometer{
                 dnam{"လီတာ/ကီလိုမီတာ"}
@@ -908,73 +866,69 @@ my{
                 dnam{"မိုင်/ဂါလန်"}
                 other{"{0} mpg"}
             }
-            mile-per-gallon-imperial{
-                dnam{"mpg Imp."}
-                other{"{0} mpg Imp."}
-            }
         }
         coordinate{
-            east{"{0} E"}
-            north{"{0} N"}
-            south{"{0} S"}
-            west{"{0} W"}
+            east{"{0}E"}
+            north{"{0}N"}
+            south{"{0}S"}
+            west{"{0}W"}
         }
         digital{
             bit{
                 dnam{"ဘစ်"}
-                other{"{0} bit"}
+                other{"{0}ဘစ်"}
             }
             byte{
                 dnam{"ဘိုက်"}
-                other{"{0} byte"}
+                other{"{0}ဘိုက်"}
             }
             gigabit{
-                dnam{"ဂစ်ဂါဘစ်"}
-                other{"{0} Gb"}
+                dnam{"ဂီဂါဘစ်"}
+                other{"{0}ဂီဂါဘစ်"}
             }
             gigabyte{
-                dnam{"ဂစ်ဂါဘိုက်"}
-                other{"{0} GB"}
+                dnam{"ဂီဂါဘိုက်"}
+                other{"{0}ဂီဂါဘိုက်"}
             }
             kilobit{
                 dnam{"ကီလိုဘစ်"}
-                other{"{0} kb"}
+                other{"{0}ကီလိုဘစ်"}
             }
             kilobyte{
                 dnam{"ကီလိုဘိုက်"}
-                other{"{0} kB"}
+                other{"{0}ကီလိုဘိုက်"}
             }
             megabit{
                 dnam{"မီဂါဘစ်"}
-                other{"{0} Mb"}
+                other{"{0}မီဂါဘစ်"}
             }
             megabyte{
                 dnam{"မီဂါဘိုက်"}
                 other{"{0} MB"}
             }
             terabit{
-                dnam{"တယ်ရာဘစ်"}
+                dnam{"တီရာဘစ်"}
                 other{"{0} Tb"}
             }
             terabyte{
-                dnam{"တယ်ရာဘိုက်"}
+                dnam{"တီရာဘိုက်"}
                 other{"{0} TB"}
             }
         }
         duration{
             century{
-                dnam{"ရာစု"}
-                other{"{0} ရာစု"}
+                dnam{"c"}
+                other{"{0} c"}
             }
             day{
                 dnam{"ရက်"}
-                other{"{0} ရက်"}
-                per{"{0}/ ရက်"}
+                other{"{0}ရက်"}
+                per{"{0}/d"}
             }
             hour{
                 dnam{"နာရီ"}
-                other{"{0} နာရီ"}
-                per{"{0}/ နာရီ"}
+                other{"{0}နာရီ"}
+                per{"{0}/နာရီ"}
             }
             microsecond{
                 dnam{"မိုက်ခရိုစက္ကန့်"}
@@ -982,17 +936,17 @@ my{
             }
             millisecond{
                 dnam{"မီလီစက္ကန့်"}
-                other{"{0} မီလီစက္ကန့်"}
+                other{"{0} ms"}
             }
             minute{
                 dnam{"မိနစ်"}
-                other{"{0} မိနစ်"}
-                per{"{0}/ မိနစ်"}
+                other{"{0}မိနစ်"}
+                per{"{0}မိနစ်လျှင်"}
             }
             month{
                 dnam{"လ"}
-                other{"{0} လ"}
-                per{"{0}/ လ"}
+                other{"{0}လ"}
+                per{"{0}/လ"}
             }
             nanosecond{
                 dnam{"နာနိုစက္ကန့်"}
@@ -1000,18 +954,18 @@ my{
             }
             second{
                 dnam{"စက္ကန့်"}
-                other{"{0} စက္ကန့်"}
-                per{"{0}/ စက္ကန့်"}
+                other{"{0} s"}
+                per{"{0}/စက္ကန့်"}
             }
             week{
                 dnam{"ပတ်"}
-                other{"{0} ပတ်"}
-                per{"{0}/ ပတ်"}
+                other{"{0}ပတ်"}
+                per{"{0}/w"}
             }
             year{
                 dnam{"နှစ်"}
-                other{"{0} နှစ်"}
-                per{"{0}/ နှစ်"}
+                other{"{0} y"}
+                per{"{0}/y"}
             }
         }
         electric{
@@ -1060,7 +1014,7 @@ my{
         }
         frequency{
             gigahertz{
-                dnam{"ဂီဂါဟတ်ဇ်"}
+                dnam{"GHz"}
                 other{"{0} GHz"}
             }
             hertz{
@@ -1072,7 +1026,7 @@ my{
                 other{"{0} kHz"}
             }
             megahertz{
-                dnam{"မီဂါဟတ်ဇ်"}
+                dnam{"MHz"}
                 other{"{0} MHz"}
             }
         }
@@ -1082,26 +1036,26 @@ my{
                 other{"{0} au"}
             }
             centimeter{
-                dnam{"cm"}
+                dnam{"စင်တီမီတာ"}
                 other{"{0} cm"}
                 per{"{0}/cm"}
             }
             decimeter{
-                dnam{"dm"}
+                dnam{"ဒါစီမီတာ"}
                 other{"{0} dm"}
             }
             foot{
                 dnam{"ပေ"}
                 other{"{0} ပေ"}
-                per{"{0}/ပေ"}
+                per{"{0}/ft"}
             }
             inch{
                 dnam{"လက်မ"}
                 other{"{0} လက်မ"}
-                per{"{0}/လက်မ"}
+                per{"{0}/in"}
             }
             kilometer{
-                dnam{"km"}
+                dnam{"ကီလိုမီတာ"}
                 other{"{0} km"}
                 per{"{0}/km"}
             }
@@ -1110,7 +1064,7 @@ my{
                 other{"{0} အလင်းနှစ်"}
             }
             meter{
-                dnam{"m"}
+                dnam{"မီတာ"}
                 other{"{0} m"}
                 per{"{0}/m"}
             }
@@ -1120,18 +1074,18 @@ my{
             }
             mile{
                 dnam{"မိုင်"}
-                other{"{0} မိုင်"}
+                other{"{0}မိုင်"}
             }
             mile-scandinavian{
                 dnam{"smi"}
                 other{"{0} smi"}
             }
             millimeter{
-                dnam{"mm"}
+                dnam{"မီလီမီတာ"}
                 other{"{0} mm"}
             }
             nanometer{
-                dnam{"nm"}
+                dnam{"နာနိုမီတာ"}
                 other{"{0} nm"}
             }
             nautical-mile{
@@ -1143,12 +1097,8 @@ my{
                 other{"{0} pc"}
             }
             picometer{
-                dnam{"pm"}
+                dnam{"ပီကိုမီတာ"}
                 other{"{0} pm"}
-            }
-            point{
-                dnam{"ပွိုင့်"}
-                other{"{0} ပွိုင့်"}
             }
             yard{
                 dnam{"ကိုက်"}
@@ -1163,7 +1113,7 @@ my{
         }
         mass{
             carat{
-                dnam{"ကာရက်"}
+                dnam{"ကရက်"}
                 other{"{0} CD"}
             }
             gram{
@@ -1177,7 +1127,7 @@ my{
                 per{"{0}/kg"}
             }
             metric-ton{
-                dnam{"မက်ထရစ်တန်"}
+                dnam{"t"}
                 other{"{0} t"}
             }
             microgram{
@@ -1209,7 +1159,7 @@ my{
         }
         power{
             gigawatt{
-                dnam{"ဂစ်ဂါဝပ်"}
+                dnam{"ဂီဂါဝပ်"}
                 other{"{0} GW"}
             }
             horsepower{
@@ -1253,6 +1203,12 @@ my{
             pound-per-square-inch{
                 dnam{"ပေါင်/စတုရန်းလက်မ"}
                 other{"{0} psi"}
+            }
+        }
+        proportion{
+            karat{
+                dnam{"ကရက်"}
+                other{"{0} kt"}
             }
         }
         speed{
@@ -1307,11 +1263,11 @@ my{
             }
             cubic-foot{
                 dnam{"ကုဗပေ"}
-                other{"{0} ft³"}
+                other{"{0} ကုဗပေ"}
             }
             cubic-inch{
                 dnam{"ကုဗလက်မ"}
-                other{"{0} in³"}
+                other{"{0}ကုဗလက်မ"}
             }
             cubic-kilometer{
                 dnam{"ကုဗကီလိုမီတာ"}
@@ -1335,11 +1291,11 @@ my{
                 other{"{0} c"}
             }
             cup-metric{
-                dnam{"မထ္ထရစ်ခွက်"}
+                dnam{"mcup"}
                 other{"{0} mc"}
             }
             deciliter{
-                dnam{"ဒက်စီလီတာ"}
+                dnam{"ဒါစီလီတာ"}
                 other{"{0} dL"}
             }
             fluid-ounce{
@@ -1347,14 +1303,9 @@ my{
                 other{"{0} fl oz"}
             }
             gallon{
-                dnam{"ဂါလံ"}
-                other{"{0} ဂါလံ"}
-                per{"{0}/gal US"}
-            }
-            gallon-imperial{
-                dnam{"ယူကေဂါလံ"}
-                other{"{0} ယူကေဂါလံ"}
-                per{"{0}/gal Imp."}
+                dnam{"ဂါလန်"}
+                other{"{0}ဂါလန်"}
+                per{"{0}/ဂါလံ"}
             }
             hectoliter{
                 dnam{"ဟက်တိုလီတာ"}
@@ -1362,11 +1313,11 @@ my{
             }
             liter{
                 dnam{"လီတာ"}
-                other{"{0} လီတာ"}
+                other{"{0} l"}
                 per{"{0}/l"}
             }
             megaliter{
-                dnam{"မီဂါလီတာ"}
+                dnam{"မက်ဂါလီတာ"}
                 other{"{0} ML"}
             }
             milliliter{
@@ -1375,19 +1326,19 @@ my{
             }
             pint{
                 dnam{"ပိုင့်"}
-                other{"{0} pt"}
+                other{"{0}ပိုင့်"}
             }
             pint-metric{
-                dnam{"မထ္ထရစ်ပိုင့်"}
+                dnam{"mpt"}
                 other{"{0} mpt"}
             }
             quart{
                 dnam{"ကွတ်"}
-                other{"{0} qt"}
+                other{"{0}ကွတ်"}
             }
             tablespoon{
                 dnam{"စားပွဲဇွန်း"}
-                other{"{0} tbsp"}
+                other{"စားပွဲဇွန်း{0}ဇွန်း"}
             }
             teaspoon{
                 dnam{"လက်ဖက်ရည်ဇွန်း"}

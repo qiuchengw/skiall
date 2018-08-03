@@ -16,8 +16,8 @@
 #error "Unsupported platform."
 #endif
 
-#ifndef SDL_visualtest_process_h_
-#define SDL_visualtest_process_h_
+#ifndef _SDL_visualtest_process_h
+#define _SDL_visualtest_process_h
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -107,6 +107,5 @@ int SDL_GetProcessExitStatus(SDL_ProcessInfo* pinfo, SDL_ProcessExitStatus* ps);
 }
 #endif
 
-#endif /* SDL_visualtest_process_h_ */
+#endif /* _SDL_visualtest_process_h */
 
-/* vi: set ts=4 sw=4 expandtab: */

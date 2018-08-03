@@ -1,12 +1,6 @@
 /*
 *******************************************************************************
 *
-*   © 2016 and later: Unicode, Inc. and others.
-*   License & terms of use: http://www.unicode.org/copyright.html#License
-*
-*******************************************************************************
-*******************************************************************************
-*
 *   Copyright (C) 2002-2003, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
@@ -17,9 +11,8 @@
 #include <unicode/brkiter.h>
 #include <stdlib.h>
 
-using namespace icu;
-
 U_CFUNC int c_main(void);
+
 
 void printUnicodeString(const UnicodeString &s) {
     char charBuf[1000];

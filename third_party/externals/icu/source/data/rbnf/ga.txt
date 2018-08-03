@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/rbnf/ga.xml
+// *
+// ***************************************************************************
 /**
  * ICU <specials> source: <path>/xml/rbnf/ga.xml
  */
@@ -60,7 +66,7 @@ ga{
             "10: =%%spellout-numbering-no-a=;",
             "%spellout-numbering-year:",
             "-x: m\u00EDneas >>;",
-            "x.x: =0.0=;",
+            "x.x: =#,##0.#=;",
             "0: =%spellout-numbering=;",
             "1000/100: <%%spellout-numbering-no-a< >%%2d-year>;",
             "10000: =%spellout-numbering=;",
@@ -245,5 +251,5 @@ ga{
             "20: =%%is= =%%quadrillions=;",
         }
     }
-    Version{"2.1.27.22"}
+    Version{"2.1.19.14"}
 }

@@ -6,6 +6,7 @@
 
 # Warnings valid for both C and C++
 CWARNSCPP= \
+	-pedantic \
 	-Wextra \
 	-Wshadow \
 	-Wsign-compare \
@@ -13,15 +14,14 @@ CWARNSCPP= \
 	-Wwrite-strings \
 	-Wredundant-decls \
 	-Wdisabled-optimization \
+	-Waggregate-return \
 	-Wdouble-promotion \
- 	-Wstrict-aliasing=3 \
- 	-Wno-aggressive-loop-optimizations \
- 	-Wlogical-op \
-	-Werror \
-	# -pedantic   # warns if we use jump tables \
+	#-Wno-aggressive-loop-optimizations   # not accepted by clang \
+	#-Wlogical-op   # not accepted by clang \
 	# the next warnings generate too much noise, so they are disabled
 	# -Wconversion  -Wno-sign-conversion \
 	# -Wsign-conversion \
+	# -Wconversion \
 	# -Wstrict-overflow=2 \
 	# -Wformat=2 \
 	# -Wcast-qual \
@@ -35,31 +35,32 @@ CWARNSC= -Wdeclaration-after-statement \
 	-Wold-style-definition \
 
 
-CWARNS= $(CWARNSCPP) $(CWARNSC)
+CWARNS= $(CWARNSCPP)  $(CWARNSC)
 
 
 # -DEXTERNMEMCHECK -DHARDSTACKTESTS -DHARDMEMTESTS -DTRACEMEM='"tempmem"'
 # -g -DLUA_USER_H='"ltests.h"'
 # -pg -malign-double
 # -DLUA_USE_CTYPE -DLUA_USE_APICHECK
-# ('-ftrapv' for runtime checks of integer overflows)
-# -fsanitize=undefined -ftrapv -fno-inline
-TESTS= -DLUA_USER_H='"ltests.h"' -O0
+# (in clang, '-ftrapv' for runtime checks of integer overflows)
+# -fsanitize=undefined -ftrapv
+TESTS= -DLUA_USER_H='"ltests.h"'
 
-
-# LOCAL = $(TESTS) $(CWARNS) -g
+# -mtune=native -fomit-frame-pointer
+# -fno-stack-protector
+LOCAL = $(TESTS) $(CWARNS) -g
 
 
 
 # enable Linux goodies
-MYCFLAGS= $(LOCAL) -std=c99 -DLUA_USE_LINUX -DLUA_USE_READLINE
+MYCFLAGS= $(LOCAL) -std=c99 -DLUA_USE_LINUX -DLUA_COMPAT_5_2
 MYLDFLAGS= $(LOCAL) -Wl,-E
 MYLIBS= -ldl -lreadline
 
 
-CC= gcc
-CFLAGS= -Wall -O2 $(MYCFLAGS) -Wfatal-errors -fno-stack-protector -fno-common
-AR= ar rc
+CC= clang-3.8
+CFLAGS= -Wall -O2 $(MYCFLAGS)
+AR= ar rcu
 RANLIB= ranlib
 RM= rm -f
 
@@ -76,7 +77,7 @@ CORE_O=	lapi.o lcode.o lctype.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o \
 	ltm.o lundump.o lvm.o lzio.o ltests.o
 AUX_O=	lauxlib.o
 LIB_O=	lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o lstrlib.o \
-	lutf8lib.o loadlib.o lcorolib.o linit.o
+	lutf8lib.o lbitlib.o loadlib.o lcorolib.o linit.o
 
 LUA_T=	lua
 LUA_O=	lua.o
@@ -132,6 +133,7 @@ lapi.o: lapi.c lprefix.h lua.h luaconf.h lapi.h llimits.h lstate.h \
  ltable.h lundump.h lvm.h
 lauxlib.o: lauxlib.c lprefix.h lua.h luaconf.h lauxlib.h
 lbaselib.o: lbaselib.c lprefix.h lua.h luaconf.h lauxlib.h lualib.h
+lbitlib.o: lbitlib.c lprefix.h lua.h luaconf.h lauxlib.h lualib.h
 lcode.o: lcode.c lprefix.h lua.h luaconf.h lcode.h llex.h lobject.h \
  llimits.h lzio.h lmem.h lopcodes.h lparser.h ldebug.h lstate.h ltm.h \
  ldo.h lgc.h lstring.h ltable.h lvm.h
@@ -181,7 +183,7 @@ ltests.o: ltests.c lprefix.h lua.h luaconf.h lapi.h llimits.h lstate.h \
  lparser.h lctype.h ldebug.h ldo.h lfunc.h lstring.h lgc.h ltable.h \
  lualib.h
 ltm.o: ltm.c lprefix.h lua.h luaconf.h ldebug.h lstate.h lobject.h \
- llimits.h ltm.h lzio.h lmem.h ldo.h lgc.h lstring.h ltable.h lvm.h
+ llimits.h ltm.h lzio.h lmem.h ldo.h lstring.h lgc.h ltable.h lvm.h
 lua.o: lua.c lprefix.h lua.h luaconf.h lauxlib.h lualib.h
 lundump.o: lundump.c lprefix.h lua.h luaconf.h ldebug.h lstate.h \
  lobject.h llimits.h ltm.h lzio.h lmem.h ldo.h lfunc.h lstring.h lgc.h \
@@ -189,7 +191,7 @@ lundump.o: lundump.c lprefix.h lua.h luaconf.h ldebug.h lstate.h \
 lutf8lib.o: lutf8lib.c lprefix.h lua.h luaconf.h lauxlib.h lualib.h
 lvm.o: lvm.c lprefix.h lua.h luaconf.h ldebug.h lstate.h lobject.h \
  llimits.h ltm.h lzio.h lmem.h ldo.h lfunc.h lgc.h lopcodes.h lstring.h \
- ltable.h lvm.h ljumptab.h
+ ltable.h lvm.h
 lzio.o: lzio.c lprefix.h lua.h luaconf.h llimits.h lmem.h lstate.h \
  lobject.h ltm.h lzio.h
 

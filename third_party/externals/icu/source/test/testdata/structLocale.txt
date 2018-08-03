@@ -1,8 +1,6 @@
-// Copyright (C) 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 // ***************************************************************************
 // *
-// * Copyright (C) 2004-2016 International Business Machines
+// * Copyright (C) 2004-2015 International Business Machines
 // * Corporation and others.  All Rights Reserved.
 // *
 // ***************************************************************************
@@ -536,10 +534,6 @@ structLocale:table(nofallback){
             "",
             "",
         }
-        BYN{
-            "",
-            "",
-        }
         BYR{
             "",
             "",
@@ -577,10 +571,6 @@ structLocale:table(nofallback){
             "",
         }
         CLP{
-            "",
-            "",
-        }
-        CNH{
             "",
             "",
         }
@@ -1012,10 +1002,6 @@ structLocale:table(nofallback){
             "",
             "",
         }
-        MRU{
-            "",
-            "",
-        }
         MTL{
             "",
             "",
@@ -1245,10 +1231,6 @@ structLocale:table(nofallback){
             "",
         }
         STD{
-            "",
-            "",
-        }
-        STN{
             "",
             "",
         }
@@ -3998,105 +3980,12 @@ structLocale:table(nofallback){
             other{""}
         }
     }
-    characterLabelPattern{
-        strokes{
-            "",
-            "",
-        }
-    }
     codePatterns{
         language{""}
         script{""}
         territory{""}
     }
-    characterLabel{
-        activities{""}
-        african_scripts{""}
-        american_scripts{""}
-        animal{""}
-        animals_nature{""}
-        arrows{""}
-        body{""}
-        box_drawing{""}
-        braille{""}
-        building{""}
-        bullets_stars{""}
-        consonantal_jamo{""}
-        currency_symbols{""}
-        dash_connector{""}
-        digits{""}
-        dingbats{""}
-        divination_symbols{""}
-        downwards_arrows{""}
-        downwards_upwards_arrows{""}
-        east_asian_scripts{""}
-        emoji{""}
-        european_scripts{""}
-        female{""}
-        flag{""}
-        flags{""}
-        food_drink{""}
-        format{""}
-        format_whitespace{""}
-        full_width_form_variant{""}
-        geometric_shapes{""}
-        half_width_form_variant{""}
-        han_characters{""}
-        han_radicals{""}
-        hanja{""}
-        hanzi_simplified{""}
-        hanzi_traditional{""}
-        heart{""}
-        historic_scripts{""}
-        ideographic_desc_characters{""}
-        japanese_kana{""}
-        kanbun{""}
-        kanji{""}
-        keycap{""}
-        leftwards_arrows{""}
-        leftwards_rightwards_arrows{""}
-        letterlike_symbols{""}
-        limited_use{""}
-        male{""}
-        math_symbols{""}
-        middle_eastern_scripts{""}
-        miscellaneous{""}
-        modern_scripts{""}
-        modifier{""}
-        musical_symbols{""}
-        nature{""}
-        nonspacing{""}
-        numbers{""}
-        objects{""}
-        other{""}
-        paired{""}
-        person{""}
-        phonetic_alphabet{""}
-        pictographs{""}
-        place{""}
-        plant{""}
-        punctuation{""}
-        rightwards_arrows{""}
-        sign_standard_symbols{""}
-        small_form_variant{""}
-        smiley{""}
-        smileys_people{""}
-        south_asian_scripts{""}
-        southeast_asian_scripts{""}
-        spacing{""}
-        sport{""}
-        symbols{""}
-        technical_symbols{""}
-        tone_marks{""}
-        travel{""}
-        travel_places{""}
-        upwards_arrows{""}
-        variant_forms{""}
-        vocalic_jamo{""}
-        weather{""}
-        western_asian_scripts{""}
-        whitespace{""}
-    }
+    defaultNumberingSystem{""}
     contextTransforms{
         calendar-field:intvector{
             2,
@@ -4150,16 +4039,11 @@ structLocale:table(nofallback){
             2,
             2,
         }
-        typographicNames:intvector{
-            2,
-            2,
-        }
         unit-pattern:intvector{
             2,
             2,
         }
     }
-    defaultNumberingSystem{""}
     delimiters{
         quotationStart{""}
         quotationEnd{""}
@@ -4181,7 +4065,7 @@ structLocale:table(nofallback){
     }
     fields{
         day{
-            dn{""}
+            dn{"Day"}
             relative{
                 "-3"{""}
                 "-2"{""}
@@ -4211,7 +4095,7 @@ structLocale:table(nofallback){
             }
         }
         day-narrow{
-            dn{""}
+            dn{"Day"}
             relative{
                 "-3"{""}
                 "-2"{""}
@@ -4241,7 +4125,7 @@ structLocale:table(nofallback){
             }
         }
         day-short{
-            dn{""}
+            dn{"Day"}
             relative{
                 "-3"{""}
                 "-2"{""}
@@ -4270,69 +4154,28 @@ structLocale:table(nofallback){
                 }
             }
         }
-        dayOfYear{
-            dn{""}
-        }
-        dayOfYear-short{
-            dn{""}
-        }
-        dayOfYear-narrow{
-            dn{""}
-        }
         dayperiod{
-            dn{""}
+            dn{"Dayperiod"}
             dn%variant{""}
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
-        }
-        dayperiod-short{
-            dn{""}
-            dn%variant{""}
-        }
-        dayperiod-narrow{
-            dn{""}
-            dn%variant{""}
         }
         era{
-            dn{""}
+            dn{"Era"}
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
-        }
-        era-short{
-            dn{""}
-        }
-        era-narrow{
-            dn{""}
         }
         fri{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         fri-narrow{
@@ -4341,24 +4184,6 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         fri-short{
             relative{
@@ -4366,27 +4191,9 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         hour{
-            dn{""}
+            dn{"Hour"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4412,7 +4219,7 @@ structLocale:table(nofallback){
             }
         }
         hour-narrow{
-            dn{""}
+            dn{"Hour"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4438,7 +4245,7 @@ structLocale:table(nofallback){
             }
         }
         hour-short{
-            dn{""}
+            dn{"Hour"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4464,7 +4271,7 @@ structLocale:table(nofallback){
             }
         }
         minute{
-            dn{""}
+            dn{"Minute"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4490,7 +4297,7 @@ structLocale:table(nofallback){
             }
         }
         minute-narrow{
-            dn{""}
+            dn{"Minute"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4516,7 +4323,7 @@ structLocale:table(nofallback){
             }
         }
         minute-short{
-            dn{""}
+            dn{"Minute"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4547,48 +4354,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         mon-narrow{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         mon-short{
@@ -4597,27 +4368,9 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         month{
-            dn{""}
+            dn{"Month"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4643,7 +4396,7 @@ structLocale:table(nofallback){
             }
         }
         month-narrow{
-            dn{""}
+            dn{"Month"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4669,7 +4422,7 @@ structLocale:table(nofallback){
             }
         }
         month-short{
-            dn{""}
+            dn{"Month"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4778,48 +4531,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         sat-narrow{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         sat-short{
@@ -4828,27 +4545,9 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         second{
-            dn{""}
+            dn{"Second"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4874,7 +4573,7 @@ structLocale:table(nofallback){
             }
         }
         second-narrow{
-            dn{""}
+            dn{"Second"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4900,7 +4599,7 @@ structLocale:table(nofallback){
             }
         }
         second-short{
-            dn{""}
+            dn{"Second"}
             relative{
                 "-1"{""}
                 "0"{""}
@@ -4931,48 +4630,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         sun-narrow{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         sun-short{
@@ -4981,48 +4644,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         thu{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         thu-narrow{
@@ -5031,48 +4658,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         thu-short{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         tue{
@@ -5081,48 +4672,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         tue-narrow{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         tue-short{
@@ -5131,48 +4686,12 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         wed{
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
-            }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
             }
         }
         wed-narrow{
@@ -5181,24 +4700,6 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         wed-short{
             relative{
@@ -5206,33 +4707,14 @@ structLocale:table(nofallback){
                 "0"{""}
                 "1"{""}
             }
-            relativeTime{
-                future{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-                past{
-                    zero{""}
-                    one{""}
-                    two{""}
-                    few{""}
-                    many{""}
-                    other{""}
-                }
-            }
         }
         week{
-            dn{""}                    
+            dn{"Week"}                    
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
-            relativePeriod{""}
             relativeTime{
                 future{
                     zero{""}
@@ -5253,13 +4735,12 @@ structLocale:table(nofallback){
             }
         }
         week-narrow{
-            dn{""}                    
+            dn{"Week"}                    
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
-            relativePeriod{""}
             relativeTime{
                 future{
                     zero{""}
@@ -5280,13 +4761,12 @@ structLocale:table(nofallback){
             }
         }
         week-short{
-            dn{""}                    
+            dn{"Week"}                    
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
-            relativePeriod{""}
             relativeTime{
                 future{
                     zero{""}
@@ -5306,40 +4786,16 @@ structLocale:table(nofallback){
                 }
             }
         }
-        weekOfMonth{
-            dn{""}
-        }
-        weekOfMonth-short{
-            dn{""}
-        }
-        weekOfMonth-narrow{
-            dn{""}
-        }
         weekday{
-            dn{""}
+            dn{"Day of the Week"}
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
         }
-        weekday-short{
-            dn{""}
-        }
-        weekday-narrow{
-            dn{""}
-        }
-        weekdayOfMonth{
-            dn{""}
-        }
-        weekdayOfMonth-short{
-            dn{""}
-        }
-        weekdayOfMonth-narrow{
-            dn{""}
-        }
         year{
-            dn{""}                    
+            dn{"Year"}                    
             relative{
                 "-1"{""}
                 "-2"{""}
@@ -5366,7 +4822,7 @@ structLocale:table(nofallback){
             }
         }
         year-narrow{
-            dn{""}                    
+            dn{"Year"}                    
             relative{
                 "-1"{""}
                 "-2"{""}
@@ -5393,7 +4849,7 @@ structLocale:table(nofallback){
             }
         }
         year-short{
-            dn{""}                    
+            dn{"Year"}                    
             relative{
                 "-1"{""}
                 "-2"{""}
@@ -5420,18 +4876,12 @@ structLocale:table(nofallback){
             }
         }
         zone{
-            dn{""}
+            dn{"Zone"}
             relative{
                 "-1"{""}
                 "0"{""}
                 "1"{""}
             }
-        }
-        zone-short{
-            dn{""}
-        }
-        zone-narrow{
-            dn{""}
         }
     }
     CurrencyUnitPatterns{
@@ -5445,7 +4895,6 @@ structLocale:table(nofallback){
     ExemplarCharacters{""}
     ExemplarCharactersCurrency{""}
     ExemplarCharactersIndex{""}
-    ExemplarCharactersNumbers{""}
     ExemplarCharactersPunctuation{""}
     AuxExemplarCharacters{""}
     Keys{
@@ -5483,7 +4932,6 @@ structLocale:table(nofallback){
         aro{""}
         arp{""}
         arq{""}
-        ars{""}
         arw{""}
         ary{""}
         arz{""}
@@ -5541,7 +4989,6 @@ structLocale:table(nofallback){
         car{""}
         cay{""}
         cch{""}
-        ccp{""}
         ce{""}
         ceb{""}
         cgg{""}
@@ -6053,9 +5500,6 @@ structLocale:table(nofallback){
         zxx{""}
         zza{""}
     }
-    Languages%long{
-        zh{""}
-    }
     Languages%secondary{
         crh{""}
         fa{""}
@@ -6063,15 +5507,15 @@ structLocale:table(nofallback){
         lad{""}
         tr{""}
     }
-    Languages%short{
-        az{""}
-        en_GB{""}
-        en_US{""}
-    }
     Languages%variant{
         ky{""}
         ps{""}
         ug{""}
+    }
+    Languages%short{
+        az{""}
+        en_GB{""}
+        en_US{""}
     }
     LocaleScript{
         "",
@@ -8369,7 +7813,6 @@ structLocale:table(nofallback){
             }
         }
         default{""}
-        default_latn{""}
         deva{
             miscPatterns{
                 atLeast{""}
@@ -8699,333 +8142,6 @@ structLocale:table(nofallback){
         }
         finance{""}
         fullwide{
-            miscPatterns{
-                atLeast{""}
-                range{""}
-            }
-            patterns{
-                accountingFormat{""}
-                currencyFormat{""}
-                decimalFormat{""}
-                percentFormat{""}
-                scientificFormat{""}
-            }
-            patternsLong{
-                decimalFormat{
-                    1000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                }
-            }
-            patternsShort{
-                currencyFormat{
-                    1000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                }
-                decimalFormat{
-                    1000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    1000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    10000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                    100000000000000{
-                        zero{""}
-                        one{""}
-                        two{""}
-                        few{""}
-                        many{""}
-                        other{""}
-                    }
-                }
-            }
-            symbols{
-                decimal{""}
-                exponential{""}
-                group{""}
-                infinity{""}
-                list{""}
-                minusSign{""}
-                nan{""}
-                perMille{""}
-                percentSign{""}
-                plusSign{""}
-                currencyDecimal{""}
-                currencyGroup{""}
-                superscriptingExponent{""}
-                timeSeparator{""}
-            }
-        }
-        gonm{
             miscPatterns{
                 atLeast{""}
                 range{""}
@@ -11969,10 +11085,6 @@ structLocale:table(nofallback){
             }
         }
         lanatham{
-            miscPatterns{
-                atLeast{""}
-                range{""}
-            }
             patterns{
                 accountingFormat{""}
                 currencyFormat{""}
@@ -13603,24 +12715,6 @@ structLocale:table(nofallback){
                 timeSeparator{""}
             }
         }
-        minimalPairs{
-            ordinal{
-                zero{""}
-                one{""}
-                two{""}
-                few{""}
-                many{""}
-                other{""}
-            }
-            plural{
-                zero{""}
-                one{""}
-                two{""}
-                few{""}
-                many{""}
-                other{""}
-            }
-        }
         mlym{
             miscPatterns{
                 atLeast{""}
@@ -14930,10 +14024,6 @@ structLocale:table(nofallback){
             }
         }
         mymrshan{
-            miscPatterns{
-                atLeast{""}
-                range{""}
-            }
             patterns{
                 accountingFormat{""}
                 currencyFormat{""}
@@ -20480,8 +19570,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -20661,8 +19751,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -20705,471 +19795,11 @@ structLocale:table(nofallback){
                             "",
                             "",
                         }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                    }
-                }
-                days{
-                    format{
-                        abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                    }
-                }
-                months{
-                    format{
-                        abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
                     }
                 }
                 solarTerms{
                     format{
                         abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
                             "",
                             "",
                             "",
@@ -21261,163 +19891,11 @@ structLocale:table(nofallback){
                             "",
                             "",
                         }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
                     }
                 }
                 zodiacs{
                     format{
                         abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
                             "",
                             "",
                             "",
@@ -21696,26 +20174,11 @@ structLocale:table(nofallback){
                 "",
                 "",
             }
-            DateTimePatterns{
-                "",
-                "",
-                "",
-                "",
-                "A2",
-                "A2",
-                "A2",
-                "A2",
-                "",
-                "A4",
-                "A4",
-                "A4",
-                "A4",
-            }
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -21733,11 +20196,11 @@ structLocale:table(nofallback){
                 }
                 wide{
                     "",
-                    "",
+                    ""
                 }
                 narrow{
                     "",
-                    "",
+                    ""
                 }
             }
             intervalFormats{
@@ -21981,8 +20444,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -22025,401 +20488,7 @@ structLocale:table(nofallback){
                             "",
                             "",
                         }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
                         wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                    }
-                }
-                days{
-                    format{
-                        abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                    }
-                }
-                months{
-                    format{
-                        abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
                             "",
                             "",
                             "",
@@ -22438,32 +20507,6 @@ structLocale:table(nofallback){
                 solarTerms{
                     format{
                         abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
                             "",
                             "",
                             "",
@@ -22581,149 +20624,11 @@ structLocale:table(nofallback){
                             "",
                             "",
                         }
-                        narrow{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        wide{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
                     }
                 }
                 zodiacs{
                     format{
                         abbreviated{
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                            "",
-                        }
-                        narrow{
                             "",
                             "",
                             "",
@@ -23039,8 +20944,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -23058,11 +20963,11 @@ structLocale:table(nofallback){
                 }
                 wide{
                     "",
-                    "",
+                    ""
                 }
                 narrow{
                     "",
-                    "",
+                    ""
                 }
             }
             intervalFormats{
@@ -23310,8 +21215,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -23330,7 +21235,7 @@ structLocale:table(nofallback){
                     "",
                 }
                 narrow{
-                    "",
+                    ""
                 }
             }
             intervalFormats{
@@ -23602,8 +21507,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -23927,8 +21832,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -24124,15 +22029,15 @@ structLocale:table(nofallback){
                 }
                 narrow{
                     "",
-                    "",
+                    ""
                 }
                 narrow%variant{
                     "",
-                    "",
+                    ""
                 }
                 wide{
                     "",
-                    "",
+                    ""
                 }
                 wide%variant{
                     "",
@@ -24438,8 +22343,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -24709,8 +22614,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -24983,8 +22888,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -25261,8 +23166,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -25540,8 +23445,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -26281,136 +24186,6 @@ structLocale:table(nofallback){
                     "",
                     "",
                     "",
-                }
-            }
-            intervalFormats{
-                H{
-                    H{""}
-                }
-                Hm{
-                    H{""}
-                    m{""}
-                }
-                Hmv{
-                    H{""}
-                    m{""}
-                }
-                Hv{
-                    H{""}
-                }
-                M{
-                    M{""}
-                }
-                MEd{
-                    M{""}
-                    d{""}
-                }
-                MMM{
-                    M{""}
-                }
-                MMMEd{
-                    M{""}
-                    d{""}
-                }
-                MMMEEEEd{
-                    M{""}
-                    d{""}
-                }
-                MMMM{
-                    M{""}
-                }
-                MMMMEd{
-                    M{""}
-                    d{""}
-                }
-                MMMMd{
-                    M{""}
-                    d{""}
-                }
-                MMMd{
-                    M{""}
-                    d{""}
-                }
-                Md{
-                    M{""}
-                    d{""}
-                }
-                d{
-                    d{""}
-                }
-                fallback{""}
-                h{
-                    a{""}
-                    h{""}
-                }
-                hm{
-                    a{""}
-                    h{""}
-                    m{""}
-                }
-                hmv{
-                    a{""}
-                    h{""}
-                    m{""}
-                }
-                hv{
-                    a{""}
-                    h{""}
-                }
-                y{
-                    y{""}
-                }
-                yM{
-                    M{""}
-                    y{""}
-                }
-                yMEd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMMM{
-                    M{""}
-                    y{""}
-                }
-                yMMMEEEEd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMMMEd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMMMM{
-                    M{""}
-                    y{""}
-                }
-                yMMMMEEEEd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMMMMEd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMMMMd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMMMd{
-                    M{""}
-                    d{""}
-                    y{""}
-                }
-                yMd{
-                    M{""}
-                    d{""}
-                    y{""}
                 }
             }
         }
@@ -26426,8 +24201,8 @@ structLocale:table(nofallback){
             availableFormats{
                 HHmm{""}
                 HHmmss{""}
-                KKmm{""}
-                KKmmss{""}
+                KKmm{"KK:mm a"}
+                KKmmss{"KK:mm:ss a"}
                 MMMM{""}
                 MMMdd{""}
                 mmssSS{""}
@@ -26460,11 +24235,11 @@ structLocale:table(nofallback){
                 }
                 wide{
                     "",
-                    "",
+                    ""
                 }
                 narrow{
                     "",
-                    "",
+                    ""
                 }
             }
             intervalFormats{
@@ -26605,24 +24380,6 @@ structLocale:table(nofallback){
         lines{""}
     }
     listPattern{
-        or{
-            2{""}
-            end{""}
-            middle{""}
-            start{""}
-        }
-        standard{
-            2{""}
-            end{""}
-            middle{""}
-            start{""}
-        }
-        standard-short{
-            2{""}
-            end{""}
-            middle{""}
-            start{""}
-        }
         unit{
             2{""}
             end{""}
@@ -26641,6 +24398,12 @@ structLocale:table(nofallback){
             middle{""}
             start{""}
         }
+        standard{
+            2{""}
+            end{""}
+            middle{""}
+            start{""}
+        }
     }
     localPatternChars{""}
     localeDisplayPattern{
@@ -26648,42 +24411,15 @@ structLocale:table(nofallback){
         separator{", "}
     }
     measurementSystemNames{
-        UK{""}
-        US{""}
-        metric{""}
+        UK{"UK"}
+        US{"US"}
+        metric{"Metric"}
     }
     messages{
         nostr{""}
         yesstr{""}
         yesexpr{""}
         noexpr{""}
-    }
-    parse{
-        date{
-            lenient{
-                "",
-                "",
-            }
-        }
-        general{
-            lenient{
-                "",
-                "",
-                "",
-                "",
-            }
-        }
-        number{
-            lenient{
-                "",
-                "",
-                "",
-            }
-            stricter{
-                "",
-                "",
-            }
-        }
     }
     transformNames{
         BGN{""}

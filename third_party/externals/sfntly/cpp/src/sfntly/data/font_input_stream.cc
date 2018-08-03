@@ -32,17 +32,10 @@ FontInputStream::~FontInputStream() {
   // Do not close here, underlying InputStream will close themselves.
 }
 
-int32_t FontInputStream::Length() {
-  if (bounded_)
-    return length_;
-  if (stream_)
-    return stream_->Length();
-  return 0;
-}
-
 int32_t FontInputStream::Available() {
-  if (stream_)
+  if (stream_) {
     return stream_->Available();
+  }
   return 0;
 }
 
@@ -82,7 +75,7 @@ int32_t FontInputStream::Read() {
   return b;
 }
 
-int32_t FontInputStream::Read(std::vector<uint8_t>* b, int32_t offset, int32_t length) {
+int32_t FontInputStream::Read(ByteVector* b, int32_t offset, int32_t length) {
   if (!stream_ || offset < 0 || length < 0 ||
       (bounded_ && position_ >= length_)) {
     return -1;
@@ -95,7 +88,7 @@ int32_t FontInputStream::Read(std::vector<uint8_t>* b, int32_t offset, int32_t l
   return bytes_read;
 }
 
-int32_t FontInputStream::Read(std::vector<uint8_t>* b) {
+int32_t FontInputStream::Read(ByteVector* b) {
   return Read(b, 0, b->size());
 }
 

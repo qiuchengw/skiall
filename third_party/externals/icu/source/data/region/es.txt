@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/es.xml
+// *
+// ***************************************************************************
 es{
     Countries{
         001{"Mundo"}
@@ -31,7 +37,6 @@ es{
         151{"Europa oriental"}
         154{"Europa septentrional"}
         155{"Europa occidental"}
-        202{"África subsahariana"}
         419{"Latinoamérica"}
         AC{"Isla de la Ascensión"}
         AD{"Andorra"}
@@ -41,6 +46,7 @@ es{
         AI{"Anguila"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Antillas Neerlandesas"}
         AO{"Angola"}
         AQ{"Antártida"}
         AR{"Argentina"}
@@ -50,7 +56,7 @@ es{
         AW{"Aruba"}
         AX{"Islas Åland"}
         AZ{"Azerbaiyán"}
-        BA{"Bosnia y Herzegovina"}
+        BA{"Bosnia-Herzegovina"}
         BB{"Barbados"}
         BD{"Bangladés"}
         BE{"Bélgica"}
@@ -77,7 +83,7 @@ es{
         CF{"República Centroafricana"}
         CG{"República del Congo"}
         CH{"Suiza"}
-        CI{"Côte d’Ivoire"}
+        CI{"Costa de Marfil"}
         CK{"Islas Cook"}
         CL{"Chile"}
         CM{"Camerún"}
@@ -90,7 +96,7 @@ es{
         CW{"Curazao"}
         CX{"Isla de Navidad"}
         CY{"Chipre"}
-        CZ{"Chequia"}
+        CZ{"República Checa"}
         DE{"Alemania"}
         DG{"Diego García"}
         DJ{"Yibuti"}
@@ -107,7 +113,6 @@ es{
         ES{"España"}
         ET{"Etiopía"}
         EU{"Unión Europea"}
-        EZ{"zona euro"}
         FI{"Finlandia"}
         FJ{"Fiyi"}
         FK{"Islas Malvinas"}
@@ -119,7 +124,7 @@ es{
         GD{"Granada"}
         GE{"Georgia"}
         GF{"Guayana Francesa"}
-        GG{"Guernsey"}
+        GG{"Guernesey"}
         GH{"Ghana"}
         GI{"Gibraltar"}
         GL{"Groenlandia"}
@@ -133,7 +138,7 @@ es{
         GU{"Guam"}
         GW{"Guinea-Bisáu"}
         GY{"Guyana"}
-        HK{"RAE de Hong Kong (China)"}
+        HK{"Hong Kong"}
         HM{"Islas Heard y McDonald"}
         HN{"Honduras"}
         HR{"Croacia"}
@@ -187,7 +192,7 @@ es{
         ML{"Mali"}
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
-        MO{"RAE de Macao (China)"}
+        MO{"Macao"}
         MP{"Islas Marianas del Norte"}
         MQ{"Martinica"}
         MR{"Mauritania"}
@@ -222,7 +227,7 @@ es{
         PM{"San Pedro y Miquelón"}
         PN{"Islas Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Territorios Palestinos"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palaos"}
         PY{"Paraguay"}
@@ -254,7 +259,7 @@ es{
         SX{"Sint Maarten"}
         SY{"Siria"}
         SZ{"Suazilandia"}
-        TA{"Tristán de Acuña"}
+        TA{"Tristán da Cunha"}
         TC{"Islas Turcas y Caicos"}
         TD{"Chad"}
         TF{"Territorios Australes Franceses"}
@@ -262,7 +267,7 @@ es{
         TH{"Tailandia"}
         TJ{"Tayikistán"}
         TK{"Tokelau"}
-        TL{"Timor-Leste"}
+        TL{"Timor Oriental"}
         TM{"Turkmenistán"}
         TN{"Túnez"}
         TO{"Tonga"}
@@ -274,7 +279,6 @@ es{
         UA{"Ucrania"}
         UG{"Uganda"}
         UM{"Islas menores alejadas de EE. UU."}
-        UN{"Naciones Unidas"}
         US{"Estados Unidos"}
         UY{"Uruguay"}
         UZ{"Uzbekistán"}
@@ -297,19 +301,13 @@ es{
     }
     Countries%short{
         GB{"RU"}
-        HK{"Hong Kong"}
-        MO{"Macao"}
-        PS{"Palestina"}
         US{"EE. UU."}
     }
     Countries%variant{
         CD{"Congo (República Democrática del Congo)"}
         CG{"Congo (República)"}
-        CI{"Costa de Marfil"}
-        CZ{"República Checa"}
         FK{"Islas Malvinas (Islas Falkland)"}
         MK{"Macedonia (ERYM)"}
-        TL{"Timor Oriental"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.20.15"}
 }

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/vi.xml
+// *
+// ***************************************************************************
 vi{
     Countries{
         001{"Thế giới"}
@@ -31,22 +37,22 @@ vi{
         151{"Đông Âu"}
         154{"Bắc Âu"}
         155{"Tây Âu"}
-        202{"Châu Phi hạ Sahara"}
         419{"Châu Mỹ La-tinh"}
         AC{"Đảo Ascension"}
         AD{"Andorra"}
-        AE{"Các Tiểu Vương quốc Ả Rập Thống nhất"}
+        AE{"Các Tiểu V.quốc Ả Rập T.nhất"}
         AF{"Afghanistan"}
         AG{"Antigua và Barbuda"}
         AI{"Anguilla"}
-        AL{"Albania"}
+        AL{"Albani"}
         AM{"Armenia"}
+        AN{"Tây Ấn Hà Lan"}
         AO{"Angola"}
         AQ{"Nam Cực"}
         AR{"Argentina"}
-        AS{"Samoa thuộc Mỹ"}
+        AS{"Đảo Somoa thuộc Mỹ"}
         AT{"Áo"}
-        AU{"Australia"}
+        AU{"Úc"}
         AW{"Aruba"}
         AX{"Quần đảo Åland"}
         AZ{"Azerbaijan"}
@@ -55,7 +61,7 @@ vi{
         BD{"Bangladesh"}
         BE{"Bỉ"}
         BF{"Burkina Faso"}
-        BG{"Bulgaria"}
+        BG{"Bungari"}
         BH{"Bahrain"}
         BI{"Burundi"}
         BJ{"Benin"}
@@ -77,7 +83,7 @@ vi{
         CF{"Cộng hòa Trung Phi"}
         CG{"Congo - Brazzaville"}
         CH{"Thụy Sĩ"}
-        CI{"Côte d’Ivoire"}
+        CI{"Bờ Biển Ngà"}
         CK{"Quần đảo Cook"}
         CL{"Chile"}
         CM{"Cameroon"}
@@ -90,7 +96,7 @@ vi{
         CW{"Curaçao"}
         CX{"Đảo Giáng Sinh"}
         CY{"Síp"}
-        CZ{"Séc"}
+        CZ{"Cộng hòa Séc"}
         DE{"Đức"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -107,7 +113,6 @@ vi{
         ES{"Tây Ban Nha"}
         ET{"Ethiopia"}
         EU{"Liên Minh Châu Âu"}
-        EZ{"Khu vực đồng Euro"}
         FI{"Phần Lan"}
         FJ{"Fiji"}
         FK{"Quần đảo Falkland"}
@@ -117,7 +122,7 @@ vi{
         GA{"Gabon"}
         GB{"Vương quốc Anh"}
         GD{"Grenada"}
-        GE{"Gruzia"}
+        GE{"Georgia"}
         GF{"Guiana thuộc Pháp"}
         GG{"Guernsey"}
         GH{"Ghana"}
@@ -128,28 +133,28 @@ vi{
         GP{"Guadeloupe"}
         GQ{"Guinea Xích Đạo"}
         GR{"Hy Lạp"}
-        GS{"Nam Georgia & Quần đảo Nam Sandwich"}
+        GS{"Quần đảo Nam Georgia và Nam Sandwich"}
         GT{"Guatemala"}
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hồng Kông, Trung Quốc"}
+        HK{"Hồng Kông"}
         HM{"Quần đảo Heard và McDonald"}
         HN{"Honduras"}
         HR{"Croatia"}
         HT{"Haiti"}
-        HU{"Hungary"}
+        HU{"Hungari"}
         IC{"Quần đảo Canary"}
         ID{"Indonesia"}
-        IE{"Ireland"}
+        IE{"Ai-len"}
         IL{"Israel"}
         IM{"Đảo Man"}
         IN{"Ấn Độ"}
-        IO{"Lãnh thổ Ấn độ dương thuộc Anh"}
-        IQ{"Iraq"}
+        IO{"Thuộc địa Anh tại Ấn Độ Dương"}
+        IQ{"I-rắc"}
         IR{"Iran"}
         IS{"Iceland"}
-        IT{"Italy"}
+        IT{"Ý"}
         JE{"Jersey"}
         JM{"Jamaica"}
         JO{"Jordan"}
@@ -162,7 +167,7 @@ vi{
         KN{"St. Kitts và Nevis"}
         KP{"Triều Tiên"}
         KR{"Hàn Quốc"}
-        KW{"Kuwait"}
+        KW{"Cô-oét"}
         KY{"Quần đảo Cayman"}
         KZ{"Kazakhstan"}
         LA{"Lào"}
@@ -172,10 +177,10 @@ vi{
         LK{"Sri Lanka"}
         LR{"Liberia"}
         LS{"Lesotho"}
-        LT{"Litva"}
+        LT{"Lít-va"}
         LU{"Luxembourg"}
         LV{"Latvia"}
-        LY{"Libya"}
+        LY{"Li-bi"}
         MA{"Ma-rốc"}
         MC{"Monaco"}
         MD{"Moldova"}
@@ -187,7 +192,7 @@ vi{
         ML{"Mali"}
         MM{"Myanmar (Miến Điện)"}
         MN{"Mông Cổ"}
-        MO{"Macao, Trung Quốc"}
+        MO{"Macao"}
         MP{"Quần đảo Bắc Mariana"}
         MQ{"Martinique"}
         MR{"Mauritania"}
@@ -216,13 +221,13 @@ vi{
         PE{"Peru"}
         PF{"Polynesia thuộc Pháp"}
         PG{"Papua New Guinea"}
-        PH{"Philippines"}
+        PH{"Philippin"}
         PK{"Pakistan"}
         PL{"Ba Lan"}
         PM{"Saint Pierre và Miquelon"}
         PN{"Quần đảo Pitcairn"}
         PR{"Puerto Rico"}
-        PS{"Lãnh thổ Palestine"}
+        PS{"Palestine"}
         PT{"Bồ Đào Nha"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -246,7 +251,7 @@ vi{
         SL{"Sierra Leone"}
         SM{"San Marino"}
         SN{"Senegal"}
-        SO{"Somalia"}
+        SO{"Somali"}
         SR{"Suriname"}
         SS{"Nam Sudan"}
         ST{"São Tomé và Príncipe"}
@@ -255,14 +260,14 @@ vi{
         SY{"Syria"}
         SZ{"Swaziland"}
         TA{"Tristan da Cunha"}
-        TC{"Quần đảo Turks và Caicos"}
+        TC{"Quần đảo Turk và Caicos"}
         TD{"Chad"}
-        TF{"Lãnh thổ phía Nam Thuộc Pháp"}
+        TF{"Lãnh thổ miền nam nước Pháp"}
         TG{"Togo"}
         TH{"Thái Lan"}
         TJ{"Tajikistan"}
         TK{"Tokelau"}
-        TL{"Timor-Leste"}
+        TL{"Đông Timor"}
         TM{"Turkmenistan"}
         TN{"Tunisia"}
         TO{"Tonga"}
@@ -273,8 +278,7 @@ vi{
         TZ{"Tanzania"}
         UA{"Ukraina"}
         UG{"Uganda"}
-        UM{"Các tiểu đảo xa của Hoa Kỳ"}
-        UN{"Liên hiệp quốc"}
+        UM{"Các đảo nhỏ xa t.tâm thuộc Mỹ"}
         US{"Hoa Kỳ"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -297,20 +301,13 @@ vi{
     }
     Countries%short{
         GB{"Vương quốc Anh"}
-        HK{"Hồng Kông"}
-        MO{"Macao"}
-        PS{"Palestine"}
-        UN{"Liên hiệp quốc"}
         US{"Hoa Kỳ"}
     }
     Countries%variant{
         CD{"Cộng hòa Dân chủ Congo"}
         CG{"Cộng hòa Congo"}
-        CI{"Bờ Biển Ngà"}
-        CZ{"Cộng hòa Séc"}
         FK{"Quần đảo Falkland (Islas Malvinas)"}
         MK{"Macedonia (FYROM)"}
-        TL{"Đông Timor"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

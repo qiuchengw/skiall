@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1999-2016, International Business Machines Corporation and
+ * Copyright (c) 1999-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /************************************************************************
@@ -11,41 +9,36 @@
 *   01/12/2000  Madhu        Updated for changed API and added new tests
 ************************************************************************/
 
+#include "utypeinfo.h"  // for 'typeid' to work
+
 #include "unicode/utypes.h"
+
 #if !UCONFIG_NO_BREAK_ITERATION
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <utility>
-#include <vector>
-
+#include "unicode/utypes.h"
 #include "unicode/brkiter.h"
-#include "unicode/localpointer.h"
-#include "unicode/numfmt.h"
 #include "unicode/rbbi.h"
-#if !UCONFIG_NO_REGULAR_EXPRESSIONS
-#include "unicode/regex.h"
-#endif
-#include "unicode/schriter.h"
 #include "unicode/uchar.h"
 #include "unicode/utf16.h"
 #include "unicode/ucnv.h"
+#include "unicode/schriter.h"
 #include "unicode/uniset.h"
-#include "unicode/uscript.h"
+#if !UCONFIG_NO_REGULAR_EXPRESSIONS
+#include "unicode/regex.h"
+#endif
 #include "unicode/ustring.h"
 #include "unicode/utext.h"
-
-#include "charstr.h"
-#include "cmemory.h"
-#include "cstr.h"
 #include "intltest.h"
 #include "rbbitst.h"
-#include "rbbidata.h"
-#include "utypeinfo.h"  // for 'typeid' to work
+#include <string.h>
+#include "charstr.h"
 #include "uvector.h"
 #include "uvectr32.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include "unicode/numfmt.h"
+#include "unicode/uscript.h"
+#include "cmemory.h"
 
 #if !UCONFIG_NO_FILTERED_BREAK_ITERATION
 #include "unicode/filteredbrk.h"
@@ -57,12 +50,13 @@
 #define TEST_ASSERT_SUCCESS(errcode) { if (U_FAILURE(errcode)) { \
     errcheckln(errcode, "Failure in file %s, line %d, status = \"%s\"", __FILE__, __LINE__, u_errorName(errcode));}}
 
+
 //---------------------------------------------
 // runIndexedTest
 //---------------------------------------------
 
 
-//  Note:  Before adding new tests to this file, check whether the desired test data can
+//  Note:  Before adding new tests to this file, check whether the desired test data can 
 //         simply be added to the file testdata/rbbitest.txt.  In most cases it can,
 //         it's much less work than writing a new test, diagnostic output in the event of failures
 //         is good, and the test data file will is shared with ICU4J, so eventually the test
@@ -71,50 +65,237 @@
 void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, char* params )
 {
     if (exec) logln("TestSuite RuleBasedBreakIterator: ");
-    fTestParams = params;
 
-    TESTCASE_AUTO_BEGIN;
+    switch (index) {
 #if !UCONFIG_NO_FILE_IO
-    TESTCASE_AUTO(TestBug4153072);
+        case 0: name = "TestBug4153072";
+            if(exec) TestBug4153072();                         break;
+#else
+        case 0: name = "skip";
+            break;
 #endif
+
+        case 1: name = "skip";
+            break;
+        case 2: name = "TestStatusReturn";
+            if(exec) TestStatusReturn();                       break;
+ 
 #if !UCONFIG_NO_FILE_IO
-    TESTCASE_AUTO(TestUnicodeFiles);
+        case 3: name = "TestUnicodeFiles";
+            if(exec) TestUnicodeFiles();                       break;
+        case 4: name = "TestEmptyString";
+            if(exec) TestEmptyString();                        break;
+#else
+        case 3: case 4: name = "skip";
+            break;
 #endif
-    TESTCASE_AUTO(TestGetAvailableLocales);
-    TESTCASE_AUTO(TestGetDisplayName);
+
+        case 5: name = "TestGetAvailableLocales";
+            if(exec) TestGetAvailableLocales();                break;
+
+        case 6: name = "TestGetDisplayName";
+            if(exec) TestGetDisplayName();                     break;
+
 #if !UCONFIG_NO_FILE_IO
-    TESTCASE_AUTO(TestEndBehaviour);
-    TESTCASE_AUTO(TestWordBreaks);
-    TESTCASE_AUTO(TestWordBoundary);
-    TESTCASE_AUTO(TestLineBreaks);
-    TESTCASE_AUTO(TestSentBreaks);
-    TESTCASE_AUTO(TestExtended);
+        case 7: name = "TestEndBehaviour";
+            if(exec) TestEndBehaviour();                       break;
+        case 8: case 9: case 10: name = "skip";
+             break;
+        case 11: name = "TestWordBreaks";
+             if(exec) TestWordBreaks();                        break;
+        case 12: name = "TestWordBoundary";
+             if(exec) TestWordBoundary();                      break;
+        case 13: name = "TestLineBreaks";
+             if(exec) TestLineBreaks();                        break;
+        case 14: name = "TestSentBreaks";
+             if(exec) TestSentBreaks();                        break;
+        case 15: name = "TestExtended";
+             if(exec) TestExtended();                          break;
+#else
+        case 7: case 8: case 9: case 10: case 11: case 12: case 13: case 14: case 15: name = "skip";
+             break;
 #endif
+
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS && !UCONFIG_NO_FILE_IO
-    TESTCASE_AUTO(TestMonkey);
+        case 16:  
+            name = "TestMonkey"; if(exec)  TestMonkey(params); break;
+#else
+        case 16:
+             name = "skip";                                    break;
 #endif
+
 #if !UCONFIG_NO_FILE_IO
-    TESTCASE_AUTO(TestBug3818);
+        case 17: name = "TestBug3818";
+            if(exec) TestBug3818();                            break;
+#else
+        case 17: name = "skip";
+            break;
 #endif
-    TESTCASE_AUTO(TestDebug);
+
+        case 18: name = "skip";
+            break;
+        case 19: name = "TestDebug";
+            if(exec) TestDebug();                              break;
+        case 20: name = "skip";
+            break;
+
 #if !UCONFIG_NO_FILE_IO
-    TESTCASE_AUTO(TestBug5775);
+        case 21: name = "TestBug5775";
+            if (exec) TestBug5775();                           break;
+#else
+        case 21: name = "skip";
+            break;
 #endif
-    TESTCASE_AUTO(TestBug9983);
-    TESTCASE_AUTO(TestDictRules);
-    TESTCASE_AUTO(TestBug5532);
-    TESTCASE_AUTO(TestBug7547);
-    TESTCASE_AUTO(TestBug12797);
-    TESTCASE_AUTO(TestBug12918);
-    TESTCASE_AUTO(TestBug12932);
-    TESTCASE_AUTO(TestEmoji);
-    TESTCASE_AUTO(TestBug12519);
-    TESTCASE_AUTO(TestBug12677);
-    TESTCASE_AUTO(TestTableRedundancies);
-    TESTCASE_AUTO(TestBug13447);
-    TESTCASE_AUTO(TestReverse);
-    TESTCASE_AUTO(TestBug13692);
-    TESTCASE_AUTO_END;
+
+        case 22: name = "TestBug9983";
+            if (exec) TestBug9983();                           break;
+        case 23: name = "TestDictRules";
+            if (exec) TestDictRules();                         break;
+        case 24: name = "TestBug5532";
+            if (exec) TestBug5532();                           break;
+        default: name = ""; break; //needed to end loop
+    }
+}
+
+
+//---------------------------------------------------------------------------
+//
+//   class BITestData   Holds a set of Break iterator test data and results
+//                      Includes
+//                         - the string data to be broken
+//                         - a vector of the expected break positions.
+//                         - a vector of source line numbers for the data,
+//                               (to help see where errors occured.)
+//                         - The expected break tag values.
+//                         - Vectors of actual break positions and tag values.
+//                         - Functions for comparing actual with expected and
+//                            reporting errors.
+//
+//----------------------------------------------------------------------------
+class BITestData {
+public:
+    UnicodeString    fDataToBreak;
+    UVector          fExpectedBreakPositions;
+    UVector          fExpectedTags;
+    UVector          fLineNum;
+    UVector          fActualBreakPositions;   // Test Results.
+    UVector          fActualTags;
+
+    BITestData(UErrorCode &status);
+    void             addDataChunk(const char *data, int32_t tag, int32_t lineNum, UErrorCode status);
+    void             checkResults(const char *heading, RBBITest *test);
+    void             err(const char *heading, RBBITest *test, int32_t expectedIdx, int32_t actualIdx);
+    void             clearResults();
+};
+
+//
+// Constructor.
+//
+BITestData::BITestData(UErrorCode &status)
+: fExpectedBreakPositions(status), fExpectedTags(status),  fLineNum(status), fActualBreakPositions(status),
+  fActualTags(status)
+{
+}
+
+//
+// addDataChunk.   Add a section (non-breaking) piece if data to the test data.
+//                 The macro form collects the line number, which is helpful
+//                 when tracking down failures.
+//
+//                 A null data item is inserted at the start of each test's data
+//                  to put the starting zero into the data list.  The position saved for
+//                  each non-null item is its ending position.
+//
+#define ADD_DATACHUNK(td, data, tag, status)   td.addDataChunk(data, tag, __LINE__, status);
+void BITestData::addDataChunk(const char *data, int32_t tag, int32_t lineNum, UErrorCode status) {
+    if (U_FAILURE(status)) {return;}
+    if (data != NULL) {
+        fDataToBreak.append(CharsToUnicodeString(data));
+    }
+    fExpectedBreakPositions.addElement(fDataToBreak.length(), status);
+    fExpectedTags.addElement(tag, status);
+    fLineNum.addElement(lineNum, status);
+}
+
+
+//
+//  checkResults.   Compare the actual and expected break positions, report any differences.
+//
+void BITestData::checkResults(const char *heading, RBBITest *test) {
+    int32_t   expectedIndex = 0;
+    int32_t   actualIndex = 0;
+
+    for (;;) {
+        // If we've run through both the expected and actual results vectors, we're done.
+        //   break out of the loop.
+        if (expectedIndex >= fExpectedBreakPositions.size() &&
+            actualIndex   >= fActualBreakPositions.size()) {
+            break;
+        }
+
+
+        if (expectedIndex >= fExpectedBreakPositions.size()) {
+            err(heading, test, expectedIndex-1, actualIndex);
+            actualIndex++;
+            continue;
+        }
+
+        if (actualIndex >= fActualBreakPositions.size()) {
+            err(heading, test, expectedIndex, actualIndex-1);
+            expectedIndex++;
+            continue;
+        }
+
+        if (fActualBreakPositions.elementAti(actualIndex) != fExpectedBreakPositions.elementAti(expectedIndex)) {
+            err(heading, test, expectedIndex, actualIndex);
+            // Try to resync the positions of the indices, to avoid a rash of spurious erros.
+            if (fActualBreakPositions.elementAti(actualIndex) < fExpectedBreakPositions.elementAti(expectedIndex)) {
+                actualIndex++;
+            } else {
+                expectedIndex++;
+            }
+            continue;
+        }
+
+        if (fActualTags.elementAti(actualIndex) != fExpectedTags.elementAti(expectedIndex)) {
+            test->errln("%s, tag mismatch.  Test Line = %d, expected tag=%d, got %d",
+                heading, fLineNum.elementAt(expectedIndex),
+                fExpectedTags.elementAti(expectedIndex), fActualTags.elementAti(actualIndex));
+        }
+
+        actualIndex++;
+        expectedIndex++;
+    }
+}
+
+//
+//  err   -  An error was found.  Report it, along with information about where the
+//                                incorrectly broken test data appeared in the source file.
+//
+void    BITestData::err(const char *heading, RBBITest *test, int32_t expectedIdx, int32_t actualIdx)
+{
+    int32_t   expected = fExpectedBreakPositions.elementAti(expectedIdx);
+    int32_t   actual   = fActualBreakPositions.elementAti(actualIdx);
+    int32_t   o        = 0;
+    int32_t   line     = fLineNum.elementAti(expectedIdx);
+    if (expectedIdx > 0) {
+        // The line numbers are off by one because a premature break occurs somewhere
+        //    within the previous item, rather than at the start of the current (expected) item.
+        //    We want to report the offset of the unexpected break from the start of
+        //      this previous item.
+        o    = actual - fExpectedBreakPositions.elementAti(expectedIdx-1);
+    }
+    if (actual < expected) {
+        test->errln("%s unexpected break at offset %d in test item from line %d. actual break: %d  expected break: %d", heading, o, line, actual, expected);
+    } else {
+        test->errln("%s Failed to find break at end of item from line %d. actual break: %d  expected break: %d", heading, line, actual, expected);
+    }
+}
+
+
+void BITestData::clearResults() {
+    fActualBreakPositions.removeAllElements();
+    fActualTags.removeAllElements();
 }
 
 
@@ -125,11 +306,56 @@ void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, cha
 //--------------------------------------------------------------------------------------
 
 RBBITest::RBBITest() {
-    fTestParams = NULL;
 }
 
 
 RBBITest::~RBBITest() {
+}
+
+//-----------------------------------------------------------------------------------
+//
+//   Test for status {tag} return value from break rules.
+//        TODO:  a more thorough test.
+//
+//-----------------------------------------------------------------------------------
+void RBBITest::TestStatusReturn() {
+     UnicodeString rulesString1("$Letters = [:L:];\n"
+                                  "$Numbers = [:N:];\n"
+                                  "$Letters+{1};\n"
+                                  "$Numbers+{2};\n"
+                                  "Help\\ {4}/me\\!;\n"
+                                  "[^$Letters $Numbers];\n"
+                                  "!.*;\n", -1, US_INV);
+     UnicodeString testString1  = "abc123..abc Help me Help me!";
+                                // 01234567890123456789012345678
+     int32_t bounds1[]   = {0, 3, 6, 7, 8, 11, 12, 16, 17, 19, 20, 25, 27, 28, -1};
+     int32_t brkStatus[] = {0, 1, 2, 0, 0,  1,  0,  1,  0,  1,  0,  4,  1,  0, -1};
+
+     UErrorCode status=U_ZERO_ERROR;
+     UParseError    parseError;
+
+     BreakIterator *bi = new RuleBasedBreakIterator(rulesString1, parseError, status);
+     if(U_FAILURE(status)) {
+         dataerrln("FAIL : in construction - %s", u_errorName(status));
+     } else {
+         int32_t  pos;
+         int32_t  i = 0;
+         bi->setText(testString1);
+         for (pos=bi->first(); pos!= BreakIterator::DONE; pos=bi->next()) {
+             if (pos != bounds1[i]) {
+                 errln("FAIL:  expected break at %d, got %d\n", bounds1[i], pos);
+                 break;
+             }
+
+             int tag = bi->getRuleStatus();
+             if (tag != brkStatus[i]) {
+                 errln("FAIL:  break at %d, expected tag %d, got tag %d\n", pos, brkStatus[i], tag);
+                 break;
+             }
+             i++;
+         }
+     }
+     delete bi;
 }
 
 
@@ -212,12 +438,277 @@ void RBBITest::TestBug3818() {
     delete bi;
 }
 
+//----------------------------------------------------------------------------
+//
+// generalIteratorTest      Given a break iterator and a set of test data,
+//                          Run the tests and report the results.
+//
+//----------------------------------------------------------------------------
+void RBBITest::generalIteratorTest(RuleBasedBreakIterator& bi, BITestData &td)
+{
+
+    bi.setText(td.fDataToBreak);
+
+    testFirstAndNext(bi, td);
+
+    testLastAndPrevious(bi, td);
+
+    testFollowing(bi, td);
+    testPreceding(bi, td);
+    testIsBoundary(bi, td);
+    doMultipleSelectionTest(bi, td);
+}
+
+
+//
+//   testFirstAndNext.   Run the iterator forwards in the obvious first(), next()
+//                       kind of loop.
+//
+void RBBITest::testFirstAndNext(RuleBasedBreakIterator& bi, BITestData &td)
+{
+    UErrorCode  status = U_ZERO_ERROR;
+    int32_t     p;
+    int32_t     lastP = -1;
+    int32_t     tag;
+
+    logln("Test first and next");
+    bi.setText(td.fDataToBreak);
+    td.clearResults();
+
+    for (p=bi.first(); p!=RuleBasedBreakIterator::DONE; p=bi.next()) {
+        td.fActualBreakPositions.addElement(p, status);  // Save result.
+        tag = bi.getRuleStatus();
+        td.fActualTags.addElement(tag, status);
+        if (p <= lastP) {
+            // If the iterator is not making forward progress, stop.
+            //  No need to raise an error here, it'll be detected in the normal check of results.
+            break;
+        }
+        lastP = p;
+    }
+    td.checkResults("testFirstAndNext", this);
+}
+
+
+//
+//  TestLastAndPrevious.   Run the iterator backwards, starting with last().
+//
+void  RBBITest::testLastAndPrevious(RuleBasedBreakIterator& bi,  BITestData &td)
+{
+    UErrorCode  status = U_ZERO_ERROR;
+    int32_t     p;
+    int32_t     lastP  = 0x7ffffffe;
+    int32_t     tag;
+
+    logln("Test last and previous");
+    bi.setText(td.fDataToBreak);
+    td.clearResults();
+
+    for (p=bi.last(); p!=RuleBasedBreakIterator::DONE; p=bi.previous()) {
+        // Save break position.  Insert it at start of vector of results, shoving
+        //    already-saved results further towards the end.
+        td.fActualBreakPositions.insertElementAt(p, 0, status);
+        // bi.previous();   // TODO:  Why does this fix things up????
+        // bi.next();
+        tag = bi.getRuleStatus();
+        td.fActualTags.insertElementAt(tag, 0, status);
+        if (p >= lastP) {
+            // If the iterator is not making progress, stop.
+            //  No need to raise an error here, it'll be detected in the normal check of results.
+            break;
+        }
+        lastP = p;
+    }
+    td.checkResults("testLastAndPrevious", this);
+}
+
+
+void RBBITest::testFollowing(RuleBasedBreakIterator& bi, BITestData &td)
+{
+    UErrorCode  status = U_ZERO_ERROR;
+    int32_t     p;
+    int32_t     tag;
+    int32_t     lastP  = -2;     // A value that will never be returned as a break position.
+                                 //   cannot be -1; that is returned for DONE.
+    int         i;
+
+    logln("testFollowing():");
+    bi.setText(td.fDataToBreak);
+    td.clearResults();
+
+    // Save the starting point, since we won't get that out of following.
+    p = bi.first();
+    td.fActualBreakPositions.addElement(p, status);  // Save result.
+    tag = bi.getRuleStatus();
+    td.fActualTags.addElement(tag, status);
+
+    for (i = 0; i <= td.fDataToBreak.length()+1; i++) {
+        p = bi.following(i);
+        if (p != lastP) {
+            if (p == RuleBasedBreakIterator::DONE) {
+                break;
+            }
+            // We've reached a new break position.  Save it.
+            td.fActualBreakPositions.addElement(p, status);  // Save result.
+            tag = bi.getRuleStatus();
+            td.fActualTags.addElement(tag, status);
+            lastP = p;
+        }
+    }
+    // The loop normally exits by means of the break in the middle.
+    // Make sure that the index was at the correct position for the break iterator to have
+    //   returned DONE.
+    if (i != td.fDataToBreak.length()) {
+        errln("testFollowing():  iterator returned DONE prematurely.");
+    }
+
+    // Full check of all results.
+    td.checkResults("testFollowing", this);
+}
+
+
+
+void RBBITest::testPreceding(RuleBasedBreakIterator& bi,  BITestData &td) {
+    UErrorCode  status = U_ZERO_ERROR;
+    int32_t     p;
+    int32_t     tag;
+    int32_t     lastP  = 0x7ffffffe;
+    int         i;
+
+    logln("testPreceding():");
+    bi.setText(td.fDataToBreak);
+    td.clearResults();
+
+    p = bi.last();
+    td.fActualBreakPositions.addElement(p, status);
+    tag = bi.getRuleStatus();
+    td.fActualTags.addElement(tag, status);
+
+    for (i = td.fDataToBreak.length(); i>=-1; i--) {
+        p = bi.preceding(i);
+        if (p != lastP) {
+            if (p == RuleBasedBreakIterator::DONE) {
+                break;
+            }
+            // We've reached a new break position.  Save it.
+            td.fActualBreakPositions.insertElementAt(p, 0, status);
+            lastP = p;
+            tag = bi.getRuleStatus();
+            td.fActualTags.insertElementAt(tag, 0, status);
+        }
+    }
+    // The loop normally exits by means of the break in the middle.
+    // Make sure that the index was at the correct position for the break iterator to have
+    //   returned DONE.
+    if (i != 0) {
+        errln("testPreceding():  iterator returned DONE prematurely.");
+    }
+
+    // Full check of all results.
+    td.checkResults("testPreceding", this);
+}
+
+
+
+void RBBITest::testIsBoundary(RuleBasedBreakIterator& bi,  BITestData &td) {
+    UErrorCode  status = U_ZERO_ERROR;
+    int         i;
+    int32_t     tag;
+
+    logln("testIsBoundary():");
+    bi.setText(td.fDataToBreak);
+    td.clearResults();
+
+    for (i = 0; i <= td.fDataToBreak.length(); i++) {
+        if (bi.isBoundary(i)) {
+            td.fActualBreakPositions.addElement(i, status);  // Save result.
+            tag = bi.getRuleStatus();
+            td.fActualTags.addElement(tag, status);
+        }
+    }
+    td.checkResults("testIsBoundary: ", this);
+}
+
+
+
+void RBBITest::doMultipleSelectionTest(RuleBasedBreakIterator& iterator, BITestData &td)
+{
+    iterator.setText(td.fDataToBreak);
+
+    RuleBasedBreakIterator* testIterator =(RuleBasedBreakIterator*)iterator.clone();
+    int32_t offset = iterator.first();
+    int32_t testOffset;
+    int32_t count = 0;
+
+    logln("doMultipleSelectionTest text of length: %d", td.fDataToBreak.length());
+
+    if (*testIterator != iterator)
+        errln("clone() or operator!= failed: two clones compared unequal");
+
+    do {
+        testOffset = testIterator->first();
+        testOffset = testIterator->next(count);
+        if (offset != testOffset)
+            errln(UnicodeString("next(n) and next() not returning consistent results: for step ") + count + ", next(n) returned " + testOffset + " and next() had " + offset);
+
+        if (offset != RuleBasedBreakIterator::DONE) {
+            count++;
+            offset = iterator.next();
+
+            if (offset != RuleBasedBreakIterator::DONE && *testIterator == iterator) {
+                errln("operator== failed: Two unequal iterators compared equal. count=%d offset=%d", count, offset);
+                if (count > 10000 || offset == -1) {
+                    errln("operator== failed too many times. Stopping test.");
+                    if (offset == -1) {
+                        errln("Does (RuleBasedBreakIterator::DONE == -1)?");
+                    }
+                    return;
+                }
+            }
+        }
+    } while (offset != RuleBasedBreakIterator::DONE);
+
+    // now do it backwards...
+    offset = iterator.last();
+    count = 0;
+
+    do {
+        testOffset = testIterator->last();
+        testOffset = testIterator->next(count);   // next() with a negative arg is same as previous
+        if (offset != testOffset)
+            errln(UnicodeString("next(n) and next() not returning consistent results: for step ") + count + ", next(n) returned " + testOffset + " and next() had " + offset);
+
+        if (offset != RuleBasedBreakIterator::DONE) {
+            count--;
+            offset = iterator.previous();
+        }
+    } while (offset != RuleBasedBreakIterator::DONE);
+
+    delete testIterator;
+}
+
 
 //---------------------------------------------
 //
 //     other tests
 //
 //---------------------------------------------
+void RBBITest::TestEmptyString()
+{
+    UnicodeString text = "";
+    UErrorCode status = U_ZERO_ERROR;
+
+    BITestData x(status);
+    ADD_DATACHUNK(x, "", 0, status);           // Break at start of data
+    RuleBasedBreakIterator* bi = (RuleBasedBreakIterator *)BreakIterator::createLineInstance(Locale::getDefault(), status);
+    if (U_FAILURE(status))
+    {
+        errcheckln(status, "Failed to create the BreakIterator for default locale in TestEmptyString. - %s", u_errorName(status));
+        return;
+    }
+    generalIteratorTest(*bi, x);
+    delete bi;
+}
 
 void RBBITest::TestGetAvailableLocales()
 {
@@ -326,7 +817,7 @@ void RBBITest::TestBug5775() {
     if (bi == NULL) {
         return;
     }
-
+    
     UnicodeString s("One.\\u00ad Two.", -1, US_INV);
     //               01234      56789
     s = s.unescape();
@@ -378,7 +869,7 @@ struct TestParams {
         utext_close(textToBreak);
         delete textMap;
     }
-
+    
     int32_t getSrcLine(int32_t bp);
     int32_t getExpectedBreak(int32_t bp);
     int32_t getSrcCol(int32_t bp);
@@ -410,7 +901,7 @@ static void CharStringAppend(CharString &dest, const UnicodeString &src, UErrorC
                        0xfffd, NULL, &status);
     dest.append(buffer, utf8Length, status);
 }
-
+  
 
 void TestParams::setUTF16(UErrorCode &status) {
     textToBreak = utext_openUnicodeString(textToBreak, &dataToBreak, &status);
@@ -456,7 +947,7 @@ void TestParams::setUTF8(UErrorCode &status) {
 }
 
 
-int32_t TestParams::getSrcLine(int32_t bp) {
+int32_t TestParams::getSrcLine(int bp) {
     if (bp >= textMap->size()) {
         bp = textMap->size() - 1;
     }
@@ -472,7 +963,7 @@ int32_t TestParams::getSrcLine(int32_t bp) {
 }
 
 
-int32_t TestParams::getExpectedBreak(int32_t bp) {
+int32_t TestParams::getExpectedBreak(int bp) {
     if (bp >= textMap->size()) {
         return 0;
     }
@@ -485,7 +976,7 @@ int32_t TestParams::getExpectedBreak(int32_t bp) {
 }
 
 
-int32_t TestParams::getSrcCol(int32_t bp) {
+int32_t TestParams::getSrcCol(int bp) {
     if (bp >= textMap->size()) {
         bp = textMap->size() - 1;
     }
@@ -553,7 +1044,7 @@ void RBBITest::executeTest(TestParams *t, UErrorCode &status) {
                 expectedTagVal = 0;
             }
             int32_t line = t->getSrcLine(bp);
-            int32_t rs = t->bi->getRuleStatus();
+            int32_t rs = ((RuleBasedBreakIterator *)t->bi)->getRuleStatus();
             if (rs != expectedTagVal) {
                 errln("Incorrect status for forward break.  Pos=%4d  File line,col= %4d,%4d.\n"
                       "          Actual, Expected status = %4d, %4d",
@@ -576,8 +1067,7 @@ void RBBITest::executeTest(TestParams *t, UErrorCode &status) {
     //  Run the iterator backwards, verify that the same breaks are found.
     //
     prevBP = utext_nativeLength(t->textToBreak)+2;  // start with a phony value for the last break pos seen.
-    bp = t->bi->last();
-    while (bp != BreakIterator::DONE) {
+    for (bp = t->bi->last(); bp != BreakIterator::DONE; bp = t->bi->previous()) {
         if (prevBP ==  bp) {
             // Fail for lack of progress.
             errln("Reverse Iteration, no progress.  Break Pos=%4d  File line,col=%4d,%4d",
@@ -615,7 +1105,6 @@ void RBBITest::executeTest(TestParams *t, UErrorCode &status) {
         }
 
         prevBP = bp;
-        bp = t->bi->previous();
     }
 
     // Verify that there were no missed breaks prior to the last one found
@@ -683,32 +1172,37 @@ void RBBITest::executeTest(TestParams *t, UErrorCode &status) {
 
 
 void RBBITest::TestExtended() {
-  // Skip test for now when UCONFIG_NO_FILTERED_BREAK_ITERATION is set. This
-  // data driven test closely entangles filtered and regular data.
-#if !UCONFIG_NO_REGULAR_EXPRESSIONS && !UCONFIG_NO_FILTERED_BREAK_ITERATION
+#if !UCONFIG_NO_REGULAR_EXPRESSIONS
     UErrorCode      status  = U_ZERO_ERROR;
     Locale          locale("");
 
+    UnicodeString       rules;
     TestParams          tp(status);
 
-    RegexMatcher      localeMatcher(UnicodeString(u"<locale *([\\p{L}\\p{Nd}_@&=-]*) *>"), 0, status);
+    RegexMatcher      localeMatcher(UNICODE_STRING_SIMPLE("<locale *([\\p{L}\\p{Nd}_@&=-]*) *>"), 0, status);
     if (U_FAILURE(status)) {
         dataerrln("Failure in file %s, line %d, status = \"%s\"", __FILE__, __LINE__, u_errorName(status));
     }
+
 
     //
     //  Open and read the test data file.
     //
     const char *testDataDirectory = IntlTest::getSourceTestData(status);
-    CharString testFileName(testDataDirectory, -1, status);
-    testFileName.append("rbbitst.txt", -1, status);
-
-    int    len;
-    UChar *testFile = ReadAndConvertFile(testFileName.data(), len, "UTF-8", status);
-    if (U_FAILURE(status)) {
-        errln("%s:%d Error %s opening file rbbitst.txt", __FILE__, __LINE__, u_errorName(status));
+    char testFileName[1000];
+    if (testDataDirectory == NULL || strlen(testDataDirectory) >= sizeof(testFileName)) {
+        errln("Can't open test data.  Path too long.");
         return;
     }
+    strcpy(testFileName, testDataDirectory);
+    strcat(testFileName, "rbbitst.txt");
+
+    int    len;
+    UChar *testFile = ReadAndConvertFile(testFileName, len, "UTF-8", status);
+    if (U_FAILURE(status)) {
+        return; /* something went wrong, error already output */
+    }
+
 
     bool skipTest = false; // Skip this test?
 
@@ -721,33 +1215,38 @@ void RBBITest::TestExtended() {
         PARSE_COMMENT,
         PARSE_TAG,
         PARSE_DATA,
-        PARSE_NUM,
-        PARSE_RULES
+        PARSE_NUM
     }
     parseState = PARSE_TAG;
 
     EParseState savedState = PARSE_TAG;
+
+    static const UChar CH_LF        = 0x0a;
+    static const UChar CH_CR        = 0x0d;
+    static const UChar CH_HASH      = 0x23;
+    /*static const UChar CH_PERIOD    = 0x2e;*/
+    static const UChar CH_LT        = 0x3c;
+    static const UChar CH_GT        = 0x3e;
+    static const UChar CH_BACKSLASH = 0x5c;
+    static const UChar CH_BULLET    = 0x2022;
 
     int32_t    lineNum  = 1;
     int32_t    colStart = 0;
     int32_t    column   = 0;
     int32_t    charIdx  = 0;
 
-    int32_t    tagValue = 0;             // The numeric value of a <nnn> tag.
-
-    UnicodeString       rules;           // Holds rules from a <rules> ... </rules> block
-    int32_t             rulesFirstLine;  // Line number of the start of current <rules> block
+    int32_t    tagValue = 0;       // The numeric value of a <nnn> tag.
 
     for (charIdx = 0; charIdx < len; ) {
         status = U_ZERO_ERROR;
         UChar  c = testString.charAt(charIdx);
         charIdx++;
-        if (c == u'\r' && charIdx<len && testString.charAt(charIdx) == u'\n') {
+        if (c == CH_CR && charIdx<len && testString.charAt(charIdx) == CH_LF) {
             // treat CRLF as a unit
-            c = u'\n';
+            c = CH_LF;
             charIdx++;
         }
-        if (c == u'\n' || c == u'\r') {
+        if (c == CH_LF || c == CH_CR) {
             lineNum++;
             colStart = charIdx;
         }
@@ -755,14 +1254,14 @@ void RBBITest::TestExtended() {
 
         switch (parseState) {
         case PARSE_COMMENT:
-            if (c == u'\n' || c == u'\r') {
+            if (c == 0x0a || c == 0x0d) {
                 parseState = savedState;
             }
             break;
 
         case PARSE_TAG:
             {
-            if (c == u'#') {
+            if (c == CH_HASH) {
                 parseState = PARSE_COMMENT;
                 savedState = PARSE_TAG;
                 break;
@@ -770,47 +1269,38 @@ void RBBITest::TestExtended() {
             if (u_isUWhiteSpace(c)) {
                 break;
             }
-            if (testString.compare(charIdx-1, 6, u"<word>") == 0) {
+            if (testString.compare(charIdx-1, 6, "<word>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createWordInstance(locale,  status);
                 skipTest = false;
                 charIdx += 5;
                 break;
             }
-            if (testString.compare(charIdx-1, 6, u"<char>") == 0) {
+            if (testString.compare(charIdx-1, 6, "<char>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createCharacterInstance(locale,  status);
                 skipTest = false;
                 charIdx += 5;
                 break;
             }
-            if (testString.compare(charIdx-1, 6, u"<line>") == 0) {
+            if (testString.compare(charIdx-1, 6, "<line>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createLineInstance(locale,  status);
                 skipTest = false;
                 charIdx += 5;
                 break;
             }
-            if (testString.compare(charIdx-1, 6, u"<sent>") == 0) {
+            if (testString.compare(charIdx-1, 6, "<sent>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createSentenceInstance(locale,  status);
                 skipTest = false;
                 charIdx += 5;
                 break;
             }
-            if (testString.compare(charIdx-1, 7, u"<title>") == 0) {
+            if (testString.compare(charIdx-1, 7, "<title>") == 0) {
                 delete tp.bi;
                 tp.bi = BreakIterator::createTitleInstance(locale,  status);
                 charIdx += 6;
-                break;
-            }
-
-            if (testString.compare(charIdx-1, 7, u"<rules>") == 0 ||
-                testString.compare(charIdx-1, 10, u"<badrules>") == 0) {
-                charIdx = testString.indexOf(u'>', charIdx) + 1;
-                parseState = PARSE_RULES;
-                rules.remove();
-                rulesFirstLine = lineNum;
                 break;
             }
 
@@ -825,7 +1315,7 @@ void RBBITest::TestExtended() {
                 TEST_ASSERT_SUCCESS(status);
                 break;
             }
-            if (testString.compare(charIdx-1, 6, u"<data>") == 0) {
+            if (testString.compare(charIdx-1, 6, "<data>") == 0) {
                 parseState = PARSE_DATA;
                 charIdx += 5;
                 tp.dataToBreak = "";
@@ -842,35 +1332,8 @@ void RBBITest::TestExtended() {
             }
             break;
 
-        case PARSE_RULES:
-            if (testString.compare(charIdx-1, 8, u"</rules>") == 0) {
-                charIdx += 7;
-                parseState = PARSE_TAG;
-                delete tp.bi;
-                UParseError pe;
-                tp.bi = new RuleBasedBreakIterator(rules, pe, status);
-                skipTest = U_FAILURE(status);
-                if (U_FAILURE(status)) {
-                    errln("file rbbitst.txt: %d - Error %s creating break iterator from rules.",
-                        rulesFirstLine + pe.line - 1, u_errorName(status));
-                }
-            } else if (testString.compare(charIdx-1, 11, u"</badrules>") == 0) {
-                charIdx += 10;
-                parseState = PARSE_TAG;
-                UErrorCode ec = U_ZERO_ERROR;
-                UParseError pe;
-                RuleBasedBreakIterator bi(rules, pe, ec);
-                if (U_SUCCESS(ec)) {
-                    errln("file rbbitst.txt: %d - Expected, but did not get, a failure creating break iterator from rules.",
-                        rulesFirstLine + pe.line - 1);
-                }
-            } else {
-                rules.append(c);
-            }
-            break;
-
         case PARSE_DATA:
-            if (c == u'•') {
+            if (c == CH_BULLET) {
                 int32_t  breakIdx = tp.dataToBreak.length();
                 tp.expectedBreaks->setSize(breakIdx+1);
                 tp.expectedBreaks->setElementAt(-1, breakIdx);
@@ -881,7 +1344,7 @@ void RBBITest::TestExtended() {
                 break;
             }
 
-            if (testString.compare(charIdx-1, 7, u"</data>") == 0) {
+            if (testString.compare(charIdx-1, 7, "</data>") == 0) {
                 // Add final entry to mappings from break location to source file position.
                 //  Need one extra because last break position returned is after the
                 //    last char in the data, not at the last char.
@@ -907,12 +1370,12 @@ void RBBITest::TestExtended() {
                 break;
             }
 
-            if (testString.compare(charIdx-1, 3, u"\\N{") == 0) {
+            if (testString.compare(charIdx-1, 3, UNICODE_STRING_SIMPLE("\\N{")) == 0) {
                 // Named character, e.g. \N{COMBINING GRAVE ACCENT}
                 // Get the code point from the name and insert it into the test data.
                 //   (Damn, no API takes names in Unicode  !!!
                 //    we've got to take it back to char *)
-                int32_t nameEndIdx = testString.indexOf(u'}', charIdx);
+                int32_t nameEndIdx = testString.indexOf((UChar)0x7d/*'}'*/, charIdx);
                 int32_t nameLength = nameEndIdx - (charIdx+2);
                 char charNameBuf[200];
                 UChar32 theChar = -1;
@@ -946,7 +1409,8 @@ void RBBITest::TestExtended() {
 
 
 
-            if (testString.compare(charIdx-1, 2, u"<>") == 0) {
+
+            if (testString.compare(charIdx-1, 2, "<>") == 0) {
                 charIdx++;
                 int32_t  breakIdx = tp.dataToBreak.length();
                 tp.expectedBreaks->setSize(breakIdx+1);
@@ -958,28 +1422,28 @@ void RBBITest::TestExtended() {
                 break;
             }
 
-            if (c == u'<') {
+            if (c == CH_LT) {
                 tagValue   = 0;
                 parseState = PARSE_NUM;
                 break;
             }
 
-            if (c == u'#' && column==3) {   // TODO:  why is column off so far?
+            if (c == CH_HASH && column==3) {   // TODO:  why is column off so far?
                 parseState = PARSE_COMMENT;
                 savedState = PARSE_DATA;
                 break;
             }
 
-            if (c == u'\\') {
+            if (c == CH_BACKSLASH) {
                 // Check for \ at end of line, a line continuation.
                 //     Advance over (discard) the newline
                 UChar32 cp = testString.char32At(charIdx);
-                if (cp == u'\r' && charIdx<len && testString.charAt(charIdx+1) == u'\n') {
+                if (cp == CH_CR && charIdx<len && testString.charAt(charIdx+1) == CH_LF) {
                     // We have a CR LF
                     //  Need an extra increment of the input ptr to move over both of them
                     charIdx++;
                 }
-                if (cp == u'\n' || cp == u'\r') {
+                if (cp == CH_LF || cp == CH_CR) {
                     lineNum++;
                     colStart = charIdx;
                     charIdx++;
@@ -1028,7 +1492,7 @@ void RBBITest::TestExtended() {
                 break;
             }
 
-            if (c == u'>') {
+            if (c == CH_GT) {
                 // Finished the number.  Add the info to the expected break data,
                 //   and switch parse state back to doing plain data.
                 parseState = PARSE_DATA;
@@ -1066,18 +1530,6 @@ void RBBITest::TestExtended() {
         }
 
     }
-
-    // Reached end of test file. Raise an error if parseState indicates that we are
-    //   within a block that should have been terminated.
-
-    if (parseState == PARSE_RULES) {
-        errln("rbbitst.txt:%d <rules> block beginning at line %d is not closed.",
-            lineNum, rulesFirstLine);
-    }
-    if (parseState == PARSE_DATA) {
-        errln("rbbitst.txt:%d <data> block not closed.", lineNum);
-    }
-
 
 end_test:
     delete [] testFile;
@@ -1126,7 +1578,7 @@ void RBBITest::TestDictRules() {
 //-------------------------------------------------------------------------------
 //
 //    ReadAndConvertFile   Read a text data file, convert it to UChars, and
-//    return the data in one big UChar * buffer, which the caller must delete.
+//    return the datain one big UChar * buffer, which the caller must delete.
 //
 //    parameters:
 //          fileName:   the name of the file, with no directory part.  The test data directory
@@ -1287,30 +1739,20 @@ void RBBITest::TestUnicodeFiles() {
 // See ticket #7270.
 
 UBool RBBITest::testCaseIsKnownIssue(const UnicodeString &testCase, const char *fileName) {
-    static struct TestCase {
-        const char *fFileName;
-        const UChar *fString;
-    } badTestCases[] = {                                // Line Numbers from Unicode 7.0.0 file.
-        {"LineBreakTest.txt", u"\u200B\u0020}"},        // Line 5198
-        {"LineBreakTest.txt", u"\u200B\u0020)"},        // Line 5202
-        {"LineBreakTest.txt", u"\u200B\u0020!"},        // Line 5214
-        {"LineBreakTest.txt", u"\u200B\u0020,"},        // Line 5246
-        {"LineBreakTest.txt", u"\u200B\u0020/"},        // Line 5298
-        {"LineBreakTest.txt", u"\u200B\u0020\u2060"},   // Line 5302
-                                                        // Line Numbers from pre-release verion of GraphemeBreakTest-10.0.0.txt
-        {"GraphemeBreakTest.txt", u"\u200D\u2640"},     // Line 656, old GB 11 test ZWJ x GAZ
-        {"GraphemeBreakTest.txt", u"\u200D\U0001F466"}, // Line 658, old GB 11 test ZWJ x EBG
-        {"GraphemeBreakTest.txt", u"\u200D\U0001F466\U0001F3FB"}, // Line 842, old GB 11 test ZWJ x EBG x EModifier
-
-                                                        // Line Numbers from pre-release verion of WordBreakTest-10.0.0.txt
-        {"WordBreakTest.txt", u"\u200D\u261D"},         // Line 1356, ZWJ x EmojiNRK
-        {"WordBreakTest.txt", u"\u200D\U0001F3FB"},     // Line 1358, ZWJ x EmojiNRK
+    static const UChar badTestCases[][4] = {                     // Line Numbers from Unicode 7.0.0 file.
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x007D, (UChar)0x0000},   // Line 5198
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x0029, (UChar)0x0000},   // Line 5202
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x0021, (UChar)0x0000},   // Line 5214
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x002c, (UChar)0x0000},   // Line 5246
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x002f, (UChar)0x0000},   // Line 5298
+        {(UChar)0x200B, (UChar)0x0020, (UChar)0x2060, (UChar)0x0000}    // Line 5302
     };
+    if (strcmp(fileName, "LineBreakTest.txt") != 0) {
+        return FALSE;
+    }
 
-    for (int n=0; n<UPRV_LENGTHOF(badTestCases); n++) {
-        const TestCase &badCase = badTestCases[n];
-        if (!strcmp(fileName, badCase.fFileName) &&
-                testCase == UnicodeString(badCase.fString)) {
+    for (int i=0; i<UPRV_LENGTHOF(badTestCases); i++) {
+        if (testCase == UnicodeString(badTestCases[i])) {
             return logKnownIssue("7270");
         }
     }
@@ -1338,7 +1780,7 @@ void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *
     }
     strcpy(testFileName, testDataDirectory);
     strcat(testFileName, fileName);
-
+    
     logln("Opening data file %s\n", fileName);
 
     int    len;
@@ -1416,7 +1858,7 @@ void RBBITest::runUnicodeTestData(const char *fileName, RuleBasedBreakIterator *
         else if (tokenMatcher.start(4, status) >= 0) {
             // Scanned to end of a line, possibly skipping over a comment in the process.
             //   If the line from the file contained test data, run the test now.
-            if (testString.length() > 0 && !testCaseIsKnownIssue(testString, fileName)) {
+            if (testString.length() > 0 && !testCaseIsKnownIssue(testString, fileName)) {  
                 checkUnicodeTestCase(fileName, lineNumber, testString, &breakPositions, bi);
             }
 
@@ -1578,7 +2020,6 @@ private:
     UnicodeSet  *fCRLFSet;
     UnicodeSet  *fControlSet;
     UnicodeSet  *fExtendSet;
-    UnicodeSet  *fZWJSet;
     UnicodeSet  *fRegionalIndicatorSet;
     UnicodeSet  *fPrependSet;
     UnicodeSet  *fSpacingSet;
@@ -1588,7 +2029,6 @@ private:
     UnicodeSet  *fLVSet;
     UnicodeSet  *fLVTSet;
     UnicodeSet  *fHangulSet;
-    UnicodeSet  *fExtendedPictSet;
     UnicodeSet  *fAnySet;
 
     const UnicodeString *fText;
@@ -1601,11 +2041,9 @@ RBBICharMonkey::RBBICharMonkey() {
     fText = NULL;
 
     fCRLFSet    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\r\\n]"), status);
-    fControlSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[[\\p{Grapheme_Cluster_Break = Control}]]"), status);
-    fExtendSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[[\\p{Grapheme_Cluster_Break = Extend}]]"), status);
-    fZWJSet     = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = ZWJ}]"), status);
-    fRegionalIndicatorSet =
-                  new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Regional_Indicator}]"), status);
+    fControlSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Control}]"), status);
+    fExtendSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Extend}]"), status);
+    fRegionalIndicatorSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Regional_Indicator}]"), status);
     fPrependSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = Prepend}]"), status);
     fSpacingSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = SpacingMark}]"), status);
     fLSet       = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Grapheme_Cluster_Break = L}]"), status);
@@ -1619,11 +2057,9 @@ RBBICharMonkey::RBBICharMonkey() {
     fHangulSet->addAll(*fTSet);
     fHangulSet->addAll(*fLVSet);
     fHangulSet->addAll(*fLVTSet);
+    fAnySet     = new UnicodeSet(0, 0x10ffff);
 
-    fExtendedPictSet  = new UnicodeSet(u"[:Extended_Pictographic:]", status);
-    fAnySet           = new UnicodeSet(0, 0x10ffff);
-
-    fSets             = new UVector(status);
+    fSets       = new UVector(status);
     fSets->addElement(fCRLFSet,    status);
     fSets->addElement(fControlSet, status);
     fSets->addElement(fExtendSet,  status);
@@ -1634,8 +2070,6 @@ RBBICharMonkey::RBBICharMonkey() {
     fSets->addElement(fSpacingSet, status);
     fSets->addElement(fHangulSet,  status);
     fSets->addElement(fAnySet,     status);
-    fSets->addElement(fZWJSet,     status);
-    fSets->addElement(fExtendedPictSet, status);
     if (U_FAILURE(status)) {
         deferredStatus = status;
     }
@@ -1656,8 +2090,7 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
     int     breakPos = -1;
 
     UChar32 c0, c1, c2, c3;   // The code points at p0, p1, p2 & p3.
-    UChar32 cBase;            // for (X Extend*) patterns, the X character.
-
+    
     if (U_FAILURE(deferredStatus)) {
         return -1;
     }
@@ -1668,7 +2101,7 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
     }
     p0 = p1 = p2 = p3 = prevPos;
     c3 =  fText->char32At(prevPos);
-    c0 = c1 = c2 = cBase = 0;
+    c0 = c1 = c2 = 0;
     (void)p0;   // suppress set but not used warning.
     (void)c0;
 
@@ -1737,11 +2170,13 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
             continue;
         }
 
-        // Rule (GB9)    x (Extend | ZWJ)
-        if (fExtendSet->contains(c2) || fZWJSet->contains(c2))  {
-            if (!fExtendSet->contains(c1)) {
-                cBase = c1;
-            }
+        // Rule (GB8a)    Regional_Indicator x Regional_Indicator
+        if (fRegionalIndicatorSet->contains(c1) && fRegionalIndicatorSet->contains(c2)) {
+            continue;
+        }
+
+        // Rule (GB9)    Numeric x ALetter
+        if (fExtendSet->contains(c2))  {
             continue;
         }
 
@@ -1755,25 +2190,7 @@ int32_t RBBICharMonkey::next(int32_t prevPos) {
             continue;
         }
 
-        // Rule (GB11)   Extended_Pictographic Extend * ZWJ x Extended_Pictographic
-        if (fExtendedPictSet->contains(cBase) && fZWJSet->contains(c1) && fExtendedPictSet->contains(c2)) {
-            continue;
-        }
-
-        // Rule (GB12-13)    Regional_Indicator x Regional_Indicator
-        //                   Note: The first if condition is a little tricky. We only need to force
-        //                      a break if there are three or more contiguous RIs. If there are
-        //                      only two, a break following will occur via other rules, and will include
-        //                      any trailing extend characters, which is needed behavior.
-        if (fRegionalIndicatorSet->contains(c0) && fRegionalIndicatorSet->contains(c1)
-                && fRegionalIndicatorSet->contains(c2)) {
-            break;
-        }
-        if (fRegionalIndicatorSet->contains(c1) && fRegionalIndicatorSet->contains(c2)) {
-            continue;
-        }
-
-        // Rule (GB999)  Any  <break>  Any
+        // Rule (GB10)  Any  <break>  Any
         break;
     }
 
@@ -1803,8 +2220,6 @@ RBBICharMonkey::~RBBICharMonkey() {
     delete fLVTSet;
     delete fHangulSet;
     delete fAnySet;
-    delete fZWJSet;
-    delete fExtendedPictSet;
 }
 
 //------------------------------------------------------------------------------------------
@@ -1830,6 +2245,8 @@ private:
     UnicodeSet  *fKatakanaSet;
     UnicodeSet  *fHebrew_LetterSet;
     UnicodeSet  *fALetterSet;
+    // TODO(jungshik): Do we still need this change? 
+    // UnicodeSet  *fALetterSet; // matches ALetterPlus in word.txt
     UnicodeSet  *fSingle_QuoteSet;
     UnicodeSet  *fDouble_QuoteSet;
     UnicodeSet  *fMidNumLetSet;
@@ -1840,10 +2257,7 @@ private:
     UnicodeSet  *fOtherSet;
     UnicodeSet  *fExtendSet;
     UnicodeSet  *fExtendNumLetSet;
-    UnicodeSet  *fWSegSpaceSet;
-    UnicodeSet  *fDictionarySet;
-    UnicodeSet  *fZWJSet;
-    UnicodeSet  *fExtendedPictSet;
+    UnicodeSet  *fDictionaryCjkSet;
 
     const UnicodeString  *fText;
 };
@@ -1855,38 +2269,41 @@ RBBIWordMonkey::RBBIWordMonkey()
 
     fSets            = new UVector(status);
 
-    fCRSet            = new UnicodeSet(u"[\\p{Word_Break = CR}]",           status);
-    fLFSet            = new UnicodeSet(u"[\\p{Word_Break = LF}]",           status);
-    fNewlineSet       = new UnicodeSet(u"[\\p{Word_Break = Newline}]",      status);
-    fKatakanaSet      = new UnicodeSet(u"[\\p{Word_Break = Katakana}]",     status);
-    fRegionalIndicatorSet =  new UnicodeSet(u"[\\p{Word_Break = Regional_Indicator}]", status);
-    fHebrew_LetterSet = new UnicodeSet(u"[\\p{Word_Break = Hebrew_Letter}]", status);
-    fALetterSet       = new UnicodeSet(u"[\\p{Word_Break = ALetter}]", status);
-    fSingle_QuoteSet  = new UnicodeSet(u"[\\p{Word_Break = Single_Quote}]",    status);
-    fDouble_QuoteSet  = new UnicodeSet(u"[\\p{Word_Break = Double_Quote}]",    status);
-    fMidNumLetSet     = new UnicodeSet(u"[\\p{Word_Break = MidNumLet}]",    status);
-    fMidLetterSet     = new UnicodeSet(u"[\\p{Word_Break = MidLetter}]",    status);
-    fMidNumSet        = new UnicodeSet(u"[\\p{Word_Break = MidNum}]",       status);
-    fNumericSet       = new UnicodeSet(u"[\\p{Word_Break = Numeric}]",      status);
-    fFormatSet        = new UnicodeSet(u"[\\p{Word_Break = Format}]",       status);
-    fExtendNumLetSet  = new UnicodeSet(u"[\\p{Word_Break = ExtendNumLet}]", status);
-    fExtendSet        = new UnicodeSet(u"[\\p{Word_Break = Extend}]",       status);
-    fWSegSpaceSet     = new UnicodeSet(u"[\\p{Word_Break = WSegSpace}]",    status);
-
-    fZWJSet           = new UnicodeSet(u"[\\p{Word_Break = ZWJ}]",          status);
-    fExtendedPictSet  = new UnicodeSet(u"[:Extended_Pictographic:]", status);
-
-    fDictionarySet = new UnicodeSet(u"[[\\uac00-\\ud7a3][:Han:][:Hiragana:]]", status);
-    fDictionarySet->addAll(*fKatakanaSet);
-    fDictionarySet->addAll(UnicodeSet(u"[\\p{LineBreak = Complex_Context}]", status));
-
-    fALetterSet->removeAll(*fDictionarySet);
+    fCRSet           = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = CR}]"),           status);
+    fLFSet           = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = LF}]"),           status);
+    fNewlineSet      = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Newline}]"),      status);
+    fDictionaryCjkSet= new UnicodeSet("[[\\uac00-\\ud7a3][:Han:][:Hiragana:][:Katakana:]]", status);
+    // Exclude Hangul syllables from ALetterSet during testing.
+    // Leave CJK dictionary characters out from the monkey tests!
+#if 0 
+    fALetterSet      = new UnicodeSet("[\\p{Word_Break = ALetter}"
+                                      "[\\p{Line_Break = Complex_Context}"
+                                      "-\\p{Grapheme_Cluster_Break = Extend}"
+                                      "-\\p{Grapheme_Cluster_Break = Control}"
+                                      "]]",
+                                      status);
+#endif
+    fRegionalIndicatorSet =  new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Regional_Indicator}]"), status);
+    fKatakanaSet      = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Katakana}]"),     status);
+    fHebrew_LetterSet = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Hebrew_Letter}]"), status);
+    fALetterSet       = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = ALetter}]"), status);
+    fALetterSet->removeAll(*fDictionaryCjkSet);
+    fSingle_QuoteSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Single_Quote}]"),    status);
+    fDouble_QuoteSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Double_Quote}]"),    status);
+    fMidNumLetSet     = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = MidNumLet}]"),    status);
+    fMidLetterSet     = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = MidLetter}]"),    status);
+    fMidNumSet        = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = MidNum}]"),       status);
+    // TODO: this set used to contain [\\uff10-\\uff19] (fullwidth digits), but this breaks the test
+    // we should figure out why
+    fNumericSet       = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Numeric}]"),      status);
+    fFormatSet        = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Format}]"),       status);
+    fExtendNumLetSet  = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = ExtendNumLet}]"), status);
+    fExtendSet        = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Word_Break = Extend}]"),       status);
 
     fOtherSet        = new UnicodeSet();
     if(U_FAILURE(status)) {
-        IntlTest::gTest->errln("%s:%d %s", __FILE__, __LINE__, u_errorName(status));
-        deferredStatus = status;
-        return;
+      deferredStatus = status;
+      return;
     }
 
     fOtherSet->complement();
@@ -1902,15 +2319,12 @@ RBBIWordMonkey::RBBIWordMonkey()
     fOtherSet->removeAll(*fMidNumSet);
     fOtherSet->removeAll(*fNumericSet);
     fOtherSet->removeAll(*fExtendNumLetSet);
-    fOtherSet->removeAll(*fWSegSpaceSet);
     fOtherSet->removeAll(*fFormatSet);
     fOtherSet->removeAll(*fExtendSet);
     fOtherSet->removeAll(*fRegionalIndicatorSet);
-    fOtherSet->removeAll(*fZWJSet);
-    fOtherSet->removeAll(*fExtendedPictSet);
-
     // Inhibit dictionary characters from being tested at all.
-    fOtherSet->removeAll(*fDictionarySet);
+    fOtherSet->removeAll(*fDictionaryCjkSet);
+    fOtherSet->removeAll(UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{LineBreak = Complex_Context}]"), status));
 
     fSets->addElement(fCRSet,                status);
     fSets->addElement(fLFSet,                status);
@@ -1920,9 +2334,7 @@ RBBIWordMonkey::RBBIWordMonkey()
     fSets->addElement(fALetterSet,           status);
     fSets->addElement(fSingle_QuoteSet,      status);
     fSets->addElement(fDouble_QuoteSet,      status);
-    //fSets->addElement(fKatakanaSet,          status); // Omit Katakana from fSets, which omits Katakana characters
-                                                        // from the test data. They are all in the dictionary set,
-                                                        // which this (old, to be retired) monkey test cannot handle.
+    //fSets->addElement(fKatakanaSet,          status); //TODO: work out how to test katakana
     fSets->addElement(fMidLetterSet,         status);
     fSets->addElement(fMidNumLetSet,         status);
     fSets->addElement(fMidNumSet,            status);
@@ -1931,10 +2343,6 @@ RBBIWordMonkey::RBBIWordMonkey()
     fSets->addElement(fExtendSet,            status);
     fSets->addElement(fOtherSet,             status);
     fSets->addElement(fExtendNumLetSet,      status);
-    fSets->addElement(fWSegSpaceSet,         status);
-
-    fSets->addElement(fZWJSet,               status);
-    fSets->addElement(fExtendedPictSet,      status);
 
     if (U_FAILURE(status)) {
         deferredStatus = status;
@@ -1954,7 +2362,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
     int     breakPos = -1;
 
     UChar32 c0, c1, c2, c3;   // The code points at p0, p1, p2 & p3.
-
+    
     if (U_FAILURE(deferredStatus)) {
         return -1;
     }
@@ -1984,7 +2392,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
                break;
             };
         }
-        while (fFormatSet->contains(c3) || fExtendSet->contains(c3) || fZWJSet->contains(c3));
+        while (fFormatSet->contains(c3) || fExtendSet->contains(c3));
 
 
         if (p1 == p2) {
@@ -2003,7 +2411,7 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
         if (c1==0x0D && c2==0x0A) {
             continue;
         }
-
+        
         // Rule (3a)  Break before and after newlines (including CR and LF)
         //
         if (fCRSet->contains(c1) || fLFSet->contains(c1) || fNewlineSet->contains(c1)) {
@@ -2012,20 +2420,6 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
         if (fCRSet->contains(c2) || fLFSet->contains(c2) || fNewlineSet->contains(c2)) {
             break;
         };
-
-        // Rule (3c)    ZWJ x Extended_Pictographic
-        //              Not ignoring extend chars, so peek into input text to
-        //              get the potential ZWJ, the character immediately preceding c2.
-        //              Sloppy UChar32 indexing: p2-1 may reference trail half
-        //              but char32At will get the full code point.
-        if (fZWJSet->contains(fText->char32At(p2-1)) && fExtendedPictSet->contains(c2)) {
-            continue;
-        }
-
-        // Rule (3d)    Keep horizontal whitespace together.
-        if (fWSegSpaceSet->contains(fText->char32At(p2-1)) && fWSegSpaceSet->contains(c2)) {
-            continue;
-        }
 
         // Rule (5).   (ALetter | Hebrew_Letter) x (ALetter | Hebrew_Letter)
         if ((fALetterSet->contains(c1) || fHebrew_LetterSet->contains(c1)) &&
@@ -2096,8 +2490,6 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
         }
 
         // Rule (13)  Katakana x Katakana
-        //            Note: matches UAX 29 rules, but doesn't come into play for ICU because
-        //                  all Katakana are handled by the dictionary breaker.
         if (fKatakanaSet->contains(c1) &&
             fKatakanaSet->contains(c2))  {
             continue;
@@ -2117,15 +2509,12 @@ int32_t RBBIWordMonkey::next(int32_t prevPos) {
             continue;
         }
 
-        // Rule 15 - 17   Group pairs of Regional Indicators.
-        if (fRegionalIndicatorSet->contains(c0) && fRegionalIndicatorSet->contains(c1)) {
-            break;
-        }
+        // Rule 13c
         if (fRegionalIndicatorSet->contains(c1) && fRegionalIndicatorSet->contains(c2)) {
             continue;
         }
 
-        // Rule 999.  Break found here.
+        // Rule 14.  Break found here.
         break;
     }
 
@@ -2156,12 +2545,9 @@ RBBIWordMonkey::~RBBIWordMonkey() {
     delete fFormatSet;
     delete fExtendSet;
     delete fExtendNumLetSet;
-    delete fWSegSpaceSet;
     delete fRegionalIndicatorSet;
-    delete fDictionarySet;
+    delete fDictionaryCjkSet;
     delete fOtherSet;
-    delete fZWJSet;
-    delete fExtendedPictSet;
 }
 
 
@@ -2547,29 +2933,17 @@ private:
     UnicodeSet  *fHL;
     UnicodeSet  *fID;
     UnicodeSet  *fRI;
+    UnicodeSet  *fSA;
     UnicodeSet  *fXX;
-    UnicodeSet  *fEB;
-    UnicodeSet  *fEM;
-    UnicodeSet  *fZJ;
 
     BreakIterator        *fCharBI;
     const UnicodeString  *fText;
     RegexMatcher         *fNumberMatcher;
 };
 
-RBBILineMonkey::RBBILineMonkey() :
-    RBBIMonkeyKind(),
-    fSets(NULL),
 
-    fCharBI(NULL),
-    fText(NULL),
-    fNumberMatcher(NULL)
-
+RBBILineMonkey::RBBILineMonkey()
 {
-    if (U_FAILURE(deferredStatus)) {
-        return;
-    }
-
     UErrorCode  status = U_ZERO_ERROR;
 
     fSets  = new UVector(status);
@@ -2611,23 +2985,23 @@ RBBILineMonkey::RBBILineMonkey() :
     fHL    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=HL}]"), status);
     fID    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=ID}]"), status);
     fRI    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=RI}]"), status);
+    fSA    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=SA}]"), status);
     fSG    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\ud800-\\udfff]"), status);
     fXX    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=XX}]"), status);
-    fEB    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=EB}]"), status);
-    fEM    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=EM}]"), status);
-    fZJ    = new UnicodeSet(UNICODE_STRING_SIMPLE("[\\p{Line_break=ZWJ}]"), status);
 
     if (U_FAILURE(status)) {
         deferredStatus = status;
+        fCharBI = NULL;
+        fNumberMatcher = NULL;
         return;
     }
 
     fAL->addAll(*fXX);     // Default behavior for XX is identical to AL
     fAL->addAll(*fAI);     // Default behavior for AI is identical to AL
+    fAL->addAll(*fSA);     // Default behavior for SA is XX, which defaults to AL
     fAL->addAll(*fSG);     // Default behavior for SG is identical to AL.
 
     fNS->addAll(*fCJ);     // Default behavior for CJ is identical to NS.
-    fCM->addAll(*fZJ);     // ZWJ behaves as a CM.
 
     fSets->addElement(fBK, status);
     fSets->addElement(fCR, status);
@@ -2666,19 +3040,16 @@ RBBILineMonkey::RBBILineMonkey() :
     fSets->addElement(fID, status);
     fSets->addElement(fWJ, status);
     fSets->addElement(fRI, status);
+    fSets->addElement(fSA, status);
     fSets->addElement(fSG, status);
-    fSets->addElement(fEB, status);
-    fSets->addElement(fEM, status);
-    fSets->addElement(fZJ, status);
 
-
-    const char *rules =
-            "((\\p{Line_Break=PR}|\\p{Line_Break=PO})(\\p{Line_Break=CM}|\\u200d)*)?"
-            "((\\p{Line_Break=OP}|\\p{Line_Break=HY})(\\p{Line_Break=CM}|\\u200d)*)?"
-            "\\p{Line_Break=NU}(\\p{Line_Break=CM}|\\u200d)*"
-            "((\\p{Line_Break=NU}|\\p{Line_Break=IS}|\\p{Line_Break=SY})(\\p{Line_Break=CM}|\\u200d)*)*"
-            "((\\p{Line_Break=CL}|\\p{Line_Break=CP})(\\p{Line_Break=CM}|\\u200d)*)?"
-            "((\\p{Line_Break=PR}|\\p{Line_Break=PO})(\\p{Line_Break=CM}|\\u200d)*)?";
+    const char *rules = 
+            "((\\p{Line_Break=PR}|\\p{Line_Break=PO})\\p{Line_Break=CM}*)?"
+            "((\\p{Line_Break=OP}|\\p{Line_Break=HY})\\p{Line_Break=CM}*)?"
+            "\\p{Line_Break=NU}\\p{Line_Break=CM}*"
+            "((\\p{Line_Break=NU}|\\p{Line_Break=IS}|\\p{Line_Break=SY})\\p{Line_Break=CM}*)*"
+            "((\\p{Line_Break=CL}|\\p{Line_Break=CP})\\p{Line_Break=CM}*)?"
+            "((\\p{Line_Break=PR}|\\p{Line_Break=PO})\\p{Line_Break=CM}*)?";
 
     fNumberMatcher = new RegexMatcher(
         UnicodeString(rules, -1, US_INV), 0, status);
@@ -2736,7 +3107,7 @@ void RBBILineMonkey::rule9Adjust(int32_t pos, UChar32 *posChar, int32_t *nextPos
 
     // LB 10  Treat any remaining combining mark as AL
     if (fCM->contains(*posChar)) {
-        *posChar = u'A';
+        *posChar = 0x41;   // thisChar = 'A';
     }
 
     // Push the updated nextPos and nextChar back to our caller.
@@ -2857,44 +3228,6 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
             break;
         }
 
-        // LB 25    Numbers
-        //          Move this test up, before LB8a, because numbers can match a longer sequence that would
-        //          also match 8a.  e.g. NU ZWJ IS PO     (ZWJ acts like CM)
-        if (fNumberMatcher->lookingAt(prevPos, status)) {
-            if (U_FAILURE(status)) {
-                break;
-            }
-            // Matched a number.  But could have been just a single digit, which would
-            //    not represent a "no break here" between prevChar and thisChar
-            int32_t numEndIdx = fNumberMatcher->end(status);  // idx of first char following num
-            if (numEndIdx > pos) {
-                // Number match includes at least our two chars being checked
-                if (numEndIdx > nextPos) {
-                    // Number match includes additional chars.  Update pos and nextPos
-                    //   so that next loop iteration will continue at the end of the number,
-                    //   checking for breaks between last char in number & whatever follows.
-                    pos = nextPos = numEndIdx;
-                    do {
-                        pos = fText->moveIndex32(pos, -1);
-                        thisChar = fText->char32At(pos);
-                    } while (fCM->contains(thisChar));
-                }
-                continue;
-            }
-        }
-
-        // LB 8a ZWJ x
-        //       The monkey test's way of ignoring combining characters doesn't work
-        //       for this rule. ZJ is also a CM. Need to get the actual character
-        //       preceding "thisChar", not ignoring combining marks, possibly ZJ.
-        {
-            int32_t prevIdx = fText->moveIndex32(pos, -1);
-            UChar32 prevC = fText->char32At(prevIdx);
-            if (fZJ->contains(prevC)) {
-                continue;
-            }
-        }
-
         // LB 9, 10  Already done, at top of loop.
         //
 
@@ -2912,7 +3245,7 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
         if (fGL->contains(prevChar)) {
             continue;
         }
-
+        
         // LB 12a
         //    [^SP BA HY] x GL
         if (!(fSP->contains(prevChar) ||
@@ -3035,7 +3368,7 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
 
         // LB 21a
         //   HL (HY | BA) x
-        if (fHL->contains(prevCharX2) &&
+        if (fHL->contains(prevCharX2) && 
                 (fHY->contains(prevChar) || fBA->contains(prevChar))) {
             continue;
         }
@@ -3050,47 +3383,61 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
         if ((fAL->contains(prevChar) && fIN->contains(thisChar)) ||
             (fEX->contains(prevChar) && fIN->contains(thisChar)) ||
             (fHL->contains(prevChar) && fIN->contains(thisChar)) ||
-            ((fID->contains(prevChar) || fEB->contains(prevChar) || fEM->contains(prevChar)) && fIN->contains(thisChar)) ||
+            (fID->contains(prevChar) && fIN->contains(thisChar)) ||
             (fIN->contains(prevChar) && fIN->contains(thisChar)) ||
             (fNU->contains(prevChar) && fIN->contains(thisChar)) )   {
             continue;
         }
 
 
-        // LB 23    (AL | HL) x NU
-        //          NU x (AL | HL)
-        if ((fAL->contains(prevChar) || fHL->contains(prevChar)) && fNU->contains(thisChar)) {
-            continue;
-        }
-        if (fNU->contains(prevChar) && (fAL->contains(thisChar) || fHL->contains(thisChar))) {
-            continue;
-        }
-
-        // LB 23a Do not break between numeric prefixes and ideographs, or between ideographs and numeric postfixes.
-        //      PR x (ID | EB | EM)
-        //     (ID | EB | EM) x PO
-        if (fPR->contains(prevChar) &&
-                (fID->contains(thisChar) || fEB->contains(thisChar) || fEM->contains(thisChar)))  {
-            continue;
-        }
-        if ((fID->contains(prevChar) || fEB->contains(prevChar) || fEM->contains(prevChar)) &&
-                fPO->contains(thisChar)) {
+        // LB 23    ID x PO
+        //          AL x NU
+        //          HL x NU
+        //          NU x AL
+        if ((fID->contains(prevChar) && fPO->contains(thisChar)) ||
+            (fAL->contains(prevChar) && fNU->contains(thisChar)) ||
+            (fHL->contains(prevChar) && fNU->contains(thisChar)) ||
+            (fNU->contains(prevChar) && fAL->contains(thisChar)) ||
+            (fNU->contains(prevChar) && fHL->contains(thisChar)) )   {
             continue;
         }
 
         // LB 24  Do not break between prefix and letters or ideographs.
-        //         (PR | PO) x (AL | HL)
-        //         (AL | HL) x (PR | PO)
-        if ((fPR->contains(prevChar) || fPO->contains(prevChar)) &&
-                (fAL->contains(thisChar) || fHL->contains(thisChar))) {
-            continue;
-        }
-        if ((fAL->contains(prevChar) || fHL->contains(prevChar)) &&
-                (fPR->contains(thisChar) || fPO->contains(thisChar))) {
+        //        PR x ID
+        //        PR x (AL | HL)
+        //        PO x (AL | HL)
+        if ((fPR->contains(prevChar) && fID->contains(thisChar)) ||
+            (fPR->contains(prevChar) && (fAL->contains(thisChar) || fHL->contains(thisChar))) ||
+            (fPO->contains(prevChar) && (fAL->contains(thisChar) || fHL->contains(thisChar))))  {
             continue;
         }
 
-        // LB 25 numbers match, moved up, before LB 8a,
+
+
+        // LB 25    Numbers
+        if (fNumberMatcher->lookingAt(prevPos, status)) {
+            if (U_FAILURE(status)) {
+                break;
+            }
+            // Matched a number.  But could have been just a single digit, which would
+            //    not represent a "no break here" between prevChar and thisChar
+            int32_t numEndIdx = fNumberMatcher->end(status);  // idx of first char following num
+            if (numEndIdx > pos) {
+                // Number match includes at least our two chars being checked
+                if (numEndIdx > nextPos) {
+                    // Number match includes additional chars.  Update pos and nextPos
+                    //   so that next loop iteration will continue at the end of the number,
+                    //   checking for breaks between last char in number & whatever follows.
+                    pos = nextPos = numEndIdx;
+                    do {
+                        pos = fText->moveIndex32(pos, -1);
+                        thisChar = fText->char32At(pos);
+                    } while (fCM->contains(thisChar));
+                }
+                continue;
+            }
+        }
+
 
         // LB 26 Do not break a Korean syllable.
         if (fJL->contains(prevChar) && (fJL->contains(thisChar) ||
@@ -3148,17 +3495,9 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
             continue;
         }
 
-        // LB30a    RI RI <break> RI
-        //             RI    x    RI
-        if (fRI->contains(prevCharX2) && fRI->contains(prevChar) && fRI->contains(thisChar)) {
-            break;
-        }
+        // LB30a  Do not break between regional indicators.
+        //        RI x RI
         if (fRI->contains(prevChar) && fRI->contains(thisChar)) {
-            continue;
-        }
-
-        // LB30b    Emoji Base x Emoji Modifier
-        if (fEB->contains(prevChar) && fEM->contains(thisChar)) {
             continue;
         }
 
@@ -3216,11 +3555,9 @@ RBBILineMonkey::~RBBILineMonkey() {
     delete fHL;
     delete fID;
     delete fRI;
+    delete fSA;
     delete fSG;
     delete fXX;
-    delete fEB;
-    delete fEM;
-    delete fZJ;
 
     delete fCharBI;
     delete fNumberMatcher;
@@ -3239,9 +3576,6 @@ RBBILineMonkey::~RBBILineMonkey() {
 //                          0 or greater:  run length.
 //
 //       type = char | word | line | sent | title
-//
-//  Example:
-//     intltest  rbbi/RBBITest/TestMonkey@"type=line loop=-1"
 //
 //-------------------------------------------------------------------------------------------
 
@@ -3282,16 +3616,16 @@ static void testBreakBoundPreceding(RBBITest *test, UnicodeString ustr,
     for (i = bi->first(); i != BreakIterator::DONE; i = bi->next()) {
         forward[count] = i;
         if (count < expectedcount && expected[count] != i) {
-            test->errln("%s:%d break forward test failed: expected %d but got %d",
-                        __FILE__, __LINE__, expected[count], i);
+            test->errln("break forward test failed: expected %d but got %d",
+                        expected[count], i);
             break;
         }
         count ++;
     }
     if (count != expectedcount) {
         printStringBreaks(ustr, expected, expectedcount);
-        test->errln("%s:%d break forward test failed: missed %d match",
-                    __FILE__, __LINE__, expectedcount - count);
+        test->errln("break forward test failed: missed %d match",
+                    expectedcount - count);
         return;
     }
     // testing boundaries
@@ -3299,15 +3633,13 @@ static void testBreakBoundPreceding(RBBITest *test, UnicodeString ustr,
         int j = expected[i - 1];
         if (!bi->isBoundary(j)) {
             printStringBreaks(ustr, expected, expectedcount);
-            test->errln("%s:%d isBoundary() failed.  Expected boundary at position %d",
-                    __FILE__, __LINE__, j);
+            test->errln("isBoundary() failed.  Expected boundary at position %d", j);
             return;
         }
         for (j = expected[i - 1] + 1; j < expected[i]; j ++) {
             if (bi->isBoundary(j)) {
                 printStringBreaks(ustr, expected, expectedcount);
-                test->errln("%s:%d isBoundary() failed.  Not expecting boundary at position %d",
-                    __FILE__, __LINE__, j);
+                test->errln("isBoundary() failed.  Not expecting boundary at position %d", j);
                 return;
             }
         }
@@ -3317,8 +3649,8 @@ static void testBreakBoundPreceding(RBBITest *test, UnicodeString ustr,
         count --;
         if (forward[count] != i) {
             printStringBreaks(ustr, expected, expectedcount);
-            test->errln("%s:%d happy break test previous() failed: expected %d but got %d",
-                        __FILE__, __LINE__, forward[count], i);
+            test->errln("happy break test previous() failed: expected %d but got %d",
+                        forward[count], i);
             break;
         }
     }
@@ -3333,12 +3665,9 @@ static void testBreakBoundPreceding(RBBITest *test, UnicodeString ustr,
         // int j = expected[i] + 1;
         int j = ustr.moveIndex32(expected[i], 1);
         for (; j <= expected[i + 1]; j ++) {
-            int32_t expectedPreceding = expected[i];
-            int32_t actualPreceding = bi->preceding(j);
-            if (actualPreceding != expectedPreceding) {
+            if (bi->preceding(j) != expected[i]) {
                 printStringBreaks(ustr, expected, expectedcount);
-                test->errln("%s:%d preceding(%d): expected %d, got %d",
-                        __FILE__, __LINE__, j, expectedPreceding, actualPreceding);
+                test->errln("preceding(): Not expecting boundary at position %d", j);
                 return;
             }
         }
@@ -3403,7 +3732,7 @@ void RBBITest::TestWordBreaks(void)
         errcheckln(status, "Creation of break iterator failed %s", u_errorName(status));
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
         // printf("looping %d\n", loop);
         UnicodeString ustr = CharsToUnicodeString(strlist[loop]);
         // RBBICharMonkey monkey;
@@ -3430,12 +3759,7 @@ void RBBITest::TestWordBoundary(void)
     Locale        locale("en");
     UErrorCode    status = U_ZERO_ERROR;
     // BreakIterator  *bi = BreakIterator::createCharacterInstance(locale, status);
-    LocalPointer<BreakIterator> bi(BreakIterator::createWordInstance(locale, status), status);
-    if (U_FAILURE(status)) {
-        errcheckln(status, "%s:%d Creation of break iterator failed %s",
-                __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
+    BreakIterator *bi = BreakIterator::createWordInstance(locale, status);
     UChar         str[50];
     static const char *strlist[] =
     {
@@ -3470,44 +3794,43 @@ void RBBITest::TestWordBoundary(void)
     "\\u003b\\u0027\\u00b7\\u47a3",
     };
     int loop;
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
-        u_unescape(strlist[loop], str, UPRV_LENGTHOF(str));
+    if (U_FAILURE(status)) {
+        errcheckln(status, "Creation of break iterator failed %s", u_errorName(status));
+        return;
+    }
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
+        // printf("looping %d\n", loop);
+        u_unescape(strlist[loop], str, 20);
         UnicodeString ustr(str);
         int forward[50];
         int count = 0;
 
         bi->setText(ustr);
-        int prev = -1;
-        for (int32_t boundary = bi->first(); boundary != BreakIterator::DONE; boundary = bi->next()) {
-            ++count;
-            if (count >= UPRV_LENGTHOF(forward)) {
-                errln("%s:%d too many breaks found. (loop, count, boundary) = (%d, %d, %d)",
-                        __FILE__, __LINE__, loop, count, boundary);
-                return;
-            }
-            forward[count] = boundary;
-            if (boundary <= prev) {
-                errln("%s:%d bi::next() did not advance. (loop, prev, boundary) = (%d, %d, %d)\n",
-                        __FILE__, __LINE__, loop, prev, boundary);
-                break;
-            }
-            for (int32_t nonBoundary = prev + 1; nonBoundary < boundary; nonBoundary ++) {
-                if (bi->isBoundary(nonBoundary)) {
-                    printStringBreaks(ustr, forward, count);
-                    errln("%s:%d isBoundary(nonBoundary) failed. (loop, prev, nonBoundary, boundary) = (%d, %d, %d, %d)",
-                           __FILE__, __LINE__, loop, prev, nonBoundary, boundary);
-                    return;
+        int prev = 0;
+        int i;
+        for (i = bi->first(); i != BreakIterator::DONE; i = bi->next()) {
+            forward[count ++] = i;
+            if (i > prev) {
+                int j;
+                for (j = prev + 1; j < i; j ++) {
+                    if (bi->isBoundary(j)) {
+                        printStringBreaks(ustr, forward, count);
+                        errln("happy boundary test failed: expected %d not a boundary",
+                               j);
+                        return;
+                    }
                 }
             }
-            if (!bi->isBoundary(boundary)) {
+            if (!bi->isBoundary(i)) {
                 printStringBreaks(ustr, forward, count);
-                errln("%s:%d happy boundary test failed: expected %d a boundary",
-                       __FILE__, __LINE__, boundary);
+                errln("happy boundary test failed: expected %d a boundary",
+                       i);
                 return;
             }
-            prev = boundary;
+            prev = i;
         }
     }
+    delete bi;
 }
 
 void RBBITest::TestLineBreaks(void)
@@ -3530,6 +3853,7 @@ void RBBITest::TestLineBreaks(void)
      "\\ufe3c\\u201c\\u000d\\u2025\\u2007\\u201c\\u002d\\u20a0\\u002d\\u30a7\\u17a4",
      "\\u2772\\u0020\\U000e010a\\u0020\\u2025\\u000a\\U000e0123",
      "\\u002d\\uff1b\\u02c8\\u2029\\ufeff\\u0f22\\u2044\\ufe09\\u003a\\u096d\\u2009\\u000a\\u06f7\\u02cc\\u1019\\u2060",
+     "\\u1781\\u0b68\\u0f0c\\u3010\\u0085\\U00011f7a\\u0020\\u0dd6\\u200b\\U000e007a\\u000a\\u2060\\u2026\\u002f\\u2026\\u24dc\\u101e\\u2014\\u2007\\u30a5",
      "\\u2770\\u0020\\U000e010f\\u0020\\u2060\\u000a\\u02cc\\u0bcc\\u060d\\u30e7\\u0f3b\\u002f",
      "\\ufeff\\u0028\\u003b\\U00012fec\\u2010\\u0020\\u0004\\u200b\\u0020\\u275c\\u002f\\u17b1",
      "\\u20a9\\u2014\\u00a2\\u31f1\\u002f\\u0020\\u05b8\\u200b\\u0cc2\\u003b\\u060d\\u02c8\\ua4e8\\u002f\\u17d5",
@@ -3545,19 +3869,25 @@ void RBBITest::TestLineBreaks(void)
      "\\u002f\\uf22e\\u1944\\ufe3d\\u0020\\u206f\\u31b3\\u2014\\u002d\\u2025\\u0f0c\\u0085\\u2763",
      "\\u002f\\u2563\\u202f\\u0085\\u17d5\\u200b\\u0020\\U000e0043\\u2014\\u058a\\u3d0a\\ufe57\\u2035\\u2028\\u2029",
      "\\u20ae\\U0001d169\\u9293\\uff1f\\uff1f\\u0021\\u2012\\u2039\\u0085\\u02cc\\u00a2\\u0020\\U000e01ab\\u3085\\u0f3a\\u1806\\u0f0c\\u1945\\u000a\\U0001d7e7",
+     "\\uffe6\\u00a0\\u200b\\u0085\\u2116\\u255b\\U0001d7f7\\u178c\\ufffc",
      "\\u02cc\\ufe6a\\u00a0\\u0021\\u002d\\u7490\\uec2e\\u200b\\u000a",
      "\\uec2e\\u200b\\u000a\\u0020\\u2028\\u2014\\u8945",
      "\\u7490\\uec2e\\u200b\\u000a\\u0020\\u2028\\u2014",
      "\\u0020\\u2028\\u2014\\u8945\\u002c\\u005b",
      "\\u000a\\ufe3c\\u201c\\u000d\\u2025\\u2007\\u201c\\u002d\\u20a0",
+     "\\u2473\\u0e9d\\u0020\\u0085\\u000a\\ufe3c\\u201c\\u000d\\u2025",
      "\\U0001d16e\\ufffc\\u2025\\u0021\\u002d",
      "\\ufffc\\u301b\\u0fa5\\U000e0103\\u2060\\u208e\\u17d5\\u034f\\u1009\\u003a\\u180e\\u2009\\u3111",
+     "\\u2014\\u0020\\u000a\\u17c5\\u24fc",
      "\\ufffc\\u0020\\u2116\\uff6c\\u200b\\u0ac3\\U0001028f",
      "\\uaeb0\\u0344\\u0085\\ufffc\\u073b\\u2010",
      "\\ufeff\\u0589\\u0085\\u0eb8\\u30fd\\u002f\\u003a\\u2014\\ufe43",
      "\\u09cc\\u256a\\u276d\\u002d\\u3085\\u000d\\u0e05\\u2028\\u0fbb",
      "\\u2034\\u00bb\\u0ae6\\u300c\\u0020\\u31f8\\ufffc",
      "\\u2116\\u0ed2\\uff64\\u02cd\\u2001\\u2060",
+         "\\u809d\\u2e02\\u0f0a\\uc48f\\u2540\\u000d\\u0cef\\u003a\\u0e4d"
+         "\\U000e0172\\U000e005c\\u17cf\\U00010ca6\\ufeff\\uf621\\u06f3\\uffe5"
+         "\\u0ea2\\ufeff\\udcea\\u3085\\ua874\\u000a\\u0020\\u000b\\u200b",
      "\\ufe10\\u2060\\u1a5a\\u2060\\u17e4\\ufffc\\ubbe1\\ufe15\\u0020\\u00a0",
          "\\u2060\\u2213\\u200b\\u2019\\uc2dc\\uff6a\\u1736\\u0085\\udb07",
     };
@@ -3566,7 +3896,7 @@ void RBBITest::TestLineBreaks(void)
     if (U_FAILURE(status)) {
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
         // printf("looping %d\n", loop);
         int32_t t = u_unescape(strlist[loop], str, STRSIZE);
         if (t >= STRSIZE) {
@@ -3636,8 +3966,8 @@ void RBBITest::TestSentBreaks(void)
         errcheckln(status, "Creation of break iterator failed %s", u_errorName(status));
         return;
     }
-    for (loop = 0; loop < UPRV_LENGTHOF(strlist); loop ++) {
-        u_unescape(strlist[loop], str, UPRV_LENGTHOF(str));
+    for (loop = 0; loop < (int)(sizeof(strlist) / sizeof(char *)); loop ++) {
+        u_unescape(strlist[loop], str, (int32_t)(sizeof(str) / sizeof(str[0])));
         UnicodeString ustr(str);
 
         RBBISentMonkey monkey;
@@ -3665,7 +3995,7 @@ void RBBITest::TestSentBreaks(void)
 #endif
 }
 
-void RBBITest::TestMonkey() {
+void RBBITest::TestMonkey(char *params) {
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS
 
     UErrorCode     status    = U_ZERO_ERROR;
@@ -3679,8 +4009,8 @@ void RBBITest::TestMonkey() {
         loopCount = 10000;
     }
 
-    if (fTestParams) {
-        UnicodeString p(fTestParams);
+    if (params) {
+        UnicodeString p(params);
         loopCount = getIntParam("loop", p, loopCount);
         seed      = getIntParam("seed", p, seed);
 
@@ -3845,15 +4175,9 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
             int32_t   charIdx = m_rand() % classSet->size();
             UChar32   c = classSet->charAt(charIdx);
             if (c < 0) {   // TODO:  deal with sets containing strings.
-                errln("%s:%d c < 0", __FILE__, __LINE__);
+                errln("c < 0");
                 break;
             }
-            // Do not assemble a supplementary character from randomly generated separate surrogates.
-            //   (It could be a dictionary character)
-            if (U16_IS_TRAIL(c) && testText.length() > 0 && U16_IS_LEAD(testText.charAt(testText.length()-1))) {
-                continue;
-            }
-
             testText.append(c);
         }
 
@@ -3960,7 +4284,7 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
             } else {
                 if (breakPos >= 0) {
                     precedingBreaks[breakPos] = 1;
-                }
+                } 
                 lastBreakPos = breakPos;
             }
         }
@@ -4055,7 +4379,7 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
                 errorText.extract(charErrorTxt, sizeof(charErrorTxt), NULL, status);
                 charErrorTxt[sizeof(charErrorTxt)-1] = 0;
                 const char *badLocale = bi->getLocaleID(ULOC_ACTUAL_LOCALE, status);
-
+                
                 errln("%s break monkey test error [%s].  %s. Operation = %s; Random seed = %d;  buf Idx = %d\n%s",
                     name, badLocale, (expectedBreaks[i]? "break expected but not found" : "break found but not expected"),
                     errorType, seed, i, charErrorTxt);
@@ -4078,15 +4402,15 @@ void RBBITest::TestBug5532(void)  {
    // Text includes a mixture of Thai and Latin.
    const unsigned char utf8Data[] = {
            0xE0u, 0xB8u, 0x82u, 0xE0u, 0xB8u, 0xB2u, 0xE0u, 0xB8u, 0xA2u, 0xE0u,
-           0xB9u, 0x80u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u, 0xA3u, 0xE0u, 0xB8u,
+           0xB9u, 0x80u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u, 0xA3u, 0xE0u, 0xB8u, 
            0xB7u, 0xE0u, 0xB9u, 0x88u, 0xE0u, 0xB8u, 0xADu, 0xE0u, 0xB8u, 0x87u,
            0xE0u, 0xB9u, 0x80u, 0xE0u, 0xB8u, 0xA5u, 0xE0u, 0xB9u, 0x88u, 0xE0u,
            0xB8u, 0x99u, 0xE0u, 0xB8u, 0x8Bu, 0xE0u, 0xB8u, 0xB5u, 0xE0u, 0xB8u,
-           0x94u, 0xE0u, 0xB8u, 0xB5u, 0x20u, 0x73u, 0x69u, 0x6Du, 0x20u, 0x61u,
-           0x75u, 0x64u, 0x69u, 0x6Fu, 0x2Fu, 0x20u, 0x4Du, 0x4Fu, 0x4Fu, 0x4Eu,
-           0x20u, 0x65u, 0x63u, 0x6Cu, 0x69u, 0x70u, 0x73u, 0x65u, 0x20u, 0xE0u,
-           0xB8u, 0xA3u, 0xE0u, 0xB8u, 0xB2u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u,
-           0xB2u, 0x20u, 0x34u, 0x37u, 0x30u, 0x30u, 0x20u, 0xE0u, 0xB8u, 0xA2u,
+           0x94u, 0xE0u, 0xB8u, 0xB5u, 0x20u, 0x73u, 0x69u, 0x6Du, 0x20u, 0x61u, 
+           0x75u, 0x64u, 0x69u, 0x6Fu, 0x2Fu, 0x20u, 0x4Du, 0x4Fu, 0x4Fu, 0x4Eu, 
+           0x20u, 0x65u, 0x63u, 0x6Cu, 0x69u, 0x70u, 0x73u, 0x65u, 0x20u, 0xE0u, 
+           0xB8u, 0xA3u, 0xE0u, 0xB8u, 0xB2u, 0xE0u, 0xB8u, 0x84u, 0xE0u, 0xB8u, 
+           0xB2u, 0x20u, 0x34u, 0x37u, 0x30u, 0x30u, 0x20u, 0xE0u, 0xB8u, 0xA2u, 
            0xE0u, 0xB8u, 0xB9u, 0xE0u, 0xB9u, 0x82u, 0xE0u, 0xB8u, 0xA3u, 0x00};
 
     UErrorCode status = U_ZERO_ERROR;
@@ -4143,7 +4467,7 @@ void RBBITest::TestBug9983(void)  {
         rstatus = brkiter->getRuleStatus();
         (void)rstatus;     // Suppress set but not used warning.
         if (iterationCount >= 10) {
-           break;
+           break; 
         }
     }
     TEST_ASSERT(iterationCount == 6);
@@ -4156,410 +4480,12 @@ void RBBITest::TestBug9983(void)  {
         rstatus = brkiterPOSIX->getRuleStatus();
         (void)rstatus;     // Suppress set but not used warning.
         if (iterationCount >= 10) {
-           break;
+           break; 
         }
     }
     TEST_ASSERT(iterationCount == 6);
 }
 
-// Bug 7547 - verify that building a break itereator from empty rules produces an error.
-//
-void RBBITest::TestBug7547() {
-    UnicodeString rules;
-    UErrorCode status = U_ZERO_ERROR;
-    UParseError parseError;
-    RuleBasedBreakIterator breakIterator(rules, parseError, status);
-    if (status != U_BRK_RULE_SYNTAX) {
-        errln("%s:%d Expected U_BRK_RULE_SYNTAX, got %s", __FILE__, __LINE__, u_errorName(status));
-    }
-    if (parseError.line != 1 || parseError.offset != 0) {
-        errln("parseError (line, offset) expected (1, 0), got (%d, %d)", parseError.line, parseError.offset);
-    }
-}
-
-
-void RBBITest::TestBug12797() {
-    UnicodeString rules = "!!chain; !!forward; $v=b c; a b; $v; !!reverse; .*;";
-    UErrorCode status = U_ZERO_ERROR;
-    UParseError parseError;
-    RuleBasedBreakIterator bi(rules, parseError, status);
-    if (U_FAILURE(status)) {
-        errln("%s:%s status = %s", __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
-    UnicodeString text = "abc";
-    bi.setText(text);
-    bi.first();
-    int32_t boundary = bi.next();
-    if (boundary != 3) {
-        errln("%s:%d expected boundary==3, got %d", __FILE__, __LINE__, boundary);
-    }
-}
-
-void RBBITest::TestBug12918() {
-    // This test triggers an assertion failure in dictbe.cpp
-    const UChar *crasherString = u"\u3325\u4a16";
-    UErrorCode status = U_ZERO_ERROR;
-    UBreakIterator* iter = ubrk_open(UBRK_WORD, NULL, crasherString, -1, &status);
-    if (U_FAILURE(status)) {
-        dataerrln("%s:%d status = %s", __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
-    ubrk_first(iter);
-    int32_t pos = 0;
-    int32_t lastPos = -1;
-    while((pos = ubrk_next(iter)) != UBRK_DONE) {
-        if (pos <= lastPos) {
-            errln("%s:%d (pos, lastPos) = (%d, %d)", __FILE__, __LINE__, pos, lastPos);
-            break;
-        }
-    }
-    ubrk_close(iter);
-}
-
-void RBBITest::TestBug12932() {
-    // Node Stack overflow in the RBBI rule parser caused a seg fault.
-    UnicodeString ruleStr(
-            "((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("
-            "((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("
-            "(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((()))"
-            ")))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"
-            ")))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"
-            ")))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
-
-    UErrorCode status = U_ZERO_ERROR;
-    UParseError parseError;
-    RuleBasedBreakIterator rbbi(ruleStr, parseError, status);
-    if (status != U_BRK_RULE_SYNTAX) {
-        errln("%s:%d expected U_BRK_RULE_SYNTAX, got %s",
-                __FILE__, __LINE__, u_errorName(status));
-    }
-}
-
-
-// Emoji Test. Verify that the sequences defined in the Unicode data file emoji-test.txt
-//             remain undevided by ICU char, word and line break.
-void RBBITest::TestEmoji() {
-#if !UCONFIG_NO_REGULAR_EXPRESSIONS
-    UErrorCode  status = U_ZERO_ERROR;
-
-    CharString testFileName;
-    testFileName.append(IntlTest::getSourceTestData(status), status);
-    testFileName.appendPathPart("emoji-test.txt", status);
-    if (U_FAILURE(status)) {
-        errln("%s:%s %s while opening emoji-test.txt", __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
-    logln("Opening data file %s\n", testFileName.data());
-
-    int    len;
-    UChar *testFile = ReadAndConvertFile(testFileName.data(), len, "UTF-8", status);
-    if (U_FAILURE(status) || testFile == NULL) {
-        errln("%s:%s %s while opening emoji-test.txt", __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
-    UnicodeString testFileAsString(testFile, len);
-    delete [] testFile;
-
-    RegexMatcher lineMatcher(u"^.*?$", testFileAsString, UREGEX_MULTILINE, status);
-    RegexMatcher hexMatcher(u"\\s*([a-f0-9]*)", UREGEX_CASE_INSENSITIVE, status);
-    //           hexMatcher group(1) is a hex number, or empty string if no hex number present.
-    int32_t lineNumber = 0;
-
-    LocalPointer<BreakIterator> charBreaks(BreakIterator::createCharacterInstance(Locale::getEnglish(), status), status);
-    LocalPointer<BreakIterator> wordBreaks(BreakIterator::createWordInstance(Locale::getEnglish(), status), status);
-    LocalPointer<BreakIterator> lineBreaks(BreakIterator::createLineInstance(Locale::getEnglish(), status), status);
-    if (U_FAILURE(status)) {
-        dataerrln("%s:%d %s while opening break iterators", __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
-
-    while (lineMatcher.find()) {
-        ++lineNumber;
-        UnicodeString line = lineMatcher.group(status);
-        hexMatcher.reset(line);
-        UnicodeString testString;   // accumulates the emoji sequence.
-        while (hexMatcher.find() && hexMatcher.group(1, status).length() > 0) {
-            UnicodeString hex = hexMatcher.group(1, status);
-            if (hex.length() > 8) {
-                errln("%s:%d emoji-test.txt:%d invalid code point %s", __FILE__, __LINE__, lineNumber, CStr(hex)());
-                break;
-            }
-            CharString hex8;
-            hex8.appendInvariantChars(hex, status);
-            UChar32 c = (UChar32)strtol(hex8.data(), NULL, 16);
-            if (c<=0x10ffff) {
-                testString.append(c);
-            } else {
-                errln("%s:%d emoji-test.txt:%d Error: Unicode Character %s value out of range.",
-                        __FILE__, __LINE__, lineNumber, hex8.data());
-                break;
-            }
-        }
-
-        if (testString.length() > 1) {
-            charBreaks->setText(testString);
-            charBreaks->first();
-            int32_t firstBreak = charBreaks->next();
-            if (testString.length() != firstBreak) {
-                errln("%s:%d  emoji-test.txt:%d Error, uexpected break at offset %d",
-                        __FILE__, __LINE__, lineNumber, firstBreak);
-            }
-            wordBreaks->setText(testString);
-            wordBreaks->first();
-            firstBreak = wordBreaks->next();
-            if (testString.length() != firstBreak) {
-                errln("%s:%d  emoji-test.txt:%d Error, uexpected break at offset %d",
-                        __FILE__, __LINE__, lineNumber, firstBreak);
-            }
-            lineBreaks->setText(testString);
-            lineBreaks->first();
-            firstBreak = lineBreaks->next();
-            if (testString.length() != firstBreak) {
-                errln("%s:%d  emoji-test.txt:%d Error, uexpected break at offset %d",
-                        __FILE__, __LINE__, lineNumber, firstBreak);
-            }
-        }
-    }
-#endif
-}
-
-
-// TestBug12519  -  Correct handling of Locales by assignment / copy / clone
-
-// WHERE Macro yields a literal string of the form "source_file_name:line number "
-// TODO: propose something equivalent as a test framework addition.
-
-#define WHERE __FILE__ ":" XLINE(__LINE__) " "
-#define XLINE(s) LINE(s)
-#define LINE(s) #s
-
-void RBBITest::TestBug12519() {
-    UErrorCode status = U_ZERO_ERROR;
-    LocalPointer<RuleBasedBreakIterator> biEn((RuleBasedBreakIterator *)BreakIterator::createWordInstance(Locale::getEnglish(), status));
-    LocalPointer<RuleBasedBreakIterator> biFr((RuleBasedBreakIterator *)BreakIterator::createWordInstance(Locale::getFrance(), status));
-    if (!assertSuccess(WHERE, status)) {
-        dataerrln("%s %d status = %s", __FILE__, __LINE__, u_errorName(status));
-        return;
-    }
-    assertTrue(WHERE, Locale::getEnglish() == biEn->getLocale(ULOC_VALID_LOCALE, status));
-
-    assertTrue(WHERE, Locale::getFrench() == biFr->getLocale(ULOC_VALID_LOCALE, status));
-    assertTrue(WHERE "Locales do not participate in BreakIterator equality.", *biEn == *biFr);
-
-    LocalPointer<RuleBasedBreakIterator>cloneEn((RuleBasedBreakIterator *)biEn->clone());
-    assertTrue(WHERE, *biEn == *cloneEn);
-    assertTrue(WHERE, Locale::getEnglish() == cloneEn->getLocale(ULOC_VALID_LOCALE, status));
-
-    LocalPointer<RuleBasedBreakIterator>cloneFr((RuleBasedBreakIterator *)biFr->clone());
-    assertTrue(WHERE, *biFr == *cloneFr);
-    assertTrue(WHERE, Locale::getFrench() == cloneFr->getLocale(ULOC_VALID_LOCALE, status));
-
-    LocalPointer<RuleBasedBreakIterator>biDe((RuleBasedBreakIterator *)BreakIterator::createLineInstance(Locale::getGerman(), status));
-    UnicodeString text("Hallo Welt");
-    biDe->setText(text);
-    assertTrue(WHERE "before assignment of \"biDe = biFr\", they should be different, but are equal.", *biFr != *biDe);
-    *biDe = *biFr;
-    assertTrue(WHERE "after assignment of \"biDe = biFr\", they should be equal, but are not.", *biFr == *biDe);
-}
-
-void RBBITest::TestBug12677() {
-    // Check that stripping of comments from rules for getRules() is not confused by
-    // the presence of '#' characters in the rules that do not introduce comments.
-    UnicodeString rules(u"!!forward; \n"
-                         "$x = [ab#];  # a set with a # literal. \n"
-                         " # .;        # a comment that looks sort of like a rule.   \n"
-                         " '#' '?';    # a rule with a quoted #   \n"
-                       );
-
-    UErrorCode status = U_ZERO_ERROR;
-    UParseError pe;
-    RuleBasedBreakIterator bi(rules, pe, status);
-    assertSuccess(WHERE, status);
-    UnicodeString rtRules = bi.getRules();
-    assertEquals(WHERE, UnicodeString(u"!!forward; $x = [ab#]; '#' '?'; "),  rtRules);
-}
-
-
-void RBBITest::TestTableRedundancies() {
-    UErrorCode status = U_ZERO_ERROR;
-
-    LocalPointer<RuleBasedBreakIterator> bi (
-        (RuleBasedBreakIterator *)BreakIterator::createLineInstance(Locale::getEnglish(), status));
-    assertSuccess(WHERE, status);
-    if (U_FAILURE(status)) return;
-
-    RBBIDataWrapper *dw = bi->fData;
-    const RBBIStateTable *fwtbl = dw->fForwardTable;
-    int32_t numCharClasses = dw->fHeader->fCatCount;
-    // printf("Char Classes: %d     states: %d\n", numCharClasses, fwtbl->fNumStates);
-
-    // Check for duplicate columns (character categories)
-
-    std::vector<UnicodeString> columns;
-    for (int32_t column = 0; column < numCharClasses; column++) {
-        UnicodeString s;
-        for (int32_t r = 1; r < (int32_t)fwtbl->fNumStates; r++) {
-            RBBIStateTableRow  *row = (RBBIStateTableRow *) (fwtbl->fTableData + (fwtbl->fRowLen * r));
-            s.append(row->fNextState[column]);
-        }
-        columns.push_back(s);
-    }
-    // Ignore column (char class) 0 while checking; it's special, and may have duplicates.
-    for (int c1=1; c1<numCharClasses; c1++) {
-        for (int c2 = c1+1; c2 < numCharClasses; c2++) {
-            if (columns.at(c1) == columns.at(c2)) {
-                errln("%s:%d Duplicate columns (%d, %d)\n", __FILE__, __LINE__, c1, c2);
-                goto out;
-            }
-        }
-    }
-  out:
-
-    // Check for duplicate states
-    std::vector<UnicodeString> rows;
-    for (int32_t r=0; r < (int32_t)fwtbl->fNumStates; r++) {
-        UnicodeString s;
-        RBBIStateTableRow  *row = (RBBIStateTableRow *) (fwtbl->fTableData + (fwtbl->fRowLen * r));
-        assertTrue(WHERE, row->fAccepting >= -1);
-        s.append(row->fAccepting + 1);   // values of -1 are expected.
-        s.append(row->fLookAhead);
-        s.append(row->fTagIdx);
-        for (int32_t column = 0; column < numCharClasses; column++) {
-            s.append(row->fNextState[column]);
-        }
-        rows.push_back(s);
-    }
-    for (int r1=0; r1 < (int32_t)fwtbl->fNumStates; r1++) {
-        for (int r2 = r1+1; r2 < (int32_t)fwtbl->fNumStates; r2++) {
-            if (rows.at(r1) == rows.at(r2)) {
-                errln("%s:%d Duplicate rows (%d, %d)\n", __FILE__, __LINE__, r1, r2);
-                return;
-            }
-        }
-    }
-}
-
-// Bug 13447: verify that getRuleStatus() returns the value corresponding to current(),
-//            even after next() has returned DONE.
-
-void RBBITest::TestBug13447() {
-    UErrorCode status = U_ZERO_ERROR;
-    LocalPointer<RuleBasedBreakIterator> bi(
-        (RuleBasedBreakIterator *)BreakIterator::createWordInstance(Locale::getEnglish(), status));
-    assertSuccess(WHERE, status);
-    if (U_FAILURE(status)) return;
-    UnicodeString data(u"1234");
-    bi->setText(data);
-    assertEquals(WHERE, UBRK_WORD_NONE, bi->getRuleStatus());
-    assertEquals(WHERE, 4, bi->next());
-    assertEquals(WHERE, UBRK_WORD_NUMBER, bi->getRuleStatus());
-    assertEquals(WHERE, UBRK_DONE, bi->next());
-    assertEquals(WHERE, 4, bi->current());
-    assertEquals(WHERE, UBRK_WORD_NUMBER, bi->getRuleStatus());
-}
-
-//  TestReverse exercises both the synthesized safe reverse rules and the logic
-//  for filling the break iterator cache when starting from random positions
-//  in the text.
-//
-//  It's a monkey test, working on random data, with the expected data obtained
-//  from forward iteration (no safe rules involved), comparing with results
-//  when indexing into the interior of the string (safe rules needed).
-
-void RBBITest::TestReverse() {
-    UErrorCode status = U_ZERO_ERROR;
-
-    TestReverse(std::unique_ptr<RuleBasedBreakIterator>((RuleBasedBreakIterator *)
-            BreakIterator::createCharacterInstance(Locale::getEnglish(), status)));
-    assertSuccess(WHERE, status, true);
-    status = U_ZERO_ERROR;
-    TestReverse(std::unique_ptr<RuleBasedBreakIterator>((RuleBasedBreakIterator *)
-            BreakIterator::createWordInstance(Locale::getEnglish(), status)));
-    assertSuccess(WHERE, status, true);
-    status = U_ZERO_ERROR;
-    TestReverse(std::unique_ptr<RuleBasedBreakIterator>((RuleBasedBreakIterator *)
-            BreakIterator::createLineInstance(Locale::getEnglish(), status)));
-    assertSuccess(WHERE, status, true);
-    status = U_ZERO_ERROR;
-    TestReverse(std::unique_ptr<RuleBasedBreakIterator>((RuleBasedBreakIterator *)
-            BreakIterator::createSentenceInstance(Locale::getEnglish(), status)));
-    assertSuccess(WHERE, status, true);
-}
-
-void RBBITest::TestReverse(std::unique_ptr<RuleBasedBreakIterator>bi) {
-    if (!bi) {
-        return;
-    }
-
-    // From the mapping trie in the break iterator's internal data, create a
-    // vector of UnicodeStrings, one for each character category, containing
-    // all of the code points that map to that category. Unicode planes 0 and 1 only,
-    // to avoid an execess of unassigned code points.
-
-    RBBIDataWrapper *data = bi->fData;
-    int32_t categoryCount = data->fHeader->fCatCount;
-    UTrie2  *trie = data->fTrie;
-
-    std::vector<UnicodeString> strings(categoryCount, UnicodeString());
-    for (int cp=0; cp<0x1fff0; ++cp) {
-        int cat = utrie2_get32(trie, cp);
-        cat &= ~0x4000;    // And off the dictionary bit from the category.
-        assertTrue(WHERE, cat < categoryCount && cat >= 0);
-        if (cat < 0 || cat >= categoryCount) return;
-        strings[cat].append(cp);
-    }
-
-    icu_rand randomGen;
-    const int testStringLength = 10000;
-    UnicodeString testString;
-
-    for (int i=0; i<testStringLength; ++i) {
-        int charClass = randomGen() % categoryCount;
-        if (strings[charClass].length() > 0) {
-            int cp = strings[charClass].char32At(randomGen() % strings[charClass].length());
-            testString.append(cp);
-        }
-    }
-
-    typedef std::pair<UBool, int32_t> Result;
-    std::vector<Result> expectedResults;
-    bi->setText(testString);
-    for (int i=0; i<testString.length(); ++i) {
-        bool isboundary = bi->isBoundary(i);
-        int  ruleStatus = bi->getRuleStatus();
-        expectedResults.push_back(std::make_pair(isboundary, ruleStatus));
-    }
-
-    for (int i=testString.length()-1; i>=0; --i) {
-        bi->setText(testString);   // clears the internal break cache
-        Result expected = expectedResults[i];
-        assertEquals(WHERE, expected.first, bi->isBoundary(i));
-        assertEquals(WHERE, expected.second, bi->getRuleStatus());
-    }
-}
-
-
-// Ticket 13692 - finding word boundaries in very large numbers or words could
-//                be very time consuming. When the problem was present, this void test
-//                would run more than fifteen minutes, which is to say, the failure was noticeale.
-
-void RBBITest::TestBug13692() {
-    UErrorCode status = U_ZERO_ERROR;
-    LocalPointer<RuleBasedBreakIterator> bi ((RuleBasedBreakIterator *)
-            BreakIterator::createWordInstance(Locale::getEnglish(), status), status);
-    if (!assertSuccess(WHERE, status, true)) {
-        return;
-    }
-    constexpr int32_t LENGTH = 1000000;
-    UnicodeString longNumber(LENGTH, (UChar32)u'3', LENGTH);
-    for (int i=0; i<20; i+=2) {
-        longNumber.setCharAt(i, u' ');
-    }
-    bi->setText(longNumber);
-    assertFalse(WHERE, bi->isBoundary(LENGTH-5));
-    assertSuccess(WHERE, status);
-}
 
 //
 //  TestDebug    -  A place-holder test for debugging purposes.
@@ -4567,16 +4493,29 @@ void RBBITest::TestBug13692() {
 //                  for tracing  without a lot of unwanted extra stuff happening.
 //
 void RBBITest::TestDebug(void) {
-    UErrorCode status = U_ZERO_ERROR;
-    LocalPointer<RuleBasedBreakIterator> bi ((RuleBasedBreakIterator *)
-            BreakIterator::createCharacterInstance(Locale::getEnglish(), status), status);
-    if (!assertSuccess(WHERE, status, true)) {
-        return;
-    }
-    const UnicodeString &rules = bi->getRules();
-    UParseError pe;
-    LocalPointer<RuleBasedBreakIterator> newbi(new RuleBasedBreakIterator(rules, pe, status));
-    assertSuccess(WHERE, status);
+#if 0
+    UErrorCode   status = U_ZERO_ERROR;
+    int pos = 0;
+    int ruleStatus = 0;
+
+    RuleBasedBreakIterator* bi =
+       // (RuleBasedBreakIterator *)BreakIterator::createLineInstance(Locale::getDefault(), status);
+       // (RuleBasedBreakIterator *)BreakIterator::createWordInstance(Locale::Locale("th"), status);
+       (RuleBasedBreakIterator *)BreakIterator::createSentenceInstance(Locale::getDefault(), status);
+    UnicodeString s("\\u2008\\u002e\\udc6a\\u37cd\\u71d0\\u2048\\U000e006a\\u002e\\u0046\\ufd3f\\u000a\\u002e");
+    // UnicodeString s("Aaa.  Bcd");
+    s = s.unescape();
+    bi->setText(s);
+    UBool r = bi->isBoundary(8);
+    printf("%s", r?"true":"false");
+    return;
+    pos = bi->last();
+    do {
+        // ruleStatus = bi->getRuleStatus();
+        printf("%d\t%d\n", pos, ruleStatus);
+        pos = bi->previous();
+    } while (pos != BreakIterator::DONE);
+#endif
 }
 
 void RBBITest::TestProperties() {
@@ -4590,4 +4529,4 @@ void RBBITest::TestProperties() {
     }
 }
 
-#endif // #if !UCONFIG_NO_BREAK_ITERATION
+#endif /* #if !UCONFIG_NO_BREAK_ITERATION */

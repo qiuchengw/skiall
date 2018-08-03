@@ -20,7 +20,7 @@
 
 #include "spirv-tools/libspirv.hpp"
 
-namespace spvtools {
+namespace libspirv {
 
 // A DiagnosticStream remembers the current position of the input and an error
 // code, and captures diagnostic messages via the left-shift operator.
@@ -28,22 +28,17 @@ namespace spvtools {
 // emitted during the destructor.
 class DiagnosticStream {
  public:
-  DiagnosticStream(spv_position_t position, const MessageConsumer& consumer,
-                   const std::string& disassembled_instruction,
+  DiagnosticStream(spv_position_t position,
+                   const spvtools::MessageConsumer& consumer,
                    spv_result_t error)
-      : position_(position),
-        consumer_(consumer),
-        disassembled_instruction_(disassembled_instruction),
-        error_(error) {}
+      : position_(position), consumer_(consumer), error_(error) {}
 
-  // Creates a DiagnosticStream from an expiring DiagnosticStream.
-  // The new object takes the contents of the other, and prevents the
-  // other from emitting anything during destruction.
-  DiagnosticStream(DiagnosticStream&& other);
+  DiagnosticStream(DiagnosticStream&& other)
+      : stream_(other.stream_.str()),
+        position_(other.position_),
+        consumer_(other.consumer_),
+        error_(other.error_) {}
 
-  // Destroys a DiagnosticStream.
-  // If its status code is something other than SPV_FAILED_MATCH
-  // then emit the accumulated message to the consumer.
   ~DiagnosticStream();
 
   // Adds the given value to the diagnostic message to be written.
@@ -57,10 +52,9 @@ class DiagnosticStream {
   operator spv_result_t() { return error_; }
 
  private:
-  std::ostringstream stream_;
+  std::stringstream stream_;
   spv_position_t position_;
-  MessageConsumer consumer_;  // Message consumer callback.
-  std::string disassembled_instruction_;
+  const spvtools::MessageConsumer& consumer_;  // Message consumer callback.
   spv_result_t error_;
 };
 
@@ -74,6 +68,6 @@ void UseDiagnosticAsMessageConsumer(spv_context context,
 
 std::string spvResultToString(spv_result_t res);
 
-}  // namespace spvtools
+}  // namespace libspirv
 
 #endif  // LIBSPIRV_DIAGNOSTIC_H_

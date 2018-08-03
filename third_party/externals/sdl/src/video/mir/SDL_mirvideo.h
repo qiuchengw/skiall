@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,12 +23,11 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#ifndef SDL_mirvideo_h__
-#define SDL_mirvideo_h__
+#ifndef _SDL_mirvideo_h_
+#define _SDL_mirvideo_h_
 
 #include <EGL/egl.h>
 #include <mir_toolkit/mir_client_library.h>
-#include "SDL_stdinc.h"
 
 typedef struct MIR_Window MIR_Window;
 
@@ -44,6 +43,6 @@ typedef struct
 extern Uint32
 MIR_GetSDLPixelFormat(MirPixelFormat format);
 
-#endif /* SDL_mirvideo_h__ */
+#endif /* _SDL_mirvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

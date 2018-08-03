@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  *******************************************************************************
  * Copyright (C) 2009-2014, International Business Machines Corporation and
@@ -20,7 +18,6 @@
 
 #include "unicode/locid.h"
 #include "unicode/plurrule.h"
-#include "unicode/strenum.h"
 #include "unicode/ures.h"
 #include "unicode/numsys.h"
 #include "cstring.h"
@@ -203,9 +200,6 @@ CurrencyPluralInfo::setCurrencyPluralPattern(const UnicodeString& pluralCount,
                                              const UnicodeString& pattern,
                                              UErrorCode& status) {
     if (U_SUCCESS(status)) {
-        UnicodeString* oldValue = static_cast<UnicodeString*>(
-            fPluralCountToCurrencyUnitPattern->get(pluralCount));
-        delete oldValue;
         fPluralCountToCurrencyUnitPattern->put(pluralCount, new UnicodeString(pattern), status);
     }
 }

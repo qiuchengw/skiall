@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
-*   Copyright (C) 2000-2016, International Business Machines
+*   Copyright (C) 2000-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 **********************************************************************
 *   Date        Name        Description
@@ -451,8 +449,7 @@ UBool RTTest::isCamel(const UnicodeString& a) {
             break;
         case U_TITLECASE_LETTER:
             if (haveLower) return TRUE;
-            // fall through, since second letter is lower.
-            U_FALLTHROUGH;
+            // drop through, since second letter is lower.
         case U_LOWERCASE_LETTER:
             haveLower = TRUE;
             break;
@@ -1622,7 +1619,7 @@ void TransliteratorRoundTripTest::TestDebug(const char* name,const char fromSet[
 
 void TransliteratorRoundTripTest::TestInterIndic() {
     //TestDebug("Latin-Gurmukhi", latinForIndic, "[:Gurmukhi:]","[\\u0965\\u0a02\\u0a72\\u0a73\\u0a74]",TRUE);
-    int32_t num = UPRV_LENGTHOF(interIndicArray)/INTER_INDIC_ARRAY_WIDTH;
+    int32_t num = (int32_t)(sizeof(interIndicArray)/(INTER_INDIC_ARRAY_WIDTH*sizeof(char*)));
     if(quick){
         logln("Testing only 5 of %i. Skipping rest (use -e for exhaustive)",num);
         num = 5;

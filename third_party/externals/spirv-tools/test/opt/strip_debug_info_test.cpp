@@ -15,9 +15,9 @@
 #include "pass_fixture.h"
 #include "pass_utils.h"
 
-namespace spvtools {
-namespace opt {
 namespace {
+
+using namespace spvtools;
 
 using StripLineDebugInfoTest = PassTest<::testing::Test>;
 
@@ -29,9 +29,6 @@ TEST_F(StripLineDebugInfoTest, LineNoLine) {
                "OpMemoryModel Logical GLSL450",
                "OpEntryPoint Vertex %2 \"main\"",
           "%3 = OpString \"minimal.vert\"",
-               "OpModuleProcessed \"42\"",
-               "OpModuleProcessed \"43\"",
-               "OpModuleProcessed \"44\"",
                "OpNoLine",
                "OpLine %3 10 10",
        "%void = OpTypeVoid",
@@ -51,9 +48,9 @@ TEST_F(StripLineDebugInfoTest, LineNoLine) {
                "OpFunctionEnd",
       // clang-format on
   };
-  SinglePassRunAndCheck<StripDebugInfoPass>(JoinAllInsts(text),
-                                            JoinNonDebugInsts(text),
-                                            /* skip_nop = */ false);
+  SinglePassRunAndCheck<opt::StripDebugInfoPass>(JoinAllInsts(text),
+                                                 JoinNonDebugInsts(text),
+                                                 /* skip_nop = */ false);
 
   // Let's add more debug instruction before the "OpString" instruction.
   const std::vector<const char*> more_text = {
@@ -65,24 +62,25 @@ TEST_F(StripLineDebugInfoTest, LineNoLine) {
       "OpSourceContinued \"wahahaha\"",
       "OpSourceExtension \"save-the-world-extension\"",
       "OpName %2 \"main\"",
+      "OpModuleProcessed \"42\"",
+      "OpModuleProcessed \"43\"",
+      "OpModuleProcessed \"44\"",
   };
   text.insert(text.begin() + 4, more_text.cbegin(), more_text.cend());
-  SinglePassRunAndCheck<StripDebugInfoPass>(JoinAllInsts(text),
-                                            JoinNonDebugInsts(text),
-                                            /* skip_nop = */ false);
+  SinglePassRunAndCheck<opt::StripDebugInfoPass>(JoinAllInsts(text),
+                                                 JoinNonDebugInsts(text),
+                                                 /* skip_nop = */ false);
 }
 
 using StripDebugInfoTest = PassTest<::testing::TestWithParam<const char*>>;
 
 TEST_P(StripDebugInfoTest, Kind) {
   std::vector<const char*> text = {
-      "OpCapability Shader",
-      "OpMemoryModel Logical GLSL450",
-      GetParam(),
+      "OpCapability Shader", "OpMemoryModel Logical GLSL450", GetParam(),
   };
-  SinglePassRunAndCheck<StripDebugInfoPass>(JoinAllInsts(text),
-                                            JoinNonDebugInsts(text),
-                                            /* skip_nop = */ false);
+  SinglePassRunAndCheck<opt::StripDebugInfoPass>(JoinAllInsts(text),
+                                                 JoinNonDebugInsts(text),
+                                                 /* skip_nop = */ false);
 }
 
 // Test each possible non-line debug instruction.
@@ -100,6 +98,4 @@ INSTANTIATE_TEST_CASE_P(
     })));
 // clang-format on
 
-}  // namespace
-}  // namespace opt
-}  // namespace spvtools
+}  // anonymous namespace

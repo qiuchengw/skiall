@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ka.xml
+// *
+// ***************************************************************************
 ka{
     Currencies{
         ADP{
@@ -178,13 +184,9 @@ ka{
             "BYB",
             "ახალი ბელარუსიული რუბლი (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "ბელორუსული რუბლი",
-        }
         BYR{
             "BYR",
-            "ბელორუსული რუბლი (2000–2016)",
+            "ბელორუსული რუბლი",
         }
         BZD{
             "BZD",
@@ -205,10 +207,6 @@ ka{
         CLP{
             "CLP",
             "ჩილეს პესო",
-        }
-        CNH{
-            "CNH",
-            "ჩინური იუანი (ოფშორი)",
         }
         CNY{
             "CNY",
@@ -323,7 +321,7 @@ ka{
             "ქართული კუპონი ლარით",
         }
         GEL{
-            "₾",
+            "GEL",
             "ქართული ლარი",
         }
         GHS{
@@ -552,10 +550,6 @@ ka{
         }
         MRO{
             "MRO",
-            "მავრიტანული უგია (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "მავრიტანული უგია",
         }
         MTL{
@@ -648,11 +642,11 @@ ka{
         }
         PEN{
             "PEN",
-            "პერუს სოლი",
+            "პერუს ახალი სოლი",
         }
         PES{
             "PES",
-            "პერუს სოლი (1863–1965)",
+            "პერუს სოლი",
         }
         PGK{
             "PGK",
@@ -772,10 +766,6 @@ ka{
         }
         STD{
             "STD",
-            "სან-ტომე და პრინსიპის დობრა (1977–2017)",
-        }
-        STN{
-            "STN",
             "სან-ტომე და პრინსიპის დობრა",
         }
         SUR{
@@ -984,103 +974,60 @@ ka{
         }
     }
     Currencies%narrow{
-        AOA{"Kz"}
         ARS{"$"}
         AUD{"$"}
-        BAM{"KM"}
         BBD{"$"}
         BDT{"৳"}
         BMD{"$"}
         BND{"$"}
-        BOB{"Bs"}
         BRL{"R$"}
         BSD{"$"}
-        BWP{"P"}
-        BYN{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
         CNY{"¥"}
         COP{"$"}
         CRC{"₡"}
-        CUC{"$"}
         CUP{"$"}
-        CZK{"Kč"}
-        DKK{"kr"}
         DOP{"$"}
-        EGP{"E£"}
         EUR{"€"}
         FJD{"$"}
-        FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
-        GNF{"FG"}
-        GTQ{"Q"}
         GYD{"$"}
         HKD{"$"}
-        HNL{"L"}
-        HRK{"kn"}
-        HUF{"Ft"}
-        IDR{"Rp"}
         ILS{"₪"}
         INR{"₹"}
-        ISK{"kr"}
         JMD{"$"}
         JPY{"¥"}
         KHR{"៛"}
-        KMF{"CF"}
-        KPW{"₩"}
         KRW{"₩"}
         KYD{"$"}
         KZT{"₸"}
         LAK{"₭"}
-        LBP{"L£"}
-        LKR{"Rs"}
         LRD{"$"}
-        MGA{"Ar"}
-        MMK{"K"}
         MNT{"₮"}
-        MUR{"Rs"}
         MXN{"$"}
-        MYR{"RM"}
         NAD{"$"}
         NGN{"₦"}
-        NIO{"C$"}
-        NOK{"kr"}
-        NPR{"Rs"}
         NZD{"$"}
         PHP{"₱"}
-        PKR{"Rs"}
-        PLN{"zł"}
         PYG{"₲"}
-        RON{"lei"}
-        RUB{"₽"}
-        RWF{"RF"}
         SBD{"$"}
-        SEK{"kr"}
         SGD{"$"}
-        SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
-        SYP{"£"}
         THB{"฿"}
-        TOP{"T$"}
         TRY{"₺"}
         TTD{"$"}
         TWD{"NT$"}
         UAH{"₴"}
         USD{"$"}
         UYU{"$"}
-        VEF{"Bs"}
         VND{"₫"}
-        XCD{"$"}
-        ZAR{"R"}
-        ZMW{"ZK"}
     }
     Currencies%variant{
-        TRY{"TL"}
+        GEL{"₾"}
     }
     CurrencyPlurals{
         AED{
@@ -1175,13 +1122,9 @@ ka{
             one{"ბოცვანური პულა"}
             other{"ბოცვანური პულა"}
         }
-        BYN{
+        BYR{
             one{"ბელორუსული რუბლი"}
             other{"ბელორუსული რუბლი"}
-        }
-        BYR{
-            one{"ბელორუსული რუბლი (2000–2016)"}
-            other{"ბელორუსული რუბლი (2000–2016)"}
         }
         BZD{
             one{"ბელიზის დოლარი"}
@@ -1202,10 +1145,6 @@ ka{
         CLP{
             one{"ჩილეს პესო"}
             other{"ჩილეს პესო"}
-        }
-        CNH{
-            one{"ჩინური იუანი (ოფშორი)"}
-            other{"ჩინური იუანი (ოფშორი)"}
         }
         CNY{
             one{"ჩინური უანი"}
@@ -1456,10 +1395,6 @@ ka{
             other{"მაკაუს პატაკა"}
         }
         MRO{
-            one{"მავრიტანული უგია (1973–2017)"}
-            other{"მავრიტანული უგია (1973–2017)"}
-        }
-        MRU{
             one{"მავრიტანული უგია"}
             other{"მავრიტანული უგია"}
         }
@@ -1524,8 +1459,8 @@ ka{
             other{"პანამური ბალბოა"}
         }
         PEN{
-            one{"პერუს სოლი"}
-            other{"პერუს სოლი"}
+            one{"პერუს ახალი სოლი"}
+            other{"პერუს ახალი სოლი"}
         }
         PGK{
             one{"პაპუა-ახალი გვინეის კინა"}
@@ -1612,10 +1547,6 @@ ka{
             other{"სამხრეთ სუდანური ფუნტი"}
         }
         STD{
-            one{"სან-ტომე და პრინსიპის დობრა (1977–2017)"}
-            other{"სან-ტომე და პრინსიპის დობრა (1977–2017)"}
-        }
-        STN{
             one{"სან-ტომე და პრინსიპის დობრა"}
             other{"სან-ტომე და პრინსიპის დობრა"}
         }
@@ -1740,5 +1671,5 @@ ka{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
 }

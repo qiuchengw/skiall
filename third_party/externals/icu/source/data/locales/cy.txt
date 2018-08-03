@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/cy.xml
+// *
+// ***************************************************************************
 cy{
     AuxExemplarCharacters{"[ă å ã ā æ ç ĕ ē ĭ ī k ñ ŏ ø ō œ q ŭ ū v x z]"}
     Ellipsis{
@@ -18,7 +24,6 @@ cy{
         "[A B C {CH} D {DD} E F {FF} G {NG} H I J K L {LL} M N O P {PH} Q R {RH} S T "
         "{TH} U V W X Y Z]"
     }
-    ExemplarCharactersNumbers{"[\\- , . % ‰ + 0 1 2 3 4 5 6 7 8 9]"}
     ExemplarCharactersPunctuation{
         "[\\- ‐ – — , ; \\: ! ? . … ' ‘ ’ \u0022 “ ” ( ) \\[ \\] § @ * / \\& # † ‡ ′ "
         "″]"
@@ -27,23 +32,7 @@ cy{
     NumberElements{
         arab{
             symbols{
-                infinity{"∞"}
-                minusSign{"؜-"}
-                nan{"NaN"}
-                perMille{"؉"}
-                percentSign{"٪؜"}
-                plusSign{"؜+"}
                 timeSeparator{":"}
-            }
-        }
-        arabext{
-            symbols{
-                infinity{"∞"}
-                minusSign{"‎-‎"}
-                nan{"NaN"}
-                perMille{"؉"}
-                percentSign{"٪"}
-                plusSign{"‎+‎"}
             }
         }
         default{"latn"}
@@ -62,100 +51,100 @@ cy{
             patternsLong{
                 decimalFormat{
                     1000{
-                        few{"0K"}
-                        many{"0K"}
+                        few{"0 mil"}
+                        many{"0 mil"}
                         one{"0 mil"}
                         other{"0 mil"}
-                        two{"0K"}
+                        two{"0 fil"}
                         zero{"0 mil"}
                     }
                     10000{
-                        few{"00K"}
-                        many{"00K"}
+                        few{"00 mil"}
+                        many{"00 mil"}
                         one{"00 mil"}
                         other{"00 mil"}
-                        two{"00K"}
-                        zero{"00K"}
+                        two{"00 mil"}
+                        zero{"00 mil"}
                     }
                     100000{
-                        few{"000K"}
-                        many{"000K"}
+                        few{"000 mil"}
+                        many{"000 mil"}
                         one{"000 mil"}
                         other{"000 mil"}
-                        two{"000K"}
-                        zero{"000K"}
+                        two{"000 mil"}
+                        zero{"000 mil"}
                     }
                     1000000{
-                        few{"0M"}
-                        many{"0M"}
+                        few{"0 miliwn"}
+                        many{"0 miliwn"}
                         one{"0 miliwn"}
                         other{"0 miliwn"}
-                        two{"0M"}
-                        zero{"0M"}
+                        two{"0 filiwn"}
+                        zero{"0 miliwn"}
                     }
                     10000000{
-                        few{"00M"}
-                        many{"00M"}
+                        few{"00 miliwn"}
+                        many{"00 miliwn"}
                         one{"00 miliwn"}
                         other{"00 miliwn"}
-                        two{"00M"}
-                        zero{"00M"}
+                        two{"00 miliwn"}
+                        zero{"00 miliwn"}
                     }
                     100000000{
-                        few{"000M"}
-                        many{"000M"}
+                        few{"000 miliwn"}
+                        many{"000 miliwn"}
                         one{"000 miliwn"}
                         other{"000 miliwn"}
-                        two{"000M"}
-                        zero{"000M"}
+                        two{"000 miliwn"}
+                        zero{"000 miliwn"}
                     }
                     1000000000{
-                        few{"0B"}
-                        many{"0B"}
+                        few{"0 biliwn"}
+                        many{"0 biliwn"}
                         one{"0 biliwn"}
                         other{"0 biliwn"}
-                        two{"0B"}
-                        zero{"0B"}
+                        two{"0 biliwn"}
+                        zero{"0 biliwn"}
                     }
                     10000000000{
-                        few{"00B"}
-                        many{"00B"}
+                        few{"00 biliwn"}
+                        many{"00 biliwn"}
                         one{"00 biliwn"}
                         other{"00 biliwn"}
-                        two{"00B"}
-                        zero{"00B"}
+                        two{"00 biliwn"}
+                        zero{"00 biliwn"}
                     }
                     100000000000{
-                        few{"000B"}
-                        many{"000B"}
+                        few{"000 biliwn"}
+                        many{"000 biliwn"}
                         one{"000 biliwn"}
                         other{"000 biliwn"}
-                        two{"000B"}
-                        zero{"000B"}
+                        two{"000 biliwn"}
+                        zero{"000 biliwn"}
                     }
                     1000000000000{
-                        few{"0T"}
-                        many{"0T"}
+                        few{"0 thriliwn"}
+                        many{"0 thriliwn"}
                         one{"0 triliwn"}
                         other{"0 triliwn"}
-                        two{"0T"}
-                        zero{"0T"}
+                        two{"0 driliwn"}
+                        zero{"0 triliwn"}
                     }
                     10000000000000{
-                        few{"00T"}
-                        many{"00T"}
+                        few{"00 triliwn"}
+                        many{"00 triliwn"}
                         one{"00 triliwn"}
                         other{"00 triliwn"}
-                        two{"00T"}
-                        zero{"00T"}
+                        two{"00 triliwn"}
+                        zero{"00 triliwn"}
                     }
                     100000000000000{
-                        few{"000T"}
-                        many{"000T"}
-                        one{"000T"}
+                        few{"000 triliwn"}
+                        many{"000 triliwn"}
+                        one{"000 triliwn"}
                         other{"000 triliwn"}
-                        two{"000T"}
-                        zero{"000T"}
+                        two{"000 triliwn"}
+                        zero{"000 triliwn"}
                     }
                 }
             }
@@ -167,7 +156,7 @@ cy{
                         one{"¤0K"}
                         other{"¤0K"}
                         two{"¤0K"}
-                        zero{"¤0K"}
+                        zero{"¤0 mil"}
                     }
                     10000{
                         few{"¤00K"}
@@ -368,32 +357,14 @@ cy{
                 perMille{"‰"}
                 percentSign{"%"}
                 plusSign{"+"}
-                superscriptingExponent{"×"}
+                superscriptingExponent{"x"}
                 timeSeparator{":"}
-            }
-        }
-        minimalPairs{
-            ordinal{
-                few{"{0}ydd ci"}
-                many{"{0}ed ci"}
-                one{"ci {0}af"}
-                other{"ci rhif {0}"}
-                two{"{0}il gi"}
-                zero{"{0}fed ci"}
-            }
-            plural{
-                few{"{0} chi, {0} cath"}
-                many{"{0} chi, {0} chath"}
-                one{"{0} ci, {0} gath"}
-                other{"{0} ci, {0} cath"}
-                two{"{0} gi, {0} gath"}
-                zero{"{0} cŵn, {0} cathod"}
             }
         }
         minimumGroupingDigits{"1"}
         native{"latn"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     calendar{
         generic{
             DateTimePatterns{
@@ -406,23 +377,14 @@ cy{
                 "d MMM y G",
                 "dd/MM/y GGGGG",
                 "{1}, {0}",
-                "{1} 'am' {0}",
-                "{1} 'am' {0}",
+                "{1} am {0}",
+                "{1} am {0}",
                 "{1}, {0}",
                 "{1}, {0}",
             }
             availableFormats{
-                Bh{"h B"}
-                Bhm{"h:mm B"}
-                Bhms{"h:mm:ss B"}
                 E{"ccc"}
-                EBhm{"E h:mm B"}
-                EBhms{"E h:mm:ss B"}
-                EHm{"E HH:mm"}
-                EHms{"E HH:mm:ss"}
                 Ed{"E, d"}
-                Ehm{"E h:mm a"}
-                Ehms{"E h:mm:ss a"}
                 Gy{"y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
@@ -442,15 +404,15 @@ cy{
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
                 ms{"mm:ss"}
-                y{"y G"}
+                y{"y"}
                 yyyy{"y G"}
-                yyyyM{"GGGGG y-MM"}
-                yyyyMEd{"GGGGG y-MM-dd, E"}
+                yyyyM{"M/y G"}
+                yyyyMEd{"E, d/M/y G"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E, d MMM y G"}
                 yyyyMMMM{"G y MMMM"}
                 yyyyMMMd{"d MMM y G"}
-                yyyyMd{"GGGGG y-MM-dd"}
+                yyyyMd{"d/M/y G"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
@@ -477,7 +439,7 @@ cy{
                     d{"E, d/M – E, d/M"}
                 }
                 MMM{
-                    M{"MMM – MMM"}
+                    M{"MMM–MMM"}
                 }
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
@@ -555,16 +517,16 @@ cy{
         }
         gregorian{
             AmPmMarkers{
-                "yb",
-                "yh",
+                "AM",
+                "PM",
             }
             AmPmMarkersAbbr{
-                "yb",
-                "yh",
+                "AM",
+                "PM",
             }
             AmPmMarkersNarrow{
-                "b",
-                "h",
+                "AM",
+                "PM",
             }
             DateTimePatterns{
                 "HH:mm:ss zzzz",
@@ -585,15 +547,10 @@ cy{
                 Timezone{"{0} {1}"}
             }
             availableFormats{
-                Bh{"h B"}
-                Bhm{"h:mm B"}
-                Bhms{"h:mm:ss B"}
                 E{"ccc"}
-                EBhm{"E h:mm B"}
-                EBhms{"E h:mm:ss B"}
                 EHm{"E, HH:mm"}
                 EHms{"E, HH:mm:ss"}
-                Ed{"d, E"}
+                Ed{"E, d"}
                 Ehm{"E, h:mm a"}
                 Ehms{"E, h:mm:ss a"}
                 Gy{"y G"}
@@ -609,14 +566,6 @@ cy{
                 MEd{"E, d/M"}
                 MMM{"LLL"}
                 MMMEd{"E, d MMM"}
-                MMMMW{
-                    few{"'wythnos' W 'o' MMMM"}
-                    many{"'wythnos' W 'o' MMMM"}
-                    one{"'wythnos' W 'o' MMMM"}
-                    other{"'wythnos' W 'o' MMMM"}
-                    two{"'wythnos' W 'o' MMMM"}
-                    zero{"'wythnos' W 'o' MMMM"}
-                }
                 MMMMd{"MMMM d"}
                 MMMd{"d MMM"}
                 Md{"d/M"}
@@ -638,14 +587,6 @@ cy{
                 yQ{"Q y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
-                yw{
-                    few{"'wythnos' w 'o' Y"}
-                    many{"'wythnos' w 'o' Y"}
-                    one{"'wythnos' w 'o' Y"}
-                    other{"'wythnos' w 'o' Y"}
-                    two{"'wythnos' w 'o' Y"}
-                    zero{"'wythnos' w 'o' Y"}
-                }
             }
             dayNames{
                 format{
@@ -725,68 +666,14 @@ cy{
                     }
                 }
             }
-            dayPeriod{
-                format{
-                    abbreviated{
-                        afternoon1{"y prynhawn"}
-                        evening1{"yr hwyr"}
-                        midnight{"canol nos"}
-                        morning1{"y bore"}
-                        noon{"canol dydd"}
-                    }
-                    narrow{
-                        afternoon1{"yn y prynhawn"}
-                        evening1{"min nos"}
-                        midnight{"canol nos"}
-                        morning1{"yn y bore"}
-                        noon{"canol dydd"}
-                    }
-                    wide{
-                        afternoon1{"y prynhawn"}
-                        evening1{"yr hwyr"}
-                        midnight{"canol nos"}
-                        morning1{"y bore"}
-                        noon{"canol dydd"}
-                    }
-                }
-                stand-alone{
-                    abbreviated{
-                        afternoon1{"prynhawn"}
-                        am{"yb"}
-                        evening1{"yr hwyr"}
-                        midnight{"canol nos"}
-                        morning1{"bore"}
-                        noon{"canol dydd"}
-                        pm{"yh"}
-                    }
-                    narrow{
-                        afternoon1{"prynhawn"}
-                        am{"yb"}
-                        evening1{"min nos"}
-                        midnight{"canol nos"}
-                        morning1{"bore"}
-                        noon{"canol dydd"}
-                        pm{"yh"}
-                    }
-                    wide{
-                        afternoon1{"y prynhawn"}
-                        am{"yb"}
-                        evening1{"yr hwyr"}
-                        midnight{"canol nos"}
-                        morning1{"y bore"}
-                        noon{"canol dydd"}
-                        pm{"yh"}
-                    }
-                }
-            }
             eras{
                 abbreviated{
                     "CC",
                     "OC",
                 }
                 abbreviated%variant{
-                    "CCC",
-                    "CYCY",
+                    "BCE",
+                    "CE",
                 }
                 narrow{
                     "C",
@@ -803,18 +690,18 @@ cy{
             }
             intervalFormats{
                 H{
-                    H{"HH – HH"}
+                    H{"HH–HH"}
                 }
                 Hm{
-                    H{"HH:mm – HH:mm"}
-                    m{"HH:mm – HH:mm"}
+                    H{"HH:mm–HH:mm"}
+                    m{"HH:mm–HH:mm"}
                 }
                 Hmv{
-                    H{"HH:mm – HH:mm v"}
-                    m{"HH:mm – HH:mm v"}
+                    H{"HH:mm–HH:mm v"}
+                    m{"HH:mm–HH:mm v"}
                 }
                 Hv{
-                    H{"HH – HH v"}
+                    H{"HH–HH v"}
                 }
                 M{
                     M{"M–M"}
@@ -835,7 +722,7 @@ cy{
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
-                    d{"d – d MMM"}
+                    d{"d–d MMM"}
                 }
                 Md{
                     M{"d/M – d/M"}
@@ -847,7 +734,7 @@ cy{
                 fallback{"{0} – {1}"}
                 h{
                     a{"h a – h a"}
-                    h{"h – h a"}
+                    h{"h–h a"}
                 }
                 hm{
                     a{"h:mm a – h:mm a"}
@@ -857,11 +744,11 @@ cy{
                 hmv{
                     a{"h:mm a – h:mm a v"}
                     h{"h:mm – h:mm a v"}
-                    m{"h:mm – h:mm a v"}
+                    m{"h:mm–h:mm a v"}
                 }
                 hv{
                     a{"h a – h a v"}
-                    h{"h – h a v"}
+                    h{"h–h a v"}
                 }
                 y{
                     y{"y–y"}
@@ -885,7 +772,7 @@ cy{
                     y{"E, d MMM y – E, d MMM y"}
                 }
                 yMMMM{
-                    M{"MMMM – MMMM y"}
+                    M{"MMMM–MMMM y"}
                     y{"MMMM y – MMMM y"}
                 }
                 yMMMd{
@@ -1033,103 +920,15 @@ cy{
             }
         }
     }
-    characterLabel{
-        activities{"gweithgaredd"}
-        african_scripts{"sgript Affricanaidd"}
-        american_scripts{"sgript Americanaidd"}
-        animal{"anifail"}
-        animals_nature{"anifail neu natur"}
-        arrows{"saeth"}
-        body{"corff"}
-        box_drawing{"dylunio bocs"}
-        braille{"braille"}
-        building{"adeilad"}
-        bullets_stars{"bwled neu seren"}
-        consonantal_jamo{"jamo cytseiniol"}
-        currency_symbols{"symbol arian"}
-        dash_connector{"llinell doriad neu gysylltydd"}
-        digits{"digid"}
-        dingbats{"dingbat"}
-        divination_symbols{"symbol darogan"}
-        downwards_arrows{"saeth i lawr"}
-        downwards_upwards_arrows{"saeth i fyny ac i lawr"}
-        east_asian_scripts{"sgript asia dwyreiniol"}
-        emoji{"emoji"}
-        european_scripts{"sgript Ewropeaidd"}
-        female{"benywaidd"}
-        flag{"baner"}
-        flags{"baneri"}
-        food_drink{"bwyd a diod"}
-        format{"fformat"}
-        format_whitespace{"fformat a bwlch gwyn"}
-        full_width_form_variant{"amryw ffurf lled llawn"}
-        geometric_shapes{"siâp geometrig"}
-        half_width_form_variant{"amryw ffurf hanner lled"}
-        han_characters{"llythyren Han"}
-        han_radicals{"gwreiddyn Han"}
-        hanja{"hanja"}
-        hanzi_simplified{"Hanzi (symledig)"}
-        hanzi_traditional{"Hanzi (traddodiadol)"}
-        heart{"calon"}
-        historic_scripts{"sgript hanesyddol"}
-        ideographic_desc_characters{"llythyren disg. ideograffeg"}
-        japanese_kana{"kana Japaneaidd"}
-        kanbun{"kanbun"}
-        kanji{"kanji"}
-        keycap{"gorchudd bysell"}
-        leftwards_arrows{"saeth i’r chwith"}
-        leftwards_rightwards_arrows{"saeth i’r chwith ac i’r dde"}
-        letterlike_symbols{"symbol math llythyren"}
-        limited_use{"Defnydd Cyfyngedig"}
-        male{"gwrywaidd"}
-        math_symbols{"symbol mathemategol"}
-        middle_eastern_scripts{"sgript y Dwyrain Canol"}
-        miscellaneous{"amrywiol"}
-        modern_scripts{"sgript modern"}
-        modifier{"addasydd"}
-        musical_symbols{"symbol cerddorol"}
-        nature{"natur"}
-        nonspacing{"heb fylchau"}
-        numbers{"rhifau"}
-        objects{"gwrthrych"}
-        other{"arall"}
-        paired{"paredig"}
-        person{"person"}
-        phonetic_alphabet{"y wyddor seinegol"}
-        pictographs{"pictograff"}
-        place{"lle"}
-        plant{"planhigyn"}
-        punctuation{"atalnodi"}
-        rightwards_arrows{"saeth i’r dde"}
-        sign_standard_symbols{"arwydd neu symbol"}
-        small_form_variant{"amryw ffurf fach"}
-        smiley{"gwên"}
-        smileys_people{"gwenoglun neu berson"}
-        south_asian_scripts{"sgript Asia Deheuol"}
-        southeast_asian_scripts{"sgript De-Ddwyrain Asia"}
-        spacing{"bylchu"}
-        sport{"chwaraeon"}
-        symbols{"symbol"}
-        technical_symbols{"symbol technegol"}
-        tone_marks{"marc tôn"}
-        travel{"teithio"}
-        travel_places{"teithio neu le"}
-        upwards_arrows{"Saethau i Fyny"}
-        variant_forms{"Ffurfiau Amrywiol"}
-        vocalic_jamo{"jamo llafarog"}
-        weather{"tywydd"}
-        western_asian_scripts{"sgript Asia Gorllewinol"}
-        whitespace{"bwlch gwyn"}
-    }
     delimiters{
-        alternateQuotationEnd{"’"}
-        alternateQuotationStart{"‘"}
-        quotationEnd{"”"}
-        quotationStart{"“"}
+        alternateQuotationEnd{"”"}
+        alternateQuotationStart{"“"}
+        quotationEnd{"’"}
+        quotationStart{"‘"}
     }
     fields{
         day{
-            dn{"diwrnod"}
+            dn{"dydd"}
             relative{
                 "-1"{"ddoe"}
                 "-2"{"echdoe"}
@@ -1139,7 +938,7 @@ cy{
             }
             relativeTime{
                 future{
-                    few{"ymhen {0} diwrnod"}
+                    few{"ymhen tridiau"}
                     many{"ymhen {0} diwrnod"}
                     one{"ymhen diwrnod"}
                     other{"ymhen {0} diwrnod"}
@@ -1157,38 +956,10 @@ cy{
             }
         }
         day-narrow{
-            dn{"diwrnod"}
+            dn{"dydd"}
             relativeTime{
                 future{
-                    few{"ymhen {0} diwrnod"}
-                    many{"ymhen {0} diwrnod"}
-                    one{"ymhen {0} diwrnod"}
-                    other{"ymhen {0} diwrnod"}
-                    two{"ymhen {0} diwrnod"}
-                    zero{"ymhen {0} diwrnod"}
-                }
-                past{
-                    few{"{0} diwrnod yn ôl"}
-                    many{"{0} diwrnod yn ôl"}
-                    one{"{0} diwrnod yn ôl"}
-                    other{"{0} diwrnod yn ôl"}
-                    two{"{0} ddiwrnod yn ôl"}
-                    zero{"{0} diwrnod yn ôl"}
-                }
-            }
-        }
-        day-short{
-            dn{"diwrnod"}
-            relative{
-                "-1"{"ddoe"}
-                "-2"{"echdoe"}
-                "0"{"heddiw"}
-                "1"{"yfory"}
-                "2"{"drennydd"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} diwrnod"}
+                    few{"ymhen tridiau"}
                     many{"ymhen {0} diwrnod"}
                     one{"ymhen diwrnod"}
                     other{"ymhen {0} diwrnod"}
@@ -1205,32 +976,39 @@ cy{
                 }
             }
         }
-        dayOfYear{
-            dn{"rhif y dydd yn y flwyddyn"}
-        }
-        dayOfYear-narrow{
-            dn{"dydd y fl."}
-        }
-        dayOfYear-short{
-            dn{"rhif y dydd yn y fl."}
+        day-short{
+            dn{"dydd"}
+            relative{
+                "-1"{"ddoe"}
+                "-2"{"echdoe"}
+                "0"{"heddiw"}
+                "1"{"yfory"}
+                "2"{"drennydd"}
+            }
+            relativeTime{
+                future{
+                    few{"ymhen tridiau"}
+                    many{"ymhen {0} diwrnod"}
+                    one{"ymhen diwrnod"}
+                    other{"ymhen {0} diwrnod"}
+                    two{"ymhen deuddydd"}
+                    zero{"ymhen {0} diwrnod"}
+                }
+                past{
+                    few{"{0} diwrnod yn ôl"}
+                    many{"{0} diwrnod yn ôl"}
+                    one{"{0} diwrnod yn ôl"}
+                    other{"{0} diwrnod yn ôl"}
+                    two{"{0} ddiwrnod yn ôl"}
+                    zero{"{0} diwrnod yn ôl"}
+                }
+            }
         }
         dayperiod{
             dn{"AM/PM"}
         }
-        dayperiod-narrow{
-            dn{"AM/PM"}
-        }
-        dayperiod-short{
-            dn{"AM/PM"}
-        }
         era{
-            dn{"oes"}
-        }
-        era-narrow{
-            dn{"oes"}
-        }
-        era-short{
-            dn{"oes"}
+            dn{"Oes"}
         }
         fri{
             relative{
@@ -1238,48 +1016,12 @@ cy{
                 "0"{"dydd Gwener yma"}
                 "1"{"dydd Gwener nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Gwener"}
-                    many{"ymhen {0} dydd Gwener"}
-                    one{"ymhen {0} dydd Gwener"}
-                    other{"ymhen {0} dydd Gwener"}
-                    two{"ymhen {0} dydd Gwener"}
-                    zero{"ymhen {0} dydd Gwener"}
-                }
-                past{
-                    few{"{0} dydd Gwener yn ôl"}
-                    many{"{0} dydd Gwener yn ôl"}
-                    one{"{0} dydd Gwener yn ôl"}
-                    other{"{0} dydd Gwener yn ôl"}
-                    two{"{0} dydd Gwener yn ôl"}
-                    zero{"{0} dydd Gwener yn ôl"}
-                }
-            }
         }
         fri-narrow{
             relative{
-                "-1"{"Gwener diwethaf"}
-                "0"{"Gwener yma"}
-                "1"{"Gwener nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Gwener"}
-                    many{"ymhen {0} dydd Gwener"}
-                    one{"ymhen {0} dydd Gwener"}
-                    other{"ymhen {0} dydd Gwener"}
-                    two{"ymhen {0} dydd Gwener"}
-                    zero{"ymhen {0} dydd Gwener"}
-                }
-                past{
-                    few{"{0} dydd Gwener yn ôl"}
-                    many{"{0} dydd Gwener yn ôl"}
-                    one{"{0} dydd Gwener yn ôl"}
-                    other{"{0} dydd Gwener yn ôl"}
-                    two{"{0} dydd Gwener yn ôl"}
-                    zero{"{0} dydd Gwener yn ôl"}
-                }
+                "-1"{"Gwen. diwethaf"}
+                "0"{"Gwen. yma"}
+                "1"{"Gwen. nesaf"}
             }
         }
         fri-short{
@@ -1288,30 +1030,9 @@ cy{
                 "0"{"Gwener yma"}
                 "1"{"Gwener nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Gwener"}
-                    many{"ymhen {0} dydd Gwener"}
-                    one{"ymhen {0} dydd Gwener"}
-                    other{"ymhen {0} dydd Gwener"}
-                    two{"ymhen {0} dydd Gwener"}
-                    zero{"ymhen {0} dydd Gwener"}
-                }
-                past{
-                    few{"{0} dydd Gwener yn ôl"}
-                    many{"{0} dydd Gwener yn ôl"}
-                    one{"{0} dydd Gwener yn ôl"}
-                    other{"{0} dydd Gwener yn ôl"}
-                    two{"{0} dydd Gwener yn ôl"}
-                    zero{"{0} dydd Gwener yn ôl"}
-                }
-            }
         }
         hour{
             dn{"awr"}
-            relative{
-                "0"{"yr awr hon"}
-            }
             relativeTime{
                 future{
                     few{"ymhen {0} awr"}
@@ -1324,7 +1045,7 @@ cy{
                 past{
                     few{"{0} awr yn ôl"}
                     many{"{0} awr yn ôl"}
-                    one{"{0} awr yn ôl"}
+                    one{"awr yn ôl"}
                     other{"{0} awr yn ôl"}
                     two{"{0} awr yn ôl"}
                     zero{"{0} awr yn ôl"}
@@ -1337,7 +1058,7 @@ cy{
                 future{
                     few{"ymhen {0} awr"}
                     many{"ymhen {0} awr"}
-                    one{"ymhen {0} awr"}
+                    one{"ymhen awr"}
                     other{"ymhen {0} awr"}
                     two{"ymhen {0} awr"}
                     zero{"ymhen {0} awr"}
@@ -1375,16 +1096,13 @@ cy{
         }
         minute{
             dn{"munud"}
-            relative{
-                "0"{"y funud hon"}
-            }
             relativeTime{
                 future{
                     few{"ymhen {0} munud"}
                     many{"ymhen {0} munud"}
-                    one{"ymhen {0} munud"}
+                    one{"ymhen munud"}
                     other{"ymhen {0} munud"}
-                    two{"ymhen {0} munud"}
+                    two{"ymhen {0} funud"}
                     zero{"ymhen {0} munud"}
                 }
                 past{
@@ -1392,7 +1110,7 @@ cy{
                     many{"{0} munud yn ôl"}
                     one{"{0} munud yn ôl"}
                     other{"{0} munud yn ôl"}
-                    two{"{0} munud yn ôl"}
+                    two{"{0} funud yn ôl"}
                     zero{"{0} munud yn ôl"}
                 }
             }
@@ -1405,7 +1123,7 @@ cy{
                     many{"ymhen {0} mun."}
                     one{"ymhen {0} mun."}
                     other{"ymhen {0} mun."}
-                    two{"ymhen {0} mun."}
+                    two{"ymhen {0} fun."}
                     zero{"ymhen {0} mun."}
                 }
                 past{
@@ -1413,7 +1131,7 @@ cy{
                     many{"{0} mun. yn ôl"}
                     one{"{0} mun. yn ôl"}
                     other{"{0} mun. yn ôl"}
-                    two{"{0} mun. yn ôl"}
+                    two{"{0} fun. yn ôl"}
                     zero{"{0} mun. yn ôl"}
                 }
             }
@@ -1422,20 +1140,20 @@ cy{
             dn{"mun."}
             relativeTime{
                 future{
-                    few{"ymhen {0} munud"}
-                    many{"ymhen {0} munud"}
+                    few{"ymhen {0} mun."}
+                    many{"ymhen {0} mun."}
                     one{"ymhen {0} mun."}
-                    other{"ymhen {0} munud"}
+                    other{"ymhen {0} mun."}
                     two{"ymhen {0} fun."}
-                    zero{"ymhen {0} munud"}
+                    zero{"ymhen {0} mun."}
                 }
                 past{
-                    few{"{0} munud yn ôl"}
-                    many{"{0} munud yn ôl"}
-                    one{"{0} munud yn ôl"}
-                    other{"{0} munud yn ôl"}
+                    few{"{0} mun. yn ôl"}
+                    many{"{0} mun. yn ôl"}
+                    one{"{0} mun. yn ôl"}
+                    other{"{0} mun. yn ôl"}
                     two{"{0} fun. yn ôl"}
-                    zero{"{0} munud yn ôl"}
+                    zero{"{0} mun. yn ôl"}
                 }
             }
         }
@@ -1445,24 +1163,6 @@ cy{
                 "0"{"dydd Llun yma"}
                 "1"{"dydd Llun nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} Dydd Llun"}
-                    many{"ymhen {0} Dydd Llun"}
-                    one{"ymhen {0} Dydd Llun"}
-                    other{"ymhen {0} Dydd Llun"}
-                    two{"ymhen {0} Dydd Llun"}
-                    zero{"ymhen {0} Dydd Llun"}
-                }
-                past{
-                    few{"{0} dydd Llun yn ôl"}
-                    many{"{0} dydd Llun yn ôl"}
-                    one{"{0} dydd Llun yn ôl"}
-                    other{"{0} dydd Llun yn ôl"}
-                    two{"{0} dydd Llun yn ôl"}
-                    zero{"{0} dydd Llun yn ôl"}
-                }
-            }
         }
         mon-narrow{
             relative{
@@ -1470,48 +1170,12 @@ cy{
                 "0"{"Llun yma"}
                 "1"{"Llun nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} Dydd Llun"}
-                    many{"ymhen {0} Dydd Llun"}
-                    one{"ymhen {0} Dydd Llun"}
-                    other{"ymhen {0} Dydd Llun"}
-                    two{"ymhen {0} Dydd Llun"}
-                    zero{"ymhen {0} Dydd Llun"}
-                }
-                past{
-                    few{"{0} dydd Llun yn ôl"}
-                    many{"{0} dydd Llun yn ôl"}
-                    one{"{0} dydd Llun yn ôl"}
-                    other{"{0} dydd Llun yn ôl"}
-                    two{"{0} dydd Llun yn ôl"}
-                    zero{"{0} dydd Llun yn ôl"}
-                }
-            }
         }
         mon-short{
             relative{
                 "-1"{"Llun diwethaf"}
                 "0"{"Llun yma"}
                 "1"{"Llun nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} Dydd Llun"}
-                    many{"ymhen {0} Dydd Llun"}
-                    one{"ymhen {0} Dydd Llun"}
-                    other{"ymhen {0} Dydd Llun"}
-                    two{"ymhen {0} Dydd Llun"}
-                    zero{"ymhen {0} Dydd Llun"}
-                }
-                past{
-                    few{"{0} dydd Llun yn ôl"}
-                    many{"{0} dydd Llun yn ôl"}
-                    one{"{0} dydd Llun yn ôl"}
-                    other{"{0} dydd Llun yn ôl"}
-                    two{"{0} dydd Llun yn ôl"}
-                    zero{"{0} dydd Llun yn ôl"}
-                }
             }
         }
         month{
@@ -1577,18 +1241,13 @@ cy{
                     many{"{0} mis yn ôl"}
                     one{"{0} mis yn ôl"}
                     other{"{0} mis yn ôl"}
-                    two{"deufis yn ôl"}
+                    two{"{0} mis yn ôl"}
                     zero{"{0} mis yn ôl"}
                 }
             }
         }
         quarter{
             dn{"chwarter"}
-            relative{
-                "-1"{"chwarter olaf"}
-                "0"{"chwarter hwn"}
-                "1"{"chwarter nesaf"}
-            }
             relativeTime{
                 future{
                     few{"ymhen {0} chwarter"}
@@ -1596,7 +1255,7 @@ cy{
                     one{"ymhen {0} chwarter"}
                     other{"ymhen {0} chwarter"}
                     two{"ymhen {0} chwarter"}
-                    zero{"ymhen {0} chwarter"}
+                    zero{"ymhen {0} o chwarteri"}
                 }
                 past{
                     few{"{0} chwarter yn ôl"}
@@ -1609,15 +1268,15 @@ cy{
             }
         }
         quarter-narrow{
-            dn{"chw."}
+            dn{"chwarter"}
             relativeTime{
                 future{
                     few{"ymhen {0} chwarter"}
                     many{"ymhen {0} chwarter"}
                     one{"ymhen {0} chwarter"}
-                    other{"ymhen {0} chwarter"}
+                    other{"ymhen {0} o chwarteri"}
                     two{"ymhen {0} chwarter"}
-                    zero{"ymhen {0} chwarter"}
+                    zero{"ymhen {0} o chwarteri"}
                 }
                 past{
                     few{"{0} chwarter yn ôl"}
@@ -1633,12 +1292,12 @@ cy{
             dn{"chwarter"}
             relativeTime{
                 future{
-                    few{"ymhen {0} chwarter"}
-                    many{"ymhen {0} chwarter"}
-                    one{"ymhen {0} chwarter"}
-                    other{"ymhen {0} chwarter"}
-                    two{"ymhen {0} chwarter"}
-                    zero{"ymhen {0} chwarter"}
+                    few{"ymhen {0} o chwarteri"}
+                    many{"ymhen {0} o chwarteri"}
+                    one{"ymhen {0} o chwarteri"}
+                    other{"ymhen {0} o chwarteri"}
+                    two{"ymhen {0} o chwarteri"}
+                    zero{"ymhen {0} o chwarteri"}
                 }
                 past{
                     few{"{0} chwarter yn ôl"}
@@ -1656,48 +1315,12 @@ cy{
                 "0"{"dydd Sadwrn yma"}
                 "1"{"dydd Sadwrn nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Sadwrn"}
-                    many{"ymhen {0} dydd Sadwrn"}
-                    one{"ymhen {0} dydd Sadwrn"}
-                    other{"ymhen {0} dydd Sadwrn"}
-                    two{"ymhen {0} dydd Sadwrn"}
-                    zero{"ymhen {0} dydd Sadwrn"}
-                }
-                past{
-                    few{"{0} dydd Sadwrn yn ôl"}
-                    many{"{0} dydd Sadwrn yn ôl"}
-                    one{"{0} dydd Sadwrn yn ôl"}
-                    other{"{0} dydd Sadwrn yn ôl"}
-                    two{"{0} dydd Sadwrn yn ôl"}
-                    zero{"{0} dydd Sadwrn yn ôl"}
-                }
-            }
         }
         sat-narrow{
             relative{
-                "-1"{"Sadwrn diwethaf"}
-                "0"{"Sadwrn yma"}
-                "1"{"Sadwrn nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Sadwrn"}
-                    many{"ymhen {0} dydd Sadwrn"}
-                    one{"ymhen {0} dydd Sadwrn"}
-                    other{"ymhen {0} dydd Sadwrn"}
-                    two{"ymhen {0} dydd Sadwrn"}
-                    zero{"ymhen {0} dydd Sadwrn"}
-                }
-                past{
-                    few{"{0} dydd Sadwrn yn ôl"}
-                    many{"{0} dydd Sadwrn yn ôl"}
-                    one{"{0} dydd Sadwrn yn ôl"}
-                    other{"{0} dydd Sadwrn yn ôl"}
-                    two{"{0} dydd Sadwrn yn ôl"}
-                    zero{"{0} dydd Sadwrn yn ôl"}
-                }
+                "-1"{"Sad. diwethaf"}
+                "0"{"Sad. yma"}
+                "1"{"Sad. nesaf"}
             }
         }
         sat-short{
@@ -1705,24 +1328,6 @@ cy{
                 "-1"{"Sadwrn diwethaf"}
                 "0"{"Sadwrn yma"}
                 "1"{"Sadwrn nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Sadwrn"}
-                    many{"ymhen {0} dydd Sadwrn"}
-                    one{"ymhen {0} dydd Sadwrn"}
-                    other{"ymhen {0} dydd Sadwrn"}
-                    two{"ymhen {0} dydd Sadwrn"}
-                    zero{"ymhen {0} dydd Sadwrn"}
-                }
-                past{
-                    few{"{0} dydd Sadwrn yn ôl"}
-                    many{"{0} dydd Sadwrn yn ôl"}
-                    one{"{0} dydd Sadwrn yn ôl"}
-                    other{"{0} dydd Sadwrn yn ôl"}
-                    two{"{0} dydd Sadwrn yn ôl"}
-                    zero{"{0} dydd Sadwrn yn ôl"}
-                }
             }
         }
         second{
@@ -1734,7 +1339,7 @@ cy{
                 future{
                     few{"ymhen {0} eiliad"}
                     many{"ymhen {0} eiliad"}
-                    one{"ymhen {0} eiliad"}
+                    one{"ymhen eiliad"}
                     other{"ymhen {0} eiliad"}
                     two{"ymhen {0} eiliad"}
                     zero{"ymhen {0} eiliad"}
@@ -1742,7 +1347,7 @@ cy{
                 past{
                     few{"{0} eiliad yn ôl"}
                     many{"{0} eiliad yn ôl"}
-                    one{"{0} eiliad yn ôl"}
+                    one{"eiliad yn ôl"}
                     other{"{0} eiliad yn ôl"}
                     two{"{0} eiliad yn ôl"}
                     zero{"{0} eiliad yn ôl"}
@@ -1755,7 +1360,7 @@ cy{
                 future{
                     few{"ymhen {0} eiliad"}
                     many{"ymhen {0} eiliad"}
-                    one{"ymhen {0} eiliad"}
+                    one{"ymhen eiliad"}
                     other{"ymhen {0} eiliad"}
                     two{"ymhen {0} eiliad"}
                     zero{"ymhen {0} eiliad"}
@@ -1776,7 +1381,7 @@ cy{
                 future{
                     few{"ymhen {0} eiliad"}
                     many{"ymhen {0} eiliad"}
-                    one{"ymhen {0} eiliad"}
+                    one{"ymhen eiliad"}
                     other{"ymhen {0} eiliad"}
                     two{"ymhen {0} eiliad"}
                     zero{"ymhen {0} eiliad"}
@@ -1797,48 +1402,12 @@ cy{
                 "0"{"dydd Sul yma"}
                 "1"{"dydd Sul nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} Dydd Sul"}
-                    many{"ymhen {0} Dydd Sul"}
-                    one{"ymhen {0} Dydd Sul"}
-                    other{"ymhen {0} Dydd Sul"}
-                    two{"ymhen {0} Dydd Sul"}
-                    zero{"ymhen {0} Dydd Sul"}
-                }
-                past{
-                    few{"{0} Dydd Sul yn ôl"}
-                    many{"{0} Dydd Sul yn ôl"}
-                    one{"{0} Dydd Sul yn ôl"}
-                    other{"{0} Dydd Sul yn ôl"}
-                    two{"{0} Dydd Sul yn ôl"}
-                    zero{"{0} Dydd Sul yn ôl"}
-                }
-            }
         }
         sun-narrow{
             relative{
                 "-1"{"Sul diwethaf"}
                 "0"{"Sul yma"}
                 "1"{"Sul nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} Dydd Sul"}
-                    many{"ymhen {0} Dydd Sul"}
-                    one{"ymhen {0} Dydd Sul"}
-                    other{"ymhen {0} Dydd Sul"}
-                    two{"ymhen {0} Dydd Sul"}
-                    zero{"ymhen {0} Dydd Sul"}
-                }
-                past{
-                    few{"{0} Dydd Sul yn ôl"}
-                    many{"{0} Dydd Sul yn ôl"}
-                    one{"{0} Dydd Sul yn ôl"}
-                    other{"{0} Dydd Sul yn ôl"}
-                    two{"{0} Dydd Sul yn ôl"}
-                    zero{"{0} Dydd Sul yn ôl"}
-                }
             }
         }
         sun-short{
@@ -1847,48 +1416,12 @@ cy{
                 "0"{"Sul yma"}
                 "1"{"Sul nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} Dydd Sul"}
-                    many{"ymhen {0} Dydd Sul"}
-                    one{"ymhen {0} Dydd Sul"}
-                    other{"ymhen {0} Dydd Sul"}
-                    two{"ymhen {0} Dydd Sul"}
-                    zero{"ymhen {0} Dydd Sul"}
-                }
-                past{
-                    few{"{0} Dydd Sul yn ôl"}
-                    many{"{0} Dydd Sul yn ôl"}
-                    one{"{0} Dydd Sul yn ôl"}
-                    other{"{0} Dydd Sul yn ôl"}
-                    two{"{0} Dydd Sul yn ôl"}
-                    zero{"{0} Dydd Sul yn ôl"}
-                }
-            }
         }
         thu{
             relative{
                 "-1"{"dydd Iau diwethaf"}
                 "0"{"dydd Iau yma"}
                 "1"{"dydd Iau nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Iau"}
-                    many{"ymhen {0} dydd Iau"}
-                    one{"ymhen {0} dydd Iau"}
-                    other{"ymhen {0} dydd Iau"}
-                    two{"ymhen {0} dydd Iau"}
-                    zero{"ymhen {0} dydd Iau"}
-                }
-                past{
-                    few{"{0} dydd Iau yn ôl"}
-                    many{"{0} dydd Iau yn ôl"}
-                    one{"{0} dydd Iau yn ôl"}
-                    other{"{0} dydd Iau yn ôl"}
-                    two{"{0} dydd Iau yn ôl"}
-                    zero{"{0} dydd Iau yn ôl"}
-                }
             }
         }
         thu-narrow{
@@ -1897,48 +1430,12 @@ cy{
                 "0"{"Iau yma"}
                 "1"{"Iau nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Iau"}
-                    many{"ymhen {0} dydd Iau"}
-                    one{"ymhen {0} dydd Iau"}
-                    other{"ymhen {0} dydd Iau"}
-                    two{"ymhen {0} dydd Iau"}
-                    zero{"ymhen {0} dydd Iau"}
-                }
-                past{
-                    few{"{0} dydd Iau yn ôl"}
-                    many{"{0} dydd Iau yn ôl"}
-                    one{"{0} dydd Iau yn ôl"}
-                    other{"{0} dydd Iau yn ôl"}
-                    two{"{0} dydd Iau yn ôl"}
-                    zero{"{0} dydd Iau yn ôl"}
-                }
-            }
         }
         thu-short{
             relative{
                 "-1"{"Iau diwethaf"}
                 "0"{"Iau yma"}
                 "1"{"Iau nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Iau"}
-                    many{"ymhen {0} dydd Iau"}
-                    one{"ymhen {0} dydd Iau"}
-                    other{"ymhen {0} dydd Iau"}
-                    two{"ymhen {0} dydd Iau"}
-                    zero{"ymhen {0} dydd Iau"}
-                }
-                past{
-                    few{"{0} dydd Iau yn ôl"}
-                    many{"{0} dydd Iau yn ôl"}
-                    one{"{0} dydd Iau yn ôl"}
-                    other{"{0} dydd Iau yn ôl"}
-                    two{"{0} dydd Iau yn ôl"}
-                    zero{"{0} dydd Iau yn ôl"}
-                }
             }
         }
         tue{
@@ -1947,48 +1444,12 @@ cy{
                 "0"{"dydd Mawrth yma"}
                 "1"{"dydd Mawrth nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Mawrth"}
-                    many{"ymhen {0} dydd Mawrth"}
-                    one{"ymhen {0} dydd Mawrth"}
-                    other{"ymhen {0} dydd Mawrth"}
-                    two{"ymhen {0} dydd Mawrth"}
-                    zero{"ymhen {0} dydd Mawrth"}
-                }
-                past{
-                    few{"{0} dydd Mawrth yn ôl"}
-                    many{"{0} dydd Mawrth yn ôl"}
-                    one{"{0} dydd Mawrth yn ôl"}
-                    other{"{0} dydd Mawrth yn ôl"}
-                    two{"{0} dydd Mawrth yn ôl"}
-                    zero{"{0} dydd Mawrth yn ôl"}
-                }
-            }
         }
         tue-narrow{
             relative{
-                "-1"{"Mawrth diwethaf"}
-                "0"{"Mawrth yma"}
-                "1"{"Mawrth nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Mawrth"}
-                    many{"ymhen {0} dydd Mawrth"}
-                    one{"ymhen {0} dydd Mawrth"}
-                    other{"ymhen {0} dydd Mawrth"}
-                    two{"ymhen {0} dydd Mawrth"}
-                    zero{"ymhen {0} dydd Mawrth"}
-                }
-                past{
-                    few{"{0} dydd Mawrth yn ôl"}
-                    many{"{0} dydd Mawrth yn ôl"}
-                    one{"{0} dydd Mawrth yn ôl"}
-                    other{"{0} dydd Mawrth yn ôl"}
-                    two{"{0} dydd Mawrth yn ôl"}
-                    zero{"{0} dydd Mawrth yn ôl"}
-                }
+                "-1"{"Maw. diwethaf"}
+                "0"{"Maw. yma"}
+                "1"{"Maw. nesaf"}
             }
         }
         tue-short{
@@ -1997,24 +1458,6 @@ cy{
                 "0"{"Mawrth yma"}
                 "1"{"Mawrth nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Mawrth"}
-                    many{"ymhen {0} dydd Mawrth"}
-                    one{"ymhen {0} dydd Mawrth"}
-                    other{"ymhen {0} dydd Mawrth"}
-                    two{"ymhen {0} dydd Mawrth"}
-                    zero{"ymhen {0} dydd Mawrth"}
-                }
-                past{
-                    few{"{0} dydd Mawrth yn ôl"}
-                    many{"{0} dydd Mawrth yn ôl"}
-                    one{"{0} dydd Mawrth yn ôl"}
-                    other{"{0} dydd Mawrth yn ôl"}
-                    two{"{0} dydd Mawrth yn ôl"}
-                    zero{"{0} dydd Mawrth yn ôl"}
-                }
-            }
         }
         wed{
             relative{
@@ -2022,48 +1465,12 @@ cy{
                 "0"{"dydd Mercher yma"}
                 "1"{"dydd Mercher nesaf"}
             }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Mercher"}
-                    many{"ymhen {0} dydd Mercher"}
-                    one{"ymhen {0} dydd Mercher"}
-                    other{"ymhen {0} dydd Mercher"}
-                    two{"ymhen {0} dydd Mercher"}
-                    zero{"ymhen {0} dydd Mercher"}
-                }
-                past{
-                    few{"{0} dydd Mercher yn ôl"}
-                    many{"{0} dydd Mercher yn ôl"}
-                    one{"{0} dydd Mercher yn ôl"}
-                    other{"{0} dydd Mercher yn ôl"}
-                    two{"{0} dydd Mercher yn ôl"}
-                    zero{"{0} dydd Mercher yn ôl"}
-                }
-            }
         }
         wed-narrow{
             relative{
-                "-1"{"Mercher diwethaf"}
-                "0"{"Mercher yma"}
-                "1"{"Mercher nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Mercher"}
-                    many{"ymhen {0} dydd Mercher"}
-                    one{"ymhen {0} dydd Mercher"}
-                    other{"ymhen {0} dydd Mercher"}
-                    two{"ymhen {0} dydd Mercher"}
-                    zero{"ymhen {0} dydd Mercher"}
-                }
-                past{
-                    few{"{0} dydd Mercher yn ôl"}
-                    many{"{0} dydd Mercher yn ôl"}
-                    one{"{0} dydd Mercher yn ôl"}
-                    other{"{0} dydd Mercher yn ôl"}
-                    two{"{0} dydd Mercher yn ôl"}
-                    zero{"{0} dydd Mercher yn ôl"}
-                }
+                "-1"{"Merch. diwethaf"}
+                "0"{"Merch. yma"}
+                "1"{"Merch. nesaf"}
             }
         }
         wed-short{
@@ -2071,24 +1478,6 @@ cy{
                 "-1"{"Mercher diwethaf"}
                 "0"{"Mercher yma"}
                 "1"{"Mercher nesaf"}
-            }
-            relativeTime{
-                future{
-                    few{"ymhen {0} dydd Mercher"}
-                    many{"ymhen {0} dydd Mercher"}
-                    one{"ymhen {0} dydd Mercher"}
-                    other{"ymhen {0} dydd Mercher"}
-                    two{"ymhen {0} dydd Mercher"}
-                    zero{"ymhen {0} dydd Mercher"}
-                }
-                past{
-                    few{"{0} dydd Mercher yn ôl"}
-                    many{"{0} dydd Mercher yn ôl"}
-                    one{"{0} dydd Mercher yn ôl"}
-                    other{"{0} dydd Mercher yn ôl"}
-                    two{"{0} dydd Mercher yn ôl"}
-                    zero{"{0} dydd Mercher yn ôl"}
-                }
             }
         }
         week{
@@ -2098,7 +1487,6 @@ cy{
                 "0"{"yr wythnos hon"}
                 "1"{"wythnos nesaf"}
             }
-            relativePeriod{"wythnos {0}"}
             relativeTime{
                 future{
                     few{"ymhen {0} wythnos"}
@@ -2120,29 +1508,6 @@ cy{
         }
         week-narrow{
             dn{"wythnos"}
-            relativePeriod{"wythnos {0}"}
-            relativeTime{
-                future{
-                    few{"ymhen {0} wythnos"}
-                    many{"ymhen {0} wythnos"}
-                    one{"ymhen {0} wythnos"}
-                    other{"ymhen {0} wythnos"}
-                    two{"ymhen {0} wythnos"}
-                    zero{"ymhen {0} wythnos"}
-                }
-                past{
-                    few{"{0} wythnos yn ôl"}
-                    many{"{0} wythnos yn ôl"}
-                    one{"{0} wythnos yn ôl"}
-                    other{"{0} wythnos yn ôl"}
-                    two{"pythefnos yn ôl"}
-                    zero{"{0} wythnos yn ôl"}
-                }
-            }
-        }
-        week-short{
-            dn{"wythnos"}
-            relativePeriod{"wythnos {0}"}
             relativeTime{
                 future{
                     few{"ymhen {0} wythnos"}
@@ -2162,32 +1527,29 @@ cy{
                 }
             }
         }
-        weekOfMonth{
-            dn{"rhif wythnos yn y mis"}
-        }
-        weekOfMonth-narrow{
-            dn{"wythnos y mis"}
-        }
-        weekOfMonth-short{
-            dn{"wythnos y mis"}
+        week-short{
+            dn{"wythnos"}
+            relativeTime{
+                future{
+                    few{"ymhen {0} wythnos"}
+                    many{"ymhen {0} wythnos"}
+                    one{"ymhen wythnos"}
+                    other{"ymhen {0} wythnos"}
+                    two{"ymhen pythefnos"}
+                    zero{"ymhen {0} wythnos"}
+                }
+                past{
+                    few{"{0} wythnos yn ôl"}
+                    many{"{0} wythnos yn ôl"}
+                    one{"{0} wythnos yn ôl"}
+                    other{"{0} wythnos yn ôl"}
+                    two{"pythefnos yn ôl"}
+                    zero{"{0} wythnos yn ôl"}
+                }
+            }
         }
         weekday{
-            dn{"diwrnod o’r wythnos"}
-        }
-        weekday-narrow{
-            dn{"diwrnod o’r wythnos"}
-        }
-        weekday-short{
-            dn{"diwrnod o’r wythnos"}
-        }
-        weekdayOfMonth{
-            dn{"diwrnod yn y mis"}
-        }
-        weekdayOfMonth-narrow{
-            dn{"diwrnod yn y mis"}
-        }
-        weekdayOfMonth-short{
-            dn{"diwrnod yn y mis"}
+            dn{"dydd o’r wythnos"}
         }
         year{
             dn{"blwyddyn"}
@@ -2258,31 +1620,13 @@ cy{
             }
         }
         zone{
-            dn{"cylchfa amser"}
-        }
-        zone-narrow{
-            dn{"cylchfa"}
-        }
-        zone-short{
-            dn{"cylchfa amser"}
+            dn{"Cylchfa Amser"}
         }
     }
     listPattern{
-        or{
-            2{"{0} neu {1}"}
-            end{"{0} neu {1}"}
-            middle{"{0}, {1}"}
-            start{"{0}, {1}"}
-        }
         standard{
-            2{"{0} a(c) {1}"}
-            end{"{0}, a(c) {1}"}
-            middle{"{0}, {1}"}
-            start{"{0}, {1}"}
-        }
-        standard-short{
-            2{"{0} a(c) {1}"}
-            end{"{0}, a(c) {1}"}
+            2{"{0}, {1}"}
+            end{"{0}, {1}"}
             middle{"{0}, {1}"}
             start{"{0}, {1}"}
         }

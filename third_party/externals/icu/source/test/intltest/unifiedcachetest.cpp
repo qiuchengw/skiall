@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2015, International Business Machines Corporation and         *
@@ -153,8 +151,8 @@ void UnifiedCacheTest::TestEvictionPolicy() {
     unusedReference->removeRef();
 
     // unused count not to exeed in use count
-    assertEquals("T1", UPRV_LENGTHOF(usedReferences), cache.unusedCount());
-    assertEquals("T2", 2*UPRV_LENGTHOF(usedReferences), cache.keyCount());
+    assertEquals("", UPRV_LENGTHOF(usedReferences), cache.unusedCount());
+    assertEquals("", 2*UPRV_LENGTHOF(usedReferences), cache.keyCount());
 
     // Free up those used entries.
     for (int32_t i = 0; i < UPRV_LENGTHOF(usedReferences); i++) {
@@ -162,9 +160,9 @@ void UnifiedCacheTest::TestEvictionPolicy() {
     }
 
     // This should free up all cache items
-    assertEquals("T3", 0, cache.keyCount());
+    assertEquals("", 0, cache.keyCount());
 
-    assertSuccess("T4", status);
+    assertSuccess("", status);
 }
 
 
@@ -181,7 +179,7 @@ void UnifiedCacheTest::TestBounded() {
     // complete control over it. Real clients should never ever create
     // their own cache!
     UnifiedCache cache(status);
-    assertSuccess("T0", status);
+    assertSuccess("", status);
 
     // Maximum unused count is 3.
     cache.setEvictionPolicy(3, 0, status);
@@ -202,15 +200,15 @@ void UnifiedCacheTest::TestBounded() {
     const UCTItem *frFr = NULL;
     cache.get(LocaleCacheKey<UCTItem>("en_US"), &cache, enUs, status);
     cache.get(LocaleCacheKey<UCTItem>("en"), &cache, en, status);
-    assertEquals("T1", 1, cache.unusedCount());
+    assertEquals("", 1, cache.unusedCount());
     cache.get(LocaleCacheKey<UCTItem>("en_GB"), &cache, enGb, status);
     cache.get(LocaleCacheKey<UCTItem>("fr_FR"), &cache, frFr, status);
     cache.get(LocaleCacheKey<UCTItem>("fr"), &cache, fr, status);
 
     // Client holds two unique references, "en" and "fr" the other three
     // entries are eligible for eviction. 
-    assertEquals("T2", 3, cache.unusedCount());
-    assertEquals("T3", 5, cache.keyCount());
+    assertEquals("", 3, cache.unusedCount());
+    assertEquals("", 5, cache.keyCount());
 
     // Exercise cache more but don't hold the references except for
     // the last one. At the end of this, we will hold references to one
@@ -227,40 +225,40 @@ void UnifiedCacheTest::TestBounded() {
     // Client holds three unique references, "en", "fr", "de" although we
     // could have a total of 8 entries in the cache maxUnusedCount == 3
     // so we have only 6 entries.
-    assertEquals("T4", 3, cache.unusedCount());
-    assertEquals("T5", 6, cache.keyCount());
+    assertEquals("", 3, cache.unusedCount());
+    assertEquals("", 6, cache.keyCount());
 
     // For all the references we have, cache must continue to return
     // those same references (#2)
 
     cache.get(LocaleCacheKey<UCTItem>("en"), &cache, throwAway, status);
     if (throwAway != en) {
-        errln("T6: Expected en to resolve to the same object.");
+        errln("Expected en to resolve to the same object.");
     }
     cache.get(LocaleCacheKey<UCTItem>("en_US"), &cache, throwAway, status);
     if (throwAway != enUs) {
-        errln("T7: Expected enUs to resolve to the same object.");
+        errln("Expected enUs to resolve to the same object.");
     }
     cache.get(LocaleCacheKey<UCTItem>("en_GB"), &cache, throwAway, status);
     if (throwAway != enGb) {
-        errln("T8: Expected enGb to resolve to the same object.");
+        errln("Expected enGb to resolve to the same object.");
     }
     cache.get(LocaleCacheKey<UCTItem>("fr_FR"), &cache, throwAway, status);
     if (throwAway != frFr) {
-        errln("T9: Expected frFr to resolve to the same object.");
+        errln("Expected frFr to resolve to the same object.");
     }
     cache.get(LocaleCacheKey<UCTItem>("fr_FR"), &cache, throwAway, status);
     cache.get(LocaleCacheKey<UCTItem>("fr"), &cache, throwAway, status);
     if (throwAway != fr) {
-        errln("T10: Expected fr to resolve to the same object.");
+        errln("Expected fr to resolve to the same object.");
     }
     cache.get(LocaleCacheKey<UCTItem>("de_AU"), &cache, throwAway, status);
     if (throwAway != deAu) {
-        errln("T11: Expected deAu to resolve to the same object.");
+        errln("Expected deAu to resolve to the same object.");
     }
 
-    assertEquals("T12", 3, cache.unusedCount());
-    assertEquals("T13", 6, cache.keyCount());
+    assertEquals("", 3, cache.unusedCount());
+    assertEquals("", 6, cache.keyCount());
 
     // Now we hold a references to two more distinct values. Cache size 
     // should grow to 8.
@@ -268,8 +266,8 @@ void UnifiedCacheTest::TestBounded() {
     const UCTItem *ru = NULL;
     cache.get(LocaleCacheKey<UCTItem>("es"), &cache, es, status);
     cache.get(LocaleCacheKey<UCTItem>("ru"), &cache, ru, status);
-    assertEquals("T14", 3, cache.unusedCount());
-    assertEquals("T15", 8, cache.keyCount());
+    assertEquals("", 3, cache.unusedCount());
+    assertEquals("", 8, cache.keyCount());
 
     // Now release all the references we hold except for
     // es, ru, and en
@@ -284,13 +282,13 @@ void UnifiedCacheTest::TestBounded() {
     SharedObject::clearPtr(throwAway);
 
     // Size of cache should magically drop to 3.
-    assertEquals("T16", 3, cache.unusedCount());
-    assertEquals("T17", 3, cache.keyCount());
+    assertEquals("", 3, cache.unusedCount());
+    assertEquals("", 3, cache.keyCount());
 
     // Be sure nothing happens setting the eviction policy in the middle of
     // a run.
     cache.setEvictionPolicy(3, 0, status);
-    assertSuccess("T18", status);
+    assertSuccess("", status);
     
 }
 
@@ -311,7 +309,7 @@ void UnifiedCacheTest::TestBasic() {
     cache->get(LocaleCacheKey<UCTItem>("en_GB"), enGb, status);
     cache->get(LocaleCacheKey<UCTItem>("fr_FR"), frFr, status);
     cache->get(LocaleCacheKey<UCTItem>("fr"), fr, status);
-    cache->get(LocaleCacheKey<UCTItem>("en_GB"), enGb2, status); 
+    cache->get(LocaleCacheKey<UCTItem>("en_GB"), enGb2, status);
     SharedObject::clearPtr(enGb2);
     if (enGb != enUs) {
         errln("Expected en_GB and en_US to resolve to same object.");
@@ -322,16 +320,16 @@ void UnifiedCacheTest::TestBasic() {
     if (enGb == fr) {
         errln("Expected en_GB and fr to return different objects.");
     }
-    assertSuccess("T1", status);
+    assertSuccess("", status);
     // en_US, en_GB, en share one object; fr_FR and fr don't share.
     // 5 keys in all.
-    assertEquals("T2", baseCount + 5, cache->keyCount());
+    assertEquals("", baseCount + 5, cache->keyCount());
     SharedObject::clearPtr(enGb);
     cache->flush();
 
     // Only 2 unique values in the cache. flushing trims cache down
     // to this minimum size.
-    assertEquals("T3", baseCount + 2, cache->keyCount());
+    assertEquals("", baseCount + 2, cache->keyCount());
     SharedObject::clearPtr(enUs);
     SharedObject::clearPtr(en);
     cache->flush();
@@ -339,14 +337,14 @@ void UnifiedCacheTest::TestBasic() {
     // the "en" object, so it gets flushed and the keys that refer to it
     // get removed from the cache. Now we have just one unique value, fr, in
     // the cache
-    assertEquals("T4", baseCount + 1, cache->keyCount());
+    assertEquals("", baseCount + 1, cache->keyCount());
     SharedObject::clearPtr(fr);
     cache->flush();
-    assertEquals("T5", baseCount + 1, cache->keyCount());
+    assertEquals("", baseCount + 1, cache->keyCount());
     SharedObject::clearPtr(frFr);
     cache->flush();
-    assertEquals("T6", baseCount + 0, cache->keyCount());
-    assertSuccess("T7", status);
+    assertEquals("", baseCount + 0, cache->keyCount());
+    assertSuccess("", status);
 }
 
 void UnifiedCacheTest::TestError() {

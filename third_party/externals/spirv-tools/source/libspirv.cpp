@@ -18,30 +18,6 @@
 
 namespace spvtools {
 
-Context::Context(spv_target_env env) : context_(spvContextCreate(env)) {}
-
-Context::Context(Context&& other) : context_(other.context_) {
-  other.context_ = nullptr;
-}
-
-Context& Context::operator=(Context&& other) {
-  spvContextDestroy(context_);
-  context_ = other.context_;
-  other.context_ = nullptr;
-
-  return *this;
-}
-
-Context::~Context() { spvContextDestroy(context_); }
-
-void Context::SetMessageConsumer(MessageConsumer consumer) {
-  SetContextMessageConsumer(context_, std::move(consumer));
-}
-
-spv_context& Context::CContext() { return context_; }
-
-const spv_context& Context::CContext() const { return context_; }
-
 // Structs for holding the data members for SpvTools.
 struct SpirvTools::Impl {
   explicit Impl(spv_target_env env) : context(spvContextCreate(env)) {
@@ -109,7 +85,7 @@ bool SpirvTools::Validate(const uint32_t* binary,
 }
 
 bool SpirvTools::Validate(const uint32_t* binary, const size_t binary_size,
-                          const ValidatorOptions& options) const {
+                          const spvtools::ValidatorOptions& options) const {
   spv_const_binary_t the_binary{binary, binary_size};
   return spvValidateWithOptions(impl_->context, options, &the_binary,
                                 nullptr) == SPV_SUCCESS;

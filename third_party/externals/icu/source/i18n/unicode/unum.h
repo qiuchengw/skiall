@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 1997-2015, International Business Machines Corporation and others.
@@ -25,17 +23,12 @@
 #include "unicode/parseerr.h"
 #include "unicode/uformattable.h"
 #include "unicode/udisplaycontext.h"
-#include "unicode/ufieldpositer.h"
 
 /**
  * \file
- * \brief C API: Compatibility APIs for number formatting.
+ * \brief C API: NumberFormat
  *
  * <h2> Number Format C API </h2>
- * 
- * <p><strong>IMPORTANT:</strong> New users with are strongly encouraged to
- * see if unumberformatter.h fits their use case.  Although not deprecated,
- * this header is provided for backwards compatibility only.
  *
  * Number Format C API  Provides functions for
  * formatting and parsing a number.  Also provides methods for
@@ -119,7 +112,7 @@
  * <P>
  * You can also control the display of numbers with such function as
  * unum_getAttributes() and unum_setAttributes(), which let you set the
- * minimum fraction digits, grouping, etc.
+ * miminum fraction digits, grouping, etc.
  * @see UNumberFormatAttributes for more details
  * <P>
  * You can also use forms of the parse and format methods with
@@ -130,7 +123,7 @@
  * </ul>
  * <p>
  * It is also possible to change or set the symbols used for a particular
- * locale like the currency symbol, the grouping separator , monetary separator
+ * locale like the currency symbol, the grouping seperator , monetary seperator
  * etc by making use of functions unum_setSymbols() and unum_getSymbols().
  */
 
@@ -226,35 +219,35 @@ typedef enum UNumberFormatStyle {
      * @stable ICU 54
      */
     UNUM_CASH_CURRENCY=13,
+#ifndef U_HIDE_DRAFT_API
     /**
      * Decimal format expressed using compact notation
      * (short form, corresponds to UNumberCompactStyle=UNUM_SHORT)
      * e.g. "23K", "45B"
-     * @stable ICU 56
+     * @draft ICU 56
      */
     UNUM_DECIMAL_COMPACT_SHORT=14,
     /**
      * Decimal format expressed using compact notation
      * (long form, corresponds to UNumberCompactStyle=UNUM_LONG)
      * e.g. "23 thousand", "45 billion"
-     * @stable ICU 56
+     * @draft ICU 56
      */
     UNUM_DECIMAL_COMPACT_LONG=15,
     /**
      * Currency format with a currency symbol, e.g., "$1.00",
      * using non-accounting style for negative values (e.g. minus sign).
      * Overrides any style specified using -cf- key in locale.
-     * @stable ICU 56
+     * @draft ICU 56
      */
     UNUM_CURRENCY_STANDARD=16,
+#endif /* U_HIDE_DRAFT_API */
 
-#ifndef U_HIDE_DEPRECATED_API
     /**
-     * One more than the highest normal UNumberFormatStyle value.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
+     * One more than the highest number format style constant.
+     * @stable ICU 4.8
      */
     UNUM_FORMAT_STYLE_COUNT=17,
-#endif  /* U_HIDE_DEPRECATED_API */
 
     /**
      * Default format
@@ -268,13 +261,8 @@ typedef enum UNumberFormatStyle {
     UNUM_IGNORE = UNUM_PATTERN_DECIMAL
 } UNumberFormatStyle;
 
-/** The possible number format rounding modes.
- *
- * <p>
- * For more detail on rounding modes, see:
- * http://userguide.icu-project.org/formatparse/numbers/rounding-modes
- *
- * @stable ICU 2.0
+/** The possible number format rounding modes. 
+ *  @stable ICU 2.0
  */
 typedef enum UNumberFormatRoundingMode {
     UNUM_ROUND_CEILING,
@@ -335,13 +323,7 @@ enum UCurrencySpacing {
     UNUM_CURRENCY_SURROUNDING_MATCH,
     /** @stable ICU 4.8 */
     UNUM_CURRENCY_INSERT,
-
-    /* Do not conditionalize the following with #ifndef U_HIDE_DEPRECATED_API,
-     * it is needed for layout of DecimalFormatSymbols object. */
-    /**
-     * One more than the highest normal UCurrencySpacing value.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** @stable ICU 4.8 */
     UNUM_CURRENCY_SPACING_COUNT
 };
 typedef enum UCurrencySpacing UCurrencySpacing; /**< @stable ICU 4.8 */
@@ -375,13 +357,8 @@ typedef enum UNumberFormatFields {
     UNUM_PERMILL_FIELD,
     /** @stable ICU 49 */
     UNUM_SIGN_FIELD,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UNumberFormatFields value.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** @stable ICU 49 */
     UNUM_FIELD_COUNT
-#endif  /* U_HIDE_DEPRECATED_API */
 } UNumberFormatFields;
 
 
@@ -400,10 +377,6 @@ typedef enum UNumberFormatFields {
  * number format is opened using the given pattern, which must conform
  * to the syntax described in DecimalFormat or RuleBasedNumberFormat,
  * respectively.
- *
- * <p><strong>NOTE::</strong> New users with are strongly encouraged to
- * use unumf_openWithSkeletonAndLocale instead of unum_open.
- *
  * @param pattern A pattern specifying the format to use. 
  * This parameter is ignored unless the style is
  * UNUM_PATTERN_DECIMAL or UNUM_PATTERN_RULEBASED.
@@ -566,57 +539,6 @@ unum_formatDouble(    const    UNumberFormat*  fmt,
             int32_t         resultLength,
             UFieldPosition  *pos, /* 0 if ignore */
             UErrorCode*     status);
-
-/**
-* Format a double using a UNumberFormat according to the UNumberFormat's locale,
-* and initialize a UFieldPositionIterator that enumerates the subcomponents of
-* the resulting string.
-*
-* @param format
-*          The formatter to use.
-* @param number
-*          The number to format.
-* @param result
-*          A pointer to a buffer to receive the NULL-terminated formatted
-*          number. If the formatted number fits into dest but cannot be
-*          NULL-terminated (length == resultLength) then the error code is set
-*          to U_STRING_NOT_TERMINATED_WARNING. If the formatted number doesn't
-*          fit into result then the error code is set to
-*          U_BUFFER_OVERFLOW_ERROR.
-* @param resultLength
-*          The maximum size of result.
-* @param fpositer
-*          A pointer to a UFieldPositionIterator created by {@link #ufieldpositer_open}
-*          (may be NULL if field position information is not needed, but in this
-*          case it's preferable to use {@link #unum_formatDouble}). Iteration
-*          information already present in the UFieldPositionIterator is deleted,
-*          and the iterator is reset to apply to the fields in the formatted
-*          string created by this function call. The field values and indexes
-*          returned by {@link #ufieldpositer_next} represent fields denoted by
-*          the UNumberFormatFields enum. Fields are not returned in a guaranteed
-*          order. Fields cannot overlap, but they may nest. For example, 1234
-*          could format as "1,234" which might consist of a grouping separator
-*          field for ',' and an integer field encompassing the entire string.
-* @param status
-*          A pointer to an UErrorCode to receive any errors
-* @return
-*          The total buffer size needed; if greater than resultLength, the
-*          output was truncated.
-* @see unum_formatDouble
-* @see unum_parse
-* @see unum_parseDouble
-* @see UFieldPositionIterator
-* @see UNumberFormatFields
-* @stable ICU 59
-*/
-U_STABLE int32_t U_EXPORT2
-unum_formatDoubleForFields(const UNumberFormat* format,
-                           double number,
-                           UChar* result,
-                           int32_t resultLength,
-                           UFieldPositionIterator* fpositer,
-                           UErrorCode* status);
-
 
 /**
 * Format a decimal number using a UNumberFormat.
@@ -894,7 +816,7 @@ unum_parseToUFormattable(const UNumberFormat* fmt,
  * @param localized TRUE if the pattern is localized, FALSE otherwise.
  * @param pattern The new pattern
  * @param patternLength The length of pattern, or -1 if null-terminated.
- * @param parseError A pointer to UParseError to receive information
+ * @param parseError A pointer to UParseError to recieve information
  * about errors occurred during parsing, or NULL if no parse error
  * information is desired.
  * @param status A pointer to an input-output UErrorCode.
@@ -1018,8 +940,6 @@ typedef enum UNumberFormatAttribute {
     * <p>Example: setting the scale to 3, 123 formats as "123,000"
     * <p>Example: setting the scale to -4, 123 formats as "0.0123"
     *
-    * This setting is analogous to getMultiplierScale() and setMultiplierScale() in decimfmt.h.
-    *
    * @stable ICU 51 */
   UNUM_SCALE = 21,
 #ifndef U_HIDE_INTERNAL_API
@@ -1059,7 +979,7 @@ typedef enum UNumberFormatAttribute {
    * Default: 0 (unset)
    * @stable ICU 50
    */
-  UNUM_PARSE_NO_EXPONENT = 0x1001,
+  UNUM_PARSE_NO_EXPONENT,
 
   /** 
    * if this attribute is set to 1, specifies that, if the pattern contains a 
@@ -1074,21 +994,7 @@ typedef enum UNumberFormatAttribute {
   /* The following cannot be #ifndef U_HIDE_INTERNAL_API, needed in .h file variable declararions */
   /** Limit of boolean attributes.
    * @internal */
-  UNUM_LIMIT_BOOLEAN_ATTRIBUTE = 0x1003,
-
-  /**
-   * Whether parsing is sensitive to case (lowercase/uppercase).
-   * TODO: Add to the test suite.
-   * @internal This API is a technical preview. It may change in an upcoming release.
-   */
-  UNUM_PARSE_CASE_SENSITIVE = 0x1004,
-
-  /**
-   * Formatting: whether to show the plus sign on non-negative numbers.
-   * TODO: Add to the test suite.
-   * @internal This API is a technical preview. It may change in an upcoming release.
-   */
-  UNUM_SIGN_ALWAYS_SHOWN = 0x1005,
+  UNUM_LIMIT_BOOLEAN_ATTRIBUTE = 0x1003
 } UNumberFormatAttribute;
 
 /**
@@ -1366,13 +1272,8 @@ typedef enum UNumberFormatSymbol {
    */
   UNUM_EXPONENT_MULTIPLICATION_SYMBOL = 27,
 
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UNumberFormatSymbol value.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+  /** count symbol constants */
   UNUM_FORMAT_SYMBOL_COUNT = 28
-#endif  /* U_HIDE_DEPRECATED_API */
 } UNumberFormatSymbol;
 
 /**

@@ -14,15 +14,16 @@
 
 // Tests for unique type declaration rules validator.
 
-#include <sstream>
 #include <string>
+#include <sstream>
 
-#include "latest_version_spirv_header.h"
+#include "spirv/1.1/spirv.h"
 #include "test_fixture.h"
 #include "tools/stats/stats_analyzer.h"
 
-namespace spvtools {
 namespace {
+
+using libspirv::SpirvStats;
 
 // Fills |stats| with some synthetic header stats, as if aggregated from 100
 // modules (100 used for simpler percentage evaluation).
@@ -169,4 +170,3 @@ TEST(StatsAnalyzer, OpcodeMarkov) {
 }
 
 }  // namespace
-}  // namespace spvtools

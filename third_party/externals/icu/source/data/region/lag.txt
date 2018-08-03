@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/lag.xml
+// *
+// ***************************************************************************
 lag{
     Countries{
         AD{"Andóra"}
@@ -9,6 +15,7 @@ lag{
         AI{"Anguíila"}
         AL{"Alubánia"}
         AM{"Ariménia"}
+        AN{"Antili ya Ʉholáanzi"}
         AO{"Angóola"}
         AR{"Ajentíina"}
         AS{"Samóoa ya Amerɨ́ka"}
@@ -227,5 +234,5 @@ lag{
         ZM{"Sámbia"}
         ZW{"Simbáabwe"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

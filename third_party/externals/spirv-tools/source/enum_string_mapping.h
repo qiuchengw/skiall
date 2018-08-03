@@ -17,20 +17,21 @@
 
 #include <string>
 
-#include "extensions.h"
-#include "latest_version_spirv_header.h"
+#include "spirv/1.1/spirv.h"
 
-namespace spvtools {
+namespace libspirv {
+
+enum class Extension;
 
 // Finds Extension enum corresponding to |str|. Returns false if not found.
-bool GetExtensionFromString(const char* str, Extension* extension);
+bool GetExtensionFromString(const std::string& str, Extension* extension);
 
 // Returns text string corresponding to |extension|.
-const char* ExtensionToString(Extension extension);
+std::string ExtensionToString(Extension extension);
 
 // Returns text string corresponding to |capability|.
-const char* CapabilityToString(SpvCapability capability);
+std::string CapabilityToString(SpvCapability capability);
 
-}  // namespace spvtools
+}  // namespace libspirv
 
 #endif  // LIBSPIRV_ENUM_STRING_MAPPING_H_

@@ -37,10 +37,6 @@ MemoryInputStream::~MemoryInputStream() {
   Close();
 }
 
-int32_t MemoryInputStream::Length() {
-  return length_;
-}
-
 int32_t MemoryInputStream::Available() {
   return length_ - position_;
 }
@@ -70,15 +66,15 @@ int32_t MemoryInputStream::Read() {
 #endif
     return 0;
   }
-  uint8_t value = buffer_[position_++];
+  byte_t value = buffer_[position_++];
   return value;
 }
 
-int32_t MemoryInputStream::Read(std::vector<uint8_t>* b) {
+int32_t MemoryInputStream::Read(ByteVector* b) {
   return Read(b, 0, b->size());
 }
 
-int32_t MemoryInputStream::Read(std::vector<uint8_t>* b, int32_t offset, int32_t length) {
+int32_t MemoryInputStream::Read(ByteVector* b, int32_t offset, int32_t length) {
   assert(b);
   if (!buffer_) {
 #if !defined (SFNTLY_NO_EXCEPTION)
@@ -123,11 +119,11 @@ int64_t MemoryInputStream::Skip(int64_t n) {
   return skip_count;
 }
 
-void MemoryInputStream::Unread(std::vector<uint8_t>* b) {
+void MemoryInputStream::Unread(ByteVector* b) {
   Unread(b, 0, b->size());
 }
 
-void MemoryInputStream::Unread(std::vector<uint8_t>* b, int32_t offset, int32_t length) {
+void MemoryInputStream::Unread(ByteVector* b, int32_t offset, int32_t length) {
   assert(b);
   assert(b->size() >= size_t(offset + length));
   if (!buffer_) {
@@ -142,7 +138,7 @@ void MemoryInputStream::Unread(std::vector<uint8_t>* b, int32_t offset, int32_t 
   position_ -= unread_count;
 }
 
-bool MemoryInputStream::Attach(const uint8_t* buffer, size_t length) {
+bool MemoryInputStream::Attach(const byte_t* buffer, size_t length) {
   assert(buffer);
   assert(length);
   buffer_ = buffer;

@@ -1,10 +1,15 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/az.xml
+// *
+// ***************************************************************************
 az{
     Keys{
         calendar{"Təqvim"}
-        cf{"Valyuta Formatı"}
-        collation{"Sıralama"}
+        collation{"Çeşidləmə"}
         currency{"Valyuta"}
         hc{"Saat Sikli (12 / 24)"}
         lb{"Sətirdən sətrə keçirmə üslubu"}
@@ -12,42 +17,42 @@ az{
         numbers{"Rəqəmlər"}
     }
     Languages{
-        aa{"afar"}
+        aa{"afarca"}
         ab{"abxaz"}
         ace{"akin"}
         ach{"akoli"}
-        ada{"adanqme"}
-        ady{"adıgey"}
-        ae{"avestan"}
+        ada{"adangme"}
+        ady{"aduge"}
+        ae{"avestanca"}
         af{"afrikaans"}
         afh{"afrihili"}
         agq{"aqhem"}
-        ain{"aynu"}
-        ak{"akan"}
-        akk{"akkad"}
-        ale{"aleut"}
-        alt{"cənubi altay"}
+        ain{"aynuca"}
+        ak{"akanca"}
+        akk{"akadianca"}
+        ale{"aleutca"}
+        alt{"cənub altay"}
         am{"amhar"}
-        an{"araqon"}
-        ang{"qədim ingilis"}
-        anp{"angika"}
+        an{"aragonca"}
+        ang{"qədimi ingiliscə"}
+        anp{"angikə"}
         ar{"ərəb"}
-        ar_001{"müasir standart ərəb"}
+        ar_001{"Modern Standart Ərəbcə"}
         arc{"aramik"}
-        arn{"mapuçe"}
+        arn{"araukanca"}
         arp{"arapaho"}
-        arw{"aravak"}
+        arw{"aravakça"}
         as{"assam"}
         asa{"asu"}
-        ast{"asturiya"}
-        av{"avar"}
-        awa{"avadhi"}
-        ay{"aymara"}
-        az{"azərbaycan"}
+        ast{"asturicə"}
+        av{"avarikcə"}
+        awa{"avadicə"}
+        ay{"aymarca"}
+        az{"azərbaycan dili"}
         az_Arab{"cənubi azərbaycan"}
         ba{"başqırd"}
         bal{"baluc"}
-        ban{"bali"}
+        ban{"balincə"}
         bas{"basa"}
         be{"belarus"}
         bej{"beja"}
@@ -57,45 +62,44 @@ az{
         bgn{"qərbi bəluc"}
         bho{"bxoçpuri"}
         bi{"bislama"}
-        bik{"bikol"}
+        bik{"bikolca"}
         bin{"bini"}
         bla{"siksikə"}
         bm{"bambara"}
         bn{"benqal"}
         bo{"tibet"}
-        br{"breton"}
+        br{"Bretonca"}
         bra{"braj"}
         brx{"bodo"}
-        bs{"bosniya"}
+        bs{"bosniak"}
         bua{"buryat"}
         bug{"bugin"}
-        byn{"blin"}
+        byn{"bilincə"}
         ca{"katalan"}
-        cad{"keddo"}
+        cad{"kado"}
         car{"karib"}
-        cch{"atsam"}
+        cch{"atsamca"}
         ce{"çeçen"}
-        ceb{"sebuan"}
+        ceb{"kebuano"}
         cgg{"çiqa"}
         ch{"çamoro"}
-        chb{"çibça"}
+        chb{"çibçə"}
         chg{"çağatay"}
         chk{"çukiz"}
         chm{"mari"}
         chn{"çinuk ləhçəsi"}
         cho{"çoktau"}
         chp{"çipevyan"}
-        chr{"çeroki"}
+        chr{"çiroki"}
         chy{"çeyen"}
-        ckb{"Mərkəzi kürdcə"}
+        ckb{"sorani kürd"}
         co{"korsika"}
         cop{"kopt"}
-        cr{"kri"}
-        crh{"krım türkcəsi"}
-        crs{"Seyşel kreol fransızcası"}
+        cr{"kri dili"}
+        crh{"krım türkçə"}
         cs{"çex"}
         csb{"kaşubyan"}
-        cu{"slavyan"}
+        cu{"kilsə slav"}
         cv{"çuvaş"}
         cy{"uels"}
         da{"danimarka"}
@@ -113,16 +117,15 @@ az{
         doi{"doqri"}
         dsb{"aşağı sorb"}
         dua{"duala"}
-        dum{"orta holland"}
-        dv{"maldiv"}
+        dum{"ortacaq hollandca"}
+        dv{"diveh"}
         dyo{"diola"}
         dyu{"dyula"}
-        dz{"dzonqxa"}
-        dzg{"dazaqa"}
+        dz{"dzonqa"}
         ebu{"embu"}
         ee{"eve"}
         efi{"efik"}
-        egy{"qədim misir"}
+        egy{"qədimi misir"}
         eka{"ekacuk"}
         el{"yunan"}
         elx{"elamit"}
@@ -131,7 +134,7 @@ az{
         en_CA{"Kanada ingiliscəsi"}
         en_GB{"Britaniya ingiliscəsi"}
         en_US{"Amerika ingiliscəsi"}
-        enm{"orta ingilis"}
+        enm{"ortacaq ingiliscə"}
         eo{"esperanto"}
         es{"ispan"}
         es_419{"Latın Amerikası ispancası"}
@@ -152,29 +155,28 @@ az{
         fr{"fransız"}
         fr_CA{"Kanada fransızcası"}
         fr_CH{"İsveçrə fransızcası"}
-        frm{"orta fransız"}
-        fro{"qədim fransız"}
-        frr{"şimali fris"}
+        frm{"ortacaq fransızca"}
+        fro{"qədimi fransızca"}
+        frr{"şimal fris"}
         fur{"friul"}
         fy{"qərbi friz"}
         ga{"irland"}
         gaa{"qa"}
         gag{"qaqauz"}
-        gan{"qan"}
         gay{"qayo"}
         gba{"qabaya"}
-        gd{"Şotlandiya keltcəsi"}
+        gd{"skot gaelik"}
         gez{"qez"}
-        gil{"qilbert"}
-        gl{"qalisiya"}
-        gmh{"orta yüksək alman"}
+        gil{"qilbert gili"}
+        gl{"qalisian"}
+        gmh{"ortacaq yüksək almanca"}
         gn{"quarani"}
-        goh{"qədim alman"}
+        goh{"qədimi almanca"}
         gon{"qondi"}
         gor{"qorontalo"}
-        got{"qotika"}
+        got{"gotça"}
         grb{"qrebo"}
-        grc{"qədim yunan"}
+        grc{"qədimi yunanca"}
         gsw{"İsveçrə almancası"}
         gu{"qucarat"}
         guz{"qusi"}
@@ -182,27 +184,24 @@ az{
         gwi{"qviçin"}
         ha{"hausa"}
         hai{"hayda"}
-        hak{"hakka"}
         haw{"havay"}
         he{"ivrit"}
-        hi{"hind"}
+        hi{"hindi"}
         hil{"hiliqaynon"}
         hit{"hittit"}
         hmn{"monq"}
         ho{"hiri motu"}
         hr{"xorvat"}
         hsb{"yuxarı sorb"}
-        hsn{"syan"}
-        ht{"haiti kreol"}
+        ht{"haiti"}
         hu{"macar"}
         hup{"hupa"}
         hy{"erməni"}
-        hz{"herero"}
-        ia{"interlinqua"}
+        hz{"Herer"}
+        ia{"interlingua"}
         iba{"iban"}
-        ibb{"ibibio"}
-        id{"indoneziya"}
-        ie{"interlinqve"}
+        id{"indonez"}
+        ie{"interlingue"}
         ig{"iqbo"}
         ii{"siçuan yi"}
         ik{"inupiaq"}
@@ -216,17 +215,17 @@ az{
         jbo{"loğban"}
         jgo{"nqomba"}
         jmc{"maçam"}
-        jpr{"ivrit-fars"}
-        jrb{"ivrit-ərəb"}
+        jpr{"judo-farsca"}
+        jrb{"jude-ərəbcə"}
         jv{"yava"}
         ka{"gürcü"}
-        kaa{"qaraqalpaq"}
+        kaa{"qara-qalpaq"}
         kab{"kabile"}
-        kac{"kaçin"}
+        kac{"kaçinca"}
         kaj{"ju"}
         kam{"kamba"}
         kaw{"kavi"}
-        kbd{"kabarda-çərkəz"}
+        kbd{"kabardca"}
         kcg{"tiyap"}
         kde{"makond"}
         kea{"kabuverdian"}
@@ -238,7 +237,6 @@ az{
         ki{"kikuyu"}
         kj{"kuanyama"}
         kk{"qazax"}
-        kkj{"kako"}
         kl{"kalaallisut"}
         kln{"kalencin"}
         km{"kxmer"}
@@ -246,32 +244,31 @@ az{
         kn{"kannada"}
         ko{"koreya"}
         koi{"komi-permyak"}
-        kok{"konkani"}
+        kok{"konkan"}
         kos{"kosreyan"}
         kpe{"kpelle"}
-        kr{"kanuri"}
+        kr{"kanur"}
         krc{"qaraçay-balkar"}
-        krl{"karel"}
+        krl{"karelyan"}
         kru{"kurux"}
-        ks{"kəşmir"}
+        ks{"kaşmir"}
         ksb{"şambala"}
         ksf{"bafia"}
-        ksh{"köln"}
         ku{"kürd"}
-        kum{"kumık"}
+        kum{"kumuk"}
         kut{"kutenay"}
         kv{"komi"}
         kw{"korn"}
         ky{"qırğız"}
         la{"latın"}
-        lad{"sefard"}
+        lad{"ladin"}
         lag{"langi"}
-        lah{"qərbi pəncab"}
+        lah{"laxnda"}
         lam{"lamba"}
         lb{"lüksemburq"}
-        lez{"ləzgi"}
+        lez{"ləzqi"}
         lg{"qanda"}
-        li{"limburq"}
+        li{"limburqiş"}
         lkt{"lakota"}
         ln{"linqala"}
         lo{"laos"}
@@ -284,7 +281,7 @@ az{
         lui{"luyseno"}
         lun{"lunda"}
         luo{"luo"}
-        lus{"mizo"}
+        lus{"lushayca"}
         luy{"luyia"}
         lv{"latış"}
         mad{"maduriz"}
@@ -299,7 +296,7 @@ az{
         mer{"meru"}
         mfe{"morisien"}
         mg{"malaqas"}
-        mga{"orta irland"}
+        mga{"ortacaq irlandca"}
         mgh{"maxuva-meetto"}
         mgo{"meta’"}
         mh{"marşal"}
@@ -313,79 +310,75 @@ az{
         mni{"manipüri"}
         moh{"mohavk"}
         mos{"mosi"}
-        mr{"marathi"}
+        mr{"marati"}
         ms{"malay"}
         mt{"malta"}
         mua{"mundanq"}
-        mul{"çoxsaylı dillər"}
+        mul{"digər dillər"}
         mus{"krik"}
         mwl{"mirand"}
         mwr{"maruari"}
-        my{"birman"}
+        my{"birma"}
         myv{"erzya"}
         mzn{"mazandaran"}
         na{"nauru"}
-        nan{"Min Nan"}
-        nap{"neapolitan"}
+        nap{"neapolital"}
         naq{"nama"}
         nb{"bokmal norveç"}
         nd{"şimali ndebele"}
-        nds{"aşağı alman"}
+        nds{"aşağı almanca"}
         nds_NL{"aşağı sakson"}
         ne{"nepal"}
         new{"nevari"}
-        ng{"ndonqa"}
-        nia{"nias"}
+        ng{"nqonka"}
+        nia{"nyas"}
         niu{"niyuan"}
         nl{"holland"}
         nl_BE{"flamand"}
         nmg{"kvasio"}
         nn{"nünorsk norveç"}
-        nnh{"ngiemboon"}
         no{"norveç"}
         nog{"noqay"}
-        non{"qədim nors"}
+        non{"qədimi norsca"}
         nqo{"nqo"}
-        nr{"cənubi ndebele"}
+        nr{"cənub ndebele"}
         nso{"şimal soto"}
         nus{"nuer"}
         nv{"navayo"}
         ny{"nyanca"}
         nym{"nyamvezi"}
         nyn{"nyankol"}
-        nyo{"nyoro"}
-        nzi{"nzima"}
-        oc{"oksitan"}
+        nyo{"niyoro"}
+        nzi{"nizima"}
+        oc{"oksitanca"}
         oj{"ocibva"}
         om{"oromo"}
-        or{"odiya"}
-        os{"osetin"}
+        or{"oriya"}
+        os{"osetik"}
         osa{"osage"}
         ota{"osman"}
         pa{"pəncab"}
         pag{"panqasinan"}
-        pal{"pəhləvi"}
+        pal{"paxlavi"}
         pam{"pampanqa"}
         pap{"papyamento"}
-        pau{"palayan"}
-        pcm{"niger kreol"}
-        peo{"qədim fars"}
+        pau{"palayanca"}
+        peo{"qədimi farsca"}
         phn{"foyenik"}
         pi{"pali"}
         pl{"polyak"}
-        pon{"ponpey"}
-        prg{"pruss"}
-        pro{"qədim provansal"}
+        pon{"ponpeyan"}
+        pro{"qədimi provensialca"}
         ps{"puştu"}
         pt{"portuqal"}
         pt_BR{"Braziliya portuqalcası"}
         pt_PT{"Portuqaliya portuqalcası"}
         qu{"keçua"}
         quc{"kiçe"}
-        raj{"racastani"}
-        rap{"rapanui"}
+        raj{"racastan"}
+        rap{"rapanu"}
         rar{"rarotonqan"}
-        rm{"romanş"}
+        rm{"retoroman"}
         rn{"rundi"}
         ro{"rumın"}
         ro_MD{"moldav"}
@@ -393,20 +386,19 @@ az{
         rom{"roman"}
         root{"rut"}
         ru{"rus"}
-        rup{"aroman"}
+        rup{"aromanca"}
         rw{"kinyarvanda"}
         rwk{"rua"}
         sa{"sanskrit"}
         sad{"sandave"}
-        sah{"saxa"}
+        sah{"yakut"}
         sam{"samaritan"}
         saq{"samburu"}
         sas{"sasak"}
         sat{"santal"}
-        sba{"nqambay"}
         sbp{"sanqu"}
         sc{"sardin"}
-        scn{"siciliya"}
+        scn{"sisili"}
         sco{"skots"}
         sd{"sindhi"}
         sdh{"cənubi kürd"}
@@ -415,11 +407,11 @@ az{
         sel{"selkup"}
         ses{"koyraboro senni"}
         sg{"sanqo"}
-        sga{"qədim irland"}
-        sh{"serb-xorvat"}
+        sga{"qədimi irlandca"}
+        sh{"serb-xorvatca"}
         shi{"taçelit"}
         shn{"şan"}
-        si{"sinhala"}
+        si{"sinhal"}
         sid{"sidamo"}
         sk{"slovak"}
         sl{"sloven"}
@@ -427,7 +419,7 @@ az{
         sma{"cənubi sami"}
         smj{"lule sami"}
         smn{"inari sami"}
-        sms{"skolt sami"}
+        sms{"skolt"}
         sn{"şona"}
         snk{"soninke"}
         so{"somali"}
@@ -435,19 +427,16 @@ az{
         sq{"alban"}
         sr{"serb"}
         srn{"sranan tonqo"}
-        srr{"serer"}
+        srr{"serer dilii"}
         ss{"svati"}
-        ssy{"saho"}
-        st{"sesoto"}
-        su{"sundan"}
+        st{"Sesoto"}
         suk{"sukuma"}
         sus{"susu"}
         sux{"sumeryan"}
         sv{"isveç"}
         sw{"suahili"}
-        sw_CD{"Konqo suahilicəsi"}
-        swb{"komor"}
-        syr{"suriya"}
+        swc{"Konqo suahilicəsi"}
+        syr{"siryak"}
         ta{"tamil"}
         te{"teluqu"}
         tem{"timne"}
@@ -467,23 +456,22 @@ az{
         tmh{"tamaşek"}
         tn{"svana"}
         to{"tonqa"}
-        tog{"nyasa tonqa"}
+        tog{"niyasa tonga"}
         tpi{"tok pisin"}
         tr{"türk"}
-        trv{"taroko"}
         ts{"sonqa"}
         tsi{"simşyan"}
         tt{"tatar"}
         tum{"tumbuka"}
         tvl{"tuvalu"}
-        tw{"tvi"}
+        tw{"Tvi"}
         twq{"tasavaq"}
         ty{"taxiti"}
         tyv{"tuvinyan"}
         tzm{"Mərkəzi Atlas tamazicəsi"}
         udm{"udmurt"}
         ug{"uyğur"}
-        uga{"uqarit"}
+        uga{"uqaritik"}
         uk{"ukrayna"}
         umb{"umbundu"}
         und{"naməlum dil"}
@@ -496,24 +484,19 @@ az{
         vot{"votik"}
         vun{"vunyo"}
         wa{"valun"}
-        wae{"valles"}
         wal{"valamo"}
         war{"varay"}
         was{"vaşo"}
-        wbp{"valpiri"}
+        wbp{"Valpiri"}
         wo{"volof"}
-        wuu{"vu"}
-        xal{"kalmık"}
+        xal{"kalmıqca"}
         xh{"xosa"}
         xog{"soqa"}
         yao{"yao"}
         yap{"yapiz"}
-        yav{"yanqben"}
-        ybb{"yemba"}
-        yi{"idiş"}
+        yi{"Yahudi"}
         yo{"yoruba"}
-        yue{"kanton"}
-        za{"çjuan"}
+        za{"juənq"}
         zap{"zapotek"}
         zbl{"blisimbols"}
         zen{"zenaqa"}
@@ -528,8 +511,8 @@ az{
     }
     Languages%short{
         az{"azəri"}
-        en_GB{"ingilis (BK)"}
-        en_US{"ingilis (ABŞ)"}
+        en_GB{"ingilis (B.K.)"}
+        en_US{"ingilis (A.B.Ş.)"}
     }
     Scripts{
         Arab{"ərəb"}
@@ -568,7 +551,6 @@ az{
         Grek{"yunan"}
         Gujr{"qucarat"}
         Guru{"qurmuxi"}
-        Hanb{"hanb"}
         Hang{"hanqıl"}
         Hani{"han"}
         Hano{"hanunu"}
@@ -577,11 +559,10 @@ az{
         Hebr{"ibrani"}
         Hira{"iraqana"}
         Hmng{"pahav monq"}
-        Hrkt{"hecalı yapon əlifbası"}
+        Hrkt{"katakana vəya hiraqana"}
         Hung{"qədimi macar"}
         Inds{"hindistan"}
         Ital{"qədimi italyalı"}
-        Jamo{"jamo"}
         Java{"cava"}
         Jpan{"yapon"}
         Kali{"kayax li"}
@@ -654,15 +635,14 @@ az{
         Xpeo{"qədimi fars"}
         Xsux{"sumer-akadyan kuneyform"}
         Yiii{"yi"}
-        Zmth{"riyazi notasiya"}
-        Zsye{"emoji"}
+        Zmth{"zmth"}
         Zsym{"simvollar"}
         Zxxx{"yazısız"}
         Zyyy{"ümumi yazı"}
-        Zzzz{"tanınmayan yazı"}
+        Zzzz{"naməlum skript"}
     }
     Scripts%stand-alone{
-        Hans{"Sadələşmiş Han"}
+        Hans{"Sadələşdirilmiş Han"}
         Hant{"Ənənəvi Han"}
     }
     Types{
@@ -681,15 +661,11 @@ az{
             persian{"İran Təqvimi"}
             roc{"Minquo Təqvimi"}
         }
-        cf{
-            account{"Uçot Valyuta Formatı"}
-            standard{"Standart Valyuta Formatı"}
-        }
         collation{
-            ducet{"Standart Unicode Sıralama"}
+            ducet{"Defolt Unicode Çeşidləmə"}
             pinyin{"Pinyin təqvimi"}
             search{"Ümumi Məqsədli Axtarış"}
-            standard{"Standart Sıralama"}
+            standard{"Standart Çeşidləmə"}
         }
         hc{
             h11{"12 Saatlıq Sistem (0–11)"}
@@ -745,22 +721,7 @@ az{
             tibt{"Tibet Rəqəmləri"}
         }
     }
-    Version{"2.1.41.97"}
-    characterLabelPattern{
-        all{"{0} — Bütün"}
-        category-list{"{0}: {1}"}
-        compatibility{"{0} — Uyğunluq"}
-        enclosed{"{0} — Qapalı"}
-        extended{"{0} — Artırılmış"}
-        historic{"{0} — Tarixi"}
-        miscellaneous{"{0} — Qarışıq"}
-        other{"{0} — Digər"}
-        scripts{"Yazılar — {0}"}
-        strokes{
-            one{"{0} Vurğu"}
-            other{"{0} Vurğu"}
-        }
-    }
+    Version{"2.1.19.83"}
     codePatterns{
         language{"Dil: {0}"}
         script{"Skript: {0}"}

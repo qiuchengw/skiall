@@ -17,7 +17,6 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
-#include <sstream>
 
 #include "table.h"
 
@@ -59,29 +58,13 @@ spv_result_t spvDiagnosticPrint(const spv_diagnostic diagnostic) {
     return SPV_SUCCESS;
   } else {
     // NOTE: Assume this is a binary position
-    std::cerr << "error: ";
-    if (diagnostic->position.index > 0)
-      std::cerr << diagnostic->position.index << ": ";
-    std::cerr << diagnostic->error << "\n";
+    std::cerr << "error: " << diagnostic->position.index << ": "
+              << diagnostic->error << "\n";
     return SPV_SUCCESS;
   }
 }
 
-namespace spvtools {
-
-DiagnosticStream::DiagnosticStream(DiagnosticStream&& other)
-    : stream_(),
-      position_(other.position_),
-      consumer_(other.consumer_),
-      disassembled_instruction_(std::move(other.disassembled_instruction_)),
-      error_(other.error_) {
-  // Prevent the other object from emitting output during destruction.
-  other.error_ = SPV_FAILED_MATCH;
-  // Some platforms are missing support for std::ostringstream functionality,
-  // including:  move constructor, swap method.  Either would have been a
-  // better choice than copying the string.
-  stream_ << other.stream_.str();
-}
+namespace libspirv {
 
 DiagnosticStream::~DiagnosticStream() {
   if (error_ != SPV_FAILED_MATCH && consumer_ != nullptr) {
@@ -105,9 +88,6 @@ DiagnosticStream::~DiagnosticStream() {
       default:
         break;
     }
-    if (disassembled_instruction_.size() > 0)
-      stream_ << std::endl << "  " << disassembled_instruction_ << std::endl;
-
     consumer_(level, "input", position_, stream_.str().c_str());
   }
 }
@@ -189,4 +169,4 @@ std::string spvResultToString(spv_result_t res) {
   return out;
 }
 
-}  // namespace spvtools
+}  // namespace libspirv

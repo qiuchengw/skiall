@@ -14,7 +14,6 @@
 
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
 TEST(OpcodeSplit, Default) {
@@ -26,5 +25,4 @@ TEST(OpcodeSplit, Default) {
   ASSERT_EQ(23, opcode);
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

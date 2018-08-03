@@ -1,20 +1,14 @@
-/***********************************************************************
-* © 2016 and later: Unicode, Inc. and others.
-* License & terms of use: http://www.unicode.org/copyright.html#License
-*
-***********************************************************************
-***********************************************************************
+/********************************************************************
 * COPYRIGHT:
-* Copyright (C) 2001-2016 IBM, Inc.   All Rights Reserved.
+* Copyright (C) 2001-2012 IBM, Inc.   All Rights Reserved.
 *
-***********************************************************************/
+********************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <limits.h>
 #include <string.h>
-#include "cmemory.h"
 #include "unicode/uperf.h"
 #include "uoptions.h"
 #include "unicode/coll.h"
@@ -578,7 +572,7 @@ public:
                 UOPTION_DEF("c_normal", 'n', UOPT_NO_ARG),          // --normal <on | OFF> 
                 UOPTION_DEF("c_strength", 's', UOPT_REQUIRES_ARG),  // --strength <1-5>
         };
-        int32_t opt_len = UPRV_LENGTHOF(options);
+        int32_t opt_len = (sizeof(options)/sizeof(options[0]));
         enum {i, r,f,a,c,l,n,s};   // The buffer between the option items' order and their references
 
         _remainingArgc = u_parseArgs(_remainingArgc, (char**)argv, opt_len, options);

@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/it.xml
+// *
+// ***************************************************************************
 it{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -79,7 +85,6 @@ it{
                 dnam{"chilometri quadrati"}
                 one{"{0} chilometro quadrato"}
                 other{"{0} chilometri quadrati"}
-                per{"{0} per chilometro quadrato"}
             }
             square-meter{
                 dnam{"metri quadrati"}
@@ -91,7 +96,6 @@ it{
                 dnam{"miglia quadrate"}
                 one{"{0} miglio quadrato"}
                 other{"{0} miglia quadrate"}
-                per{"{0} per miglio quadrato"}
             }
             square-yard{
                 dnam{"iarde quadrate"}
@@ -101,28 +105,6 @@ it{
         }
         compound{
             per{"{0} al {1}"}
-        }
-        concentr{
-            karat{
-                dnam{"carati"}
-                one{"{0} carato"}
-                other{"{0} carati"}
-            }
-            milligram-per-deciliter{
-                dnam{"milligrammi per decilitro"}
-                one{"{0} milligrammo per decilitro"}
-                other{"{0} milligrammi per decilitro"}
-            }
-            millimole-per-liter{
-                dnam{"millimoli per litro"}
-                one{"{0} millimole per litro"}
-                other{"{0} millimoli per litro"}
-            }
-            part-per-million{
-                dnam{"parti per milione"}
-                one{"{0} parte per milione"}
-                other{"{0} parti per milione"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -139,11 +121,6 @@ it{
                 dnam{"miglia per gallone"}
                 one{"{0} miglio per gallone"}
                 other{"{0} miglia per gallone"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"miglia per gallone imperiale"}
-                one{"{0} miglio per gallone imperiale"}
-                other{"{0} miglia per gallone imperiale"}
             }
         }
         coordinate{
@@ -220,7 +197,7 @@ it{
                 dnam{"ore"}
                 one{"{0} ora"}
                 other{"{0} ore"}
-                per{"{0} all’ora"}
+                per{"{0}/h"}
             }
             microsecond{
                 dnam{"microsecondi"}
@@ -253,13 +230,13 @@ it{
                 dnam{"secondi"}
                 one{"{0} secondo"}
                 other{"{0} secondi"}
-                per{"{0} al secondo"}
+                per{"{0}/s"}
             }
             week{
                 dnam{"settimane"}
                 one{"{0} settimana"}
                 other{"{0} settimane"}
-                per{"{0} alla settimana"}
+                per{"{0}/settimana"}
             }
             year{
                 dnam{"anni"}
@@ -430,11 +407,6 @@ it{
                 one{"{0} picometro"}
                 other{"{0} picometri"}
             }
-            point{
-                dnam{"punti"}
-                one{"{0} punto"}
-                other{"{0} punti"}
-            }
             yard{
                 dnam{"iarde"}
                 one{"{0} iarda"}
@@ -563,6 +535,13 @@ it{
                 other{"{0} libbre per pollice quadrato"}
             }
         }
+        proportion{
+            karat{
+                dnam{"carati"}
+                one{"{0} carato"}
+                other{"{0} carati"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"chilometri orari"}
@@ -612,11 +591,6 @@ it{
                 dnam{"acre-feet"}
                 one{"{0} acre-foot"}
                 other{"{0} acre-feet"}
-            }
-            bushel{
-                dnam{"staia"}
-                one{"{0} staio"}
-                other{"{0} staia"}
             }
             centiliter{
                 dnam{"centilitri"}
@@ -685,12 +659,6 @@ it{
                 one{"{0} gallone"}
                 other{"{0} galloni"}
                 per{"{0} per gallone"}
-            }
-            gallon-imperial{
-                dnam{"galloni imperiali"}
-                one{"{0} gallone imperiale"}
-                other{"{0} galloni imperiali"}
-                per{"{0} per gallone imperiale"}
             }
             hectoliter{
                 dnam{"ettolitri"}
@@ -806,7 +774,7 @@ it{
         duration{
             day{
                 dnam{"giorno"}
-                one{"{0} g"}
+                one{"{0}gg"}
                 other{"{0}gg"}
             }
             hour{
@@ -826,7 +794,7 @@ it{
             }
             month{
                 dnam{"mese"}
-                one{"{0}mese"}
+                one{"{0}mesi"}
                 other{"{0}mesi"}
             }
             second{
@@ -1054,7 +1022,6 @@ it{
                 dnam{"km²"}
                 one{"{0} km²"}
                 other{"{0} km²"}
-                per{"{0}/km²"}
             }
             square-meter{
                 dnam{"m²"}
@@ -1066,7 +1033,6 @@ it{
                 dnam{"mi²"}
                 one{"{0} mi²"}
                 other{"{0} mi²"}
-                per{"{0}/mi²"}
             }
             square-yard{
                 dnam{"yd²"}
@@ -1076,28 +1042,6 @@ it{
         }
         compound{
             per{"{0}/{1}"}
-        }
-        concentr{
-            karat{
-                dnam{"kt"}
-                one{"{0} kt"}
-                other{"{0} kt"}
-            }
-            milligram-per-deciliter{
-                dnam{"mg/dl"}
-                one{"{0} mg/dl"}
-                other{"{0} mg/dl"}
-            }
-            millimole-per-liter{
-                dnam{"mmol/l"}
-                one{"{0} mmol/l"}
-                other{"{0} mmol/l"}
-            }
-            part-per-million{
-                dnam{"ppm"}
-                one{"{0} ppm"}
-                other{"{0} ppm"}
-            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1114,11 +1058,6 @@ it{
                 dnam{"mpg"}
                 one{"{0} mpg"}
                 other{"{0} mpg"}
-            }
-            mile-per-gallon-imperial{
-                dnam{"mi/Imp gal"}
-                one{"{0} mi/Imp gal"}
-                other{"{0} mi/Imp gal"}
             }
         }
         coordinate{
@@ -1192,7 +1131,7 @@ it{
                 per{"{0}/giorno"}
             }
             hour{
-                dnam{"h"}
+                dnam{"ore"}
                 one{"{0} h"}
                 other{"{0} h"}
                 per{"{0}/h"}
@@ -1337,13 +1276,13 @@ it{
                 other{"{0} dm"}
             }
             foot{
-                dnam{"ft"}
+                dnam{"piedi"}
                 one{"{0} ft"}
                 other{"{0} ft"}
                 per{"{0}/ft"}
             }
             inch{
-                dnam{"in"}
+                dnam{"pollici"}
                 one{"{0} in"}
                 other{"{0} in"}
                 per{"{0}/in"}
@@ -1355,12 +1294,12 @@ it{
                 per{"{0}/km"}
             }
             light-year{
-                dnam{"al"}
+                dnam{"anni luce"}
                 one{"{0} al"}
                 other{"{0} al"}
             }
             meter{
-                dnam{"m"}
+                dnam{"metri"}
                 one{"{0} m"}
                 other{"{0} m"}
                 per{"{0}/m"}
@@ -1404,11 +1343,6 @@ it{
                 dnam{"pm"}
                 one{"{0} pm"}
                 other{"{0} pm"}
-            }
-            point{
-                dnam{"pt"}
-                one{"{0} pt"}
-                other{"{0} pt"}
             }
             yard{
                 dnam{"iarde"}
@@ -1538,6 +1472,13 @@ it{
                 other{"{0} psi"}
             }
         }
+        proportion{
+            karat{
+                dnam{"kt"}
+                one{"{0} kt"}
+                other{"{0} kt"}
+            }
+        }
         speed{
             kilometer-per-hour{
                 dnam{"km/h"}
@@ -1587,9 +1528,6 @@ it{
                 dnam{"ac ft"}
                 one{"{0} ac ft"}
                 other{"{0} ac ft"}
-            }
-            bushel{
-                dnam{"staia"}
             }
             centiliter{
                 dnam{"cl"}
@@ -1659,19 +1597,13 @@ it{
                 other{"{0} gal"}
                 per{"{0}/gal"}
             }
-            gallon-imperial{
-                dnam{"Gal imp."}
-                one{"{0} gal imp."}
-                other{"{0} gal imp."}
-                per{"{0}/gal imp."}
-            }
             hectoliter{
                 dnam{"hl"}
                 one{"{0} hl"}
                 other{"{0} hl"}
             }
             liter{
-                dnam{"l"}
+                dnam{"litri"}
                 one{"{0} l"}
                 other{"{0} l"}
                 per{"{0}/l"}

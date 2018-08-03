@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/uz.xml
+// *
+// ***************************************************************************
 uz{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -64,7 +70,7 @@ uz{
             ec{"Duala"}
         }
         "Africa:El_Aaiun"{
-            ec{"Al-Ayun"}
+            ec{"El-Ayun"}
         }
         "Africa:Freetown"{
             ec{"Fritaun"}
@@ -139,7 +145,7 @@ uz{
             ec{"Niamey"}
         }
         "Africa:Nouakchott"{
-            ec{"Nouakchott"}
+            ec{"Nuakshot"}
         }
         "Africa:Ouagadougou"{
             ec{"Uagadugu"}
@@ -178,7 +184,7 @@ uz{
             ec{"La-Rioxa"}
         }
         "America:Argentina:Rio_Gallegos"{
-            ec{"Rio-Galyegos"}
+            ec{"Rio-Gallegos"}
         }
         "America:Argentina:Salta"{
             ec{"Salta"}
@@ -202,7 +208,7 @@ uz{
             ec{"Asunson"}
         }
         "America:Bahia"{
-            ec{"Baiya"}
+            ec{"Bahiya"}
         }
         "America:Bahia_Banderas"{
             ec{"Bahiya-Banderas"}
@@ -303,9 +309,6 @@ uz{
         "America:El_Salvador"{
             ec{"Salvador"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -352,7 +355,7 @@ uz{
             ec{"Marengo, Indiana"}
         }
         "America:Indiana:Petersburg"{
-            ec{"Pitersberg, Indiana"}
+            ec{"Peterburg, Indiana"}
         }
         "America:Indiana:Tell_City"{
             ec{"Tell-Siti, Indiana"}
@@ -469,7 +472,7 @@ uz{
             ec{"Nom"}
         }
         "America:Noronha"{
-            ec{"Noronya"}
+            ec{"Noronxa"}
         }
         "America:North_Dakota:Beulah"{
             ec{"Boyla, Shimoliy Dakota"}
@@ -507,9 +510,6 @@ uz{
         "America:Puerto_Rico"{
             ec{"Puerto-Riko"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta-Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Reyni-River"}
         }
@@ -544,13 +544,13 @@ uz{
             ec{"San-Paulu"}
         }
         "America:Scoresbysund"{
-            ec{"Ittokkortoormiut"}
+            ec{"Skorsbisunn"}
         }
         "America:Sitka"{
             ec{"Sitka"}
         }
         "America:St_Barthelemy"{
-            ec{"Sen-Bartelemi"}
+            ec{"Sen-Bartelmi"}
         }
         "America:St_Johns"{
             ec{"Sent-Jons"}
@@ -640,13 +640,13 @@ uz{
             ec{"Longyir"}
         }
         "Asia:Aden"{
-            ec{"Adan"}
+            ec{"Aden"}
         }
         "Asia:Almaty"{
-            ec{"Almati"}
+            ec{"Olma-Ota"}
         }
         "Asia:Amman"{
-            ec{"Ammon"}
+            ec{"Amman"}
         }
         "Asia:Anadyr"{
             ec{"Anadir"}
@@ -655,13 +655,10 @@ uz{
             ec{"Oqtov"}
         }
         "Asia:Aqtobe"{
-            ec{"Oqto‘ba"}
+            ec{"Aktobe"}
         }
         "Asia:Ashgabat"{
             ec{"Ashxobod"}
-        }
-        "Asia:Atyrau"{
-            ec{"Atirau"}
         }
         "Asia:Baghdad"{
             ec{"Bag‘dod"}
@@ -670,13 +667,10 @@ uz{
             ec{"Bahrayn"}
         }
         "Asia:Baku"{
-            ec{"Boku"}
+            ec{"Baku"}
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Bayrut"}
@@ -714,9 +708,6 @@ uz{
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
         }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
-        }
         "Asia:Gaza"{
             ec{"G‘azo"}
         }
@@ -739,7 +730,7 @@ uz{
             ec{"Jaypur"}
         }
         "Asia:Jerusalem"{
-            ec{"Quddus"}
+            ec{"Ierusalim"}
         }
         "Asia:Kabul"{
             ec{"Qobul"}
@@ -796,7 +787,7 @@ uz{
             ec{"Omsk"}
         }
         "Asia:Oral"{
-            ec{"Uralsk"}
+            ec{"Oral"}
         }
         "Asia:Phnom_Penh"{
             ec{"Pnompen"}
@@ -853,13 +844,10 @@ uz{
             ec{"Tehron"}
         }
         "Asia:Thimphu"{
-            ec{"Thimphu"}
+            ec{"Timpu"}
         }
         "Asia:Tokyo"{
             ec{"Tokio"}
-        }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
         }
         "Asia:Ulaanbaatar"{
             ec{"Ulan-Bator"}
@@ -931,7 +919,7 @@ uz{
             ec{"Darvin"}
         }
         "Australia:Eucla"{
-            ec{"Evkla"}
+            ec{"Yukla"}
         }
         "Australia:Hobart"{
             ec{"Xobart"}
@@ -951,20 +939,14 @@ uz{
         "Australia:Sydney"{
             ec{"Sidney"}
         }
-        "Etc:UTC"{
-            ls{"Koordinatali universal vaqt"}
-        }
         "Etc:Unknown"{
-            ec{"noma’lum shahar"}
+            ec{"Noma’lum shahar"}
         }
         "Europe:Amsterdam"{
             ec{"Amsterdam"}
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astraxan"}
         }
         "Europe:Athens"{
             ec{"Afina"}
@@ -979,7 +961,7 @@ uz{
             ec{"Bratislava"}
         }
         "Europe:Brussels"{
-            ec{"Bryussel"}
+            ec{"Brussel"}
         }
         "Europe:Bucharest"{
             ec{"Buxarest"}
@@ -991,7 +973,7 @@ uz{
             ec{"Byuzingen"}
         }
         "Europe:Chisinau"{
-            ec{"Kishinyov"}
+            ec{"Kishinev"}
         }
         "Europe:Copenhagen"{
             ec{"Kopengagen"}
@@ -1023,9 +1005,6 @@ uz{
         }
         "Europe:Kiev"{
             ec{"Kiyev"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lissabon"}
@@ -1085,9 +1064,6 @@ uz{
         "Europe:Sarajevo"{
             ec{"Sarayevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1106,14 +1082,11 @@ uz{
         "Europe:Tirane"{
             ec{"Tirana"}
         }
-        "Europe:Ulyanovsk"{
-            ec{"Ulyanovsk"}
-        }
         "Europe:Uzhgorod"{
             ec{"Ujgorod"}
         }
         "Europe:Vaduz"{
-            ec{"Vaduts"}
+            ec{"Vaduz"}
         }
         "Europe:Vatican"{
             ec{"Vatikan"}
@@ -1158,7 +1131,7 @@ uz{
             ec{"Kergelen"}
         }
         "Indian:Mahe"{
-            ec{"Mae"}
+            ec{"Mahe"}
         }
         "Indian:Maldives"{
             ec{"Maldiv orollari"}
@@ -1260,7 +1233,7 @@ uz{
             ec{"Pitkern"}
         }
         "Pacific:Ponape"{
-            ec{"Ponpei oroli"}
+            ec{"Ponape oroli"}
         }
         "Pacific:Port_Moresby"{
             ec{"Port-Morsbi"}
@@ -1327,14 +1300,14 @@ uz{
             ls{"Sharqiy Amerika standart vaqti"}
         }
         "meta:America_Mountain"{
-            ld{"Tog‘ yozgi vaqti (AQSH)"}
-            lg{"Tog‘ vaqti (AQSH)"}
-            ls{"Tog‘ standart vaqti (AQSH)"}
+            ld{"Shimoliy Amerika togʻ yozgi vaqti"}
+            lg{"Shimoliy Amerika togʻ vaqti"}
+            ls{"Shimoliy Amerika togʻ standart vaqti"}
         }
         "meta:America_Pacific"{
-            ld{"Tinch okeani yozgi vaqti"}
-            lg{"Tinch okeani vaqti"}
-            ls{"Tinch okeani standart vaqti"}
+            ld{"Shimoliy Amerika Tinch okeani yozgi vaqti"}
+            lg{"Shimoliy Amerika Tinch okeani vaqti"}
+            ls{"Shimoliy Amerika Tinch okeani standart vaqti"}
         }
         "meta:Apia"{
             ld{"Apia yozgi vaqti"}
@@ -1513,7 +1486,7 @@ uz{
             ls{"Fransuz Gvianasi vaqti"}
         }
         "meta:French_Southern"{
-            ls{"Fransuz Janubiy hududlari va Antarktika vaqti"}
+            ls{"Fransuz Janubiy va Antarktika vaqti"}
         }
         "meta:GMT"{
             ls{"Grinvich o‘rtacha vaqti"}
@@ -1538,9 +1511,9 @@ uz{
             ls{"Sharqiy Grenlandiya standart vaqti"}
         }
         "meta:Greenland_Western"{
-            ld{"G‘arbiy Grenlandiya yozgi vaqti"}
-            lg{"G‘arbiy Grenlandiya vaqti"}
-            ls{"G‘arbiy Grenlandiya standart vaqti"}
+            ld{"Gʻarbiy Grenlandiya yozgi vaqti"}
+            lg{"Gʻarbiy Grenlandiya vaqti"}
+            ls{"Gʻarbiy Grenlandiya standart vaqti"}
         }
         "meta:Gulf"{
             ls{"Fors ko‘rfazi standart vaqti"}
@@ -1564,7 +1537,7 @@ uz{
             ls{"Xovd standart vaqti"}
         }
         "meta:India"{
-            ls{"Hindiston standart vaqti"}
+            ls{"Hindiston vaqti"}
         }
         "meta:Indian_Ocean"{
             ls{"Hind okeani vaqti"}
@@ -1764,9 +1737,6 @@ uz{
         "meta:Ponape"{
             ls{"Ponape vaqti"}
         }
-        "meta:Pyongyang"{
-            ls{"Pxenyan vaqti"}
-        }
         "meta:Reunion"{
             ls{"Reyunion vaqti"}
         }
@@ -1837,9 +1807,9 @@ uz{
             ls{"Urugvay standart vaqti"}
         }
         "meta:Uzbekistan"{
-            ld{"O‘zbekiston yozgi vaqti"}
-            lg{"O‘zbekiston vaqti"}
-            ls{"O‘zbekiston standart vaqti"}
+            ld{"Oʻzbekiston yozgi vaqti"}
+            lg{"Oʻzbekiston vaqti"}
+            ls{"Oʻzbekiston standart vaqti"}
         }
         "meta:Vanuatu"{
             ld{"Vanuatu yozgi vaqti"}
@@ -1882,8 +1852,8 @@ uz{
         gmtFormat{"GMT{0}"}
         gmtZeroFormat{"GMT"}
         hourFormat{"+HH:mm;-HH:mm"}
-        regionFormat{"{0}"}
-        regionFormatDaylight{"{0} (+1)"}
-        regionFormatStandard{"{0} (+0)"}
+        regionFormat{"{0} vaqti"}
+        regionFormatDaylight{"{0} yozgi vaqti"}
+        regionFormatStandard{"{0} standart vaqti"}
     }
 }

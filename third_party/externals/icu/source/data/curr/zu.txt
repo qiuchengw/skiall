@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/zu.xml
+// *
+// ***************************************************************************
 zu{
     Currencies{
         AED{
@@ -94,13 +100,9 @@ zu{
             "BWP",
             "i-Botswana Pula",
         }
-        BYN{
-            "BYN",
-            "i-Belarusian Ruble",
-        }
         BYR{
             "BYR",
-            "i-Belarusian Ruble (2000–2016)",
+            "i-Belarusian Ruble",
         }
         BZD{
             "BZD",
@@ -121,10 +123,6 @@ zu{
         CLP{
             "CLP",
             "i-Chilean Peso",
-        }
-        CNH{
-            "CNH",
-            "CNH",
         }
         CNY{
             "CN¥",
@@ -380,10 +378,6 @@ zu{
         }
         MRO{
             "MRO",
-            "i-Mauritanian Ouguiya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "i-Mauritanian Ouguiya",
         }
         MUR{
@@ -532,10 +526,6 @@ zu{
         }
         STD{
             "STD",
-            "i-São Tomé kanye ne-Príncipe Dobra (1977–2017)",
-        }
-        STN{
-            "STN",
             "i-São Tomé kanye ne-Príncipe Dobra",
         }
         SYP{
@@ -620,7 +610,7 @@ zu{
         }
         XAF{
             "FCFA",
-            "i-Central African CFA Franc",
+            "i-CFA Franc BCEA",
         }
         XCD{
             "EC$",
@@ -628,7 +618,7 @@ zu{
         }
         XOF{
             "CFA",
-            "i-West African CFA Franc",
+            "i-CFA Franc BCEAO",
         }
         XPF{
             "CFPF",
@@ -668,7 +658,7 @@ zu{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"P."}
+        BYR{"P."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -685,7 +675,6 @@ zu{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -734,7 +723,7 @@ zu{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -847,13 +836,9 @@ zu{
             one{"i-Botswana Pula"}
             other{"i-Botswana Pula"}
         }
-        BYN{
+        BYR{
             one{"i-Belarusian Ruble"}
             other{"i-Belarusian Ruble"}
-        }
-        BYR{
-            one{"i-Belarusian Ruble (2000–2016)"}
-            other{"i-Belarusian Ruble (2000–2016)"}
         }
         BZD{
             one{"i-Belize Dollar"}
@@ -874,10 +859,6 @@ zu{
         CLP{
             one{"i-Chilean Peso"}
             other{"i-Chilean Peso"}
-        }
-        CNH{
-            one{"CNH"}
-            other{"CNH"}
         }
         CNY{
             one{"i-Chinese Yuan"}
@@ -901,7 +882,7 @@ zu{
         }
         CVE{
             one{"i-Cape Verdean Escudo"}
-            other{"i-Cape Verdean escudos"}
+            other{"i-Cape Verdean Escudo"}
         }
         CZK{
             one{"i-Czech Republic Koruna"}
@@ -957,7 +938,7 @@ zu{
         }
         GHS{
             one{"i-Ghanaian Cedi"}
-            other{"i-Ghanaian cedis"}
+            other{"i-Ghanaian Cedi"}
         }
         GIP{
             one{"i-Gibraltar Pound"}
@@ -965,11 +946,11 @@ zu{
         }
         GMD{
             one{"i-Gambian Dalasi"}
-            other{"i-Gambian dalasis"}
+            other{"i-Gambian Dalasi"}
         }
         GNF{
             one{"i-Gunean Franc"}
-            other{"i-Guinean francs"}
+            other{"i-Gunean Franc"}
         }
         GTQ{
             one{"i-Guatemalan Quetzal"}
@@ -1120,10 +1101,6 @@ zu{
             other{"i-Macanese Pataca"}
         }
         MRO{
-            one{"i-Mauritanian Ouguiya (1973–2017)"}
-            other{"i-Mauritanian Ouguiya (1973–2017)"}
-        }
-        MRU{
             one{"i-Mauritanian Ouguiya"}
             other{"i-Mauritanian Ouguiya"}
         }
@@ -1272,10 +1249,6 @@ zu{
             other{"i-South Sudanese Pound"}
         }
         STD{
-            one{"i-São Tomé kanye ne-Príncipe Dobra (1977–2017)"}
-            other{"i-São Tomé kanye ne-Príncipe Dobra (1977–2017)"}
-        }
-        STN{
             one{"i-São Tomé kanye ne-Príncipe Dobra"}
             other{"i-São Tomé kanye ne-Príncipe Dobra"}
         }
@@ -1313,7 +1286,7 @@ zu{
         }
         TTD{
             one{"i-Trinidad and Tobago dollar"}
-            other{"i-Trinidad & Tobago dollars"}
+            other{"i-Trinidad and Tobago dollars"}
         }
         TWD{
             one{"i-New Taiwan Dollar"}
@@ -1368,8 +1341,8 @@ zu{
             other{"i-East Caribbean Dollar"}
         }
         XOF{
-            one{"i-West African CFA Franc"}
-            other{"i-West African CFA francs"}
+            one{"i-CFA Franc BCEAO"}
+            other{"i-CFA Franc BCEAO"}
         }
         XPF{
             one{"i-CFP Franc"}
@@ -1396,5 +1369,5 @@ zu{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

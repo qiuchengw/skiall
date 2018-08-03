@@ -12,9 +12,10 @@
 #include "SkSurface.h"
 #include "VulkanWindowContext.h"
 
+#include "vk/GrVkExtensions.h"
 #include "vk/GrVkImage.h"
-#include "vk/GrVkUtil.h"
 #include "vk/GrVkTypes.h"
+#include "vk/GrVkUtil.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 // windows wants to define this as CreateSemaphoreA or CreateSemaphoreW
@@ -49,15 +50,24 @@ VulkanWindowContext::VulkanWindowContext(const DisplayParams& params,
 void VulkanWindowContext::initializeContext() {
     // any config code here (particularly for msaa)?
 
+    PFN_vkGetInstanceProcAddr getInstanceProc = fGetInstanceProcAddr;
+    PFN_vkGetDeviceProcAddr getDeviceProc = fGetDeviceProcAddr;
+    auto getProc = [getInstanceProc, getDeviceProc](const char* proc_name,
+                                                    VkInstance instance, VkDevice device) {
+        if (device != VK_NULL_HANDLE) {
+            return getDeviceProc(device, proc_name);
+        }
+        return getInstanceProc(instance, proc_name);
+    };
     GrVkBackendContext backendContext;
-    if (!sk_gpu_test::CreateVkBackendContext(fGetInstanceProcAddr, fGetDeviceProcAddr,
-                                             &backendContext, &fDebugCallback,
+    GrVkExtensions extensions;
+    if (!sk_gpu_test::CreateVkBackendContext(getProc, &backendContext, &extensions, &fDebugCallback,
                                              &fPresentQueueIndex, fCanPresentFn)) {
         return;
     }
 
-    if (!(backendContext.fExtensions & kKHR_surface_GrVkExtensionFlag) ||
-        !(backendContext.fExtensions & kKHR_swapchain_GrVkExtensionFlag)) {
+    if (!extensions.hasExtension(VK_KHR_SURFACE_EXTENSION_NAME, 25) ||
+        !extensions.hasExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, 68)) {
         return;
     }
 
@@ -67,9 +77,12 @@ void VulkanWindowContext::initializeContext() {
     fGraphicsQueueIndex = backendContext.fGraphicsQueueIndex;
     fGraphicsQueue = backendContext.fQueue;
     fInterface.reset(new GrVkInterface(backendContext.fGetProc, fInstance, fDevice,
-                                       backendContext.fExtensions));
+                                       &extensions));
 
     GET_PROC(DestroyInstance);
+    if (fDebugCallback != VK_NULL_HANDLE) {
+        GET_PROC(DestroyDebugReportCallbackEXT);
+    }
     GET_PROC(DestroySurfaceKHR);
     GET_PROC(GetPhysicalDeviceSurfaceSupportKHR);
     GET_PROC(GetPhysicalDeviceSurfaceCapabilitiesKHR);
@@ -443,8 +456,7 @@ void VulkanWindowContext::destroyContext() {
 
 #ifdef SK_ENABLE_VK_LAYERS
     if (fDebugCallback != VK_NULL_HANDLE) {
-        GR_VK_CALL(fInterface, DestroyDebugReportCallbackEXT(fInstance, fDebugCallback,
-                                                             nullptr));
+        fDestroyDebugReportCallbackEXT(fInstance, fDebugCallback, nullptr);
     }
 #endif
 

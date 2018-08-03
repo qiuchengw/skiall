@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  sorttest.c
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -53,7 +51,7 @@ SortTest() {
 
     /* for medium, add bits that will not be compared, to test stability */
     for(i=0; i<UPRV_LENGTHOF(medium); ++i) {
-        medium[i]=(int32_t)((uint32_t)medium[i]<<4) | i;
+        medium[i]=(medium[i]<<4)|i;
     }
 
     /* sort medium array (stable) */

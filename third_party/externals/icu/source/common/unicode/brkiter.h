@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ********************************************************************************
-*   Copyright (C) 1997-2016, International Business Machines
+*   Copyright (C) 1997-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 ********************************************************************************
 *
@@ -170,11 +168,6 @@ public:
     /**
      * Change the text over which this operates. The text boundary is
      * reset to the start.
-     *
-     * The BreakIterator will retain a reference to the supplied string.
-     * The caller must not modify or delete the text while the BreakIterator
-     * retains the reference.
-     *
      * @param text The UnicodeString used to change the text.
      * @stable ICU 2.0
      */
@@ -250,7 +243,7 @@ public:
     virtual int32_t next(void) = 0;
 
     /**
-     * Return character index of the current iterator position within the text.
+     * Return character index of the current interator position within the text.
      * @return The boundary most recently returned.
      * @stable ICU 2.0
      */
@@ -277,7 +270,7 @@ public:
     virtual int32_t preceding(int32_t offset) = 0;
 
     /**
-     * Return true if the specified position is a boundary position.
+     * Return true if the specfied position is a boundary position.
      * As a side effect, the current position of the iterator is set
      * to the first boundary position at or following the specified offset.
      * @param offset the offset to check.
@@ -292,20 +285,21 @@ public:
      * does nothing.  Negative values move to previous boundaries
      * and positive values move to later boundaries.
      * @return The new iterator position, or
-     * DONE if there are fewer than |n| boundaries in the specified direction.
+     * DONE if there are fewer than |n| boundaries in the specfied direction.
      * @stable ICU 2.0
      */
     virtual int32_t next(int32_t n) = 0;
 
    /**
-     * For RuleBasedBreakIterators, return the status tag from the break rule
-     * that determined the boundary at the current iteration position.
+     * For RuleBasedBreakIterators, return the status tag from the 
+     * break rule that determined the most recently
+     * returned break position.
      * <p>
      * For break iterator types that do not support a rule status,
      * a default value of 0 is returned.
      * <p>
-     * @return the status from the break rule that determined the boundary at
-     *         the current iteration position.
+     * @return the status from the break rule that determined the most recently
+     *         returned break position.
      * @see RuleBaseBreakIterator::getRuleStatus()
      * @see UWordBreak
      * @stable ICU 52
@@ -313,8 +307,8 @@ public:
     virtual int32_t getRuleStatus() const;
 
    /**
-    * For RuleBasedBreakIterators, get the status (tag) values from the break rule(s)
-    * that determined the boundary at the current iteration position.
+    * For RuleBasedBreakIterators, get the status (tag) values from the break rule(s) 
+    * that determined the most recently returned break position.
     * <p>
     * For break iterator types that do not support rule status,
     * no values are returned.
@@ -330,10 +324,10 @@ public:
     * @param fillInVec an array to be filled in with the status values.
     * @param capacity  the length of the supplied vector.  A length of zero causes
     *                  the function to return the number of status values, in the
-    *                  normal way, without attempting to store any values.
+    *                  normal way, without attemtping to store any values.
     * @param status    receives error codes.
     * @return          The number of rule status values from rules that determined
-    *                  the boundary at the current iteration position.
+    *                  the most recent boundary returned by the break iterator.
     *                  In the event of a U_BUFFER_OVERFLOW_ERROR, the return value
     *                  is the total number of status values that were available,
     *                  not the reduced number that were actually returned.
@@ -468,7 +462,7 @@ public:
     static const Locale* U_EXPORT2 getAvailableLocales(int32_t& count);
 
     /**
-     * Get name of the object for the desired Locale, in the desired language.
+     * Get name of the object for the desired Locale, in the desired langauge.
      * @param objectLocale must be from getAvailableLocales.
      * @param displayLocale specifies the desired locale for output.
      * @param name the fill-in parameter of the return value
@@ -481,7 +475,7 @@ public:
                                          UnicodeString& name);
 
     /**
-     * Get name of the object for the desired Locale, in the language of the
+     * Get name of the object for the desired Locale, in the langauge of the
      * default locale.
      * @param objectLocale must be from getMatchingLocales
      * @param name the fill-in parameter of the return value
@@ -615,7 +609,7 @@ public:
     virtual BreakIterator &refreshInputText(UText *input, UErrorCode &status) = 0;
 
  private:
-    static BreakIterator* buildInstance(const Locale& loc, const char *type, UErrorCode& status);
+    static BreakIterator* buildInstance(const Locale& loc, const char *type, int32_t kind, UErrorCode& status);
     static BreakIterator* createInstance(const Locale& loc, int32_t kind, UErrorCode& status);
     static BreakIterator* makeInstance(const Locale& loc, int32_t kind, UErrorCode& status);
 
@@ -628,19 +622,20 @@ protected:
     /** @internal */
     BreakIterator();
     /** @internal */
-    BreakIterator (const BreakIterator &other);
-#ifndef U_HIDE_INTERNAL_API
+    BreakIterator (const BreakIterator &other) : UObject(other) {}
     /** @internal */
-    BreakIterator (const Locale& valid, const Locale &actual);
-    /** @internal. Assignment Operator, used by RuleBasedBreakIterator. */
-    BreakIterator &operator = (const BreakIterator &other);
-#endif  /* U_HIDE_INTERNAL_API */
-
+    BreakIterator (const Locale& valid, const Locale& actual);
 private:
 
-    /** @internal (private) */
+    /** @internal */
     char actualLocale[ULOC_FULLNAME_CAPACITY];
     char validLocale[ULOC_FULLNAME_CAPACITY];
+
+    /**
+     * The assignment operator has no real implementation.
+     * It's provided to make the compiler happy. Do not call.
+     */
+    BreakIterator& operator=(const BreakIterator&);
 };
 
 #ifndef U_HIDE_DEPRECATED_API
@@ -656,5 +651,5 @@ U_NAMESPACE_END
 
 #endif /* #if !UCONFIG_NO_BREAK_ITERATION */
 
-#endif // BRKITER_H
+#endif // _BRKITER
 //eof

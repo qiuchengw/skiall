@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_windowsevents_h_
-#define SDL_windowsevents_h_
+#ifndef _SDL_windowsevents_h
+#define _SDL_windowsevents_h
 
 extern LPTSTR SDL_Appname;
 extern Uint32 SDL_Appstyle;
@@ -31,6 +31,6 @@ extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
                                        LPARAM lParam);
 extern void WIN_PumpEvents(_THIS);
 
-#endif /* SDL_windowsevents_h_ */
+#endif /* _SDL_windowsevents_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

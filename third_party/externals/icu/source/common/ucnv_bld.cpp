@@ -1,9 +1,7 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  ********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1996-2016, International Business Machines Corporation and
+ * Copyright (c) 1996-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************
  *
@@ -67,11 +65,7 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
 
     &_Latin1Data,
     &_UTF8Data, &_UTF16BEData, &_UTF16LEData,
-#if UCONFIG_ONLY_HTML_CONVERSION
-    NULL, NULL,
-#else
     &_UTF32BEData, &_UTF32LEData,
-#endif
     NULL,
 
 #if UCONFIG_NO_LEGACY_CONVERSION
@@ -105,7 +99,7 @@ converterData[UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES]={
 
     &_ASCIIData,
 #if UCONFIG_ONLY_HTML_CONVERSION
-    NULL, NULL, &_UTF16Data, NULL, NULL, NULL,
+    NULL, NULL, &_UTF16Data, &_UTF32Data, NULL, NULL,
 #else
     &_UTF7Data, &_Bocu1Data, &_UTF16Data, &_UTF32Data, &_CESU8Data, &_IMAPData,
 #endif
@@ -170,7 +164,6 @@ static struct {
   { "utf16oppositeendian", UCNV_UTF16_BigEndian},
   { "utf16platformendian", UCNV_UTF16_LittleEndian },
 #endif
-#if !UCONFIG_ONLY_HTML_CONVERSION
   { "utf32", UCNV_UTF32 },
   { "utf32be", UCNV_UTF32_BigEndian },
   { "utf32le", UCNV_UTF32_LittleEndian },
@@ -180,7 +173,6 @@ static struct {
 #else
   { "utf32oppositeendian", UCNV_UTF32_BigEndian },
   { "utf32platformendian", UCNV_UTF32_LittleEndian },
-#endif
 #endif
 #if !UCONFIG_ONLY_HTML_CONVERSION
   { "utf7", UCNV_UTF7 },
@@ -259,11 +251,6 @@ static UBool U_CALLCONV ucnv_cleanup(void) {
 #endif
 
     return (SHARED_DATA_HASHTABLE == NULL);
-}
-
-U_CAPI void U_EXPORT2
-ucnv_enableCleanup() {
-    ucln_common_registerCleanup(UCLN_COMMON_UCNV, ucnv_cleanup);
 }
 
 static UBool U_CALLCONV
@@ -392,7 +379,7 @@ getAlgorithmicTypeFromName(const char *realName)
 
     /* do a binary search for the alias */
     start = 0;
-    limit = UPRV_LENGTHOF(cnvNameType);
+    limit = sizeof(cnvNameType)/sizeof(cnvNameType[0]);
     mid = limit;
     lastMid = UINT32_MAX;
 
@@ -444,7 +431,7 @@ ucnv_shareConverterData(UConverterSharedData * data)
         SHARED_DATA_HASHTABLE = uhash_openSize(uhash_hashChars, uhash_compareChars, NULL,
                             ucnv_io_countKnownConverters(&err)*UCNV_CACHE_LOAD_FACTOR,
                             &err);
-        ucnv_enableCleanup();
+        ucln_common_registerCleanup(UCLN_COMMON_UCNV, ucnv_cleanup);
 
         if (U_FAILURE(err))
             return;
@@ -1104,7 +1091,7 @@ static void U_CALLCONV initAvailableConvertersList(UErrorCode &errCode) {
     U_ASSERT(gAvailableConverterCount == 0);
     U_ASSERT(gAvailableConverters == NULL);
 
-    ucnv_enableCleanup();
+    ucln_common_registerCleanup(UCLN_COMMON_UCNV, ucnv_cleanup);
     UEnumeration *allConvEnum = ucnv_openAllNames(&errCode);
     int32_t allConverterCount = uenum_count(allConvEnum, &errCode);
     if (U_FAILURE(errCode)) {
@@ -1210,7 +1197,7 @@ internalSetName(const char *name, UErrorCode *status) {
     //             -- Andy
     gDefaultConverterName = gDefaultConverterNameBuffer;
 
-    ucnv_enableCleanup();
+    ucln_common_registerCleanup(UCLN_COMMON_UCNV, ucnv_cleanup);
 
     umtx_unlock(&cnvCacheMutex);
 }

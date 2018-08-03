@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef SDL_ibus_h_
-#define SDL_ibus_h_
+#ifndef _SDL_ibus_h
+#define _SDL_ibus_h
 
 #ifdef HAVE_IBUS_IBUS_H
 #define SDL_USE_IBUS 1
@@ -49,10 +49,10 @@ extern void SDL_IBus_UpdateTextRect(SDL_Rect *window_relative_rect);
 
 /* Checks DBus for new IBus events, and calls SDL_SendKeyboardText / 
    SDL_SendEditingText for each event it finds */
-extern void SDL_IBus_PumpEvents(void);
+extern void SDL_IBus_PumpEvents();
 
 #endif /* HAVE_IBUS_IBUS_H */
 
-#endif /* SDL_ibus_h_ */
+#endif /* _SDL_ibus_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -353,7 +353,7 @@ block_best (const biimage_t &bi, bool *inverse)
 	} else
 	  qs += quad[i][j];
     if (qs < score) {
-      const char *c = nullptr;
+      const char *c = NULL;
       bool inv = false;
       switch (q) {
 	case 1:  c = "▟"; inv = true;  break;

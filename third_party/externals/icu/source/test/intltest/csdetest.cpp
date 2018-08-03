@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  **********************************************************************
- *   Copyright (C) 2005-2016, International Business Machines
+ *   Copyright (C) 2005-2015, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  **********************************************************************
  */
@@ -26,6 +24,8 @@
 #ifdef DEBUG_DETECT
 #include <stdio.h>
 #endif
+
+#define ARRAY_SIZE(array) (sizeof array / sizeof array[0])
 
 #define NEW_ARRAY(type,count) (type *) /*uprv_*/malloc((count) * sizeof(type))
 #define DELETE_ARRAY(array) /*uprv_*/free((void *) (array))
@@ -818,7 +818,7 @@ void CharsetDetectionTest::Ticket6394Test() {
 //               similar Windows and non-Windows SBCS encodings. State was kept in the shared
 //               Charset Recognizer objects, and could be overwritten.
 void CharsetDetectionTest::Ticket6954Test() {
-#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION && !UCONFIG_NO_FORMATTING
+#if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_FORMATTING
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString sISO = "This is a small sample of some English text. Just enough to be sure that it detects correctly.";
     UnicodeString ssWindows("This is another small sample of some English text. Just enough to be sure that it detects correctly."

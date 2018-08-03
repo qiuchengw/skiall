@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -14,8 +12,6 @@
 #include "unicode/udat.h"
 #include "unicode/uscript.h"
 #include "unicode/ulocdata.h"
-#include "unicode/utf16.h"
-#include "cmemory.h"
 #include "cstring.h"
 #include "locmap.h"
 #include "uresimp.h"
@@ -42,7 +38,7 @@ createFlattenSet(USet *origSet, UErrorCode *status) {
     for (idx = 0; idx < origItemCount; idx++) {
         graphmeSize = uset_getItem(origSet, idx,
             &start, &end,
-            graphme, UPRV_LENGTHOF(graphme),
+            graphme, (int32_t)(sizeof(graphme)/sizeof(graphme[0])),
             status);
         if (U_FAILURE(*status)) {
             log_err("ERROR: uset_getItem returned %s\n", u_errorName(*status));
@@ -467,7 +463,7 @@ testLCID(UResourceBundle *currentBundle,
     }
 
     status = U_ZERO_ERROR;
-    len = uprv_convertToPosix(expectedLCID, lcidStringC, UPRV_LENGTHOF(lcidStringC) - 1, &status);
+    len = uprv_convertToPosix(expectedLCID, lcidStringC, sizeof(lcidStringC)/sizeof(lcidStringC[0]) - 1, &status);
     if (U_FAILURE(status)) {
         log_err("ERROR:   %.4x does not have a POSIX mapping due to %s\n",
             expectedLCID, u_errorName(status));
@@ -744,7 +740,7 @@ TestConsistentCountryInfo(void) {
 static int32_t
 findStringSetMismatch(const char *currLoc, const UChar *string, int32_t langSize,
                       USet * mergedExemplarSet,
-                      UBool ignoreNumbers, UChar32* badCharPtr) {
+                      UBool ignoreNumbers, UChar* badCharPtr) {
     UErrorCode errorCode = U_ZERO_ERROR;
     USet *exemplarSet;
     int32_t strIdx;
@@ -757,16 +753,14 @@ findStringSetMismatch(const char *currLoc, const UChar *string, int32_t langSize
         return -1;
     }
 
-    for (strIdx = 0; strIdx < langSize;) {
-        UChar32 testChar;
-        U16_NEXT(string, strIdx, langSize, testChar);
-        if (!uset_contains(exemplarSet, testChar)
-            && testChar != 0x0020 && testChar != 0x00A0 && testChar != 0x002e && testChar != 0x002c && testChar != 0x002d && testChar != 0x0027
-            && testChar != 0x005B && testChar != 0x005D && testChar != 0x2019 && testChar != 0x0f0b && testChar != 0x200C && testChar != 0x200D) {
-            if (!ignoreNumbers || (ignoreNumbers && (testChar < 0x30 || testChar > 0x39))) {
+    for (strIdx = 0; strIdx < langSize; strIdx++) {
+        if (!uset_contains(exemplarSet, string[strIdx])
+            && string[strIdx] != 0x0020 && string[strIdx] != 0x00A0 && string[strIdx] != 0x002e && string[strIdx] != 0x002c && string[strIdx] != 0x002d && string[strIdx] != 0x0027 && string[strIdx] != 0x005B && string[strIdx] != 0x005D && string[strIdx] != 0x2019 && string[strIdx] != 0x0f0b
+            && string[strIdx] != 0x200C && string[strIdx] != 0x200D) {
+            if (!ignoreNumbers || (ignoreNumbers && (string[strIdx] < 0x30 || string[strIdx] > 0x39))) {
                 uset_close(exemplarSet);
                 if (badCharPtr) {
-                    *badCharPtr = testChar;
+                    *badCharPtr = string[strIdx];
                 }
                 return strIdx;
             }
@@ -961,8 +955,8 @@ static void VerifyTranslation(void) {
             UChar langBuffer[128];
             int32_t langSize;
             int32_t strIdx;
-            UChar32 badChar;
-            langSize = uloc_getDisplayLanguage(currLoc, currLoc, langBuffer, UPRV_LENGTHOF(langBuffer), &errorCode);
+            UChar badChar;
+            langSize = uloc_getDisplayLanguage(currLoc, currLoc, langBuffer, sizeof(langBuffer)/sizeof(langBuffer[0]), &errorCode);
             if (U_FAILURE(errorCode)) {
                 log_err("error uloc_getDisplayLanguage returned %s\n", u_errorName(errorCode));
             }
@@ -973,7 +967,7 @@ static void VerifyTranslation(void) {
                         currLoc, strIdx, badChar);
                 }
             }
-            langSize = uloc_getDisplayCountry(currLoc, currLoc, langBuffer, UPRV_LENGTHOF(langBuffer), &errorCode);
+            langSize = uloc_getDisplayCountry(currLoc, currLoc, langBuffer, sizeof(langBuffer)/sizeof(langBuffer[0]), &errorCode);
             if (U_FAILURE(errorCode)) {
                 log_err("error uloc_getDisplayCountry returned %s\n", u_errorName(errorCode));
             }
@@ -1047,7 +1041,7 @@ static void VerifyTranslation(void) {
                 ures_close(cal);
             }
             errorCode = U_ZERO_ERROR;
-            numScripts = uscript_getCode(currLoc, scripts, UPRV_LENGTHOF(scripts), &errorCode);
+            numScripts = uscript_getCode(currLoc, scripts, sizeof(scripts)/sizeof(scripts[0]), &errorCode);
             if (strcmp(currLoc, "yi") == 0 && numScripts > 0 && log_knownIssue("11217", "Fix result of uscript_getCode for yi: USCRIPT_YI -> USCRIPT_HEBREW")) {
                 scripts[0] = USCRIPT_HEBREW;
             }
@@ -1210,7 +1204,7 @@ static void TestExemplarSet(void){
             itemCount = uset_getItemCount(exemplarSet);
             for (m=0; m<itemCount && !existsInScript; ++m) {
                 strLen = uset_getItem(exemplarSet, m, &start, &end, ubuf,
-                                      UPRV_LENGTHOF(ubuf), &ec);
+                                      sizeof(ubuf)/sizeof(ubuf[0]), &ec);
                 /* failure here might mean str[] needs to be larger */
                 if (!assertSuccess("uset_getItem", &ec)) goto END;
                 if (strLen == 0) {
@@ -1264,7 +1258,7 @@ static void TestLocaleDisplayPattern(void){
     static const UChar enExpectPat[] = { 0x007B,0x0030,0x007D,0x0020,0x0028,0x007B,0x0031,0x007D,0x0029,0 }; /* "{0} ({1})" */
     static const UChar enExpectSep[] = { 0x002C,0x0020,0 }; /* ", " */
     static const UChar zhExpectPat[] = { 0x007B,0x0030,0x007D,0xFF08,0x007B,0x0031,0x007D,0xFF09,0 };
-    static const UChar zhExpectSep[] = { 0xFF0C,0 };
+    static const UChar zhExpectSep[] = { 0x3001,0 };
 
     status = U_ZERO_ERROR;
     uld = ulocdata_open("en", &status);

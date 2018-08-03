@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  ********************************************************************************
- *   Copyright (C) 1997-2016, International Business Machines
+ *   Copyright (C) 1997-2015, International Business Machines
  *   Corporation and others.  All Rights Reserved.
  ********************************************************************************
  *
@@ -43,17 +41,12 @@ U_NAMESPACE_BEGIN
 class TimeZone;
 class DateTimePatternGenerator;
 
-/**
- * \cond
- * explicit template instantiation. see digitlst.h
- * (When building DLLs for Windows this is required.)
- */
-#if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN && not defined(U_IN_DOXYGEN)
+// explicit template instantiation. see digitlst.h
+#if defined (_MSC_VER)
 template class U_I18N_API EnumSet<UDateFormatBooleanAttribute,
             0, 
             UDAT_BOOLEAN_ATTRIBUTE_COUNT>;
 #endif
-/** \endcond */
 
 /**
  * DateFormat is an abstract class for a family of classes that convert dates and
@@ -593,6 +586,7 @@ public:
             UErrorCode &status);
 #endif  /* U_HIDE_INTERNAL_API */
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Creates a date/time formatter for the given skeleton and 
      * default locale.
@@ -604,7 +598,7 @@ public:
      *                 order for that locale.
      * @param status   Any error returned here.
      * @return         A date/time formatter which the caller owns.
-     * @stable ICU 55
+     * @draft ICU 55
      */
     static DateFormat* U_EXPORT2 createInstanceForSkeleton(
             const UnicodeString& skeleton,
@@ -621,7 +615,7 @@ public:
      * @param locale  The given locale.
      * @param status   Any error returned here.
      * @return         A date/time formatter which the caller owns.
-     * @stable ICU 55
+     * @draft ICU 55
      */
     static DateFormat* U_EXPORT2 createInstanceForSkeleton(
             const UnicodeString& skeleton,
@@ -640,7 +634,7 @@ public:
      * @param locale  The given locale.
      * @param status   Any error returned here.
      * @return         A date/time formatter which the caller owns.
-     * @stable ICU 55
+     * @draft ICU 55
      */
     static DateFormat* U_EXPORT2 createInstanceForSkeleton(
             Calendar *calendarToAdopt,
@@ -648,6 +642,7 @@ public:
             const Locale &locale,
             UErrorCode &status);
 
+#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Gets the set of locales for which DateFormats are installed.

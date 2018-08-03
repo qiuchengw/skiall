@@ -740,7 +740,12 @@ extern void VP8EncDspInitMIPS32(void);
 extern void VP8EncDspInitMIPSdspR2(void);
 extern void VP8EncDspInitMSA(void);
 
-WEBP_DSP_INIT_FUNC(VP8EncDspInit) {
+static volatile VP8CPUInfo enc_last_cpuinfo_used =
+    (VP8CPUInfo)&enc_last_cpuinfo_used;
+
+WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspInit(void) {
+  if (enc_last_cpuinfo_used == VP8GetCPUInfo) return;
+
   VP8DspInit();  // common inverse transforms
   InitTables();
 
@@ -833,4 +838,6 @@ WEBP_DSP_INIT_FUNC(VP8EncDspInit) {
   assert(VP8EncQuantizeBlockWHT != NULL);
   assert(VP8Copy4x4 != NULL);
   assert(VP8Copy16x8 != NULL);
+
+  enc_last_cpuinfo_used = VP8GetCPUInfo;
 }

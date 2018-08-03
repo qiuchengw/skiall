@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/rbnf/de.xml
+// *
+// ***************************************************************************
 /**
  * ICU <specials> source: <path>/xml/rbnf/de.xml
  */
@@ -10,7 +16,7 @@ de{
             "&ue=\u00FC&ae=\u00E4&oe=\u00F6&[last primary ignorable ] << ' ' << ',' << '-' << '\u00AD';",
             "%spellout-numbering-year:",
             "-x: minus >>;",
-            "x.x: =0.0=;",
+            "x.x: =#,###0.#=;",
             "0: =%spellout-numbering=;",
             "1100/100: <%spellout-cardinal-masculine<\u00ADhundert[\u00AD>>];",
             "10000: =%spellout-numbering=;",
@@ -185,5 +191,5 @@ de{
             "0: =%spellout-ordinal=s;",
         }
     }
-    Version{"2.1.27.22"}
+    Version{"2.1.19.14"}
 }

@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /********************************************************************************
@@ -28,7 +26,6 @@
 #include "unicode/uloc.h"
 #include "unicode/uchar.h"
 #include "unicode/ustring.h"
-#include "unicode/utf16.h"
 #include "unicode/putil.h"
 #include "callcoll.h"
 #include "cmemory.h"
@@ -1137,7 +1134,7 @@ static const UChar tsceText[] = {   /* Nothing in here should be ignorable */
     0x0020, 0x1E4D,                 /* small letter o with tilde and acute, decomposes */
     0x0020
 };
-enum { kLen_tsceText = UPRV_LENGTHOF(tsceText) };
+enum { kLen_tsceText = sizeof(tsceText)/sizeof(tsceText[0]) };
 
 static const int32_t rootStandardOffsets[] = {
     0,  1,2,
@@ -1153,7 +1150,7 @@ static const int32_t rootStandardOffsets[] = {
     28,
     29
 };
-enum { kLen_rootStandardOffsets = UPRV_LENGTHOF(rootStandardOffsets) };
+enum { kLen_rootStandardOffsets = sizeof(rootStandardOffsets)/sizeof(rootStandardOffsets[0]) };
 
 static const int32_t rootSearchOffsets[] = {
     0,  1,2,
@@ -1169,7 +1166,7 @@ static const int32_t rootSearchOffsets[] = {
     28,
     29
 };
-enum { kLen_rootSearchOffsets = UPRV_LENGTHOF(rootSearchOffsets) };
+enum { kLen_rootSearchOffsets = sizeof(rootSearchOffsets)/sizeof(rootSearchOffsets[0]) };
 
 typedef struct {
     const char *    locale;

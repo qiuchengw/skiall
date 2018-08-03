@@ -1,9 +1,7 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 
 /********************************************************************
- * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * COPYRIGHT: 
+ * Copyright (c) 1997-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -24,7 +22,7 @@ void IntlTestSimpleDateFormatAPI::runIndexedTest( int32_t index, UBool exec, con
 {
     if (exec) logln("TestSuite SimpleDateFormatAPI");
     switch (index) {
-        case 0: name = "SimpleDateFormat API test";
+        case 0: name = "SimpleDateFormat API test"; 
                 if (exec) {
                     logln("SimpleDateFormat API test---"); logln("");
                     UErrorCode status = U_ZERO_ERROR;
@@ -144,7 +142,7 @@ void IntlTestSimpleDateFormatAPI::testAPI(/*char *par*/)
     Formattable fD(d, Formattable::kIsDate);
 
     UnicodeString res1, res2;
-    FieldPosition pos1(FieldPosition::DONT_CARE), pos2(FieldPosition::DONT_CARE);
+    FieldPosition pos1(0), pos2(0);
     
     res1 = def.format(d, res1, pos1);
     logln( (UnicodeString) "" + d + " formatted to " + res1);
@@ -273,8 +271,8 @@ void IntlTestSimpleDateFormatAPI::testAPI(/*char *par*/)
     }
 
 // ====== Test ticket 11295 getNumberFormatForField returns wild pointer
-    if (object.getNumberFormatForField('N') != NULL) {
-        errln("N is not a valid field, "
+    if (object.getNumberFormatForField('B') != NULL) {
+        errln("B is not a valid field, "
               "getNumberFormatForField should return NULL");
     }
 }

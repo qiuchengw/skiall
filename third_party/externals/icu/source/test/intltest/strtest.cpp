@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
  * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /*   file name:  strtest.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -22,10 +20,7 @@
 #include "unicode/stringpiece.h"
 #include "unicode/unistr.h"
 #include "unicode/ustring.h"
-#include "unicode/utf_old.h"    // for UTF8_COUNT_TRAIL_BYTES
-#include "unicode/utf8.h"
 #include "charstr.h"
-#include "cstr.h"
 #include "intltest.h"
 #include "strtest.h"
 
@@ -144,21 +139,13 @@ StringTest::Test_UNICODE_STRING_SIMPLE() {
 
 void
 StringTest::Test_UTF8_COUNT_TRAIL_BYTES() {
-#if !U_HIDE_OBSOLETE_UTF_OLD_H
     if(UTF8_COUNT_TRAIL_BYTES(0x7F) != 0
-            || UTF8_COUNT_TRAIL_BYTES(0xC2) != 1
-            || UTF8_COUNT_TRAIL_BYTES(0xE0) != 2
-            || UTF8_COUNT_TRAIL_BYTES(0xF0) != 3) {
-        errln("UTF8_COUNT_TRAIL_BYTES does not work right! See utf_old.h.");
-    }
-#endif
-    // Note: U8_COUNT_TRAIL_BYTES (current) and UTF8_COUNT_TRAIL_BYTES (deprecated)
-    //       have completely different implementations.
-    if (U8_COUNT_TRAIL_BYTES(0x7F) != 0
-            || U8_COUNT_TRAIL_BYTES(0xC2) != 1
-            || U8_COUNT_TRAIL_BYTES(0xE0) != 2
-            || U8_COUNT_TRAIL_BYTES(0xF0) != 3) {
-        errln("U8_COUNT_TRAIL_BYTES does not work right! See utf8.h.");
+        || UTF8_COUNT_TRAIL_BYTES(0xC0) != 1
+        || UTF8_COUNT_TRAIL_BYTES(0xE0) != 2
+        || UTF8_COUNT_TRAIL_BYTES(0xF0) != 3)
+    {
+        errln("Test_UTF8_COUNT_TRAIL_BYTES: UTF8_COUNT_TRAIL_BYTES does not work right! "
+              "See utf8.h.");
     }
 }
 
@@ -181,8 +168,6 @@ void StringTest::runIndexedTest(int32_t index, UBool exec, const char *&name, ch
     TESTCASE_AUTO(TestCheckedArrayByteSink);
     TESTCASE_AUTO(TestStringByteSink);
     TESTCASE_AUTO(TestCharString);
-    TESTCASE_AUTO(TestCStr);
-    TESTCASE_AUTO(Testctou);
     TESTCASE_AUTO_END;
 }
 
@@ -210,12 +195,14 @@ StringTest::TestStringPiece() {
     if(abcd.empty() || abcd.data()!=abcdefg_chars || abcd.length()!=4 || abcd.size()!=4) {
         errln("StringPiece(abcdefg_chars, 4) failed");
     }
+#if U_HAVE_STD_STRING
     // Construct from std::string.
     std::string uvwxyz_string("uvwxyz");
     StringPiece uvwxyz(uvwxyz_string);
     if(uvwxyz.empty() || uvwxyz.data()!=uvwxyz_string.data() || uvwxyz.length()!=6 || uvwxyz.size()!=6) {
         errln("StringPiece(uvwxyz_string) failed");
     }
+#endif
     // Substring constructor with pos.
     StringPiece sp(abcd, -1);
     if(sp.empty() || sp.data()!=abcdefg_chars || sp.length()!=4 || sp.size()!=4) {
@@ -459,7 +446,8 @@ StringTest::TestCheckedArrayByteSink() {
 
 void
 StringTest::TestStringByteSink() {
-    // Not much to test because only the constructors and Append()
+#if U_HAVE_STD_STRING
+    // Not much to test because only the constructor and Append()
     // are implemented, and trivially so.
     std::string result("abc");  // std::string
     StringByteSink<std::string> sink(&result);
@@ -467,15 +455,7 @@ StringTest::TestStringByteSink() {
     if(result != "abcdef") {
         errln("StringByteSink did not Append() as expected");
     }
-    StringByteSink<std::string> sink2(&result, 20);
-    if(result.capacity() < (result.length() + 20)) {
-        errln("StringByteSink should have 20 append capacity, has only %d",
-              (int)(result.capacity() - result.length()));
-    }
-    sink.Append("ghi", 3);
-    if(result != "abcdefghi") {
-        errln("StringByteSink did not Append() as expected");
-    }
+#endif
 }
 
 #if defined(_MSC_VER)
@@ -551,43 +531,4 @@ StringTest::TestCharString() {
     if (chStr.length() != 0) {
         errln("%s:%d expected length() = 0, got %d", __FILE__, __LINE__, chStr.length());
     }
-
-    {
-        CharString s1("Short string", errorCode);
-        CharString s2(std::move(s1));
-        assertEquals("s2 should have content of s1", "Short string", s2.data());
-        CharString s3("Dummy", errorCode);
-        s3 = std::move(s2);
-        assertEquals("s3 should have content of s2", "Short string", s3.data());
-    }
-
-    {
-        CharString s1("Long string over 40 characters to trigger heap allocation", errorCode);
-        CharString s2(std::move(s1));
-        assertEquals("s2 should have content of s1",
-                "Long string over 40 characters to trigger heap allocation",
-                s2.data());
-        CharString s3("Dummy string with over 40 characters to trigger heap allocation", errorCode);
-        s3 = std::move(s2);
-        assertEquals("s3 should have content of s2",
-                "Long string over 40 characters to trigger heap allocation",
-                s3.data());
-    }
-}
-
-void
-StringTest::TestCStr() {
-    const char *cs = "This is a test string.";
-    UnicodeString us(cs);
-    if (0 != strcmp(CStr(us)(), cs)) {
-        errln("%s:%d CStr(s)() failed. Expected \"%s\", got \"%s\"", __FILE__, __LINE__, cs, CStr(us)());
-    }
-}
-
-void
-StringTest::Testctou() {
-  const char *cs = "Fa\\u0127mu";
-  UnicodeString u = ctou(cs);
-  assertEquals("Testing unescape@0", (int32_t)0x0046, u.charAt(0));
-  assertEquals("Testing unescape@2", (int32_t)295, u.charAt(2));
 }

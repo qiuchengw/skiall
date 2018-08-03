@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/sbp.xml
+// *
+// ***************************************************************************
 sbp{
     Countries{
         AD{"Andola"}
@@ -9,6 +15,7 @@ sbp{
         AI{"Anguilla"}
         AL{"Alubaniya"}
         AM{"Alimeniya"}
+        AN{"Anitili sa Uholansi"}
         AO{"Angola"}
         AR{"Ajentina"}
         AS{"Samoya ya Malekani"}
@@ -227,5 +234,5 @@ sbp{
         ZM{"Sambiya"}
         ZW{"Simbabwe"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fr.xml
+// *
+// ***************************************************************************
 fr{
     Countries{
         001{"Monde"}
@@ -31,7 +37,6 @@ fr{
         151{"Europe de l’Est"}
         154{"Europe septentrionale"}
         155{"Europe occidentale"}
-        202{"Afrique subsaharienne"}
         419{"Amérique latine"}
         AC{"Île de l’Ascension"}
         AD{"Andorre"}
@@ -41,6 +46,7 @@ fr{
         AI{"Anguilla"}
         AL{"Albanie"}
         AM{"Arménie"}
+        AN{"Antilles néerlandaises"}
         AO{"Angola"}
         AQ{"Antarctique"}
         AR{"Argentine"}
@@ -90,7 +96,7 @@ fr{
         CW{"Curaçao"}
         CX{"Île Christmas"}
         CY{"Chypre"}
-        CZ{"Tchéquie"}
+        CZ{"République tchèque"}
         DE{"Allemagne"}
         DG{"Diego Garcia"}
         DJ{"Djibouti"}
@@ -107,7 +113,6 @@ fr{
         ES{"Espagne"}
         ET{"Éthiopie"}
         EU{"Union européenne"}
-        EZ{"zone euro"}
         FI{"Finlande"}
         FJ{"Fidji"}
         FK{"Îles Malouines"}
@@ -133,7 +138,7 @@ fr{
         GU{"Guam"}
         GW{"Guinée-Bissau"}
         GY{"Guyana"}
-        HK{"R.A.S. chinoise de Hong Kong"}
+        HK{"Hong Kong"}
         HM{"Îles Heard et McDonald"}
         HN{"Honduras"}
         HR{"Croatie"}
@@ -187,7 +192,7 @@ fr{
         ML{"Mali"}
         MM{"Myanmar (Birmanie)"}
         MN{"Mongolie"}
-        MO{"R.A.S. chinoise de Macao"}
+        MO{"Macao"}
         MP{"Îles Mariannes du Nord"}
         MQ{"Martinique"}
         MR{"Mauritanie"}
@@ -222,7 +227,7 @@ fr{
         PM{"Saint-Pierre-et-Miquelon"}
         PN{"Îles Pitcairn"}
         PR{"Porto Rico"}
-        PS{"Territoires palestiniens"}
+        PS{"Palestine"}
         PT{"Portugal"}
         PW{"Palaos"}
         PY{"Paraguay"}
@@ -250,7 +255,7 @@ fr{
         SR{"Suriname"}
         SS{"Soudan du Sud"}
         ST{"Sao Tomé-et-Principe"}
-        SV{"Salvador"}
+        SV{"El Salvador"}
         SX{"Saint-Martin (partie néerlandaise)"}
         SY{"Syrie"}
         SZ{"Swaziland"}
@@ -274,7 +279,6 @@ fr{
         UA{"Ukraine"}
         UG{"Ouganda"}
         UM{"Îles mineures éloignées des États-Unis"}
-        UN{"Nations Unies"}
         US{"États-Unis"}
         UY{"Uruguay"}
         UZ{"Ouzbékistan"}
@@ -297,20 +301,14 @@ fr{
     }
     Countries%short{
         GB{"R.-U."}
-        HK{"Hong Kong"}
-        MO{"Macao"}
-        PS{"Palestine"}
-        UN{"NU"}
         US{"É.-U."}
     }
     Countries%variant{
         CD{"Congo (RDC)"}
         CG{"République du Congo"}
-        CI{"​​République de Côte d’Ivoire"}
-        CZ{"République tchèque"}
         FK{"Îles Falkland"}
         MK{"Macédoine (ARYM)"}
         TL{"Timor-Oriental"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
 }

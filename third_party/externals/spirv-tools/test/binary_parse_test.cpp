@@ -16,12 +16,12 @@
 #include <string>
 #include <vector>
 
-#include "gmock/gmock.h"
-#include "latest_version_opencl_std_header.h"
-#include "source/message.h"
-#include "source/table.h"
 #include "test_fixture.h"
 #include "unit_spirv.h"
+#include "gmock/gmock.h"
+#include "source/message.h"
+#include "source/table.h"
+#include "spirv/1.0/OpenCL.std.h"
 
 // Returns true if two spv_parsed_operand_t values are equal.
 // To use this operator, this definition must appear in the same namespace
@@ -33,18 +33,17 @@ static bool operator==(const spv_parsed_operand_t& a,
          a.number_bit_width == b.number_bit_width;
 }
 
-namespace spvtools {
 namespace {
 
 using ::spvtest::Concatenate;
 using ::spvtest::MakeInstruction;
 using ::spvtest::MakeVector;
 using ::spvtest::ScopedContext;
-using ::testing::_;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::_;
 
 // An easily-constructible and comparable object for the contents of an
 // spv_parsed_instruction_t.  Unlike spv_parsed_instruction_t, owns the memory
@@ -818,8 +817,7 @@ INSTANTIATE_TEST_CASE_P(
          }),
          "Type Id 2 is not a type"},
         {Concatenate({
-             ExpectedHeaderForBound(3),
-             MakeInstruction(SpvOpTypeBool, {1}),
+             ExpectedHeaderForBound(3), MakeInstruction(SpvOpTypeBool, {1}),
              MakeInstruction(SpvOpConstant, {1, 2, 42}),
          }),
          "Type Id 1 is not a scalar numeric type"},
@@ -887,13 +885,12 @@ INSTANTIATE_TEST_CASE_P(
          "component 32"},
         {"%2 = OpFunction %2 !31",
          "Invalid function control operand: 31 has invalid mask component 16"},
-        {"OpLoopMerge %1 %2 !1027",
-         "Invalid loop control operand: 1027 has invalid mask component 1024"},
+        {"OpLoopMerge %1 %2 !7",
+         "Invalid loop control operand: 7 has invalid mask component 4"},
         {"%2 = OpImageFetch %1 %image %coord !511",
          "Invalid image operand: 511 has invalid mask component 256"},
         {"OpSelectionMerge %1 !7",
          "Invalid selection control operand: 7 has invalid mask component 4"},
     }), );
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

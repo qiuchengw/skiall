@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
 *   Copyright (C) 1998-2005, International Business Machines
@@ -43,7 +41,7 @@ public:
    * @param length The length of the UChar array
    * @stable ICU 2.0
    */
-  UCharCharacterIterator(ConstChar16Ptr textPtr, int32_t length);
+  UCharCharacterIterator(const UChar* textPtr, int32_t length);
 
   /**
    * Create an iterator over the UChar array referred to by "textPtr".
@@ -58,7 +56,7 @@ public:
    * @param position The starting position of the iteration
    * @stable ICU 2.0
    */
-  UCharCharacterIterator(ConstChar16Ptr textPtr, int32_t length,
+  UCharCharacterIterator(const UChar* textPtr, int32_t length,
                          int32_t position);
 
   /**
@@ -77,7 +75,7 @@ public:
    * @param position    The starting position of the iteration
    * @stable ICU 2.0
    */
-  UCharCharacterIterator(ConstChar16Ptr textPtr, int32_t length,
+  UCharCharacterIterator(const UChar* textPtr, int32_t length,
                          int32_t textBegin,
                          int32_t textEnd,
                          int32_t position);
@@ -334,17 +332,13 @@ public:
    * @return the new position
    * @stable ICU 2.0
    */
-#ifdef move32
-   // One of the system headers right now is sometimes defining a conflicting macro we don't use
-#undef move32
-#endif
   virtual int32_t      move32(int32_t delta, EOrigin origin);
 
   /**
    * Sets the iterator to iterate over a new range of text
    * @stable ICU 2.0
    */
-  void setText(ConstChar16Ptr newText, int32_t newTextLength);
+  void setText(const UChar* newText, int32_t newTextLength);
 
   /**
    * Copies the UChar array under iteration into the UnicodeString

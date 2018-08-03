@@ -18,11 +18,11 @@
 #include "reflect.h"
 
 namespace spvtools {
-namespace opt {
+namespace ir {
 
-IrLoader::IrLoader(const MessageConsumer& consumer, Module* m)
+IrLoader::IrLoader(const MessageConsumer& consumer, Module* module)
     : consumer_(consumer),
-      module_(m),
+      module_(module),
       source_("<instruction>"),
       inst_index_(0) {}
 
@@ -30,12 +30,12 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
   ++inst_index_;
   const auto opcode = static_cast<SpvOp>(inst->opcode);
   if (IsDebugLineInst(opcode)) {
-    dbg_line_info_.push_back(Instruction(module()->context(), *inst));
+    dbg_line_info_.push_back(Instruction(*inst));
     return true;
   }
 
   std::unique_ptr<Instruction> spv_inst(
-      new Instruction(module()->context(), *inst, std::move(dbg_line_info_)));
+      new Instruction(*inst, std::move(dbg_line_info_)));
   dbg_line_info_.clear();
 
   const char* src = source_.c_str();
@@ -99,12 +99,8 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
         module_->AddEntryPoint(std::move(spv_inst));
       } else if (opcode == SpvOpExecutionMode) {
         module_->AddExecutionMode(std::move(spv_inst));
-      } else if (IsDebug1Inst(opcode)) {
-        module_->AddDebug1Inst(std::move(spv_inst));
-      } else if (IsDebug2Inst(opcode)) {
-        module_->AddDebug2Inst(std::move(spv_inst));
-      } else if (IsDebug3Inst(opcode)) {
-        module_->AddDebug3Inst(std::move(spv_inst));
+      } else if (IsDebugInst(opcode)) {
+        module_->AddDebugInst(std::move(spv_inst));
       } else if (IsAnnotationInst(opcode)) {
         module_->AddAnnotationInst(std::move(spv_inst));
       } else if (IsTypeInst(opcode)) {
@@ -114,7 +110,7 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
         module_->AddGlobalValue(std::move(spv_inst));
       } else {
         SPIRV_UNIMPLEMENTED(consumer_,
-                            "unhandled inst type outside function definition");
+                            "unhandled inst type outside function defintion");
       }
     } else {
       if (block_ == nullptr) {  // Inside function but outside blocks
@@ -153,8 +149,9 @@ void IrLoader::EndModule() {
   }
   for (auto& function : *module_) {
     for (auto& bb : function) bb.SetParent(&function);
+    function.SetParent(module_);
   }
 }
 
-}  // namespace opt
+}  // namespace ir
 }  // namespace spvtools

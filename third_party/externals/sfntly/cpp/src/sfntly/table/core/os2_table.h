@@ -357,8 +357,8 @@ class OS2Table : public Table, public RefCounted<OS2Table> {
     void SetYStrikeoutPosition(int32_t position);
     int32_t SFamilyClass();
     void SetSFamilyClass(int32_t family);
-    void Panose(std::vector<uint8_t>* value);
-    void SetPanose(std::vector<uint8_t>* panose);
+    void Panose(ByteVector* value);
+    void SetPanose(ByteVector* panose);
     int64_t UlUnicodeRange1();
     void SetUlUnicodeRange1(int64_t range);
     int64_t UlUnicodeRange2();
@@ -369,12 +369,12 @@ class OS2Table : public Table, public RefCounted<OS2Table> {
     void SetUlUnicodeRange4(int64_t range);
     // UNIMPLEMENTED: EnumSet<UnicodeRange> UlUnicodeRange()
     //                setUlUnicodeRange(EnumSet<UnicodeRange> rangeSet)
-    void AchVendId(std::vector<uint8_t>* b);
+    void AchVendId(ByteVector* b);
     // This field is 4 bytes in length and only the first 4 bytes of the byte
     // array will be written. If the byte array is less than 4 bytes it will be
     // padded out with space characters (0x20).
     // @param b ach Vendor Id
-    void SetAchVendId(std::vector<uint8_t>* b);
+    void SetAchVendId(ByteVector* b);
     // UNIMPLEMENTED: public EnumSet<FsSelection> fsSelection()
     int32_t FsSelection();
     void SetFsSelection(int32_t fs_selection);
@@ -429,13 +429,13 @@ class OS2Table : public Table, public RefCounted<OS2Table> {
   int32_t YStrikeoutSize();
   int32_t YStrikeoutPosition();
   int32_t SFamilyClass();
-  void Panose(std::vector<uint8_t>* value);
+  void Panose(ByteVector* value);
   int64_t UlUnicodeRange1();
   int64_t UlUnicodeRange2();
   int64_t UlUnicodeRange3();
   int64_t UlUnicodeRange4();
   // UNIMPLEMENTED: public EnumSet<UnicodeRange> UlUnicodeRange()
-  void AchVendId(std::vector<uint8_t>* b);
+  void AchVendId(ByteVector* b);
   // UNIMPLEMENTED: public EnumSet<FsSelection> fsSelection()
   int32_t FsSelection();
   int32_t UsFirstCharIndex();

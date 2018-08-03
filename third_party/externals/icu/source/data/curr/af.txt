@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/af.xml
+// *
+// ***************************************************************************
 af{
     Currencies{
         AED{
@@ -94,13 +100,9 @@ af{
             "BWP",
             "Botswana pula",
         }
-        BYN{
-            "BYN",
-            "Belo-Russiese roebel",
-        }
         BYR{
             "BYR",
-            "Belo-Russiese roebel (2000–2016)",
+            "Belo-Russiese roebel",
         }
         BZD{
             "BZD",
@@ -121,10 +123,6 @@ af{
         CLP{
             "CLP",
             "Chileense peso",
-        }
-        CNH{
-            "CNH",
-            "Chinese joean",
         }
         CNY{
             "CN¥",
@@ -392,10 +390,6 @@ af{
         }
         MRO{
             "MRO",
-            "Mauritaniese ouguiya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Mauritaniese ouguiya",
         }
         MUR{
@@ -460,7 +454,7 @@ af{
         }
         PEN{
             "PEN",
-            "Peruaanse sol",
+            "Peruaanse nuwe sol",
         }
         PGK{
             "PGK",
@@ -552,10 +546,6 @@ af{
         }
         STD{
             "STD",
-            "São Tomé en Príncipe dobra (1977–2017)",
-        }
-        STN{
-            "STN",
             "São Tomé en Príncipe dobra",
         }
         SYP{
@@ -696,7 +686,7 @@ af{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -713,7 +703,6 @@ af{
         FJD{"$"}
         FKP{"£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"FG"}
         GTQ{"Q"}
@@ -754,7 +743,6 @@ af{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"leu"}
         RUB{"₽"}
         RWF{"RF"}
         SBD{"$"}
@@ -763,7 +751,7 @@ af{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -877,13 +865,9 @@ af{
             one{"Botswana pula"}
             other{"Botswana pula"}
         }
-        BYN{
+        BYR{
             one{"Belo-Russiese roebel"}
             other{"Belo-Russiese roebel"}
-        }
-        BYR{
-            one{"Belo-Russiese roebel (2000–2016)"}
-            other{"Belo-Russiese roebel (2000–2016)"}
         }
         BZD{
             one{"Beliziese dollar"}
@@ -904,10 +888,6 @@ af{
         CLP{
             one{"Chileense peso"}
             other{"Chileense peso"}
-        }
-        CNH{
-            one{"Chinese joean (buiteland)"}
-            other{"Chinese joean (buiteland)"}
         }
         CNY{
             one{"Sjinese joean renminbi"}
@@ -1154,10 +1134,6 @@ af{
             other{"Macaose pataca"}
         }
         MRO{
-            one{"Mauritaniese ouguiya (1973–2017)"}
-            other{"Mauritaniese ouguiya (1973–2017)"}
-        }
-        MRU{
             one{"Mauritaniese ouguiya"}
             other{"Mauritaniese ouguiya"}
         }
@@ -1218,8 +1194,8 @@ af{
             other{"Panamese balboa"}
         }
         PEN{
-            one{"Peruaanse sol"}
-            other{"Peruaanse sol"}
+            one{"Peruaanse nuwe sol"}
+            other{"Peruaanse nuwe sol"}
         }
         PGK{
             one{"Papoea-Nieu-Guinese kina"}
@@ -1306,10 +1282,6 @@ af{
             other{"Suid-Soedanese pond"}
         }
         STD{
-            one{"São Tomé en Príncipe dobra (1977–2017)"}
-            other{"São Tomé en Príncipe dobra (1977–2017)"}
-        }
-        STN{
             one{"São Tomé en Príncipe dobra"}
             other{"São Tomé en Príncipe dobra"}
         }
@@ -1430,5 +1402,5 @@ af{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
 }

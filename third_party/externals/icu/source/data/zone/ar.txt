@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ar.xml
+// *
+// ***************************************************************************
 ar{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"أبيدجان"}
@@ -166,7 +172,7 @@ ar{
             ec{"أنشوراج"}
         }
         "America:Anguilla"{
-            ec{"أنغويلا"}
+            ec{"أنغيلا"}
         }
         "America:Antigua"{
             ec{"أنتيغوا"}
@@ -250,7 +256,7 @@ ar{
             ec{"كايين"}
         }
         "America:Cayman"{
-            ec{"كايمان"}
+            ec{"كيمان"}
         }
         "America:Chicago"{
             ec{"شيكاغو"}
@@ -274,7 +280,7 @@ ar{
             ec{"كيابا"}
         }
         "America:Curacao"{
-            ec{"كوراساو"}
+            ec{"كوراكاو"}
         }
         "America:Danmarkshavn"{
             ec{"دانمرك شافن"}
@@ -302,9 +308,6 @@ ar{
         }
         "America:El_Salvador"{
             ec{"السلفادور"}
-        }
-        "America:Fort_Nelson"{
-            ec{"فورت نيلسون"}
         }
         "America:Fortaleza"{
             ec{"فورتاليزا"}
@@ -442,7 +445,7 @@ ar{
             ec{"مدينة المكسيك"}
         }
         "America:Miquelon"{
-            ec{"مكويلون"}
+            ec{"ميكولن"}
         }
         "America:Moncton"{
             ec{"وينكتون"}
@@ -506,9 +509,6 @@ ar{
         }
         "America:Puerto_Rico"{
             ec{"بورتوريكو"}
-        }
-        "America:Punta_Arenas"{
-            ec{"بونتا أريناز"}
         }
         "America:Rainy_River"{
             ec{"راني ريفر"}
@@ -660,9 +660,6 @@ ar{
         "Asia:Ashgabat"{
             ec{"عشق آباد"}
         }
-        "Asia:Atyrau"{
-            ec{"أتيراو"}
-        }
         "Asia:Baghdad"{
             ec{"بغداد"}
         }
@@ -674,9 +671,6 @@ ar{
         }
         "Asia:Bangkok"{
             ec{"بانكوك"}
-        }
-        "Asia:Barnaul"{
-            ec{"بارناول"}
         }
         "Asia:Beirut"{
             ec{"بيروت"}
@@ -713,9 +707,6 @@ ar{
         }
         "Asia:Dushanbe"{
             ec{"دوشانبي"}
-        }
-        "Asia:Famagusta"{
-            ec{"فاماغوستا"}
         }
         "Asia:Gaza"{
             ec{"غزة"}
@@ -858,9 +849,6 @@ ar{
         "Asia:Tokyo"{
             ec{"طوكيو"}
         }
-        "Asia:Tomsk"{
-            ec{"تومسك"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"آلانباتار"}
         }
@@ -951,9 +939,6 @@ ar{
         "Australia:Sydney"{
             ec{"سيدني"}
         }
-        "Etc:UTC"{
-            ls{"التوقيت العالمي المنسق"}
-        }
         "Etc:Unknown"{
             ec{"مدينة غير معروفة"}
         }
@@ -962,9 +947,6 @@ ar{
         }
         "Europe:Andorra"{
             ec{"أندورا"}
-        }
-        "Europe:Astrakhan"{
-            ec{"أستراخان"}
         }
         "Europe:Athens"{
             ec{"أثينا"}
@@ -1024,9 +1006,6 @@ ar{
         "Europe:Kiev"{
             ec{"كييف"}
         }
-        "Europe:Kirov"{
-            ec{"كيروف"}
-        }
         "Europe:Lisbon"{
             ec{"لشبونة"}
         }
@@ -1085,9 +1064,6 @@ ar{
         "Europe:Sarajevo"{
             ec{"سراييفو"}
         }
-        "Europe:Saratov"{
-            ec{"ساراتوف"}
-        }
         "Europe:Simferopol"{
             ec{"سيمفروبول"}
         }
@@ -1105,9 +1081,6 @@ ar{
         }
         "Europe:Tirane"{
             ec{"تيرانا"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"أوليانوفسك"}
         }
         "Europe:Uzhgorod"{
             ec{"أوزجرود"}
@@ -1402,9 +1375,9 @@ ar{
             ls{"توقيت أزورس الرسمي"}
         }
         "meta:Bangladesh"{
-            ld{"توقيت بنغلاديش الصيفي"}
-            lg{"توقيت بنغلاديش"}
-            ls{"توقيت بنغلاديش الرسمي"}
+            ld{"توقيت بنجلاديش الصيفي"}
+            lg{"توقيت بنجلاديش"}
+            ls{"توقيت بنجلاديش الرسمي"}
         }
         "meta:Bhutan"{
             ls{"توقيت بوتان"}
@@ -1634,7 +1607,7 @@ ar{
             ls{"توقيت كراسنويارسك الرسمي"}
         }
         "meta:Kyrgystan"{
-            ls{"توقيت قيرغيزستان"}
+            ls{"توقيت قرغيزستان"}
         }
         "meta:Line_Islands"{
             ls{"توقيت جزر لاين"}
@@ -1780,9 +1753,6 @@ ar{
         "meta:Ponape"{
             ls{"توقيت بونابي"}
         }
-        "meta:Pyongyang"{
-            ls{"توقيت بيونغ يانغ"}
-        }
         "meta:Reunion"{
             ls{"توقيت ريونيون"}
         }
@@ -1853,9 +1823,9 @@ ar{
             ls{"توقيت توفالو"}
         }
         "meta:Uruguay"{
-            ld{"توقيت أوروغواي الصيفي"}
-            lg{"توقيت أوروغواي"}
-            ls{"توقيت أوروغواي الرسمي"}
+            ld{"توقيت أورغواي الصيفي"}
+            lg{"توقيت أورغواي"}
+            ls{"توقيت أورغواي الرسمي"}
         }
         "meta:Uzbekistan"{
             ld{"توقيت أوزبكستان الصيفي"}
@@ -1900,8 +1870,8 @@ ar{
             ls{"توقيت يكاترينبورغ الرسمي"}
         }
         fallbackFormat{"{1} ({0})"}
-        gmtFormat{"غرينتش{0}"}
-        gmtZeroFormat{"غرينتش"}
+        gmtFormat{"جرينتش{0}"}
+        gmtZeroFormat{"جرينتش"}
         hourFormat{"+HH:mm;-HH:mm"}
         regionFormat{"توقيت {0}"}
         regionFormatDaylight{"توقيت {0} الصيفي"}

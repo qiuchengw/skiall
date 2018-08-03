@@ -11,19 +11,13 @@ lib:
 	@$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir)/src fuzzing
 
 $(top_builddir)/src/libharfbuzz-fuzzing.la: lib
-$(top_builddir)/src/libharfbuzz-subset-fuzzing.la: lib
 
 EXTRA_DIST += \
 	README \
-	run-shape-fuzzer-tests.py \
-	run-subset-fuzzer-tests.py \
-	CMakeLists.txt \
 	$(NULL)
 
 check_PROGRAMS = \
-	hb-shape-fuzzer \
-	hb-subset-fuzzer \
-	hb-subset-get-codepoints-fuzzer \
+	hb-fuzzer \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -35,53 +29,25 @@ LDADD = \
 	$(top_builddir)/src/libharfbuzz-fuzzing.la \
 	$(NULL)
 
-hb_shape_fuzzer_SOURCES = \
+hb_fuzzer_SOURCES = \
 	hb-fuzzer.hh \
-	hb-shape-fuzzer.cc \
+	hb-fuzzer.cc \
 	main.cc \
 	$(NULL)
-hb_shape_fuzzer_LDADD = \
+hb_fuzzer_LDADD = \
 	$(LDADD) \
 	$(NULL)
-hb_shape_fuzzer_CPPFLAGS = \
+hb_fuzzer_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	$(NULL)
-hb_shape_fuzzer_DEPENDENCIES = \
-	lib \
-	$(NULL)
-
-hb_subset_fuzzer_SOURCES = \
-	hb-fuzzer.hh \
-	hb-subset-fuzzer.cc \
-	main.cc \
-	$(NULL)
-hb_subset_fuzzer_LDADD = \
-	$(top_builddir)/src/libharfbuzz-subset-fuzzing.la \
-	$(NULL)
-hb_subset_fuzzer_CPPFLAGS = \
-	$(AM_CPPFLAGS) \
-	$(NULL)
-hb_subset_fuzzer_DEPENDENCIES = \
-	lib \
-	$(NULL)
-
-hb_subset_get_codepoints_fuzzer_SOURCES = \
-	hb-fuzzer.hh \
-	hb-subset-get-codepoints-fuzzer.cc \
-	main.cc \
-	$(NULL)
-hb_subset_get_codepoints_fuzzer_LDADD = \
-	$(top_builddir)/src/libharfbuzz-subset-fuzzing.la \
-	$(NULL)
-hb_subset_get_codepoints_fuzzer_CPPFLAGS = \
-	$(AM_CPPFLAGS) \
-	$(NULL)
-hb_subset_get_codepoints_fuzzer_DEPENDENCIES = \
+hb_fuzzer_DEPENDENCIES = \
 	lib \
 	$(NULL)
 
 check:
-	EXEEXT="$(EXEEXT)" srcdir="$(srcdir)" builddir="$(builddir)" $(srcdir)/run-shape-fuzzer-tests.py
-	EXEEXT="$(EXEEXT)" srcdir="$(srcdir)" builddir="$(builddir)" $(srcdir)/run-subset-fuzzer-tests.py
+	cat $(srcdir)/../shaping/tests/fuzzed.tests | \
+	cut -d: -f1 | while read x; do \
+		./hb-fuzzer $(srcdir)/../shaping/$$x; \
+	done
 
 -include $(top_srcdir)/git.mk

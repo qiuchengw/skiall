@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2010, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /********************************************************************************
@@ -32,7 +30,6 @@
 #include "ccolltst.h"
 #include "callcoll.h"
 #include "cfrtst.h"
-#include "cmemory.h"
 #include "unicode/ustring.h"
 #include "string.h"
 
@@ -185,7 +182,7 @@ static void TestSecondary()
     }
     log_verbose("Testing fr_CA Collation with Secondary strength\n");
     /*test acute and grave ordering (compare to french collation)*/
-    testAcuteSize = UPRV_LENGTHOF(testAcute);
+    testAcuteSize = sizeof(testAcute) / sizeof(testAcute[0]);
     for (i = 0; i < testAcuteSize; i++)
     {
         for (j = 0; j < testAcuteSize; j++)
@@ -323,7 +320,7 @@ static void TestGetSortKey() {
 
     lenActualSortKey = ucol_getSortKey(pCollator,
         (const UChar *)pucUTF16,
-        UPRV_LENGTHOF(pucUTF16),
+        sizeof(pucUTF16) / sizeof(pucUTF16[0]),
         pucSortKey,
         LENSORTKEY);
 

@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
 *   Copyright (C) 1997-2016, International Business Machines
@@ -26,7 +24,6 @@
 #define UCHAR_H
 
 #include "unicode/utypes.h"
-#include "unicode/stringoptions.h"
 
 U_CDECL_BEGIN
 
@@ -42,7 +39,7 @@ U_CDECL_BEGIN
  * @see u_getUnicodeVersion
  * @stable ICU 2.0
  */
-#define U_UNICODE_VERSION "11.0"
+#define U_UNICODE_VERSION "8.0"
 
 /**
  * \file
@@ -112,11 +109,11 @@ U_CDECL_BEGIN
  * Comparison:
  * - u_isUWhiteSpace=UCHAR_WHITE_SPACE: Unicode White_Space property;
  *       most of general categories "Z" (separators) + most whitespace ISO controls
- *       (including no-break spaces, but excluding IS1..IS4)
+ *       (including no-break spaces, but excluding IS1..IS4 and ZWSP)
  * - u_isWhitespace: Java isWhitespace; Z + whitespace ISO controls but excluding no-break spaces
  * - u_isJavaSpaceChar: Java isSpaceChar; just Z (including no-break spaces)
  * - u_isspace: Z + whitespace ISO controls (including no-break spaces)
- * - u_isblank: "horizontal spaces" = TAB + Zs
+ * - u_isblank: "horizontal spaces" = TAB + Zs - ZWSP
  */
 
 /**
@@ -149,9 +146,8 @@ U_CDECL_BEGIN
  *
  * The properties APIs are intended to reflect Unicode properties as defined
  * in the Unicode Character Database (UCD) and Unicode Technical Reports (UTR).
- *
- * For details about the properties see
- * UAX #44: Unicode Character Database (http://www.unicode.org/reports/tr44/).
+ * For details about the properties see http://www.unicode.org/ucd/ .
+ * For names of Unicode properties see the UCD file PropertyAliases.txt.
  *
  * Important: If ICU is built with UCD files from Unicode versions below, e.g., 3.2,
  * then properties marked with "new in Unicode 3.2" are not or not fully available.
@@ -405,61 +401,32 @@ typedef enum UProperty {
      * Binary property Emoji.
      * See http://www.unicode.org/reports/tr51/#Emoji_Properties
      *
-     * @stable ICU 57
+     * @draft ICU 57
      */
     UCHAR_EMOJI=57,
     /**
      * Binary property Emoji_Presentation.
      * See http://www.unicode.org/reports/tr51/#Emoji_Properties
      *
-     * @stable ICU 57
+     * @draft ICU 57
      */
     UCHAR_EMOJI_PRESENTATION=58,
     /**
      * Binary property Emoji_Modifier.
      * See http://www.unicode.org/reports/tr51/#Emoji_Properties
      *
-     * @stable ICU 57
+     * @draft ICU 57
      */
     UCHAR_EMOJI_MODIFIER=59,
     /**
      * Binary property Emoji_Modifier_Base.
      * See http://www.unicode.org/reports/tr51/#Emoji_Properties
      *
-     * @stable ICU 57
+     * @draft ICU 57
      */
     UCHAR_EMOJI_MODIFIER_BASE=60,
-    /**
-     * Binary property Emoji_Component.
-     * See http://www.unicode.org/reports/tr51/#Emoji_Properties
-     *
-     * @stable ICU 60
-     */
-    UCHAR_EMOJI_COMPONENT=61,
-    /**
-     * Binary property Regional_Indicator.
-     * @stable ICU 60
-     */
-    UCHAR_REGIONAL_INDICATOR=62,
-    /**
-     * Binary property Prepended_Concatenation_Mark.
-     * @stable ICU 60
-     */
-    UCHAR_PREPENDED_CONCATENATION_MARK=63,
-    /**
-     * Binary property Extended_Pictographic.
-     * See http://www.unicode.org/reports/tr51/#Emoji_Properties
-     *
-     * @stable ICU 62
-     */
-    UCHAR_EXTENDED_PICTOGRAPHIC=64,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the last constant for binary Unicode properties.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
-    UCHAR_BINARY_LIMIT,
-#endif  // U_HIDE_DEPRECATED_API
+    /** One more than the last constant for binary Unicode properties. @stable ICU 2.1 */
+    UCHAR_BINARY_LIMIT=61,
 
     /** Enumerated property Bidi_Class.
         Same as u_charDirection, returns UCharDirection values. @stable ICU 2.2 */
@@ -546,13 +513,8 @@ typedef enum UProperty {
         (http://www.unicode.org/reports/tr9/)
         Returns UBidiPairedBracketType values. @stable ICU 52 */
     UCHAR_BIDI_PAIRED_BRACKET_TYPE=0x1015,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the last constant for enumerated/integer Unicode properties.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** One more than the last constant for enumerated/integer Unicode properties. @stable ICU 2.2 */
     UCHAR_INT_LIMIT=0x1016,
-#endif  // U_HIDE_DEPRECATED_API
 
     /** Bitmask property General_Category_Mask.
         This is the General_Category property returned as a bit mask.
@@ -565,26 +527,16 @@ typedef enum UProperty {
     UCHAR_GENERAL_CATEGORY_MASK=0x2000,
     /** First constant for bit-mask Unicode properties. @stable ICU 2.4 */
     UCHAR_MASK_START=UCHAR_GENERAL_CATEGORY_MASK,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the last constant for bit-mask Unicode properties.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** One more than the last constant for bit-mask Unicode properties. @stable ICU 2.4 */
     UCHAR_MASK_LIMIT=0x2001,
-#endif  // U_HIDE_DEPRECATED_API
 
     /** Double property Numeric_Value.
         Corresponds to u_getNumericValue. @stable ICU 2.4 */
     UCHAR_NUMERIC_VALUE=0x3000,
     /** First constant for double Unicode properties. @stable ICU 2.4 */
     UCHAR_DOUBLE_START=UCHAR_NUMERIC_VALUE,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the last constant for double Unicode properties.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** One more than the last constant for double Unicode properties. @stable ICU 2.4 */
     UCHAR_DOUBLE_LIMIT=0x3001,
-#endif  // U_HIDE_DEPRECATED_API
 
     /** String property Age.
         Corresponds to u_charAge. @stable ICU 2.4 */
@@ -636,13 +588,8 @@ typedef enum UProperty {
     /** String property Bidi_Paired_Bracket (new in Unicode 6.3).
         Corresponds to u_getBidiPairedBracket. @stable ICU 52 */
     UCHAR_BIDI_PAIRED_BRACKET=0x400D,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the last constant for string Unicode properties.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** One more than the last constant for string Unicode properties. @stable ICU 2.4 */
     UCHAR_STRING_LIMIT=0x400E,
-#endif  // U_HIDE_DEPRECATED_API
 
     /** Miscellaneous property Script_Extensions (new in Unicode 6.0).
         Some characters are commonly used in multiple scripts.
@@ -652,14 +599,9 @@ typedef enum UProperty {
     UCHAR_SCRIPT_EXTENSIONS=0x7000,
     /** First constant for Unicode properties with unusual value types. @stable ICU 4.6 */
     UCHAR_OTHER_PROPERTY_START=UCHAR_SCRIPT_EXTENSIONS,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the last constant for Unicode properties with unusual value types.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** One more than the last constant for Unicode properties with unusual value types.
+     * @stable ICU 4.6 */
     UCHAR_OTHER_PROPERTY_LIMIT=0x7001,
-#endif  // U_HIDE_DEPRECATED_API
-
     /** Represents a nonexistent or invalid property or property value. @stable ICU 2.4 */
     UCHAR_INVALID_CODE = -1
 } UProperty;
@@ -740,13 +682,7 @@ typedef enum UCharCategory
     U_INITIAL_PUNCTUATION     = 28,
     /** Pf @stable ICU 2.0 */
     U_FINAL_PUNCTUATION       = 29,
-    /**
-     * One higher than the last enum UCharCategory constant.
-     * This numeric value is stable (will not change), see
-     * http://www.unicode.org/policies/stability_policy.html#Property_Value
-     *
-     * @stable ICU 2.0
-     */
+    /** One higher than the last enum UCharCategory constant. @stable ICU 2.0 */
     U_CHAR_CATEGORY_COUNT
 } UCharCategory;
 
@@ -920,15 +856,8 @@ typedef enum UCharDirection {
     U_RIGHT_TO_LEFT_ISOLATE       = 21,
     /** PDI @stable ICU 52 */
     U_POP_DIRECTIONAL_ISOLATE     = 22,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest UCharDirection value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_BIDI_CLASS).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** @stable ICU 2.0 */
     U_CHAR_DIRECTION_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UCharDirection;
 
 /**
@@ -950,15 +879,8 @@ typedef enum UBidiPairedBracketType {
     U_BPT_OPEN,
     /** Close paired bracket. @stable ICU 52 */
     U_BPT_CLOSE,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UBidiPairedBracketType value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_BIDI_PAIRED_BRACKET_TYPE).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** @stable ICU 52 */
     U_BPT_COUNT /* 3 */
-#endif  // U_HIDE_DEPRECATED_API
 } UBidiPairedBracketType;
 
 /**
@@ -1289,7 +1211,7 @@ enum UBlockCode {
      * Unicode 4.0.1 renames the "Cyrillic Supplementary" block to "Cyrillic Supplement".
      * @stable ICU 2.2
      */
-    UBLOCK_CYRILLIC_SUPPLEMENTARY = UBLOCK_CYRILLIC_SUPPLEMENT,
+    UBLOCK_CYRILLIC_SUPPLEMENTARY = UBLOCK_CYRILLIC_SUPPLEMENT, 
     /** @stable ICU 2.2 */
     UBLOCK_TAGALOG = 98, /*[1700]*/
     /** @stable ICU 2.2 */
@@ -1648,82 +1570,8 @@ enum UBlockCode {
     /** @stable ICU 56 */
     UBLOCK_SUTTON_SIGNWRITING = 262, /*[1D800]*/
 
-    /* New blocks in Unicode 9.0 */
-
-    /** @stable ICU 58 */
-    UBLOCK_ADLAM = 263, /*[1E900]*/
-    /** @stable ICU 58 */
-    UBLOCK_BHAIKSUKI = 264, /*[11C00]*/
-    /** @stable ICU 58 */
-    UBLOCK_CYRILLIC_EXTENDED_C = 265, /*[1C80]*/
-    /** @stable ICU 58 */
-    UBLOCK_GLAGOLITIC_SUPPLEMENT = 266, /*[1E000]*/
-    /** @stable ICU 58 */
-    UBLOCK_IDEOGRAPHIC_SYMBOLS_AND_PUNCTUATION = 267, /*[16FE0]*/
-    /** @stable ICU 58 */
-    UBLOCK_MARCHEN = 268, /*[11C70]*/
-    /** @stable ICU 58 */
-    UBLOCK_MONGOLIAN_SUPPLEMENT = 269, /*[11660]*/
-    /** @stable ICU 58 */
-    UBLOCK_NEWA = 270, /*[11400]*/
-    /** @stable ICU 58 */
-    UBLOCK_OSAGE = 271, /*[104B0]*/
-    /** @stable ICU 58 */
-    UBLOCK_TANGUT = 272, /*[17000]*/
-    /** @stable ICU 58 */
-    UBLOCK_TANGUT_COMPONENTS = 273, /*[18800]*/
-
-    // New blocks in Unicode 10.0
-
-    /** @stable ICU 60 */
-    UBLOCK_CJK_UNIFIED_IDEOGRAPHS_EXTENSION_F = 274, /*[2CEB0]*/
-    /** @stable ICU 60 */
-    UBLOCK_KANA_EXTENDED_A = 275, /*[1B100]*/
-    /** @stable ICU 60 */
-    UBLOCK_MASARAM_GONDI = 276, /*[11D00]*/
-    /** @stable ICU 60 */
-    UBLOCK_NUSHU = 277, /*[1B170]*/
-    /** @stable ICU 60 */
-    UBLOCK_SOYOMBO = 278, /*[11A50]*/
-    /** @stable ICU 60 */
-    UBLOCK_SYRIAC_SUPPLEMENT = 279, /*[0860]*/
-    /** @stable ICU 60 */
-    UBLOCK_ZANABAZAR_SQUARE = 280, /*[11A00]*/
-
-    // New blocks in Unicode 11.0
-
-    /** @stable ICU 62 */
-    UBLOCK_CHESS_SYMBOLS = 281, /*[1FA00]*/
-    /** @stable ICU 62 */
-    UBLOCK_DOGRA = 282, /*[11800]*/
-    /** @stable ICU 62 */
-    UBLOCK_GEORGIAN_EXTENDED = 283, /*[1C90]*/
-    /** @stable ICU 62 */
-    UBLOCK_GUNJALA_GONDI = 284, /*[11D60]*/
-    /** @stable ICU 62 */
-    UBLOCK_HANIFI_ROHINGYA = 285, /*[10D00]*/
-    /** @stable ICU 62 */
-    UBLOCK_INDIC_SIYAQ_NUMBERS = 286, /*[1EC70]*/
-    /** @stable ICU 62 */
-    UBLOCK_MAKASAR = 287, /*[11EE0]*/
-    /** @stable ICU 62 */
-    UBLOCK_MAYAN_NUMERALS = 288, /*[1D2E0]*/
-    /** @stable ICU 62 */
-    UBLOCK_MEDEFAIDRIN = 289, /*[16E40]*/
-    /** @stable ICU 62 */
-    UBLOCK_OLD_SOGDIAN = 290, /*[10F00]*/
-    /** @stable ICU 62 */
-    UBLOCK_SOGDIAN = 291, /*[10F30]*/
-
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UBlockCode value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_BLOCK).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
-    UBLOCK_COUNT = 292,
-#endif  // U_HIDE_DEPRECATED_API
+    /** @stable ICU 2.0 */
+    UBLOCK_COUNT = 263,
 
     /** @stable ICU 2.0 */
     UBLOCK_INVALID_CODE=-1
@@ -1752,15 +1600,7 @@ typedef enum UEastAsianWidth {
     U_EA_FULLWIDTH, /*[F]*/
     U_EA_NARROW,    /*[Na]*/
     U_EA_WIDE,      /*[W]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UEastAsianWidth value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_EAST_ASIAN_WIDTH).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_EA_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UEastAsianWidth;
 
 /**
@@ -1777,7 +1617,7 @@ typedef enum UEastAsianWidth {
 typedef enum UCharNameChoice {
     /** Unicode character name (Name property). @stable ICU 2.0 */
     U_UNICODE_CHAR_NAME,
-#ifndef U_HIDE_DEPRECATED_API
+#ifndef U_HIDE_DEPRECATED_API 
     /**
      * The Unicode_1_Name property value which is of little practical value.
      * Beginning with ICU 49, ICU APIs return an empty string for this name choice.
@@ -1789,13 +1629,8 @@ typedef enum UCharNameChoice {
     U_EXTENDED_CHAR_NAME = U_UNICODE_CHAR_NAME+2,
     /** Corrected name from NameAliases.txt. @stable ICU 4.4 */
     U_CHAR_NAME_ALIAS,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UCharNameChoice value.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** @stable ICU 2.0 */
     U_CHAR_NAME_CHOICE_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UCharNameChoice;
 
 /**
@@ -1814,13 +1649,7 @@ typedef enum UCharNameChoice {
 typedef enum UPropertyNameChoice {
     U_SHORT_PROPERTY_NAME,
     U_LONG_PROPERTY_NAME,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UPropertyNameChoice value.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_PROPERTY_NAME_CHOICE_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UPropertyNameChoice;
 
 /**
@@ -1854,15 +1683,7 @@ typedef enum UDecompositionType {
     U_DT_SUPER,             /*[sup]*/
     U_DT_VERTICAL,          /*[vert]*/
     U_DT_WIDE,              /*[wide]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UDecompositionType value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_DECOMPOSITION_TYPE).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_DT_COUNT /* 18 */
-#endif  // U_HIDE_DEPRECATED_API
 } UDecompositionType;
 
 /**
@@ -1884,15 +1705,7 @@ typedef enum UJoiningType {
     U_JT_LEFT_JOINING,      /*[L]*/
     U_JT_RIGHT_JOINING,     /*[R]*/
     U_JT_TRANSPARENT,       /*[T]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UJoiningType value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_JOINING_TYPE).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_JT_COUNT /* 6 */
-#endif  // U_HIDE_DEPRECATED_API
 } UJoiningType;
 
 /**
@@ -1995,34 +1808,7 @@ typedef enum UJoiningGroup {
     U_JG_MANICHAEAN_YODH,  /**< @stable ICU 54 */
     U_JG_MANICHAEAN_ZAYIN,  /**< @stable ICU 54 */
     U_JG_STRAIGHT_WAW,  /**< @stable ICU 54 */
-    U_JG_AFRICAN_FEH,  /**< @stable ICU 58 */
-    U_JG_AFRICAN_NOON,  /**< @stable ICU 58 */
-    U_JG_AFRICAN_QAF,  /**< @stable ICU 58 */
-
-    U_JG_MALAYALAM_BHA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_JA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_LLA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_LLLA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_NGA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_NNA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_NNNA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_NYA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_RA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_SSA,  /**< @stable ICU 60 */
-    U_JG_MALAYALAM_TTA,  /**< @stable ICU 60 */
-
-    U_JG_HANIFI_ROHINGYA_KINNA_YA,  /**< @stable ICU 62 */
-    U_JG_HANIFI_ROHINGYA_PA,  /**< @stable ICU 62 */
-
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UJoiningGroup value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_JOINING_GROUP).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_JG_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UJoiningGroup;
 
 /**
@@ -2048,32 +1834,10 @@ typedef enum UGraphemeClusterBreak {
     U_GCB_LVT = 7,              /*[LVT]*/
     U_GCB_T = 8,                /*[T]*/
     U_GCB_V = 9,                /*[V]*/
-    /** @stable ICU 4.0 */
     U_GCB_SPACING_MARK = 10,    /*[SM]*/ /* from here on: new in Unicode 5.1/ICU 4.0 */
-    /** @stable ICU 4.0 */
     U_GCB_PREPEND = 11,         /*[PP]*/
-    /** @stable ICU 50 */
     U_GCB_REGIONAL_INDICATOR = 12,  /*[RI]*/ /* new in Unicode 6.2/ICU 50 */
-    /** @stable ICU 58 */
-    U_GCB_E_BASE = 13,          /*[EB]*/ /* from here on: new in Unicode 9.0/ICU 58 */
-    /** @stable ICU 58 */
-    U_GCB_E_BASE_GAZ = 14,      /*[EBG]*/
-    /** @stable ICU 58 */
-    U_GCB_E_MODIFIER = 15,      /*[EM]*/
-    /** @stable ICU 58 */
-    U_GCB_GLUE_AFTER_ZWJ = 16,  /*[GAZ]*/
-    /** @stable ICU 58 */
-    U_GCB_ZWJ = 17,             /*[ZWJ]*/
-
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UGraphemeClusterBreak value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_GRAPHEME_CLUSTER_BREAK).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
-    U_GCB_COUNT = 18
-#endif  // U_HIDE_DEPRECATED_API
+    U_GCB_COUNT = 13
 } UGraphemeClusterBreak;
 
 /**
@@ -2098,46 +1862,16 @@ typedef enum UWordBreakValues {
     U_WB_MIDNUM = 5,            /*[MN]*/
     U_WB_NUMERIC = 6,           /*[NU]*/
     U_WB_EXTENDNUMLET = 7,      /*[EX]*/
-    /** @stable ICU 4.0 */
     U_WB_CR = 8,                /*[CR]*/ /* from here on: new in Unicode 5.1/ICU 4.0 */
-    /** @stable ICU 4.0 */
     U_WB_EXTEND = 9,            /*[Extend]*/
-    /** @stable ICU 4.0 */
     U_WB_LF = 10,               /*[LF]*/
-    /** @stable ICU 4.0 */
     U_WB_MIDNUMLET =11,         /*[MB]*/
-    /** @stable ICU 4.0 */
     U_WB_NEWLINE =12,           /*[NL]*/
-    /** @stable ICU 50 */
     U_WB_REGIONAL_INDICATOR = 13,   /*[RI]*/ /* new in Unicode 6.2/ICU 50 */
-    /** @stable ICU 52 */
     U_WB_HEBREW_LETTER = 14,    /*[HL]*/ /* from here on: new in Unicode 6.3/ICU 52 */
-    /** @stable ICU 52 */
     U_WB_SINGLE_QUOTE = 15,     /*[SQ]*/
-    /** @stable ICU 52 */
     U_WB_DOUBLE_QUOTE = 16,     /*[DQ]*/
-    /** @stable ICU 58 */
-    U_WB_E_BASE = 17,           /*[EB]*/ /* from here on: new in Unicode 9.0/ICU 58 */
-    /** @stable ICU 58 */
-    U_WB_E_BASE_GAZ = 18,       /*[EBG]*/
-    /** @stable ICU 58 */
-    U_WB_E_MODIFIER = 19,       /*[EM]*/
-    /** @stable ICU 58 */
-    U_WB_GLUE_AFTER_ZWJ = 20,   /*[GAZ]*/
-    /** @stable ICU 58 */
-    U_WB_ZWJ = 21,              /*[ZWJ]*/
-    /** @stable ICU 62 */
-    U_WB_WSEGSPACE = 22,        /*[WSEGSPACE]*/
-
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UWordBreakValues value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_WORD_BREAK).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
-    U_WB_COUNT = 23
-#endif  // U_HIDE_DEPRECATED_API
+    U_WB_COUNT = 17
 } UWordBreakValues;
 
 /**
@@ -2168,15 +1902,7 @@ typedef enum USentenceBreak {
     U_SB_EXTEND = 12,           /*[EX]*/
     U_SB_LF = 13,               /*[LF]*/
     U_SB_SCONTINUE = 14,        /*[SC]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal USentenceBreak value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_SENTENCE_BREAK).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_SB_COUNT = 15
-#endif  // U_HIDE_DEPRECATED_API
 } USentenceBreak;
 
 /**
@@ -2223,43 +1949,18 @@ typedef enum ULineBreak {
     U_LB_SPACE = 26,             /*[SP]*/
     U_LB_BREAK_SYMBOLS = 27,     /*[SY]*/
     U_LB_ZWSPACE = 28,           /*[ZW]*/
-    /** @stable ICU 2.6 */
     U_LB_NEXT_LINE = 29,         /*[NL]*/ /* from here on: new in Unicode 4/ICU 2.6 */
-    /** @stable ICU 2.6 */
     U_LB_WORD_JOINER = 30,       /*[WJ]*/
-    /** @stable ICU 3.4 */
     U_LB_H2 = 31,                /*[H2]*/ /* from here on: new in Unicode 4.1/ICU 3.4 */
-    /** @stable ICU 3.4 */
     U_LB_H3 = 32,                /*[H3]*/
-    /** @stable ICU 3.4 */
     U_LB_JL = 33,                /*[JL]*/
-    /** @stable ICU 3.4 */
     U_LB_JT = 34,                /*[JT]*/
-    /** @stable ICU 3.4 */
     U_LB_JV = 35,                /*[JV]*/
-    /** @stable ICU 4.4 */
     U_LB_CLOSE_PARENTHESIS = 36, /*[CP]*/ /* new in Unicode 5.2/ICU 4.4 */
-    /** @stable ICU 49 */
     U_LB_CONDITIONAL_JAPANESE_STARTER = 37,/*[CJ]*/ /* new in Unicode 6.1/ICU 49 */
-    /** @stable ICU 49 */
     U_LB_HEBREW_LETTER = 38,     /*[HL]*/ /* new in Unicode 6.1/ICU 49 */
-    /** @stable ICU 50 */
     U_LB_REGIONAL_INDICATOR = 39,/*[RI]*/ /* new in Unicode 6.2/ICU 50 */
-    /** @stable ICU 58 */
-    U_LB_E_BASE = 40,            /*[EB]*/ /* from here on: new in Unicode 9.0/ICU 58 */
-    /** @stable ICU 58 */
-    U_LB_E_MODIFIER = 41,        /*[EM]*/
-    /** @stable ICU 58 */
-    U_LB_ZWJ = 42,               /*[ZWJ]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal ULineBreak value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_LINE_BREAK).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
-    U_LB_COUNT = 43
-#endif  // U_HIDE_DEPRECATED_API
+    U_LB_COUNT = 40
 } ULineBreak;
 
 /**
@@ -2279,15 +1980,7 @@ typedef enum UNumericType {
     U_NT_DECIMAL,           /*[de]*/
     U_NT_DIGIT,             /*[di]*/
     U_NT_NUMERIC,           /*[nu]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UNumericType value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_NUMERIC_TYPE).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_NT_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UNumericType;
 
 /**
@@ -2309,15 +2002,7 @@ typedef enum UHangulSyllableType {
     U_HST_TRAILING_JAMO,    /*[T]*/
     U_HST_LV_SYLLABLE,      /*[LV]*/
     U_HST_LVT_SYLLABLE,     /*[LVT]*/
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * One more than the highest normal UHangulSyllableType value.
-     * The highest value is available via u_getIntPropertyMaxValue(UCHAR_HANGUL_SYLLABLE_TYPE).
-     *
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
     U_HST_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UHangulSyllableType;
 
 /**
@@ -2741,7 +2426,8 @@ u_isgraph(UChar32 c);
  *
  * same as
  *
- * TRUE for U+0009 (TAB) and characters with general category "Zs" (space separators).
+ * TRUE for U+0009 (TAB) and characters with general category "Zs" (space separators)
+ * except Zero Width Space (ZWSP, U+200B).
  *
  * Note: There are several ICU whitespace functions; please see the uchar.h
  * file documentation for a detailed comparison.
@@ -3181,7 +2867,7 @@ u_charName(UChar32 code, UCharNameChoice nameChoice,
            char *buffer, int32_t bufferLength,
            UErrorCode *pErrorCode);
 
-#ifndef U_HIDE_DEPRECATED_API
+#ifndef U_HIDE_DEPRECATED_API 
 /**
  * Returns an empty string.
  * Used to return the ISO 10646 comment for a character.
@@ -3607,6 +3293,27 @@ u_toupper(UChar32 c);
  */
 U_STABLE UChar32 U_EXPORT2
 u_totitle(UChar32 c);
+
+/** Option value for case folding: use default mappings defined in CaseFolding.txt. @stable ICU 2.0 */
+#define U_FOLD_CASE_DEFAULT 0
+
+/**
+ * Option value for case folding:
+ *
+ * Use the modified set of mappings provided in CaseFolding.txt to handle dotted I
+ * and dotless i appropriately for Turkic languages (tr, az).
+ *
+ * Before Unicode 3.2, CaseFolding.txt contains mappings marked with 'I' that
+ * are to be included for default mappings and
+ * excluded for the Turkic-specific mappings.
+ *
+ * Unicode 3.2 CaseFolding.txt instead contains mappings marked with 'T' that
+ * are to be excluded for default mappings and
+ * included for the Turkic-specific mappings.
+ *
+ * @stable ICU 2.0
+ */
+#define U_FOLD_CASE_EXCLUDE_SPECIAL_I 1
 
 /**
  * The given character is mapped to its case folding equivalent according to

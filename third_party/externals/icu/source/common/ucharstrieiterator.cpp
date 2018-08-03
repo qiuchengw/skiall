@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 2010-2011, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  ucharstrieiterator.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -21,7 +19,7 @@
 
 U_NAMESPACE_BEGIN
 
-UCharsTrie::Iterator::Iterator(ConstChar16Ptr trieUChars, int32_t maxStringLength,
+UCharsTrie::Iterator::Iterator(const UChar *trieUChars, int32_t maxStringLength,
                                UErrorCode &errorCode)
         : uchars_(trieUChars),
           pos_(uchars_), initialPos_(uchars_),

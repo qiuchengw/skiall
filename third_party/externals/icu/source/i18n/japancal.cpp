@@ -1,9 +1,7 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-* Copyright (C) 2003-2009,2012,2016 International Business Machines Corporation and
-* others. All Rights Reserved.
+* Copyright (C) 2003-2009,2012, International Business Machines Corporation and    *
+* others. All Rights Reserved.                                                *
 *******************************************************************************
 *
 * File JAPANCAL.CPP
@@ -17,7 +15,6 @@
 
 #if !UCONFIG_NO_FORMATTING
 
-#include "cmemory.h"
 #include "japancal.h"
 #include "unicode/gregocal.h"
 #include "umutex.h"
@@ -279,7 +276,7 @@ static const struct {
     {  1989,    1,  8 }   // Heisei    235
 };
 
-#define kEraCount UPRV_LENGTHOF(kEraInfo)
+#define kEraCount (sizeof(kEraInfo)/sizeof(kEraInfo[0]))
 
 /**
  * The current era, for reference. 

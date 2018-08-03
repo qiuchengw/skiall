@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  locavailable.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -35,7 +33,7 @@ U_NAMESPACE_BEGIN
 
 static icu::Locale*  availableLocaleList = NULL;
 static int32_t  availableLocaleListCount;
-static icu::UInitOnce gInitOnceLocale = U_INITONCE_INITIALIZER;
+static icu::UInitOnce gInitOnce = U_INITONCE_INITIALIZER;
 
 U_NAMESPACE_END
 
@@ -50,7 +48,7 @@ static UBool U_CALLCONV locale_available_cleanup(void)
         availableLocaleList = NULL;
     }
     availableLocaleListCount = 0;
-    gInitOnceLocale.reset();
+    gInitOnce.reset();
 
     return TRUE;
 }
@@ -81,7 +79,7 @@ void U_CALLCONV locale_available_init() {
 const Locale* U_EXPORT2
 Locale::getAvailableLocales(int32_t& count)
 {
-    umtx_initOnce(gInitOnceLocale, &locale_available_init);
+    umtx_initOnce(gInitOnce, &locale_available_init);
     count = availableLocaleListCount;
     return availableLocaleList;
 }

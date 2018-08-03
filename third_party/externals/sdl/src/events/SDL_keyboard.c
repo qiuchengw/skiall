@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -273,10 +273,6 @@ static const SDL_Keycode SDL_default_keymap[SDL_NUM_SCANCODES] = {
     SDLK_KBDILLUMUP,
     SDLK_EJECT,
     SDLK_SLEEP,
-    SDLK_APP1,
-    SDLK_APP2,
-    SDLK_AUDIOREWIND,
-    SDLK_AUDIOFASTFORWARD,
 };
 
 static const char *SDL_scancode_names[SDL_NUM_SCANCODES] = {
@@ -509,10 +505,6 @@ static const char *SDL_scancode_names[SDL_NUM_SCANCODES] = {
     "KBDIllumUp",
     "Eject",
     "Sleep",
-    "App1",
-    "App2",
-    "AudioRewind",
-    "AudioFastForward",
 };
 
 /* Taken from SDL_iconv() */
@@ -577,7 +569,7 @@ SDL_ResetKeyboard(void)
 #ifdef DEBUG_KEYBOARD
     printf("Resetting keyboard\n");
 #endif
-    for (scancode = (SDL_Scancode) 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
+    for (scancode = 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         if (keyboard->keystate[scancode] == SDL_PRESSED) {
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
@@ -594,22 +586,12 @@ void
 SDL_SetKeymap(int start, SDL_Keycode * keys, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    SDL_Scancode scancode;
 
     if (start < 0 || start + length > SDL_NUM_SCANCODES) {
         return;
     }
 
     SDL_memcpy(&keyboard->keymap[start], keys, sizeof(*keys) * length);
-
-    /* The number key scancodes always map to the number key keycodes.
-     * On AZERTY layouts these technically are symbols, but users (and games)
-     * always think of them and view them in UI as number keys.
-     */
-    keyboard->keymap[SDL_SCANCODE_0] = SDLK_0;
-    for (scancode = SDL_SCANCODE_1; scancode <= SDL_SCANCODE_9; ++scancode) {
-        keyboard->keymap[scancode] = SDLK_1 + (scancode - SDL_SCANCODE_1);
-    }
 }
 
 void
@@ -682,6 +664,7 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
     int posted;
     SDL_Keymod modifier;
     SDL_Keycode keycode;
+    Uint16 modstate;
     Uint32 type;
     Uint8 repeat;
 
@@ -754,6 +737,7 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         break;
     }
     if (SDL_KEYDOWN == type) {
+        modstate = keyboard->modstate;
         switch (keycode) {
         case SDLK_NUMLOCKCLEAR:
             keyboard->modstate ^= KMOD_NUM;
@@ -767,6 +751,7 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         }
     } else {
         keyboard->modstate &= ~modifier;
+        modstate = keyboard->modstate;
     }
 
     /* Post the event, if desired */
@@ -778,7 +763,7 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         event.key.repeat = repeat;
         event.key.keysym.scancode = scancode;
         event.key.keysym.sym = keycode;
-        event.key.keysym.mod = keyboard->modstate;
+        event.key.keysym.mod = modstate;
         event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
@@ -849,7 +834,7 @@ SDL_GetModState(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    return (SDL_Keymod) keyboard->modstate;
+    return keyboard->modstate;
 }
 
 void
@@ -878,7 +863,7 @@ SDL_GetKeyFromScancode(SDL_Scancode scancode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (((int)scancode) < ((int)SDL_SCANCODE_UNKNOWN) || scancode >= SDL_NUM_SCANCODES) {
+    if (scancode < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
           SDL_InvalidParamError("scancode");
           return 0;
     }
@@ -905,7 +890,7 @@ const char *
 SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
-    if (((int)scancode) < ((int)SDL_SCANCODE_UNKNOWN) || scancode >= SDL_NUM_SCANCODES) {
+    if (scancode < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
           SDL_InvalidParamError("scancode");
           return "";
     }
@@ -983,10 +968,8 @@ SDL_GetKeyFromName(const char *name)
 {
     SDL_Keycode key;
 
-    /* Check input */
-    if (name == NULL) {
-        return SDLK_UNKNOWN;
-    }
+        /* Check input */
+        if (name == NULL) return SDLK_UNKNOWN;
 
     /* If it's a single UTF-8 character, then that's the keycode itself */
     key = *(const unsigned char *)name;

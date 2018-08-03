@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/br.xml
+// *
+// ***************************************************************************
 br{
     Currencies{
         ADP{
@@ -218,13 +224,9 @@ br{
             "BYB",
             "roubl nevez Belarus (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "roubl Belarus",
-        }
         BYR{
             "BYR",
-            "roubl Belarus (2000–2016)",
+            "roubl Belarus",
         }
         BZD{
             "BZD",
@@ -680,10 +682,6 @@ br{
         }
         MRO{
             "MRO",
-            "ouguiya Maouritania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "ouguiya Maouritania",
         }
         MTL{
@@ -784,7 +782,7 @@ br{
         }
         PEN{
             "PEN",
-            "sol Perou",
+            "nuevo sol Perou",
         }
         PES{
             "PES",
@@ -916,10 +914,6 @@ br{
         }
         STD{
             "STD",
-            "dobra São Tomé ha Príncipe (1977–2017)",
-        }
-        STN{
-            "STN",
             "dobra São Tomé ha Príncipe",
         }
         SUR{
@@ -1210,7 +1204,7 @@ br{
         BOB{"Bs"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CNY{"¥"}
@@ -1270,7 +1264,7 @@ br{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"$ T"}
@@ -1586,19 +1580,12 @@ br{
             other{"roubl nevez Belarus (1994–1999)"}
             two{"roubl nevez Belarus (1994–1999)"}
         }
-        BYN{
+        BYR{
             few{"roubl Belarus"}
             many{"a roubloù Belarus"}
             one{"roubl Belarus"}
             other{"roubl Belarus"}
             two{"roubl Belarus"}
-        }
-        BYR{
-            few{"roubl Belarus (2000–2016)"}
-            many{"a roubloù Belarus (2000–2016)"}
-            one{"roubl Belarus (2000–2016)"}
-            other{"roubl Belarus (2000–2016)"}
-            two{"roubl Belarus (2000–2016)"}
         }
         BZD{
             few{"dollar Belize"}
@@ -2322,13 +2309,6 @@ br{
             two{"bataca Macau"}
         }
         MRO{
-            few{"ouguiya Maouritania (1973–2017)"}
-            many{"a ouguiyaoù Maouritania (1973–2017)"}
-            one{"ouguiya Maouritania (1973–2017)"}
-            other{"ouguiya Maouritania (1973–2017)"}
-            two{"ouguiya Maouritania (1973–2017)"}
-        }
-        MRU{
             few{"ouguiya Maouritania"}
             many{"a ouguiyaoù Maouritania"}
             one{"ouguiya Maouritania"}
@@ -2490,11 +2470,11 @@ br{
             two{"valboa Panamá"}
         }
         PEN{
-            few{"sol Perou"}
-            many{"sol Perou"}
-            one{"sol Perou"}
-            other{"sol Perou"}
-            two{"sol Perou"}
+            few{"nuevo sol Perou"}
+            many{"nuevo sol Perou"}
+            one{"nuevo sol Perou"}
+            other{"nuevo sol Perou"}
+            two{"nuevo sol Perou"}
         }
         PES{
             few{"sol Perou (1863–1965)"}
@@ -2721,13 +2701,6 @@ br{
             two{"lur Susoudan"}
         }
         STD{
-            few{"dobra São Tomé ha Príncipe (1977–2017)"}
-            many{"a zobraoù São Tomé ha Príncipe (1977–2017)"}
-            one{"dobra São Tomé ha Príncipe (1977–2017)"}
-            other{"dobra São Tomé ha Príncipe (1977–2017)"}
-            two{"zobra São Tomé ha Príncipe (1977–2017)"}
-        }
-        STN{
             few{"dobra São Tomé ha Príncipe"}
             many{"a zobraoù São Tomé ha Príncipe"}
             one{"dobra São Tomé ha Príncipe"}
@@ -3127,5 +3100,5 @@ br{
         other{"{0} {1}"}
         two{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
 }

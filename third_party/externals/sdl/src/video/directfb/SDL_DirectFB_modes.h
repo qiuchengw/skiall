@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_directfb_modes_h_
-#define SDL_directfb_modes_h_
+#ifndef _SDL_directfb_modes_h
+#define _SDL_directfb_modes_h
 
 #include <directfb.h>
 
@@ -54,6 +54,6 @@ extern void DirectFB_QuitModes(_THIS);
 
 extern void DirectFB_SetContext(_THIS, SDL_Window *window);
 
-#endif /* SDL_directfb_modes_h_ */
+#endif /* _SDL_directfb_modes_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

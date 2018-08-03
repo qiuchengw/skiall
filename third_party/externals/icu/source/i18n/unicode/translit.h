@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
 * Copyright (C) 1999-2014, International Business Machines
@@ -77,7 +75,8 @@ class TransliteratorIDParser;
  * transliteration.  For example, given a string <code>input</code>
  * and a transliterator <code>t</code>, the call
  *
- *     String result = t.transliterate(input);
+ * \htmlonly<blockquote>\endhtmlonly<code>String result = t.transliterate(input);
+ * </code>\htmlonly</blockquote>\endhtmlonly
  *
  * will transliterate it and return the result.  Other methods allow
  * the client to specify a substring to be transliterated and to use
@@ -97,18 +96,22 @@ class TransliteratorIDParser;
  * contents of the buffer may show text being modified as each new
  * character arrives.
  *
- * <p>Consider the simple `RuleBasedTransliterator`:
+ * <p>Consider the simple <code>RuleBasedTransliterator</code>:
  *
- *     th>{theta}
- *     t>{tau}
+ * \htmlonly<blockquote>\endhtmlonly<code>
+ * th&gt;{theta}<br>
+ * t&gt;{tau}
+ * </code>\htmlonly</blockquote>\endhtmlonly
  *
  * When the user types 't', nothing will happen, since the
  * transliterator is waiting to see if the next character is 'h'.  To
  * remedy this, we introduce the notion of a cursor, marked by a '|'
  * in the output string:
  *
- *     t>|{tau}
- *     {tau}h>{theta}
+ * \htmlonly<blockquote>\endhtmlonly<code>
+ * t&gt;|{tau}<br>
+ * {tau}h&gt;{theta}
+ * </code>\htmlonly</blockquote>\endhtmlonly
  *
  * Now when the user types 't', tau appears, and if the next character
  * is 'h', the tau changes to a theta.  This is accomplished by
@@ -494,9 +497,9 @@ public:
      * for details.
      * @param text the buffer holding transliterated and
      * untransliterated text
-     * @param index an array of three integers.
+     * @param index an array of three integers.  See {@link #transliterate(Replaceable&, UTransPosition&, const UnicodeString*, UErrorCode&) const }.
      * @param status    Output param to filled in with a success or an error.
-     * @see #transliterate(Replaceable&, UTransPosition&, const UnicodeString&, UErrorCode &) const
+     * @see #transliterate(Replaceable, int[], String)
      * @stable ICU 2.0
      */
     virtual void transliterate(Replaceable& text, UTransPosition& index,

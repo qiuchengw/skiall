@@ -39,7 +39,7 @@ fatalError(const char *string)
 static Uint64 prevTime = 0;
 
 double
-updateDeltaTime(void)
+updateDeltaTime()
 {
     Uint64 curTime;
     double deltaTime;

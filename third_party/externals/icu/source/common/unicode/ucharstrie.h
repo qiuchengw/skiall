@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 2010-2012, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  ucharstrie.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -63,7 +61,7 @@ public:
      * @param trieUChars The UChar array that contains the serialized trie.
      * @stable ICU 4.8
      */
-    UCharsTrie(ConstChar16Ptr trieUChars)
+    UCharsTrie(const UChar *trieUChars)
             : ownedArray_(NULL), uchars_(trieUChars),
               pos_(uchars_), remainingMatchLength_(-1) {}
 
@@ -208,7 +206,7 @@ public:
      * @return The match/value Result.
      * @stable ICU 4.8
      */
-    UStringTrieResult next(ConstChar16Ptr s, int32_t length);
+    UStringTrieResult next(const UChar *s, int32_t length);
 
     /**
      * Returns a matching string's value if called immediately after
@@ -268,7 +266,7 @@ public:
          *                  function chaining. (See User Guide for details.)
          * @stable ICU 4.8
          */
-        Iterator(ConstChar16Ptr trieUChars, int32_t maxStringLength, UErrorCode &errorCode);
+        Iterator(const UChar *trieUChars, int32_t maxStringLength, UErrorCode &errorCode);
 
         /**
          * Iterates from the current state of the specified UCharsTrie.

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/wae.xml
+// *
+// ***************************************************************************
 wae{
     Countries{
         001{"Wäld"}
@@ -40,6 +46,7 @@ wae{
         AI{"Anguilla"}
         AL{"Albanie"}
         AM{"Armenie"}
+        AN{"Holändiši Antillä"}
         AO{"Angola"}
         AQ{"Antarktis"}
         AR{"Argentinie"}
@@ -129,7 +136,7 @@ wae{
         GU{"Guam"}
         GW{"Ginea Bissau"}
         GY{"Guyana"}
-        HK{"Sonderverwaltigszona Hongkong"}
+        HK{"Hongkong"}
         HM{"Heard- und McDonald-Inslä"}
         HN{"Honduras"}
         HR{"Kroatie"}
@@ -183,7 +190,7 @@ wae{
         ML{"Mali"}
         MM{"Burma"}
         MN{"Mongolei"}
-        MO{"Sonderverwaltigszona Makau"}
+        MO{"Makau"}
         MP{"Nördliči Mariane"}
         MQ{"Martinique"}
         MR{"Mauretanie"}
@@ -287,10 +294,6 @@ wae{
         ZW{"Simbabwe"}
         ZZ{"Unbekannti Regio"}
     }
-    Countries%short{
-        HK{"Hongkong"}
-        MO{"Makau"}
-    }
     Countries%variant{
         CD{"Kongo (Demokratiši Rebublik)"}
         CG{"Kongo (Rebublik)"}
@@ -299,5 +302,5 @@ wae{
         MK{"Mazedonie (EJR)"}
         TL{"Wešttimor"}
     }
-    Version{"2.1.38.69"}
+    Version{"2.1.19.14"}
 }

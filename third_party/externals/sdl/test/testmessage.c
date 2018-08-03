@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "SDL.h"
 
@@ -25,7 +26,7 @@ quit(int rc)
     exit(rc);
 }
 
-static int SDLCALL
+static int
 button_messagebox(void *eventNumber)
 {
     const SDL_MessageBoxButtonData buttons[] = {
@@ -46,13 +47,12 @@ button_messagebox(void *eventNumber)
         "Custom MessageBox",
         "This is a custom messagebox",
         2,
-        NULL,/* buttons */
+        buttons,
         NULL /* Default color scheme */
     };
 
     int button = -1;
     int success = 0;
-    data.buttons = buttons;
     if (eventNumber) {
         data.message = "This is a custom messagebox from a background thread.";
     }

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/is.xml
+// *
+// ***************************************************************************
 is{
     Countries{
         001{"Heimurinn"}
@@ -31,7 +37,6 @@ is{
         151{"Austur-Evrópa"}
         154{"Norður-Evrópa"}
         155{"Vestur-Evrópa"}
-        202{"Afríka sunnan Sahara"}
         419{"Rómanska Ameríka"}
         AC{"Ascension-eyja"}
         AD{"Andorra"}
@@ -41,6 +46,7 @@ is{
         AI{"Angvilla"}
         AL{"Albanía"}
         AM{"Armenía"}
+        AN{"Hollensku Antillur"}
         AO{"Angóla"}
         AQ{"Suðurskautslandið"}
         AR{"Argentína"}
@@ -77,7 +83,7 @@ is{
         CF{"Mið-Afríkulýðveldið"}
         CG{"Kongó-Brazzaville"}
         CH{"Sviss"}
-        CI{"Côte d’Ivoire"}
+        CI{"Fílabeinsströndin"}
         CK{"Cooks-eyjar"}
         CL{"Síle"}
         CM{"Kamerún"}
@@ -107,7 +113,6 @@ is{
         ES{"Spánn"}
         ET{"Eþíópía"}
         EU{"Evrópusambandið"}
-        EZ{"Evrusvæðið"}
         FI{"Finnland"}
         FJ{"Fídjíeyjar"}
         FK{"Falklandseyjar"}
@@ -133,7 +138,7 @@ is{
         GU{"Gvam"}
         GW{"Gínea-Bissá"}
         GY{"Gvæjana"}
-        HK{"sérstjórnarsvæðið Hong Kong"}
+        HK{"Hong Kong"}
         HM{"Heard og McDonaldseyjar"}
         HN{"Hondúras"}
         HR{"Króatía"}
@@ -187,7 +192,7 @@ is{
         ML{"Malí"}
         MM{"Mjanmar (Búrma)"}
         MN{"Mongólía"}
-        MO{"sérstjórnarsvæðið Makaó"}
+        MO{"Makaó"}
         MP{"Norður-Maríanaeyjar"}
         MQ{"Martiník"}
         MR{"Máritanía"}
@@ -222,7 +227,7 @@ is{
         PM{"Sankti Pierre og Miquelon"}
         PN{"Pitcairn-eyjar"}
         PR{"Púertó Ríkó"}
-        PS{"Heimastjórnarsvæði Palestínumanna"}
+        PS{"Palestína"}
         PT{"Portúgal"}
         PW{"Palá"}
         PY{"Paragvæ"}
@@ -274,7 +279,6 @@ is{
         UA{"Úkraína"}
         UG{"Úganda"}
         UM{"Smáeyjar Bandaríkjanna"}
-        UN{"Sameinuðu þjóðirnar"}
         US{"Bandaríkin"}
         UY{"Úrúgvæ"}
         UZ{"Úsbekistan"}
@@ -297,19 +301,14 @@ is{
     }
     Countries%short{
         GB{"Bretland"}
-        HK{"Hong Kong"}
-        MO{"Makaó"}
-        PS{"Palestína"}
-        UN{"SÞ"}
         US{"BNA"}
     }
     Countries%variant{
         CD{"Kongó (Lýðstjórnarlýðveldið)"}
         CG{"Kongó (Lýðveldið)"}
-        CI{"Fílabeinsströndin"}
         FK{"Falklandseyjar (Malvinas)"}
         MK{"Makedónía (Fyrrverandi lýðveldi Júgóslavíu)"}
         TL{"Austur-Tímor"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

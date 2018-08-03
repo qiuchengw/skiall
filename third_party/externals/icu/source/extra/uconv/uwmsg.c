@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
-* Copyright (C) 1998-2016, International Business Machines Corporation
+* Copyright (C) 1998-2014, International Business Machines Corporation
 * and others.  All Rights Reserved.
 **********************************************************************
 *
@@ -21,7 +19,6 @@
 #include "unicode/uwmsg.h"
 #include "unicode/ures.h"
 #include "unicode/putil.h"
-#include "cmemory.h"
 #include "cstring.h"
 
 #include <stdlib.h>
@@ -146,7 +143,7 @@ U_CFUNC int u_wmsg(FILE *fp, const char *tag, ... )
     }
 
 #if UCONFIG_NO_FORMATTING
-    resultLength = UPRV_LENGTHOF(gNoFormatting);
+    resultLength = sizeof(gNoFormatting) / U_SIZEOF_UCHAR;
     if((msgLen + resultLength) <= UPRV_LENGTHOF(result)) {
         memcpy(result, msg, msgLen * U_SIZEOF_UCHAR);
         memcpy(result + msgLen, gNoFormatting, resultLength);

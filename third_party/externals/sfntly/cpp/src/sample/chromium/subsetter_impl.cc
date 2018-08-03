@@ -20,12 +20,8 @@
 
 #include <algorithm>
 #include <iterator>
-#include <limits>
 #include <map>
 #include <set>
-
-#include <unicode/unistr.h>
-#include <unicode/uversion.h>
 
 #include "sfntly/table/bitmap/eblc_table.h"
 #include "sfntly/table/bitmap/ebdt_table.h"
@@ -271,10 +267,6 @@ bool SetupGlyfBuilders(Font::Builder* font_builder,
     for (int32_t j = last_glyph_id + 1; j <= *i; ++j) {
       loca_list[j] = last_offset;
     }
-
-    if (last_offset > std::numeric_limits<int32_t>::max() - length)
-      return false;
-
     last_offset += length;
     loca_list[*i + 1] = last_offset;
     last_glyph_id = *i;
@@ -289,15 +281,14 @@ bool SetupGlyfBuilders(Font::Builder* font_builder,
 
 bool HasOverlap(int32_t range_begin, int32_t range_end,
                 const IntegerSet& glyph_ids) {
-  if (range_begin == range_end)
+  if (range_begin == range_end) {
     return glyph_ids.find(range_begin) != glyph_ids.end();
-
-  if (range_begin >= range_end)
-    return false;
-
-  IntegerSet::const_iterator left = glyph_ids.lower_bound(range_begin);
-  IntegerSet::const_iterator right = glyph_ids.lower_bound(range_end);
-  return left != right;
+  } else if (range_end > range_begin) {
+    IntegerSet::const_iterator left = glyph_ids.lower_bound(range_begin);
+    IntegerSet::const_iterator right = glyph_ids.lower_bound(range_end);
+    return right != left;
+  }
+  return false;
 }
 
 // Initialize builder, returns false if glyph_id subset is not covered.
@@ -385,14 +376,14 @@ bool InitializeBitmapBuilder(EbdtTable::Builder* ebdt, EblcTable::Builder* eblc,
 
 void CopyBigGlyphMetrics(BigGlyphMetrics::Builder* source,
                          BigGlyphMetrics::Builder* target) {
-  target->SetHeight(static_cast<uint8_t>(source->Height()));
-  target->SetWidth(static_cast<uint8_t>(source->Width()));
-  target->SetHoriBearingX(static_cast<uint8_t>(source->HoriBearingX()));
-  target->SetHoriBearingY(static_cast<uint8_t>(source->HoriBearingY()));
-  target->SetHoriAdvance(static_cast<uint8_t>(source->HoriAdvance()));
-  target->SetVertBearingX(static_cast<uint8_t>(source->VertBearingX()));
-  target->SetVertBearingY(static_cast<uint8_t>(source->VertBearingY()));
-  target->SetVertAdvance(static_cast<uint8_t>(source->VertAdvance()));
+  target->SetHeight(static_cast<byte_t>(source->Height()));
+  target->SetWidth(static_cast<byte_t>(source->Width()));
+  target->SetHoriBearingX(static_cast<byte_t>(source->HoriBearingX()));
+  target->SetHoriBearingY(static_cast<byte_t>(source->HoriBearingY()));
+  target->SetHoriAdvance(static_cast<byte_t>(source->HoriAdvance()));
+  target->SetVertBearingX(static_cast<byte_t>(source->VertBearingX()));
+  target->SetVertBearingY(static_cast<byte_t>(source->VertBearingY()));
+  target->SetVertAdvance(static_cast<byte_t>(source->VertAdvance()));
 }
 
 CALLER_ATTACH IndexSubTable::Builder*
@@ -655,7 +646,11 @@ bool SubsetterImpl::LoadFont(const char* font_name,
   FontArray font_array;
   factory_->LoadFonts(&mis, &font_array);
   font_ = FindFont(font_name, font_array);
-  return font_ != NULL;
+  if (font_ == NULL) {
+    return false;
+  }
+
+  return true;
 }
 
 int SubsetterImpl::SubsetFont(const unsigned int* glyph_ids,
@@ -689,14 +684,12 @@ int SubsetterImpl::SubsetFont(const unsigned int* glyph_ids,
 
   MemoryOutputStream output_stream;
   factory_->SerializeFont(new_font, &output_stream);
-  size_t length = output_stream.Size();
-  if (length == 0 ||
-      length > static_cast<size_t>(std::numeric_limits<int>::max())) {
-    return 0;
+  int length = static_cast<int>(output_stream.Size());
+  if (length > 0) {
+    *output_buffer = new unsigned char[length];
+    memcpy(*output_buffer, output_stream.Get(), length);
   }
 
-  *output_buffer = new unsigned char[length];
-  memcpy(*output_buffer, output_stream.Get(), length);
   return length;
 }
 
@@ -758,8 +751,6 @@ Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids, GlyphTable* glyf,
     Tag::cmap,  // Keep here for future tagged PDF development.
     Tag::name,  // Keep here due to legal concerns: copyright info inside.
   };
-  const size_t kTablesInSubSetSize =
-      sizeof(TABLES_IN_SUBSET) / sizeof(TABLES_IN_SUBSET[0]);
 
   // Setup font builders we need.
   FontBuilderPtr font_builder;
@@ -787,8 +778,9 @@ Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids, GlyphTable* glyf,
   }
 
   IntegerSet allowed_tags;
-  for (size_t i = 0; i < kTablesInSubSetSize; ++i)
+  for (size_t i = 0; i < sizeof(TABLES_IN_SUBSET) / sizeof(int32_t); ++i) {
     allowed_tags.insert(TABLES_IN_SUBSET[i]);
+  }
 
   IntegerSet result;
   std::set_difference(allowed_tags.begin(), allowed_tags.end(),
@@ -797,12 +789,12 @@ Font* SubsetterImpl::Subset(const IntegerSet& glyph_ids, GlyphTable* glyf,
   allowed_tags = result;
 
   // Setup remaining builders.
-  for (IntegerSet::const_iterator it = allowed_tags.begin();
-       it != allowed_tags.end(); ++it) {
-    int32_t tag = *it;
-    Table* table = font_->GetTable(tag);
-    if (table)
-      font_builder->NewTableBuilder(tag, table->ReadFontData());
+  for (IntegerSet::iterator i = allowed_tags.begin(), e = allowed_tags.end();
+                            i != e; ++i) {
+    Table* table = font_->GetTable(*i);
+    if (table) {
+      font_builder->NewTableBuilder(*i, table->ReadFontData());
+    }
   }
 
   return font_builder->Build();

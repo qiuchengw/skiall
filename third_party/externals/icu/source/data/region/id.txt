@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/id.xml
+// *
+// ***************************************************************************
 id{
     Countries{
         001{"Dunia"}
@@ -31,7 +37,6 @@ id{
         151{"Eropa Bagian Timur"}
         154{"Eropa Bagian Utara"}
         155{"Eropa Bagian Barat"}
-        202{"Afrika Sub-Sahara"}
         419{"Amerika Latin"}
         AC{"Pulau Ascension"}
         AD{"Andorra"}
@@ -41,8 +46,9 @@ id{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Antilla Belanda"}
         AO{"Angola"}
-        AQ{"Antartika"}
+        AQ{"Antarktika"}
         AR{"Argentina"}
         AS{"Samoa Amerika"}
         AT{"Austria"}
@@ -59,11 +65,11 @@ id{
         BH{"Bahrain"}
         BI{"Burundi"}
         BJ{"Benin"}
-        BL{"Saint Barthélemy"}
+        BL{"Saint Barthelemy"}
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
-        BQ{"Belanda Karibia"}
+        BQ{"Karibia Belanda"}
         BR{"Brasil"}
         BS{"Bahama"}
         BT{"Bhutan"}
@@ -72,16 +78,16 @@ id{
         BY{"Belarus"}
         BZ{"Belize"}
         CA{"Kanada"}
-        CC{"Kepulauan Cocos (Keeling)"}
+        CC{"Kepulauan Cocos"}
         CD{"Kongo - Kinshasa"}
         CF{"Republik Afrika Tengah"}
         CG{"Kongo - Brazzaville"}
         CH{"Swiss"}
-        CI{"Pantai Gading"}
+        CI{"Cote d’Ivoire"}
         CK{"Kepulauan Cook"}
         CL{"Cile"}
         CM{"Kamerun"}
-        CN{"Tiongkok"}
+        CN{"China"}
         CO{"Kolombia"}
         CP{"Pulau Clipperton"}
         CR{"Kosta Rika"}
@@ -90,7 +96,7 @@ id{
         CW{"Curaçao"}
         CX{"Pulau Christmas"}
         CY{"Siprus"}
-        CZ{"Ceko"}
+        CZ{"Republik Cheska"}
         DE{"Jerman"}
         DG{"Diego Garcia"}
         DJ{"Jibuti"}
@@ -107,7 +113,6 @@ id{
         ES{"Spanyol"}
         ET{"Etiopia"}
         EU{"Uni Eropa"}
-        EZ{"Zona Euro"}
         FI{"Finlandia"}
         FJ{"Fiji"}
         FK{"Kepulauan Malvinas"}
@@ -115,7 +120,7 @@ id{
         FO{"Kepulauan Faroe"}
         FR{"Prancis"}
         GA{"Gabon"}
-        GB{"Inggris Raya"}
+        GB{"Inggris"}
         GD{"Grenada"}
         GE{"Georgia"}
         GF{"Guyana Prancis"}
@@ -133,7 +138,7 @@ id{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
-        HK{"Hong Kong SAR Tiongkok"}
+        HK{"Hong Kong"}
         HM{"Pulau Heard dan Kepulauan McDonald"}
         HN{"Honduras"}
         HR{"Kroasia"}
@@ -187,7 +192,7 @@ id{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Makau SAR Tiongkok"}
+        MO{"Makau"}
         MP{"Kepulauan Mariana Utara"}
         MQ{"Martinik"}
         MR{"Mauritania"}
@@ -222,7 +227,7 @@ id{
         PM{"Saint Pierre dan Miquelon"}
         PN{"Kepulauan Pitcairn"}
         PR{"Puerto Riko"}
-        PS{"Wilayah Palestina"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -274,7 +279,6 @@ id{
         UA{"Ukraina"}
         UG{"Uganda"}
         UM{"Kepulauan Terluar A.S."}
-        UN{"Perserikatan Bangsa-Bangsa"}
         US{"Amerika Serikat"}
         UY{"Uruguay"}
         UZ{"Uzbekistan"}
@@ -296,19 +300,16 @@ id{
         ZZ{"Wilayah Tidak Dikenal"}
     }
     Countries%short{
-        GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"Makau"}
-        PS{"Palestina"}
-        UN{"PBB"}
+        GB{"GB"}
         US{"A.S."}
     }
     Countries%variant{
         CD{"Kongo (RDK)"}
         CG{"Kongo (Republik)"}
-        CZ{"Republik Ceko"}
+        CI{"Ivory Coast"}
         FK{"Kepulauan Malvinas (Falkland)"}
         MK{"Makedonia (BRY)"}
+        TL{"Timor Timur"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

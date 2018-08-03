@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/cy.xml
+// *
+// ***************************************************************************
 cy{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -64,7 +70,7 @@ cy{
             ec{"Douala"}
         }
         "Africa:El_Aaiun"{
-            ec{"El Aaiun"}
+            ec{"El Aaiún"}
         }
         "Africa:Freetown"{
             ec{"Freetown"}
@@ -100,7 +106,7 @@ cy{
             ec{"Libreville"}
         }
         "Africa:Lome"{
-            ec{"Lome"}
+            ec{"Lomé"}
         }
         "Africa:Luanda"{
             ec{"Luanda"}
@@ -133,7 +139,7 @@ cy{
             ec{"Nairobi"}
         }
         "Africa:Ndjamena"{
-            ec{"Ndjamena"}
+            ec{"N’Djamena"}
         }
         "Africa:Niamey"{
             ec{"Niamey"}
@@ -232,7 +238,7 @@ cy{
             ec{"Buenos Aires"}
         }
         "America:Cambridge_Bay"{
-            ec{"Bae Cambridge"}
+            ec{"Cambridge Bay"}
         }
         "America:Campo_Grande"{
             ec{"Campo Grande"}
@@ -302,9 +308,6 @@ cy{
         }
         "America:El_Salvador"{
             ec{"El Salvador"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -406,7 +409,7 @@ cy{
             ec{"Lower Prince’s Quarter"}
         }
         "America:Maceio"{
-            ec{"Maceio"}
+            ec{"Maceió"}
         }
         "America:Managua"{
             ec{"Managua"}
@@ -424,7 +427,7 @@ cy{
             ec{"Matamoros"}
         }
         "America:Mazatlan"{
-            ec{"Mazatlan"}
+            ec{"Mazatlán"}
         }
         "America:Mendoza"{
             ec{"Mendoza"}
@@ -484,7 +487,7 @@ cy{
             ec{"Ojinaga"}
         }
         "America:Panama"{
-            ec{"Panama"}
+            ec{"Panamá"}
         }
         "America:Pangnirtung"{
             ec{"Pangnirtung"}
@@ -506,9 +509,6 @@ cy{
         }
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
-        }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
         }
         "America:Rainy_River"{
             ec{"Rainy River"}
@@ -541,7 +541,7 @@ cy{
             ec{"Santo Domingo"}
         }
         "America:Sao_Paulo"{
-            ec{"Sao Paulo"}
+            ec{"São Paulo"}
         }
         "America:Scoresbysund"{
             ec{"Ittoqqortoormiit"}
@@ -556,16 +556,16 @@ cy{
             ec{"St. John’s"}
         }
         "America:St_Kitts"{
-            ec{"St. Kitts"}
+            ec{"Saint Kitts"}
         }
         "America:St_Lucia"{
-            ec{"St. Lucia"}
+            ec{"Saint Lucia"}
         }
         "America:St_Thomas"{
-            ec{"St. Thomas"}
+            ec{"Saint Thomas"}
         }
         "America:St_Vincent"{
-            ec{"St. Vincent"}
+            ec{"Saint Vincent"}
         }
         "America:Swift_Current"{
             ec{"Swift Current"}
@@ -660,9 +660,6 @@ cy{
         "Asia:Ashgabat"{
             ec{"Ashgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Baghdad"}
         }
@@ -674,9 +671,6 @@ cy{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -713,9 +707,6 @@ cy{
         }
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gasa"}
@@ -858,9 +849,6 @@ cy{
         "Asia:Tokyo"{
             ec{"Tokyo"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulan Bator"}
         }
@@ -892,7 +880,7 @@ cy{
             ec{"Bermuda"}
         }
         "Atlantic:Canary"{
-            ec{"Yr Ynysoedd Dedwydd"}
+            ec{"yr Ynysoedd Dedwydd"}
         }
         "Atlantic:Cape_Verde"{
             ec{"Cabo Verde"}
@@ -910,7 +898,7 @@ cy{
             ec{"De Georgia"}
         }
         "Atlantic:St_Helena"{
-            ec{"St. Helena"}
+            ec{"Saint Helena"}
         }
         "Atlantic:Stanley"{
             ec{"Stanley"}
@@ -939,9 +927,6 @@ cy{
         "Australia:Lindeman"{
             ec{"Lindeman"}
         }
-        "Australia:Lord_Howe"{
-            ec{"Lord Howe"}
-        }
         "Australia:Melbourne"{
             ec{"Melbourne"}
         }
@@ -950,9 +935,6 @@ cy{
         }
         "Australia:Sydney"{
             ec{"Sydney"}
-        }
-        "Etc:UTC"{
-            ls{"Amser Cyffredniol Cydlynol"}
         }
         "Etc:Unknown"{
             ec{"Dinas Anhysbys"}
@@ -963,14 +945,11 @@ cy{
         "Europe:Andorra"{
             ec{"Andorra"}
         }
-        "Europe:Astrakhan"{
-            ec{"Astrakhan"}
-        }
         "Europe:Athens"{
-            ec{"Athens"}
+            ec{"Athen"}
         }
         "Europe:Belgrade"{
-            ec{"Belgrade"}
+            ec{"Beograd"}
         }
         "Europe:Berlin"{
             ec{"Berlin"}
@@ -998,7 +977,7 @@ cy{
         }
         "Europe:Dublin"{
             ec{"Dulyn"}
-            ld{"Amser Safonol Iwerddon"}
+            ld{"Amser Haf Iwerddon"}
         }
         "Europe:Gibraltar"{
             ec{"Gibraltar"}
@@ -1023,9 +1002,6 @@ cy{
         }
         "Europe:Kiev"{
             ec{"Kiev"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lisbon"}
@@ -1085,9 +1061,6 @@ cy{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1106,9 +1079,6 @@ cy{
         "Europe:Tirane"{
             ec{"Tirane"}
         }
-        "Europe:Ulyanovsk"{
-            ec{"Ulyanovsk"}
-        }
         "Europe:Uzhgorod"{
             ec{"Uzhhorod"}
         }
@@ -1116,7 +1086,7 @@ cy{
             ec{"Vaduz"}
         }
         "Europe:Vatican"{
-            ec{"Y Fatican"}
+            ec{"y Fatican"}
         }
         "Europe:Vienna"{
             ec{"Fienna"}
@@ -1158,7 +1128,7 @@ cy{
             ec{"Kerguelen"}
         }
         "Indian:Mahe"{
-            ec{"Mahe"}
+            ec{"Mahé"}
         }
         "Indian:Maldives"{
             ec{"Maldives"}
@@ -1522,7 +1492,7 @@ cy{
             ls{"Amser Guyane Ffrengig"}
         }
         "meta:French_Southern"{
-            ls{"Amser Tiroedd Ffrainc yn y De a’r Antarctig"}
+            ls{"Amser Deheuol ac Antarctig Frengig"}
         }
         "meta:GMT"{
             ls{"Amser Safonol Greenwich"}
@@ -1612,7 +1582,7 @@ cy{
             ls{"Amser Safonol Siapan"}
         }
         "meta:Kazakhstan_Eastern"{
-            ls{"Amser Dwyrain Kazakhstan"}
+            ls{"Amser Dwyrain Casachstan"}
         }
         "meta:Kazakhstan_Western"{
             ls{"Amser Gorllewin Casachstan"}
@@ -1631,7 +1601,7 @@ cy{
             ls{"Amser Safonol Krasnoyarsk"}
         }
         "meta:Kyrgystan"{
-            ls{"Amser Kyrgyzstan"}
+            ls{"Amser Casachstan"}
         }
         "meta:Line_Islands"{
             ls{"Amser Ynysoedd Line"}
@@ -1774,9 +1744,6 @@ cy{
         "meta:Ponape"{
             ls{"Amser Pohnpei"}
         }
-        "meta:Pyongyang"{
-            ls{"Amser Pyongyang"}
-        }
         "meta:Reunion"{
             ls{"Amser Réunion"}
         }
@@ -1787,11 +1754,6 @@ cy{
             ld{"Amser Haf Sakhalin"}
             lg{"Amser Sakhalin"}
             ls{"Amser Safonol Sakhalin"}
-        }
-        "meta:Samara"{
-            ld{"Amser Haf Samara"}
-            lg{"Amser Samara"}
-            ls{"Amser Safonol Samara"}
         }
         "meta:Samoa"{
             ld{"Amser Haf Samoa"}

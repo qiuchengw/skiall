@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/xog.xml
+// *
+// ***************************************************************************
 xog{
     Currencies{
         AED{
@@ -124,10 +130,6 @@ xog{
         }
         MRO{
             "MRO",
-            "Wugwiya ey’eMawritenya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Wugwiya ey’eMawritenya",
         }
         MUR{
@@ -180,10 +182,6 @@ xog{
         }
         STD{
             "STD",
-            "Dobura ey’eSantome ne Purincipe (1977–2017)",
-        }
-        STN{
-            "STN",
             "Dobura ey’eSantome ne Purincipe",
         }
         SZL{
@@ -231,5 +229,5 @@ xog{
             "Doola ey’eZimbabwe",
         }
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

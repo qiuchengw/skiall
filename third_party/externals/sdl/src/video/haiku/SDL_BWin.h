@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_BWin_h_
-#define SDL_BWin_h_
+#ifndef _SDL_BWin_h
+#define _SDL_BWin_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,9 +38,9 @@ extern "C" {
 #include <stdio.h>
 #include <AppKit.h>
 #include <InterfaceKit.h>
-#include <game/DirectWindow.h>
+#include <be/game/DirectWindow.h>
 #if SDL_VIDEO_OPENGL
-#include <opengl/GLView.h>
+#include <be/opengl/GLView.h>
 #endif
 #include "SDL_events.h"
 #include "../../main/haiku/SDL_BApp.h"
@@ -72,7 +72,6 @@ class SDL_BWin:public BDirectWindow
 
 #if SDL_VIDEO_OPENGL
         _SDL_GLView = NULL;
-        _gl_type = 0;
 #endif
         _shown = false;
         _inhibit_resize = false;
@@ -115,8 +114,6 @@ class SDL_BWin:public BDirectWindow
         }
 #endif
 
-        delete _prev_frame;
-
         /* Clean up framebuffer stuff */
         _buffer_locker->Lock();
 #ifdef DRAWTHREAD
@@ -136,7 +133,6 @@ class SDL_BWin:public BDirectWindow
                                      B_FOLLOW_ALL_SIDES,
                                      (B_WILL_DRAW | B_FRAME_EVENTS),
                                      gl_flags);
-            _gl_type = gl_flags;
         }
         AddChild(_SDL_GLView);
         _SDL_GLView->EnableDirectMode(true);
@@ -254,7 +250,6 @@ class SDL_BWin:public BDirectWindow
 
     virtual void WindowActivated(bool active) {
         BMessage msg(BAPP_KEYBOARD_FOCUS);  /* Mouse focus sold separately */
-        msg.AddBool("focusGained", active);
         _PostWindowEvent(msg);
     }
 
@@ -447,7 +442,6 @@ class SDL_BWin:public BDirectWindow
     BBitmap *GetBitmap() { return _bitmap; }
 #if SDL_VIDEO_OPENGL
     BGLView *GetGLView() { return _SDL_GLView; }
-    Uint32 GetGLType() { return _gl_type; }
 #endif
 
     /* Setter methods */
@@ -591,7 +585,7 @@ private:
         if(msg->FindBool("window-border", &bEnabled) != B_OK) {
             return;
         }
-        SetLook(bEnabled ? B_TITLED_WINDOW_LOOK : B_NO_BORDER_WINDOW_LOOK);
+        SetLook(bEnabled ? B_BORDERED_WINDOW_LOOK : B_NO_BORDER_WINDOW_LOOK);
     }
 
     void _SetResizable(BMessage *msg) {
@@ -630,7 +624,6 @@ private:
     /* Members */
 #if SDL_VIDEO_OPENGL
     BGLView * _SDL_GLView;
-    Uint32 _gl_type;
 #endif
 
     int32 _last_buttons;
@@ -674,6 +667,4 @@ private:
  *                         through a draw cycle.  Occurs when the previous
  *                         buffer provided by DirectConnected() is invalidated.
  */
-#endif /* SDL_BWin_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif

@@ -104,31 +104,6 @@ void GrGLProgram::setData(const GrPrimitiveProcessor& primProc, const GrPipeline
     SkASSERT(nextTexSamplerIdx == fNumTextureSamplers);
 }
 
-void GrGLProgram::generateMipmaps(const GrPrimitiveProcessor& primProc,
-                                  const GrPipeline& pipeline) {
-    auto genLevelsIfNeeded = [this](GrTexture* tex, const GrSamplerState& sampler) {
-        if (sampler.filter() == GrSamplerState::Filter::kMipMap &&
-            tex->texturePriv().mipMapped() == GrMipMapped::kYes &&
-            tex->texturePriv().mipMapsAreDirty()) {
-            SkASSERT(fGpu->caps()->mipMapSupport());
-            fGpu->regenerateMipMapLevels(static_cast<GrGLTexture*>(tex));
-        }
-    };
-
-    for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
-        const auto& textureSampler = primProc.textureSampler(i);
-        genLevelsIfNeeded(textureSampler.peekTexture(), textureSampler.samplerState());
-    }
-
-    GrFragmentProcessor::Iter iter(pipeline);
-    while (const GrFragmentProcessor* fp  = iter.next()) {
-        for (int i = 0; i < fp->numTextureSamplers(); ++i) {
-            const auto& textureSampler = fp->textureSampler(i);
-            genLevelsIfNeeded(textureSampler.peekTexture(), textureSampler.samplerState());
-        }
-    }
-}
-
 void GrGLProgram::setFragmentData(const GrPipeline& pipeline, int* nextTexSamplerIdx) {
     GrFragmentProcessor::Iter iter(pipeline);
     GrGLSLFragmentProcessor::Iter glslIter(fFragmentProcessors.get(), fFragmentProcessorCnt);
@@ -149,7 +124,7 @@ void GrGLProgram::setFragmentData(const GrPipeline& pipeline, int* nextTexSample
 
 void GrGLProgram::setRenderTargetState(const GrPrimitiveProcessor& primProc,
                                        const GrRenderTargetProxy* proxy) {
-    GrRenderTarget* rt = proxy->priv().peekRenderTarget();
+    GrRenderTarget* rt = proxy->peekRenderTarget();
     // Load the RT height uniform if it is needed to y-flip gl_FragCoord.
     if (fBuiltinUniformHandles.fRTHeightUni.isValid() &&
         fRenderTargetState.fRenderTargetSize.fHeight != rt->height()) {

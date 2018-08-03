@@ -27,33 +27,15 @@
  */
 
 #define HB_SHAPER coretext
-
-#include "hb-private.hh"
 #include "hb-shaper-impl-private.hh"
 
 #include "hb-coretext.h"
-#include <math.h>
 
-/* https://developer.apple.com/documentation/coretext/1508745-ctfontcreatewithgraphicsfont */
-#define HB_CORETEXT_DEFAULT_FONT_SIZE 12.f
 
-static CGFloat
-coretext_font_size_from_ptem (float ptem)
-{
-  /* CoreText points are CSS pixels (96 per inch),
-   * NOT typographic points (72 per inch).
-   *
-   * https://developer.apple.com/library/content/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Explained/Explained.html
-   */
-  ptem *= 96.f / 72.f;
-  return ptem <= 0.f ? HB_CORETEXT_DEFAULT_FONT_SIZE : ptem;
-}
-static float
-coretext_font_size_to_ptem (CGFloat size)
-{
-  size *= 72.f / 96.f;
-  return size <= 0.f ? 0 : size;
-}
+#ifndef HB_DEBUG_CORETEXT
+#define HB_DEBUG_CORETEXT (HB_DEBUG+0)
+#endif
+
 
 static void
 release_table_data (void *user_data)
@@ -68,32 +50,32 @@ reference_table  (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
   CGFontRef cg_font = reinterpret_cast<CGFontRef> (user_data);
   CFDataRef cf_data = CGFontCopyTableForTag (cg_font, tag);
   if (unlikely (!cf_data))
-    return nullptr;
+    return NULL;
 
   const char *data = reinterpret_cast<const char*> (CFDataGetBytePtr (cf_data));
   const size_t length = CFDataGetLength (cf_data);
   if (!data || !length)
-  {
-    CFRelease (cf_data);
-    return nullptr;
-  }
+    return NULL;
 
   return hb_blob_create (data, length, HB_MEMORY_MODE_READONLY,
 			 reinterpret_cast<void *> (const_cast<__CFData *> (cf_data)),
 			 release_table_data);
 }
 
-static void
-_hb_cg_font_release (void *data)
+hb_face_t *
+hb_coretext_face_create (CGFontRef cg_font)
 {
-  CGFontRelease ((CGFontRef) data);
+  return hb_face_create_for_tables (reference_table, CGFontRetain (cg_font), (hb_destroy_func_t) CGFontRelease);
 }
 
 
-HB_SHAPER_DATA_ENSURE_DEFINE(coretext, face)
-HB_SHAPER_DATA_ENSURE_DEFINE_WITH_CONDITION(coretext, font,
-	fabs (CTFontGetSize((CTFontRef) data) - coretext_font_size_from_ptem (font->ptem)) <= .5
-)
+HB_SHAPER_DATA_ENSURE_DECLARE(coretext, face)
+HB_SHAPER_DATA_ENSURE_DECLARE(coretext, font)
+
+
+/*
+ * shaper face data
+ */
 
 static CTFontDescriptorRef
 get_last_resort_font_desc (void)
@@ -122,7 +104,7 @@ static void
 release_data (void *info, const void *data, size_t size)
 {
   assert (hb_blob_get_length ((hb_blob_t *) info) == size &&
-          hb_blob_get_data ((hb_blob_t *) info, nullptr) == data);
+          hb_blob_get_data ((hb_blob_t *) info, NULL) == data);
 
   hb_blob_destroy ((hb_blob_t *) info);
 }
@@ -130,8 +112,8 @@ release_data (void *info, const void *data, size_t size)
 static CGFontRef
 create_cg_font (hb_face_t *face)
 {
-  CGFontRef cg_font = nullptr;
-  if (face->destroy == _hb_cg_font_release)
+  CGFontRef cg_font = NULL;
+  if (face->destroy == (hb_destroy_func_t) CGFontRelease)
   {
     cg_font = CGFontRetain ((CGFontRef) face->user_data);
   }
@@ -158,40 +140,10 @@ create_cg_font (hb_face_t *face)
 static CTFontRef
 create_ct_font (CGFontRef cg_font, CGFloat font_size)
 {
-  CTFontRef ct_font = nullptr;
-
-  /* CoreText does not enable trak table usage / tracking when creating a CTFont
-   * using CTFontCreateWithGraphicsFont. The only way of enabling tracking seems
-   * to be through the CTFontCreateUIFontForLanguage call. */
-  CFStringRef cg_postscript_name = CGFontCopyPostScriptName (cg_font);
-  if (CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSText")) ||
-      CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSDisplay")))
-  {
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
-# define kCTFontUIFontSystem kCTFontSystemFontType
-# define kCTFontUIFontEmphasizedSystem kCTFontEmphasizedSystemFontType
-#endif
-    CTFontUIFontType font_type = kCTFontUIFontSystem;
-    if (CFStringHasSuffix (cg_postscript_name, CFSTR ("-Bold")))
-      font_type = kCTFontUIFontEmphasizedSystem;
-
-    ct_font = CTFontCreateUIFontForLanguage (font_type, font_size, nullptr);
-    CFStringRef ct_result_name = CTFontCopyPostScriptName(ct_font);
-    if (CFStringCompare (ct_result_name, cg_postscript_name, 0) != kCFCompareEqualTo)
-    {
-      CFRelease(ct_font);
-      ct_font = nullptr;
-    }
-    CFRelease (ct_result_name);
-  }
-  CFRelease (cg_postscript_name);
-
-  if (!ct_font)
-    ct_font = CTFontCreateWithGraphicsFont (cg_font, font_size, nullptr, nullptr);
-
+  CTFontRef ct_font = CTFontCreateWithGraphicsFont (cg_font, font_size, NULL, NULL);
   if (unlikely (!ct_font)) {
     DEBUG_MSG (CORETEXT, cg_font, "Font CTFontCreateWithGraphicsFont() failed");
-    return nullptr;
+    return NULL;
   }
 
   /* crbug.com/576941 and crbug.com/625902 and the investigation in the latter
@@ -201,7 +153,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
    * reconfiguring the cascade list causes CoreText crashes. For details, see
    * crbug.com/549610 */
   // 0x00070000 stands for "kCTVersionNumber10_10", see CoreText.h
-  if (&CTGetCoreTextVersion != nullptr && CTGetCoreTextVersion() < 0x00070000) {
+  if (&CTGetCoreTextVersion != NULL && CTGetCoreTextVersion() < 0x00070000) {
     CFStringRef fontName = CTFontCopyPostScriptName (ct_font);
     bool isEmojiFont = CFStringCompare (fontName, CFSTR("AppleColorEmoji"), 0) == kCFCompareEqualTo;
     CFRelease (fontName);
@@ -209,24 +161,13 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
       return ct_font;
   }
 
-  CFURLRef original_url = nullptr;
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-  ATSFontRef atsFont;
-  FSRef fsref;
-  OSStatus status;
-  atsFont = CTFontGetPlatformFont (ct_font, NULL);
-  status = ATSFontGetFileReference (atsFont, &fsref);
-  if (status == noErr)
-    original_url = CFURLCreateFromFSRef (NULL, &fsref);
-#else
-  original_url = (CFURLRef) CTFontCopyAttribute (ct_font, kCTFontURLAttribute);
-#endif
+  CFURLRef original_url = (CFURLRef)CTFontCopyAttribute(ct_font, kCTFontURLAttribute);
 
   /* Create font copy with cascade list that has LastResort first; this speeds up CoreText
    * font fallback which we don't need anyway. */
   {
     CTFontDescriptorRef last_resort_font_desc = get_last_resort_font_desc ();
-    CTFontRef new_ct_font = CTFontCreateCopyWithAttributes (ct_font, 0.0, nullptr, last_resort_font_desc);
+    CTFontRef new_ct_font = CTFontCreateCopyWithAttributes (ct_font, 0.0, NULL, last_resort_font_desc);
     CFRelease (last_resort_font_desc);
     if (new_ct_font)
     {
@@ -239,15 +180,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
        * system locations that we cannot access from the sandboxed renderer
        * process in Blink. This can be detected by the new file URL location
        * that the newly found font points to. */
-      CFURLRef new_url = nullptr;
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-      atsFont = CTFontGetPlatformFont (new_ct_font, NULL);
-      status = ATSFontGetFileReference (atsFont, &fsref);
-      if (status == noErr)
-        new_url = CFURLCreateFromFSRef (NULL, &fsref);
-#else
-      new_url = (CFURLRef) CTFontCopyAttribute (new_ct_font, kCTFontURLAttribute);
-#endif
+      CFURLRef new_url = (CFURLRef) CTFontCopyAttribute (new_ct_font, kCTFontURLAttribute);
       // Keep reconfigured font if URL cannot be retrieved (seems to be the case
       // on Mac OS 10.12 Sierra), speculative fix for crbug.com/625606
       if (!original_url || !new_url || CFEqual (original_url, new_url)) {
@@ -269,30 +202,51 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
   return ct_font;
 }
 
+struct hb_coretext_shaper_face_data_t {
+  CGFontRef cg_font;
+  CTFontRef ct_font;
+};
+
 hb_coretext_shaper_face_data_t *
 _hb_coretext_shaper_face_data_create (hb_face_t *face)
 {
-  CGFontRef cg_font = create_cg_font (face);
+  hb_coretext_shaper_face_data_t *data = (hb_coretext_shaper_face_data_t *) calloc (1, sizeof (hb_coretext_shaper_face_data_t));
+  if (unlikely (!data))
+    return NULL;
 
-  if (unlikely (!cg_font))
+  data->cg_font = create_cg_font (face);
+  if (unlikely (!data->cg_font))
   {
     DEBUG_MSG (CORETEXT, face, "CGFont creation failed..");
-    return nullptr;
+    free (data);
+    return NULL;
   }
 
-  return (hb_coretext_shaper_face_data_t *) cg_font;
+  /* We use 36pt size instead of UPEM, because CoreText implements the 'trak' table,
+   * which can make the font too tight at large sizes.  36pt should be a good semi-neutral
+   * size.
+   *
+   * Since we always create CTFont at a fixed size, our CTFont lives in face_data
+   * instead of font_data.  Which is good, because when people change scale on
+   * hb_font_t, we won't need to update our CTFont. */
+  data->ct_font = create_ct_font (data->cg_font, 36.);
+  if (unlikely (!data->ct_font))
+  {
+    DEBUG_MSG (CORETEXT, face, "CTFont creation failed.");
+    CFRelease (data->cg_font);
+    free (data);
+    return NULL;
+  }
+
+  return data;
 }
 
 void
 _hb_coretext_shaper_face_data_destroy (hb_coretext_shaper_face_data_t *data)
 {
-  CFRelease ((CGFontRef) data);
-}
-
-hb_face_t *
-hb_coretext_face_create (CGFontRef cg_font)
-{
-  return hb_face_create_for_tables (reference_table, CGFontRetain (cg_font), _hb_cg_font_release);
+  CFRelease (data->ct_font);
+  CFRelease (data->cg_font);
+  free (data);
 }
 
 /*
@@ -301,65 +255,28 @@ hb_coretext_face_create (CGFontRef cg_font)
 CGFontRef
 hb_coretext_face_get_cg_font (hb_face_t *face)
 {
-  if (unlikely (!hb_coretext_shaper_face_data_ensure (face))) return nullptr;
-  return (CGFontRef) HB_SHAPER_DATA_GET (face);
+  if (unlikely (!hb_coretext_shaper_face_data_ensure (face))) return NULL;
+  hb_coretext_shaper_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
+  return face_data->cg_font;
 }
 
 
+/*
+ * shaper font data
+ */
+
+struct hb_coretext_shaper_font_data_t {};
+
 hb_coretext_shaper_font_data_t *
-_hb_coretext_shaper_font_data_create (hb_font_t *font)
+_hb_coretext_shaper_font_data_create (hb_font_t *font HB_UNUSED)
 {
-  hb_face_t *face = font->face;
-  if (unlikely (!hb_coretext_shaper_face_data_ensure (face))) return nullptr;
-  CGFontRef cg_font = (CGFontRef) HB_SHAPER_DATA_GET (face);
-
-  CTFontRef ct_font = create_ct_font (cg_font, coretext_font_size_from_ptem (font->ptem));
-
-  if (unlikely (!ct_font))
-  {
-    DEBUG_MSG (CORETEXT, font, "CGFont creation failed..");
-    return nullptr;
-  }
-
-  return (hb_coretext_shaper_font_data_t *) ct_font;
+  return (hb_coretext_shaper_font_data_t *) HB_SHAPER_DATA_SUCCEEDED;
 }
 
 void
 _hb_coretext_shaper_font_data_destroy (hb_coretext_shaper_font_data_t *data)
 {
-  CFRelease ((CTFontRef) data);
 }
-
-/*
- * Since: 1.7.2
- */
-hb_font_t *
-hb_coretext_font_create (CTFontRef ct_font)
-{
-  CGFontRef cg_font = CTFontCopyGraphicsFont (ct_font, nullptr);
-  hb_face_t *face = hb_coretext_face_create (cg_font);
-  CFRelease (cg_font);
-  hb_font_t *font = hb_font_create (face);
-  hb_face_destroy (face);
-
-  if (unlikely (hb_object_is_inert (font)))
-    return font;
-
-  hb_font_set_ptem (font, coretext_font_size_to_ptem (CTFontGetSize(ct_font)));
-
-  /* Let there be dragons here... */
-  HB_SHAPER_DATA_GET (font) = (hb_coretext_shaper_font_data_t *) CFRetain (ct_font);
-
-  return font;
-}
-
-CTFontRef
-hb_coretext_font_get_ct_font (hb_font_t *font)
-{
-  if (unlikely (!hb_coretext_shaper_font_data_ensure (font))) return nullptr;
-  return (CTFontRef) HB_SHAPER_DATA_GET (font);
-}
-
 
 
 /*
@@ -383,6 +300,15 @@ _hb_coretext_shaper_shape_plan_data_destroy (hb_coretext_shaper_shape_plan_data_
 {
 }
 
+CTFontRef
+hb_coretext_font_get_ct_font (hb_font_t *font)
+{
+  hb_face_t *face = font->face;
+  if (unlikely (!hb_coretext_shaper_face_data_ensure (face))) return NULL;
+  hb_coretext_shaper_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
+  return face_data->ct_font;
+}
+
 
 /*
  * shaper
@@ -397,9 +323,7 @@ struct active_feature_t {
   feature_record_t rec;
   unsigned int order;
 
-  static int cmp (const void *pa, const void *pb) {
-    const active_feature_t *a = (const active_feature_t *) pa;
-    const active_feature_t *b = (const active_feature_t *) pb;
+  static int cmp (const active_feature_t *a, const active_feature_t *b) {
     return a->rec.feature < b->rec.feature ? -1 : a->rec.feature > b->rec.feature ? 1 :
 	   a->order < b->order ? -1 : a->order > b->order ? 1 :
 	   a->rec.setting < b->rec.setting ? -1 : a->rec.setting > b->rec.setting ? 1 :
@@ -415,9 +339,7 @@ struct feature_event_t {
   bool start;
   active_feature_t feature;
 
-  static int cmp (const void *pa, const void *pb) {
-    const feature_event_t *a = (const feature_event_t *) pa;
-    const feature_event_t *b = (const feature_event_t *) pb;
+  static int cmp (const feature_event_t *a, const feature_event_t *b) {
     return a->index < b->index ? -1 : a->index > b->index ? 1 :
 	   a->start < b->start ? -1 : a->start > b->start ? 1 :
 	   active_feature_t::cmp (&a->feature, &b->feature);
@@ -616,10 +538,9 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
                     unsigned int        num_features)
 {
   hb_face_t *face = font->face;
-  CGFontRef cg_font = (CGFontRef) HB_SHAPER_DATA_GET (face);
-  CTFontRef ct_font = (CTFontRef) HB_SHAPER_DATA_GET (font);
+  hb_coretext_shaper_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
 
-  CGFloat ct_font_size = CTFontGetSize (ct_font);
+  CGFloat ct_font_size = CTFontGetSize (face_data->ct_font);
   CGFloat x_mult = (CGFloat) font->x_scale / ct_font_size;
   CGFloat y_mult = (CGFloat) font->y_scale / ct_font_size;
 
@@ -640,8 +561,8 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 	buffer->merge_clusters (i - 1, i + 1);
   }
 
-  hb_auto_t<hb_vector_t<feature_record_t> > feature_records;
-  hb_auto_t<hb_vector_t<range_record_t> > range_records;
+  hb_auto_array_t<feature_record_t> feature_records;
+  hb_auto_array_t<range_record_t> range_records;
 
   /*
    * Set up features.
@@ -650,7 +571,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
   if (num_features)
   {
     /* Sort features by start/end events. */
-    hb_auto_t<hb_vector_t<feature_event_t> > feature_events;
+    hb_auto_array_t<feature_event_t> feature_events;
     for (unsigned int i = 0; i < num_features; i++)
     {
       const feature_mapping_t * mapping = (const feature_mapping_t *) bsearch (&features[i].tag,
@@ -669,11 +590,15 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       feature_event_t *event;
 
       event = feature_events.push ();
+      if (unlikely (!event))
+	goto fail_features;
       event->index = features[i].start;
       event->start = true;
       event->feature = feature;
 
       event = feature_events.push ();
+      if (unlikely (!event))
+	goto fail_features;
       event->index = features[i].end;
       event->start = false;
       event->feature = feature;
@@ -687,13 +612,15 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       feature.order = num_features + 1;
 
       feature_event_t *event = feature_events.push ();
+      if (unlikely (!event))
+	goto fail_features;
       event->index = 0; /* This value does magic. */
       event->start = false;
       event->feature = feature;
     }
 
     /* Scan events and save features for each range. */
-    hb_auto_t<hb_vector_t<active_feature_t> > active_features;
+    hb_auto_array_t<active_feature_t> active_features;
     unsigned int last_index = 0;
     for (unsigned int i = 0; i < feature_events.len; i++)
     {
@@ -703,6 +630,8 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       {
         /* Save a snapshot of active features and the range. */
 	range_record_t *range = range_records.push ();
+	if (unlikely (!range))
+	  goto fail_features;
 
 	if (active_features.len)
 	{
@@ -712,23 +641,22 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 	  /* active_features.qsort (); */
 	  for (unsigned int j = 0; j < active_features.len; j++)
 	  {
-	    CFStringRef keys[] = {
+	    CFStringRef keys[2] = {
 	      kCTFontFeatureTypeIdentifierKey,
 	      kCTFontFeatureSelectorIdentifierKey
 	    };
-	    CFNumberRef values[] = {
+	    CFNumberRef values[2] = {
 	      CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &active_features[j].rec.feature),
 	      CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &active_features[j].rec.setting)
 	    };
-	    static_assert ((ARRAY_LENGTH_CONST (keys) == ARRAY_LENGTH_CONST (values)), "");
 	    CFDictionaryRef dict = CFDictionaryCreate (kCFAllocatorDefault,
 						       (const void **) keys,
 						       (const void **) values,
-						       ARRAY_LENGTH (keys),
+						       2,
 						       &kCFTypeDictionaryKeyCallBacks,
 						       &kCFTypeDictionaryValueCallBacks);
-	    for (unsigned int i = 0; i < ARRAY_LENGTH (values); i++)
-	      CFRelease (values[i]);
+	    CFRelease (values[0]);
+	    CFRelease (values[1]);
 
 	    CFArrayAppendValue (features_array, dict);
 	    CFRelease (dict);
@@ -746,12 +674,12 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 	  CTFontDescriptorRef font_desc = CTFontDescriptorCreateWithAttributes (attributes);
 	  CFRelease (attributes);
 
-	  range->font = CTFontCreateCopyWithAttributes (ct_font, 0.0, nullptr, font_desc);
+	  range->font = CTFontCreateCopyWithAttributes (face_data->ct_font, 0.0, NULL, font_desc);
 	  CFRelease (font_desc);
 	}
 	else
 	{
-	  range->font = nullptr;
+	  range->font = NULL;
 	}
 
 	range->index_first = last_index;
@@ -760,15 +688,25 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 	last_index = event->index;
       }
 
-      if (event->start)
-      {
-        active_features.push (event->feature);
+      if (event->start) {
+        active_feature_t *feature = active_features.push ();
+	if (unlikely (!feature))
+	  goto fail_features;
+	*feature = event->feature;
       } else {
         active_feature_t *feature = active_features.find (&event->feature);
 	if (feature)
-	  active_features.remove (feature - active_features.arrayZ);
+	  active_features.remove (feature - active_features.array);
       }
     }
+
+    if (!range_records.len) /* No active feature found. */
+      goto fail_features;
+  }
+  else
+  {
+  fail_features:
+    num_features = 0;
   }
 
   unsigned int scratch_size;
@@ -814,14 +752,14 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
 
 #define FAIL(...) \
   HB_STMT_START { \
-    DEBUG_MSG (CORETEXT, nullptr, __VA_ARGS__); \
+    DEBUG_MSG (CORETEXT, NULL, __VA_ARGS__); \
     ret = false; \
     goto fail; \
   } HB_STMT_END;
 
   bool ret = true;
-  CFStringRef string_ref = nullptr;
-  CTLineRef line = nullptr;
+  CFStringRef string_ref = NULL;
+  CTLineRef line = NULL;
 
   if (0)
   {
@@ -833,8 +771,8 @@ resize_and_retry:
     assert (line);
     CFRelease (string_ref);
     CFRelease (line);
-    string_ref = nullptr;
-    line = nullptr;
+    string_ref = NULL;
+    line = NULL;
 
     /* Get previous start-of-scratch-area, that we use later for readjusting
      * our existing scratch arrays. */
@@ -855,7 +793,7 @@ resize_and_retry:
     scratch_size -= old_scratch_used;
   }
   {
-    string_ref = CFStringCreateWithCharactersNoCopy (nullptr,
+    string_ref = CFStringCreateWithCharactersNoCopy (NULL,
 						     pchars, chars_len,
 						     kCFAllocatorNull);
     if (unlikely (!string_ref))
@@ -887,18 +825,15 @@ resize_and_retry:
 							    kCFStringEncodingUTF8,
 							    kCFAllocatorNull);
 	if (unlikely (!lang))
-        {
-	  CFRelease (attr_string);
 	  FAIL ("CFStringCreateWithCStringNoCopy failed");
-        }
 	CFAttributedStringSetAttribute (attr_string, CFRangeMake (0, chars_len),
 					kCTLanguageAttributeName, lang);
 	CFRelease (lang);
       }
       CFAttributedStringSetAttribute (attr_string, CFRangeMake (0, chars_len),
-				      kCTFontAttributeName, ct_font);
+				      kCTFontAttributeName, face_data->ct_font);
 
-      if (num_features && range_records.len)
+      if (num_features)
       {
 	unsigned int start = 0;
 	range_record_t *last_range = &range_records[0];
@@ -924,48 +859,17 @@ resize_and_retry:
 	  CFAttributedStringSetAttribute (attr_string, CFRangeMake (start, chars_len - start),
 					  kCTFontAttributeName, last_range->font);
       }
-      /* Enable/disable kern if requested.
-       *
-       * Note: once kern is disabled, reenabling it doesn't currently seem to work in CoreText.
-       */
-      if (num_features)
-      {
-	unsigned int zeroint = 0;
-	CFNumberRef zero = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &zeroint);
-	for (unsigned int i = 0; i < num_features; i++)
-	{
-	  const hb_feature_t &feature = features[i];
-	  if (feature.tag == HB_TAG('k','e','r','n') &&
-	      feature.start < chars_len && feature.start < feature.end)
-	  {
-	    CFRange feature_range = CFRangeMake (feature.start,
-	                                         MIN (feature.end, chars_len) - feature.start);
-	    if (feature.value)
-	      CFAttributedStringRemoveAttribute (attr_string, feature_range, kCTKernAttributeName);
-	    else
-	      CFAttributedStringSetAttribute (attr_string, feature_range, kCTKernAttributeName, zero);
-	  }
-	}
-	CFRelease (zero);
-      }
 
       int level = HB_DIRECTION_IS_FORWARD (buffer->props.direction) ? 0 : 1;
       CFNumberRef level_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &level);
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-      extern const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel;
-#endif
       CFDictionaryRef options = CFDictionaryCreate (kCFAllocatorDefault,
 						    (const void **) &kCTTypesetterOptionForcedEmbeddingLevel,
 						    (const void **) &level_number,
 						    1,
 						    &kCFTypeDictionaryKeyCallBacks,
 						    &kCFTypeDictionaryValueCallBacks);
-      CFRelease (level_number);
       if (unlikely (!options))
-      {
-        CFRelease (attr_string);
         FAIL ("CFDictionaryCreate failed");
-      }
 
       CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedStringAndOptions (attr_string, options);
       CFRelease (options);
@@ -981,7 +885,7 @@ resize_and_retry:
 
     CFArrayRef glyph_runs = CTLineGetGlyphRuns (line);
     unsigned int num_runs = CFArrayGetCount (glyph_runs);
-    DEBUG_MSG (CORETEXT, nullptr, "Num runs: %d", num_runs);
+    DEBUG_MSG (CORETEXT, NULL, "Num runs: %d", num_runs);
 
     buffer->len = 0;
     uint32_t status_and = ~0, status_or = 0;
@@ -989,7 +893,7 @@ resize_and_retry:
     /* For right-to-left runs, CoreText returns the glyphs positioned such that
      * any trailing whitespace is to the left of (0,0).  Adjust coordinate system
      * to fix for that.  Test with any RTL string with trailing spaces.
-     * https://crbug.com/469028
+     * https://code.google.com/p/chromium/issues/detail?id=469028
      */
     if (HB_DIRECTION_IS_BACKWARD (buffer->props.direction))
     {
@@ -1007,7 +911,7 @@ resize_and_retry:
       status_or  |= run_status;
       status_and &= run_status;
       DEBUG_MSG (CORETEXT, run, "CTRunStatus: %x", run_status);
-      double run_advance = CTRunGetTypographicBounds (run, range_all, nullptr, nullptr, nullptr);
+      double run_advance = CTRunGetTypographicBounds (run, range_all, NULL, NULL, NULL);
       if (HB_DIRECTION_IS_VERTICAL (buffer->props.direction))
 	  run_advance = -run_advance;
       DEBUG_MSG (CORETEXT, run, "Run advance: %g", run_advance);
@@ -1020,7 +924,7 @@ resize_and_retry:
        */
       CFDictionaryRef attributes = CTRunGetAttributes (run);
       CTFontRef run_ct_font = static_cast<CTFontRef>(CFDictionaryGetValue (attributes, kCTFontAttributeName));
-      if (!CFEqual (run_ct_font, ct_font))
+      if (!CFEqual (run_ct_font, face_data->ct_font))
       {
 	/* The run doesn't use our main font instance.  We have to figure out
 	 * whether font fallback happened, or this is just CoreText giving us
@@ -1042,7 +946,7 @@ resize_and_retry:
 	 * However, even that wouldn't work if we were passed in the CGFont to
 	 * construct a hb_face to begin with.
 	 *
-	 * See: https://github.com/harfbuzz/harfbuzz/pull/36
+	 * See: http://github.com/behdad/harfbuzz/pull/36
 	 *
 	 * Also see: https://bugs.chromium.org/p/chromium/issues/detail?id=597098
 	 */
@@ -1055,16 +959,16 @@ resize_and_retry:
 	  }
 	if (!matched)
 	{
-	  CGFontRef run_cg_font = CTFontCopyGraphicsFont (run_ct_font, nullptr);
+	  CGFontRef run_cg_font = CTFontCopyGraphicsFont (run_ct_font, 0);
 	  if (run_cg_font)
 	  {
-	    matched = CFEqual (run_cg_font, cg_font);
+	    matched = CFEqual (run_cg_font, face_data->cg_font);
 	    CFRelease (run_cg_font);
 	  }
 	}
 	if (!matched)
 	{
-	  CFStringRef font_ps_name = CTFontCopyName (ct_font, kCTFontPostScriptNameKey);
+	  CFStringRef font_ps_name = CTFontCopyName (face_data->ct_font, kCTFontPostScriptNameKey);
 	  CFStringRef run_ps_name = CTFontCopyName (run_ct_font, kCTFontPostScriptNameKey);
 	  CFComparisonResult result = CFStringCompare (run_ps_name, font_ps_name, 0);
 	  CFRelease (run_ps_name);
@@ -1133,7 +1037,7 @@ resize_and_retry:
 
       /* Testing used to indicate that CTRunGetGlyphsPtr, etc (almost?) always
        * succeed, and so copying data to our own buffer will be rare.  Reports
-       * have it that this changed in OS X 10.10 Yosemite, and nullptr is returned
+       * have it that this changed in OS X 10.10 Yosemite, and NULL is returned
        * frequently.  At any rate, we can test that codepath by setting USE_PTR
        * to false. */
 
@@ -1149,13 +1053,13 @@ resize_and_retry:
 
       { /* Setup glyphs */
         SCRATCH_SAVE();
-	const CGGlyph* glyphs = USE_PTR ? CTRunGetGlyphsPtr (run) : nullptr;
+	const CGGlyph* glyphs = USE_PTR ? CTRunGetGlyphsPtr (run) : NULL;
 	if (!glyphs) {
 	  ALLOCATE_ARRAY (CGGlyph, glyph_buf, num_glyphs, goto resize_and_retry);
 	  CTRunGetGlyphs (run, range_all, glyph_buf);
 	  glyphs = glyph_buf;
 	}
-	const CFIndex* string_indices = USE_PTR ? CTRunGetStringIndicesPtr (run) : nullptr;
+	const CFIndex* string_indices = USE_PTR ? CTRunGetStringIndicesPtr (run) : NULL;
 	if (!string_indices) {
 	  ALLOCATE_ARRAY (CFIndex, index_buf, num_glyphs, goto resize_and_retry);
 	  CTRunGetStringIndices (run, range_all, index_buf);
@@ -1177,7 +1081,7 @@ resize_and_retry:
 	 * advance (in the advance direction only), and for last glyph we set
 	 * whatever is needed to make the whole run's advance add up. */
         SCRATCH_SAVE();
-	const CGPoint* positions = USE_PTR ? CTRunGetPositionsPtr (run) : nullptr;
+	const CGPoint* positions = USE_PTR ? CTRunGetPositionsPtr (run) : NULL;
 	if (!positions) {
 	  ALLOCATE_ARRAY (CGPoint, position_buf, num_glyphs, goto resize_and_retry);
 	  CTRunGetPositions (run, range_all, position_buf);
@@ -1228,11 +1132,11 @@ resize_and_retry:
     }
 
     /* Mac OS 10.6 doesn't have kCTTypesetterOptionForcedEmbeddingLevel,
-     * or if it does, it doesn't respect it.  So we get runs with wrong
+     * or if it does, it doesn't resepct it.  So we get runs with wrong
      * directions.  As such, disable the assert...  It wouldn't crash, but
      * cursoring will be off...
      *
-     * https://crbug.com/419769
+     * http://crbug.com/419769
      */
     if (0)
     {
@@ -1253,7 +1157,6 @@ resize_and_retry:
 	pos->x_advance = info->mask;
 	pos->x_offset = info->var1.i32;
 	pos->y_offset = info->var2.i32;
-
 	info++, pos++;
       }
     else
@@ -1262,7 +1165,6 @@ resize_and_retry:
 	pos->y_advance = info->mask;
 	pos->x_offset = info->var1.i32;
 	pos->y_offset = info->var2.i32;
-
 	info++, pos++;
       }
 
@@ -1300,8 +1202,6 @@ resize_and_retry:
     }
   }
 
-  buffer->unsafe_to_break_all ();
-
 #undef FAIL
 
 fail:
@@ -1322,9 +1222,6 @@ fail:
  * AAT shaper
  */
 
-HB_SHAPER_DATA_ENSURE_DEFINE(coretext_aat, face)
-HB_SHAPER_DATA_ENSURE_DEFINE(coretext_aat, font)
-
 /*
  * shaper face data
  */
@@ -1334,20 +1231,22 @@ struct hb_coretext_aat_shaper_face_data_t {};
 hb_coretext_aat_shaper_face_data_t *
 _hb_coretext_aat_shaper_face_data_create (hb_face_t *face)
 {
-  static const hb_tag_t tags[] = {HB_CORETEXT_TAG_MORX, HB_CORETEXT_TAG_MORT, HB_CORETEXT_TAG_KERX};
-
-  for (unsigned int i = 0; i < ARRAY_LENGTH (tags); i++)
+  hb_blob_t *mort_blob = face->reference_table (HB_CORETEXT_TAG_MORT);
+  /* Umm, we just reference the table to check whether it exists.
+   * Maybe add better API for this? */
+  if (!hb_blob_get_length (mort_blob))
   {
-    hb_blob_t *blob = face->reference_table (tags[i]);
-    if (hb_blob_get_length (blob))
+    hb_blob_destroy (mort_blob);
+    mort_blob = face->reference_table (HB_CORETEXT_TAG_MORX);
+    if (!hb_blob_get_length (mort_blob))
     {
-      hb_blob_destroy (blob);
-      return hb_coretext_shaper_face_data_ensure (face) ? (hb_coretext_aat_shaper_face_data_t *) HB_SHAPER_DATA_SUCCEEDED : nullptr;
+      hb_blob_destroy (mort_blob);
+      return NULL;
     }
-    hb_blob_destroy (blob);
   }
+  hb_blob_destroy (mort_blob);
 
-  return nullptr;
+  return hb_coretext_shaper_face_data_ensure (face) ? (hb_coretext_aat_shaper_face_data_t *) HB_SHAPER_DATA_SUCCEEDED : NULL;
 }
 
 void
@@ -1365,7 +1264,7 @@ struct hb_coretext_aat_shaper_font_data_t {};
 hb_coretext_aat_shaper_font_data_t *
 _hb_coretext_aat_shaper_font_data_create (hb_font_t *font)
 {
-  return hb_coretext_shaper_font_data_ensure (font) ? (hb_coretext_aat_shaper_font_data_t *) HB_SHAPER_DATA_SUCCEEDED : nullptr;
+  return hb_coretext_shaper_font_data_ensure (font) ? (hb_coretext_aat_shaper_font_data_t *) HB_SHAPER_DATA_SUCCEEDED : NULL;
 }
 
 void

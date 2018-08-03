@@ -14,7 +14,6 @@
 
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
 // A sampling of word counts.  Covers extreme points well, and all bit
@@ -40,5 +39,4 @@ TEST(OpcodeMake, Samples) {
   }
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

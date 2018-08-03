@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  uset.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -198,13 +196,11 @@ typedef enum USetSpanCondition {
      * @stable ICU 3.8
      */
     USET_SPAN_SIMPLE = 2,
-#ifndef U_HIDE_DEPRECATED_API
     /**
      * One more than the last span condition.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
+     * @stable ICU 3.8
      */
     USET_SPAN_CONDITION_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } USetSpanCondition;
 
 enum {

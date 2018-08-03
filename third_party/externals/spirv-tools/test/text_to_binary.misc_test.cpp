@@ -17,10 +17,9 @@
 
 #include "unit_spirv.h"
 
-#include "gmock/gmock.h"
 #include "test_fixture.h"
+#include "gmock/gmock.h"
 
-namespace spvtools {
 namespace {
 
 using SpirvVector = spvtest::TextToBinaryTest::SpirvVector;
@@ -54,5 +53,4 @@ OpXYZ
   EXPECT_THAT(CompileFailure(assembly), Eq("Invalid Opcode name 'OpXYZ'"));
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

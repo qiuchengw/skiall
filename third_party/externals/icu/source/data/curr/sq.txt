@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/sq.xml
+// *
+// ***************************************************************************
 sq{
     Currencies{
         AED{
@@ -28,7 +34,7 @@ sq{
         }
         ARS{
             "ARS",
-            "Pesoja argjentinase",
+            "Pezoja argjentinase",
         }
         AUD{
             "A$",
@@ -40,7 +46,7 @@ sq{
         }
         AZN{
             "AZN",
-            "Manata azerbajxhanase",
+            "Manata e Azerbajxhanit",
         }
         BAM{
             "BAM",
@@ -94,13 +100,9 @@ sq{
             "BWP",
             "Pula botsuane",
         }
-        BYN{
-            "BYN",
-            "Rubla bjelloruse",
-        }
         BYR{
             "BYR",
-            "Rubla bjelloruse (2000–2016)",
+            "Rubla bjelloruse",
         }
         BZD{
             "BZD",
@@ -120,11 +122,7 @@ sq{
         }
         CLP{
             "CLP",
-            "Pesoja kiliane",
-        }
-        CNH{
-            "CNH",
-            "Juani kinez (për treg të jashtëm)",
+            "Pezoja kiliane",
         }
         CNY{
             "CN¥",
@@ -132,7 +130,7 @@ sq{
         }
         COP{
             "COP",
-            "Pesoja kolumbiane",
+            "Pezoja kolumbiane",
         }
         CRC{
             "CRC",
@@ -140,11 +138,11 @@ sq{
         }
         CUC{
             "CUC",
-            "Pesoja kubaneze e shkëmbyeshme",
+            "Pezoja kubaneze e shkëmbyeshme",
         }
         CUP{
             "CUP",
-            "Pesoja kubaneze",
+            "Pezoja kubaneze",
         }
         CVE{
             "CVE",
@@ -152,7 +150,7 @@ sq{
         }
         CZK{
             "CZK",
-            "Koruna e Çekisë",
+            "Koruna e Republikës Çeke",
         }
         DJF{
             "DJF",
@@ -164,7 +162,7 @@ sq{
         }
         DOP{
             "DOP",
-            "Pesoja dominikane",
+            "Pezoja dominikane",
         }
         DZD{
             "DZD",
@@ -172,7 +170,7 @@ sq{
         }
         EGP{
             "EGP",
-            "Sterlina egjiptiane",
+            "Stërlina egjiptiane",
         }
         ERN{
             "ERN",
@@ -192,7 +190,7 @@ sq{
         }
         FKP{
             "FKP",
-            "Stërlina e Ishujve Falkland",
+            "Stërlina e Ishujve Folkland",
         }
         GBP{
             "£",
@@ -228,7 +226,7 @@ sq{
         }
         HKD{
             "HK$",
-            "Dollari i Hong-Kongut",
+            "Dollari i Hong Kongut",
         }
         HNL{
             "HNL",
@@ -352,7 +350,7 @@ sq{
         }
         MDL{
             "MDL",
-            "Leuja moldave",
+            "Leu moldav",
         }
         MGA{
             "MGA",
@@ -376,10 +374,6 @@ sq{
         }
         MRO{
             "MRO",
-            "Ugija mauritane (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Ugija mauritane",
         }
         MUR{
@@ -396,7 +390,7 @@ sq{
         }
         MXN{
             "MX$",
-            "Pesoja meksikane",
+            "Pezoja meksikane",
         }
         MYR{
             "MYR",
@@ -440,15 +434,15 @@ sq{
         }
         PEN{
             "PEN",
-            "Sola peruane",
+            "Sola nuevo-peruane",
         }
         PGK{
             "PGK",
-            "Kina e Guinesë së Re-Papua",
+            "Kina e Papua-Guineas së Re",
         }
         PHP{
             "PHP",
-            "Pesoja filipinase",
+            "Pezoja filipinase",
         }
         PKR{
             "PKR",
@@ -468,7 +462,7 @@ sq{
         }
         RON{
             "RON",
-            "Leuja rumune",
+            "Leu rumun",
         }
         RSD{
             "RSD",
@@ -496,7 +490,7 @@ sq{
         }
         SDG{
             "SDG",
-            "Sterlina sudaneze",
+            "Stërlina sudaneze",
         }
         SEK{
             "SEK",
@@ -508,7 +502,7 @@ sq{
         }
         SHP{
             "SHP",
-            "Sterlina e Ishullit të Shën-Helenës",
+            "Stërlina e Ishullit të Shën-Helenës",
         }
         SLL{
             "SLL",
@@ -524,14 +518,10 @@ sq{
         }
         SSP{
             "SSP",
-            "Sterlina sudanezo-jugore",
+            "Stërlina e Sudanit të Jugut",
         }
         STD{
             "STD",
-            "Dobra e Sao-Tomes dhe Prinsipes (1977–2017)",
-        }
-        STN{
-            "STN",
             "Dobra e Sao-Tomes dhe Prinsipes",
         }
         SYP{
@@ -592,7 +582,7 @@ sq{
         }
         UYU{
             "UYU",
-            "Pesoja uruguaiane",
+            "Pezoja uruguaiane",
         }
         UZS{
             "UZS",
@@ -640,16 +630,12 @@ sq{
         }
         ZAR{
             "ZAR",
-            "Randi afrikano-jugor",
+            "Randa afrikano-jugore",
         }
         ZMW{
             "ZMW",
             "Kuaça e Zambikut",
         }
-    }
-    Currencies%narrow{
-        UYU{"$"}
-        VEF{"Bs"}
     }
     CurrencyPlurals{
         AED{
@@ -677,8 +663,8 @@ sq{
             other{"kuanza angole"}
         }
         ARS{
-            one{"peso argjentinase"}
-            other{"peso argjentinase"}
+            one{"pezo argjentinase"}
+            other{"pezo argjentinase"}
         }
         AUD{
             one{"dollar australian"}
@@ -689,8 +675,8 @@ sq{
             other{"florinë aruban"}
         }
         AZN{
-            one{"manatë azerbajxhanase"}
-            other{"manata azerbajxhanase"}
+            one{"manatë azere"}
+            other{"manata azere"}
         }
         BAM{
             one{"markë e Bosnjë-Hercegovinës [e shkëmbyeshme]"}
@@ -744,13 +730,9 @@ sq{
             one{"pulë botsuane"}
             other{"pula botsuane"}
         }
-        BYN{
+        BYR{
             one{"rubël bjelloruse"}
             other{"rubla bjelloruse"}
-        }
-        BYR{
-            one{"rubël bjelloruse (2000–2016)"}
-            other{"rubla bjelloruse (2000–2016)"}
         }
         BZD{
             one{"dollar belize"}
@@ -769,32 +751,28 @@ sq{
             other{"franga zvicerane"}
         }
         CLP{
-            one{"peso kiliane"}
-            other{"peso kiliane"}
-        }
-        CNH{
-            one{"juan kinez (për treg të jashtëm)"}
-            other{"juanë kinez (për treg të jashtëm)"}
+            one{"pezo kiliane"}
+            other{"pezo kiliane"}
         }
         CNY{
             one{"juan kinez"}
             other{"juanë kinez"}
         }
         COP{
-            one{"peso kolumbiane"}
-            other{"peso kolumbiane"}
+            one{"pezo kolumbiane"}
+            other{"pezo kolumbiane"}
         }
         CRC{
             one{"kolon kostarikan"}
             other{"kolonë kostarikan"}
         }
         CUC{
-            one{"peso kubaneze e shkëmbyeshme"}
-            other{"peso kubaneze e shkëmbyeshme"}
+            one{"pezo kubaneze e shkëmbyeshme"}
+            other{"pezo kubaneze të shkëmbyeshme"}
         }
         CUP{
-            one{"peso kubaneze"}
-            other{"peso kubaneze"}
+            one{"pezo kubaneze"}
+            other{"pezo kubaneze"}
         }
         CVE{
             one{"eskudo e Kepit të Gjelbër"}
@@ -813,16 +791,16 @@ sq{
             other{"korona daneze"}
         }
         DOP{
-            one{"peso dominikane"}
-            other{"peso dominikane"}
+            one{"pezo dominikane"}
+            other{"pezo dominikane"}
         }
         DZD{
             one{"dinar algjerian"}
             other{"dinarë algjerian"}
         }
         EGP{
-            one{"sterlinë egjiptiane"}
-            other{"sterlina egjiptiane"}
+            one{"stërlinë egjiptiane"}
+            other{"stërlina egjiptiane"}
         }
         ERN{
             one{"nakfë eritreje"}
@@ -841,8 +819,8 @@ sq{
             other{"dollarë fixhi"}
         }
         FKP{
-            one{"stërlinë e Ishujve Falkland"}
-            other{"stërlina të Ishujve Falkland"}
+            one{"stërlinë e Ishujve Folkland"}
+            other{"stërlina të Ishujve Folkland"}
         }
         GBP{
             one{"sterlinë britanike"}
@@ -877,8 +855,8 @@ sq{
             other{"dollarë guajanez"}
         }
         HKD{
-            one{"dollar hong-kongu"}
-            other{"dollarë hong-kongu"}
+            one{"dollar Hong Kongu"}
+            other{"dollarë Hong Kongu"}
         }
         HNL{
             one{"lempirë hondurase"}
@@ -1001,8 +979,8 @@ sq{
             other{"dirhamë maroken"}
         }
         MDL{
-            one{"leu moldave"}
-            other{"leu moldave"}
+            one{"leu moldav"}
+            other{"leu moldav"}
         }
         MGA{
             one{"arier malagez"}
@@ -1025,10 +1003,6 @@ sq{
             other{"pataka të Makaos"}
         }
         MRO{
-            one{"ugijë mauritane (1973–2017)"}
-            other{"ugija mauritane (1973–2017)"}
-        }
-        MRU{
             one{"ugijë mauritane"}
             other{"ugija mauritane"}
         }
@@ -1045,8 +1019,8 @@ sq{
             other{"kuaça malaviane"}
         }
         MXN{
-            one{"peso meksikane"}
-            other{"peso meksikane"}
+            one{"pezo meksikane"}
+            other{"pezo meksikane"}
         }
         MYR{
             one{"ringit malajzian"}
@@ -1089,16 +1063,16 @@ sq{
             other{"balboa panameze"}
         }
         PEN{
-            one{"solë peruane"}
-            other{"sola peruane"}
+            one{"solë nuevo-peruane"}
+            other{"sola nuevo-peruane"}
         }
         PGK{
-            one{"kinë e Guinesë së Re-Papua"}
-            other{"kina të Guinesë së Re-Papua"}
+            one{"kinë e Papua-Guineas së Re"}
+            other{"kina të Papua-Guineas së Re"}
         }
         PHP{
-            one{"peso filipinase"}
-            other{"peso filipinase"}
+            one{"pezo filipinase"}
+            other{"pezo filipinase"}
         }
         PKR{
             one{"rupi pakistaneze"}
@@ -1117,8 +1091,8 @@ sq{
             other{"rialë katari"}
         }
         RON{
-            one{"leu rumune"}
-            other{"leu rumune"}
+            one{"leu rumun"}
+            other{"leu rumun"}
         }
         RSD{
             one{"dinar serb"}
@@ -1145,8 +1119,8 @@ sq{
             other{"rupi të Ishujve Sishelë"}
         }
         SDG{
-            one{"sterlinë sudaneze"}
-            other{"sterlina sudaneze"}
+            one{"stërlinë sudaneze"}
+            other{"stërlina sudaneze"}
         }
         SEK{
             one{"koronë suedeze"}
@@ -1157,8 +1131,8 @@ sq{
             other{"dollarë singapori"}
         }
         SHP{
-            one{"sterlinë e Ishullit të Shën-Helenës"}
-            other{"sterlina e Ishullit të Shën-Helenës"}
+            one{"stërlinë e Ishullit të Shën-Helenës"}
+            other{"stërlina të Ishullit të Shën-Helenës"}
         }
         SLL{
             one{"leon i Sierra-Leones"}
@@ -1173,14 +1147,10 @@ sq{
             other{"dollarë surinamez"}
         }
         SSP{
-            one{"sterlinë sudanezo-jugore"}
-            other{"sterlina sudanezo-jugore"}
+            one{"stërlinë e Sudanit të Jugut"}
+            other{"stërlina të Sudanit të Jugut"}
         }
         STD{
-            one{"dobër e Sao-Tomes dhe Prinsipes (1977–2017)"}
-            other{"dobra të Sao-Tomes dhe Prinsipes (1977–2017)"}
-        }
-        STN{
             one{"dobër e Sao-Tomes dhe Prinsipes"}
             other{"dobra të Sao-Tomes dhe Prinsipes"}
         }
@@ -1241,8 +1211,8 @@ sq{
             other{"dollarë amerikan"}
         }
         UYU{
-            one{"peso uruguaiane"}
-            other{"peso uruguaiane"}
+            one{"pezo uruguaiane"}
+            other{"pezo uruguaiane"}
         }
         UZS{
             one{"somë uzbeke"}
@@ -1289,8 +1259,8 @@ sq{
             other{"rialë jemeni"}
         }
         ZAR{
-            one{"rand afrikano-jugor"}
-            other{"randë afrikano-jugor"}
+            one{"randë afrikano-jugore"}
+            other{"randa afrikano-jugore"}
         }
         ZMW{
             one{"kuaçë zambiku"}
@@ -1301,5 +1271,5 @@ sq{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

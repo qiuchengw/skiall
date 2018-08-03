@@ -19,10 +19,9 @@
 
 #include <string>
 
-#include "gmock/gmock.h"
 #include "test_fixture.h"
+#include "gmock/gmock.h"
 
-namespace spvtools {
 namespace {
 
 using spvtest::MakeInstruction;
@@ -209,6 +208,4 @@ TEST_P(OpModuleProcessedTest, AnyString) {
 
 INSTANTIATE_TEST_CASE_P(TextToBinaryTestDebug, OpModuleProcessedTest,
                         ::testing::Values("", "foo bar this and that"), );
-
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

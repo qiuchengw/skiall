@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *****************************************************************************
-* Copyright (C) 2001-2016, International Business Machines orporation  
+* Copyright (C) 2001-2011, International Business Machines orporation  
 * and others. All Rights Reserved.
 ****************************************************************************/
 
@@ -17,7 +15,6 @@
 #include "unicode/stsearch.h"
 #include "unicode/ustring.h"
 #include "unicode/schriter.h"
-#include "cmemory.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -644,7 +641,7 @@ void StringSearchTest::TestOpenClose()
     }
     delete result;
 
-    // No-op: text.append(0, 0x1); -- what was intended here?
+    text.append(0, 0x1);
     status = U_ZERO_ERROR;
     result = new StringSearch(pattern, text, NULL, NULL, status);
     if (U_SUCCESS(status)) {
@@ -2425,7 +2422,7 @@ void StringSearchTest::TestSubclass()
     search.reset();
     // comparing constructors
  
-    for (i = 0; i < UPRV_LENGTHOF(expected); i ++) {
+    for (i = 0; i < (int)(sizeof(expected) / sizeof(expected[0])); i ++) {
         if (search.next(status) != expected[i]) {
             errln("Error getting next match");
         }
@@ -2436,7 +2433,7 @@ void StringSearchTest::TestSubclass()
     if (search.next(status) != USEARCH_DONE) {
         errln("Error should have reached the end of the iteration");
     }
-    for (i = UPRV_LENGTHOF(expected) - 1; i >= 0; i --) {
+    for (i = sizeof(expected) / sizeof(expected[0]) - 1; i >= 0; i --) {
         if (search.previous(status) != expected[i]) {
             errln("Error getting previous match");
         }

@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *   Copyright (C) 1997-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 ******************************************************************************
 *   file name:  nfrs.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -55,7 +53,7 @@ public:
     void  format(int64_t number, UnicodeString& toAppendTo, int32_t pos, int32_t recursionCount, UErrorCode& status) const;
     void  format(double number, UnicodeString& toAppendTo, int32_t pos, int32_t recursionCount, UErrorCode& status) const;
 
-    UBool parse(const UnicodeString& text, ParsePosition& pos, double upperBound, uint32_t nonNumericalExecutedRuleMask, Formattable& result) const;
+    UBool parse(const UnicodeString& text, ParsePosition& pos, double upperBound, Formattable& result) const;
 
     void appendRules(UnicodeString& result) const; // toString
 
@@ -88,9 +86,7 @@ private:
 int64_t util64_fromDouble(double d);
 
 // raise radix to the power exponent, only non-negative exponents
-// Arithmetic is performed in unsigned space since overflow in
-// signed space is undefined behavior.
-uint64_t util64_pow(uint32_t radix, uint16_t exponent);
+int64_t util64_pow(int32_t radix, uint32_t exponent);
 
 // convert n to digit string in buffer, return length of string
 uint32_t util64_tou(int64_t n, UChar* buffer, uint32_t buflen, uint32_t radix = 10, UBool raw = FALSE);
@@ -109,3 +105,4 @@ U_NAMESPACE_END
 
 // NFRS_H
 #endif
+

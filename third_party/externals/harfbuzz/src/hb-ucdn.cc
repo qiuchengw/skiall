@@ -160,30 +160,17 @@ static const hb_script_t ucdn_script_translate[] =
     HB_SCRIPT_NEWA,
     HB_SCRIPT_OSAGE,
     HB_SCRIPT_TANGUT,
-    HB_SCRIPT_MASARAM_GONDI,
-    HB_SCRIPT_NUSHU,
-    HB_SCRIPT_SOYOMBO,
-    HB_SCRIPT_ZANABAZAR_SQUARE,
-    HB_SCRIPT_DOGRA,
-    HB_SCRIPT_GUNJALA_GONDI,
-    HB_SCRIPT_HANIFI_ROHINGYA,
-    HB_SCRIPT_MAKASAR,
-    HB_SCRIPT_MEDEFAIDRIN,
-    HB_SCRIPT_OLD_SOGDIAN,
-    HB_SCRIPT_SOGDIAN,
 };
 
 static hb_unicode_combining_class_t
-hb_ucdn_combining_class(hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			hb_codepoint_t unicode,
+hb_ucdn_combining_class(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode,
 			void *user_data HB_UNUSED)
 {
     return (hb_unicode_combining_class_t) ucdn_get_combining_class(unicode);
 }
 
 static unsigned int
-hb_ucdn_eastasian_width(hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			hb_codepoint_t unicode,
+hb_ucdn_eastasian_width(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode,
 			void *user_data HB_UNUSED)
 {
     int w = ucdn_get_east_asian_width(unicode);
@@ -191,31 +178,28 @@ hb_ucdn_eastasian_width(hb_unicode_funcs_t *ufuncs HB_UNUSED,
 }
 
 static hb_unicode_general_category_t
-hb_ucdn_general_category(hb_unicode_funcs_t *ufuncs HB_UNUSED,
-			 hb_codepoint_t unicode,
+hb_ucdn_general_category(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode,
 			 void *user_data HB_UNUSED)
 {
     return (hb_unicode_general_category_t)ucdn_get_general_category(unicode);
 }
 
 static hb_codepoint_t
-hb_ucdn_mirroring(hb_unicode_funcs_t *ufuncs HB_UNUSED,
-		  hb_codepoint_t unicode,
+hb_ucdn_mirroring(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode,
 		  void *user_data HB_UNUSED)
 {
     return ucdn_mirror(unicode);
 }
 
 static hb_script_t
-hb_ucdn_script(hb_unicode_funcs_t *ufuncs HB_UNUSED,
-	       hb_codepoint_t unicode,
+hb_ucdn_script(hb_unicode_funcs_t *ufuncs, hb_codepoint_t unicode,
 	       void *user_data HB_UNUSED)
 {
     return ucdn_script_translate[ucdn_get_script(unicode)];
 }
 
 static hb_bool_t
-hb_ucdn_compose(hb_unicode_funcs_t *ufuncs HB_UNUSED,
+hb_ucdn_compose(hb_unicode_funcs_t *ufuncs,
 		hb_codepoint_t a, hb_codepoint_t b, hb_codepoint_t *ab,
 		void *user_data HB_UNUSED)
 {
@@ -223,7 +207,7 @@ hb_ucdn_compose(hb_unicode_funcs_t *ufuncs HB_UNUSED,
 }
 
 static hb_bool_t
-hb_ucdn_decompose(hb_unicode_funcs_t *ufuncs HB_UNUSED,
+hb_ucdn_decompose(hb_unicode_funcs_t *ufuncs,
 		  hb_codepoint_t ab, hb_codepoint_t *a, hb_codepoint_t *b,
 		  void *user_data HB_UNUSED)
 {
@@ -231,55 +215,29 @@ hb_ucdn_decompose(hb_unicode_funcs_t *ufuncs HB_UNUSED,
 }
 
 static unsigned int
-hb_ucdn_decompose_compatibility(hb_unicode_funcs_t *ufuncs HB_UNUSED,
+hb_ucdn_decompose_compatibility(hb_unicode_funcs_t *ufuncs,
 				hb_codepoint_t u, hb_codepoint_t *decomposed,
 				void *user_data HB_UNUSED)
 {
     return ucdn_compat_decompose(u, decomposed);
 }
 
-static hb_unicode_funcs_t *static_ucdn_funcs = nullptr;
-
-#ifdef HB_USE_ATEXIT
-static
-void free_static_ucdn_funcs (void)
-{
-retry:
-  hb_unicode_funcs_t *ucdn_funcs = (hb_unicode_funcs_t *) hb_atomic_ptr_get (&static_ucdn_funcs);
-  if (!hb_atomic_ptr_cmpexch (&static_ucdn_funcs, ucdn_funcs, nullptr))
-    goto retry;
-
-  hb_unicode_funcs_destroy (ucdn_funcs);
-}
-#endif
-
 extern "C" HB_INTERNAL
 hb_unicode_funcs_t *
 hb_ucdn_get_unicode_funcs (void)
 {
-retry:
-  hb_unicode_funcs_t *funcs = (hb_unicode_funcs_t *) hb_atomic_ptr_get (&static_ucdn_funcs);
+  static const hb_unicode_funcs_t _hb_ucdn_unicode_funcs = {
+    HB_OBJECT_HEADER_STATIC,
 
-  if (unlikely (!funcs))
-  {
-    funcs = hb_unicode_funcs_create (nullptr);
-
-#define HB_UNICODE_FUNC_IMPLEMENT(name) \
-    hb_unicode_funcs_set_##name##_func (funcs, hb_ucdn_##name, nullptr, nullptr);
+    NULL, /* parent */
+    true, /* immutable */
+    {
+#define HB_UNICODE_FUNC_IMPLEMENT(name) hb_ucdn_##name,
       HB_UNICODE_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_UNICODE_FUNC_IMPLEMENT
-
-    hb_unicode_funcs_make_immutable (funcs);
-
-    if (!hb_atomic_ptr_cmpexch (&static_ucdn_funcs, nullptr, funcs)) {
-      hb_unicode_funcs_destroy (funcs);
-      goto retry;
     }
-
-#ifdef HB_USE_ATEXIT
-    atexit (free_static_ucdn_funcs); /* First person registers atexit() callback. */
-#endif
   };
 
-  return hb_unicode_funcs_reference (funcs);
+  return const_cast<hb_unicode_funcs_t *> (&_hb_ucdn_unicode_funcs);
 }
+

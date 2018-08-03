@@ -1,8 +1,5 @@
-This page lists all documentation markdown files for Google Mock **(the
-current git version)**
--- **if you use a former version of Google Mock, please read the
-documentation for that specific version instead (e.g. by checking out
-the respective git branch/tag).**
+This page lists all documentation wiki pages for Google Mock **(the SVN trunk version)**
+- **if you use a released version of Google Mock, please read the documentation for that specific version instead.**
 
   * [ForDummies](ForDummies.md) -- start here if you are new to Google Mock.
   * [CheatSheet](CheatSheet.md) -- a quick reference.
@@ -12,4 +9,4 @@ the respective git branch/tag).**
 To contribute code to Google Mock, read:
 
   * [DevGuide](DevGuide.md) -- read this _before_ writing your first patch.
-  * [Pump Manual](../../googletest/docs/PumpManual.md) -- how we generate some of Google Mock's source files.
+  * [Pump Manual](../googletest/docs/PumpManual.md) -- how we generate some of Google Mock's source files.

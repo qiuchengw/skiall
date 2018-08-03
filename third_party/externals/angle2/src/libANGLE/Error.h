@@ -106,6 +106,8 @@ class ANGLE_NO_DISCARD Error final
     bool operator==(const Error &other) const;
     bool operator!=(const Error &other) const;
 
+    static inline Error NoError();
+
   private:
     void createMessageString() const;
 
@@ -140,7 +142,7 @@ using InvalidFramebufferOperation = priv::ErrorStream<GL_INVALID_FRAMEBUFFER_OPE
 
 inline Error NoError()
 {
-    return Error(GL_NO_ERROR);
+    return Error::NoError();
 }
 
 using LinkResult = ErrorOrResult<bool>;
@@ -172,6 +174,8 @@ class ANGLE_NO_DISCARD Error final
     inline bool isError() const;
 
     const std::string &getMessage() const;
+
+    static inline Error NoError();
 
   private:
     void createMessageString() const;
@@ -214,7 +218,7 @@ using EglBadDevice         = priv::ErrorStream<EGL_BAD_DEVICE_EXT>;
 
 inline Error NoError()
 {
-    return Error(EGL_SUCCESS);
+    return Error::NoError();
 }
 
 }  // namespace egl
@@ -237,15 +241,15 @@ inline Error NoError()
 #define ANGLE_TRY(EXPR) ANGLE_TRY_TEMPLATE(EXPR, ANGLE_RETURN);
 
 // TODO(jmadill): Remove this once refactor is complete. http://anglebug.com/2738
-#define ANGLE_TRY_HANDLE(CONTEXT, EXPR)            \
+#define ANGLE_TRY_HANDLE(CONTEXT, EXPR)                \
     \
-{                                           \
-        auto ANGLE_LOCAL_VAR = (EXPR);             \
-        if (ANGLE_LOCAL_VAR.isError())             \
-        {                                          \
-            CONTEXT->handleError(ANGLE_LOCAL_VAR); \
-            return angle::Result::Stop();          \
-        }                                          \
+{                                               \
+        auto ANGLE_LOCAL_VAR = (EXPR);                 \
+        if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
+        {                                              \
+            CONTEXT->handleError(ANGLE_LOCAL_VAR);     \
+            return angle::Result::Stop();              \
+        }                                              \
     \
 }
 

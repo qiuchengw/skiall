@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 ******************************************************************************
 *   file name:  bmpset.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -28,12 +26,11 @@ U_NAMESPACE_BEGIN
  * Helper class for frozen UnicodeSets, implements contains() and span()
  * optimized for BMP code points. Structured to be UTF-8-friendly.
  *
- * Latin-1: Look up bytes.
+ * ASCII: Look up bytes.
  * 2-byte characters: Bits organized vertically.
  * 3-byte characters: Use zero/one/mixed data per 64-block in U+0000..U+FFFF,
  *                    with mixed for illegal ranges.
- * Supplementary characters: Binary search over
- * the supplementary part of the parent set's inversion list.
+ * Supplementary characters: Call contains() on the parent set.
  */
 class BMPSet : public UMemory {
 public:
@@ -97,12 +94,12 @@ private:
     inline UBool containsSlow(UChar32 c, int32_t lo, int32_t hi) const;
 
     /*
-     * One byte 0 or 1 per Latin-1 character.
+     * One byte per ASCII character, or trail byte in lead position.
+     * 0 or 1 for ASCII characters.
+     * The value for trail bytes is the result of contains(FFFD)
+     * for faster validity checking at runtime.
      */
-    UBool latin1Contains[0x100];
-
-    /* TRUE if contains(U+FFFD). */
-    UBool containsFFFD;
+    UBool asciiBytes[0xc0];
 
     /*
      * One bit per code point from U+0000..U+07FF.

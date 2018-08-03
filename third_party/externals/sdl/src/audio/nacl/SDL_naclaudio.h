@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef SDL_naclaudio_h_
-#define SDL_naclaudio_h_
+#ifndef _SDL_naclaudio_h
+#define _SDL_naclaudio_h
 
 #include "SDL_audio.h"
 #include "../SDL_sysaudio.h"
@@ -38,6 +38,4 @@ typedef struct SDL_PrivateAudioData {
   PP_Resource audio;
 } SDL_PrivateAudioData;
 
-#endif /* SDL_naclaudio_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* _SDL_naclaudio_h */

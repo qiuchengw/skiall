@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /*****************************************************************************
@@ -24,7 +22,6 @@
 #include "unicode/putil.h"
 #include "unicode/uset.h"
 #include "unicode/ustring.h"
-#include "unicode/utf8.h"
 #include "ucnv_bld.h" /* for sizeof(UConverter) */
 #include "cmemory.h"  /* for UAlignedMemory */
 #include "cintltst.h"
@@ -415,7 +412,7 @@ static void TestConvert()
         const uint8_t source[]={ 0x00, 0x04, 0x05, 0x06, 0xa2, 0xb4, 0x00};
         const uint8_t expectedTarget[]={ 0x00, 0x37, 0x2d, 0x2e, 0x0e, 0x49, 0x62, 0x0f, 0x00};
         char *target=0;
-        sourceLimit=UPRV_LENGTHOF(source);
+        sourceLimit=sizeof(source)/sizeof(source[0]);
         err=U_ZERO_ERROR;
         targetLimit=0;
             
@@ -450,14 +447,14 @@ static void TestConvert()
             }
 
             err=U_ILLEGAL_ARGUMENT_ERROR;
-            sourceLimit=UPRV_LENGTHOF(source);
+            sourceLimit=sizeof(source)/sizeof(source[0]);
             i=ucnv_convert("ibm-1364", "ibm-1363", target, targetLimit , (const char*)source, sourceLimit, &err);
             if(i !=0 ){
                 log_err("FAILURE! ucnv_convert() with err=U_ILLEGAL_ARGUMENT_ERROR is expected to return 0\n");
             }
 
             err=U_ZERO_ERROR;
-            sourceLimit=UPRV_LENGTHOF(source);
+            sourceLimit=sizeof(source)/sizeof(source[0]);
             targetLimit=0;
             i=ucnv_convert("ibm-1364", "ibm-1363", target, targetLimit , (const char*)source, sourceLimit, &err);
             if(!(U_FAILURE(err) && err==U_BUFFER_OVERFLOW_ERROR)){
@@ -1168,7 +1165,7 @@ static void TestAlias() {
         { "UTF32_PlatformEndian", "UTF32_PlatformEndian" },
         { "UTF-32",   "ucs-4" }
     };
-    int32_t CONVERTERS_NAMES_LENGTH = UPRV_LENGTHOF(CONVERTERS_NAMES);
+    int32_t CONVERTERS_NAMES_LENGTH = sizeof(CONVERTERS_NAMES) / sizeof(*CONVERTERS_NAMES);
 
     /* When there are bugs in gencnval or in ucnv_io, converters can
        appear to have no aliases. */
@@ -1696,16 +1693,16 @@ static void TestConvertSafeClone()
 
     char *pCharBuffer;
     const char *pConstCharBuffer;
-    const char *charBufferLimit = charBuffer + UPRV_LENGTHOF(charBuffer);
+    const char *charBufferLimit = charBuffer + sizeof(charBuffer)/sizeof(*charBuffer);
     UChar uniBuffer[] = {0x0058, 0x0059, 0x005A}; /* "XYZ" */
     UChar uniCharBuffer[20];
     char  charSourceBuffer[] = { 0x1b, 0x24, 0x42 };
     const char *pCharSource = charSourceBuffer;
     const char *pCharSourceLimit = charSourceBuffer + sizeof(charSourceBuffer);
     UChar *pUCharTarget = uniCharBuffer;
-    UChar *pUCharTargetLimit = uniCharBuffer + UPRV_LENGTHOF(uniCharBuffer);
+    UChar *pUCharTargetLimit = uniCharBuffer + sizeof(uniCharBuffer)/sizeof(*uniCharBuffer);
     const UChar * pUniBuffer;
-    const UChar *uniBufferLimit = uniBuffer + UPRV_LENGTHOF(uniBuffer);
+    const UChar *uniBufferLimit = uniBuffer + sizeof(uniBuffer)/sizeof(*uniBuffer);
     int32_t idx, j;
 
     err = U_ZERO_ERROR;
@@ -1896,7 +1893,7 @@ static void TestCCSID() {
     int32_t ccsids[]={ 37, 850, 943, 949, 950, 1047, 1252, 1392, 33722 };
     int32_t i, ccsid;
 
-    for(i=0; i<UPRV_LENGTHOF(ccsids); ++i) {
+    for(i=0; i<(int32_t)(sizeof(ccsids)/sizeof(int32_t)); ++i) {
         ccsid=ccsids[i];
 
         errorCode=U_ZERO_ERROR;
@@ -2495,26 +2492,6 @@ static UBool getTestChar(UConverter *cnv, const char *converterName,
     return TRUE;
 }
 
-static UBool isOneTruncatedUTF8(const char *s, int32_t length) {
-    if(length==0) {
-        return FALSE;
-    } else if(length==1) {
-        return U8_IS_LEAD(s[0]);
-    } else {
-        int32_t count=U8_COUNT_TRAIL_BYTES(s[0]);
-        if(length<=count) {
-            // 2 or more bytes, but fewer than the lead byte indicates.
-            int32_t oneLength=0;
-            U8_FWD_1(s, oneLength, length);
-            // Truncated if we reach the end of the string.
-            // Not true if the lead byte and first trail byte do not start a valid sequence,
-            // e.g., E0 80 -> oneLength=1.
-            return oneLength==length;
-        }
-        return FALSE;
-    }
-}
-
 static void testFromTruncatedUTF8(UConverter *utf8Cnv, UConverter *cnv, const char *converterName,
                                   char charUTF8[4], int32_t charUTF8Length,
                                   char char0[8], int32_t char0Length,
@@ -2546,7 +2523,7 @@ static void testFromTruncatedUTF8(UConverter *utf8Cnv, UConverter *cnv, const ch
     for(i=0; i<UPRV_LENGTHOF(badUTF8); ++i) {
         /* truncated sequence? */
         int32_t length=strlen(badUTF8[i]);
-        if(!isOneTruncatedUTF8(badUTF8[i], length)) {
+        if(length>=(1+U8_COUNT_TRAIL_BYTES(badUTF8[i][0]))) {
             continue;
         }
 
@@ -2921,7 +2898,7 @@ static void TestLMBCSMaxChar(void) {
         { 4, "HZ"},
 
         { 3, "ISO-2022"},
-        { 8, "ISO-2022-KR"},
+        { 3, "ISO-2022-KR"},
         { 6, "ISO-2022-JP"},
         { 8, "ISO-2022-CN"},
 

@@ -14,9 +14,9 @@
 
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
+using libspirv::AssemblyContext;
 using spvtest::AutoText;
 
 TEST(TextAdvance, LeadingNewLines) {
@@ -128,5 +128,4 @@ TEST(TextAdvance, SkipOverCRLFs) {
   EXPECT_EQ(2u, pos.line);
   EXPECT_EQ(4u, pos.index);
 }
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

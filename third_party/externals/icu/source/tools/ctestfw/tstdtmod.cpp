@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
  * Copyright (c) 2002-2014, International Business Machines Corporation and
@@ -13,37 +11,25 @@
 #include "unicode/tstdtmod.h"
 #include "cmemory.h"
 #include <stdio.h>
-#include "cstr.h"
-#include "cstring.h"
 
 TestLog::~TestLog() {}
 
 IcuTestErrorCode::~IcuTestErrorCode() {
-    // Safe because our errlog() does not throw exceptions.
-    if(isFailure()) {
-        errlog(FALSE, nullptr);
-    }
+    // Safe because our handleFailure() does not throw exceptions.
+    if(isFailure()) { handleFailure(); }
 }
 
-UBool IcuTestErrorCode::errIfFailureAndReset() {
-    if(isFailure()) {
-        errlog(FALSE, nullptr);
-        reset();
-        return TRUE;
-    } else {
-        reset();
-        return FALSE;
-    }
-}
-
-UBool IcuTestErrorCode::errIfFailureAndReset(const char *fmt, ...) {
+UBool IcuTestErrorCode::logIfFailureAndReset(const char *fmt, ...) {
     if(isFailure()) {
         char buffer[4000];
         va_list ap;
         va_start(ap, fmt);
         vsprintf(buffer, fmt, ap);
         va_end(ap);
-        errlog(FALSE, buffer);
+        UnicodeString msg(testName, -1, US_INV);
+        msg.append(UNICODE_STRING_SIMPLE(" failure: ")).append(UnicodeString(errorName(), -1, US_INV));
+        msg.append(UNICODE_STRING_SIMPLE(" - ")).append(UnicodeString(buffer, -1, US_INV));
+        testClass.errln(msg);
         reset();
         return TRUE;
     } else {
@@ -52,58 +38,31 @@ UBool IcuTestErrorCode::errIfFailureAndReset(const char *fmt, ...) {
     }
 }
 
-UBool IcuTestErrorCode::errDataIfFailureAndReset() {
-    if(isFailure()) {
-        errlog(TRUE, nullptr);
-        reset();
-        return TRUE;
-    } else {
-        reset();
-        return FALSE;
-    }
-}
-
-UBool IcuTestErrorCode::errDataIfFailureAndReset(const char *fmt, ...) {
+UBool IcuTestErrorCode::logDataIfFailureAndReset(const char *fmt, ...) {
     if(isFailure()) {
         char buffer[4000];
         va_list ap;
         va_start(ap, fmt);
         vsprintf(buffer, fmt, ap);
         va_end(ap);
-        errlog(TRUE, buffer);
+        UnicodeString msg(testName, -1, US_INV);
+        msg.append(UNICODE_STRING_SIMPLE(" failure: ")).append(UnicodeString(errorName(), -1, US_INV));
+        msg.append(UNICODE_STRING_SIMPLE(" - ")).append(UnicodeString(buffer, -1, US_INV));
+        testClass.dataerrln(msg);
         reset();
         return TRUE;
     } else {
         reset();
         return FALSE;
     }
-}
-
-void IcuTestErrorCode::setScope(const char* message) {
-    scopeMessage.remove().append({ message, -1, US_INV });
-}
-
-void IcuTestErrorCode::setScope(const UnicodeString& message) {
-    scopeMessage = message;
 }
 
 void IcuTestErrorCode::handleFailure() const {
-    errlog(FALSE, nullptr);
-}
-
-void IcuTestErrorCode::errlog(UBool dataErr, const char* extraMessage) const {
+    // testClass.errln("%s failure - %s", testName, errorName());
     UnicodeString msg(testName, -1, US_INV);
-    msg.append(u" failure: ").append(UnicodeString(errorName(), -1, US_INV));
+    msg.append(UNICODE_STRING_SIMPLE(" failure: ")).append(UnicodeString(errorName(), -1, US_INV));
 
-    if (!scopeMessage.isEmpty()) {
-        msg.append(u" scope: ").append(scopeMessage);
-    }
-
-    if (extraMessage != nullptr) {
-        msg.append(u" - ").append(UnicodeString(extraMessage, -1, US_INV));
-    }
-
-    if (dataErr || get() == U_MISSING_RESOURCE_ERROR || get() == U_FILE_ACCESS_ERROR) {
+    if (get() == U_MISSING_RESOURCE_ERROR || get() == U_FILE_ACCESS_ERROR) {
         testClass.dataerrln(msg);
     } else {
         testClass.errln(msg);

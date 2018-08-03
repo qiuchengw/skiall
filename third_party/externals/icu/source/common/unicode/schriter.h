@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
@@ -69,7 +67,7 @@ public:
    * Create an iterator over the UnicodeString referred to by "textStr".
    * The UnicodeString object is copied.
    * The iteration range begins with the code unit specified by
-   * "textBegin" and ends with the code unit BEFORE the code unit specified
+   * "textBegin" and ends with the code unit BEFORE the code unit specfied
    * by "textEnd".  The starting position is specified by "textPos".  If
    * "textBegin" and "textEnd" don't form a valid range on "text" (i.e.,
    * textBegin >= textEnd or either is negative or greater than text.size()),

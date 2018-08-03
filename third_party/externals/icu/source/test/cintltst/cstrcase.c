@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 2002-2016, International Business Machines
+*   Copyright (C) 2002-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
 *   file name:  cstrcase.c
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -27,7 +25,6 @@
 #include "unicode/ucasemap.h"
 #include "cmemory.h"
 #include "cintltst.h"
-#include "ucasemap_imp.h"
 #include "ustr_imp.h"
 
 /* test string case mapping functions --------------------------------------- */
@@ -47,12 +44,12 @@ TestCaseLower(void) {
     /* lowercase with root locale and separate buffers */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToLower(buffer, UPRV_LENGTHOF(buffer),
-                        beforeLower, UPRV_LENGTHOF(beforeLower),
+    length=u_strToLower(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        beforeLower, sizeof(beforeLower)/U_SIZEOF_UCHAR,
                         "",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(lowerRoot)) ||
+        length!=(sizeof(lowerRoot)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(lowerRoot, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -67,14 +64,14 @@ buffer[length]==0 ? "yes" : "no",
 
     /* lowercase with turkish locale and in the same buffer */
     uprv_memcpy(buffer, beforeLower, sizeof(beforeLower));
-    buffer[UPRV_LENGTHOF(beforeLower)]=0;
+    buffer[sizeof(beforeLower)/U_SIZEOF_UCHAR]=0;
     errorCode=U_ZERO_ERROR;
-    length=u_strToLower(buffer, UPRV_LENGTHOF(buffer),
+    length=u_strToLower(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
                         buffer, -1, /* implicit srcLength */
                         "tr",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(lowerTurkish)) ||
+        length!=(sizeof(lowerTurkish)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(lowerTurkish, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -88,11 +85,11 @@ buffer[length]==0 ? "yes" : "no",
     buffer[0]=buffer[2]=0xabcd;
     errorCode=U_ZERO_ERROR;
     length=u_strToLower(buffer, 2, /* set destCapacity=2 */
-                        beforeLower, UPRV_LENGTHOF(beforeLower),
+                        beforeLower, sizeof(beforeLower)/U_SIZEOF_UCHAR,
                         "",
                         &errorCode);
     if( errorCode!=U_BUFFER_OVERFLOW_ERROR ||
-        length!=(UPRV_LENGTHOF(lowerRoot)) ||
+        length!=(sizeof(lowerRoot)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(lowerRoot, buffer, 2*U_SIZEOF_UCHAR)!=0 ||
         buffer[2]!=0xabcd
     ) {
@@ -104,8 +101,8 @@ buffer[length]==0 ? "yes" : "no",
 
     /* test error handling */
     errorCode=U_ZERO_ERROR;
-    length=u_strToLower(NULL, UPRV_LENGTHOF(buffer),
-                        beforeLower, UPRV_LENGTHOF(beforeLower),
+    length=u_strToLower(NULL, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        beforeLower, sizeof(beforeLower)/U_SIZEOF_UCHAR,
                         "",
                         &errorCode);
     if(errorCode!=U_ILLEGAL_ARGUMENT_ERROR) {
@@ -117,7 +114,7 @@ buffer[length]==0 ? "yes" : "no",
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
     length=u_strToLower(buffer, -1,
-                        beforeLower, UPRV_LENGTHOF(beforeLower),
+                        beforeLower, sizeof(beforeLower)/U_SIZEOF_UCHAR,
                         "",
                         &errorCode);
     if( errorCode!=U_ILLEGAL_ARGUMENT_ERROR ||
@@ -145,12 +142,12 @@ TestCaseUpper(void) {
     /* uppercase with root locale and in the same buffer */
     uprv_memcpy(buffer, beforeUpper, sizeof(beforeUpper));
     errorCode=U_ZERO_ERROR;
-    length=u_strToUpper(buffer, UPRV_LENGTHOF(buffer),
-                        buffer, UPRV_LENGTHOF(beforeUpper),
+    length=u_strToUpper(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        buffer, sizeof(beforeUpper)/U_SIZEOF_UCHAR,
                         "",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(upperRoot)) ||
+        length!=(sizeof(upperRoot)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(upperRoot, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -163,12 +160,12 @@ TestCaseUpper(void) {
     /* uppercase with turkish locale and separate buffers */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToUpper(buffer, UPRV_LENGTHOF(buffer),
-                        beforeUpper, UPRV_LENGTHOF(beforeUpper),
+    length=u_strToUpper(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        beforeUpper, sizeof(beforeUpper)/U_SIZEOF_UCHAR,
                         "tr",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(upperTurkish)) ||
+        length!=(sizeof(upperTurkish)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(upperTurkish, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -181,11 +178,11 @@ TestCaseUpper(void) {
     /* test preflighting */
     errorCode=U_ZERO_ERROR;
     length=u_strToUpper(NULL, 0,
-                        beforeUpper, UPRV_LENGTHOF(beforeUpper),
+                        beforeUpper, sizeof(beforeUpper)/U_SIZEOF_UCHAR,
                         "tr",
                         &errorCode);
     if( errorCode!=U_BUFFER_OVERFLOW_ERROR ||
-        length!=(UPRV_LENGTHOF(upperTurkish))
+        length!=(sizeof(upperTurkish)/U_SIZEOF_UCHAR)
     ) {
         log_err("error in u_strToUpper(turkish locale pure preflighting)=%ld error=%s\n",
             length,
@@ -195,8 +192,8 @@ TestCaseUpper(void) {
     /* test error handling */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToUpper(buffer, UPRV_LENGTHOF(buffer),
-                        NULL, UPRV_LENGTHOF(beforeUpper),
+    length=u_strToUpper(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        NULL, sizeof(beforeUpper)/U_SIZEOF_UCHAR,
                         "tr",
                         &errorCode);
     if( errorCode!=U_ILLEGAL_ARGUMENT_ERROR ||
@@ -210,7 +207,7 @@ TestCaseUpper(void) {
 
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToUpper(buffer, UPRV_LENGTHOF(buffer),
+    length=u_strToUpper(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
                         beforeUpper, -2,
                         "tr",
                         &errorCode);
@@ -240,7 +237,7 @@ TestCaseTitle(void) {
     UErrorCode errorCode;
 
     errorCode=U_ZERO_ERROR;
-    titleIterChars=ubrk_open(UBRK_CHARACTER, "", beforeTitle, UPRV_LENGTHOF(beforeTitle), &errorCode);
+    titleIterChars=ubrk_open(UBRK_CHARACTER, "", beforeTitle, sizeof(beforeTitle)/U_SIZEOF_UCHAR, &errorCode);
     if(U_FAILURE(errorCode)) {
         log_err_status(errorCode, "error: ubrk_open(UBRK_CHARACTER)->%s\n", u_errorName(errorCode));
         return;
@@ -249,12 +246,12 @@ TestCaseTitle(void) {
     /* titlecase with standard break iterator and in the same buffer */
     uprv_memcpy(buffer, beforeTitle, sizeof(beforeTitle));
     errorCode=U_ZERO_ERROR;
-    length=u_strToTitle(buffer, UPRV_LENGTHOF(buffer),
-                        buffer, UPRV_LENGTHOF(beforeTitle),
+    length=u_strToTitle(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        buffer, sizeof(beforeTitle)/U_SIZEOF_UCHAR,
                         NULL, "",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(titleWord)) ||
+        length!=(sizeof(titleWord)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(titleWord, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -267,12 +264,12 @@ TestCaseTitle(void) {
     /* titlecase with UBRK_CHARACTERS and separate buffers */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToTitle(buffer, UPRV_LENGTHOF(buffer),
-                        beforeTitle, UPRV_LENGTHOF(beforeTitle),
+    length=u_strToTitle(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        beforeTitle, sizeof(beforeTitle)/U_SIZEOF_UCHAR,
                         titleIterChars, "",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(titleChar)) ||
+        length!=(sizeof(titleChar)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(titleChar, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -285,11 +282,11 @@ TestCaseTitle(void) {
     /* test preflighting */
     errorCode=U_ZERO_ERROR;
     length=u_strToTitle(NULL, 0,
-                        beforeTitle, UPRV_LENGTHOF(beforeTitle),
+                        beforeTitle, sizeof(beforeTitle)/U_SIZEOF_UCHAR,
                         titleIterChars, "",
                         &errorCode);
     if( errorCode!=U_BUFFER_OVERFLOW_ERROR ||
-        length!=(UPRV_LENGTHOF(titleChar))
+        length!=(sizeof(titleChar)/U_SIZEOF_UCHAR)
     ) {
         log_err("error in u_strToTitle(UBRK_CHARACTERS pure preflighting)=%ld error=%s\n",
             length,
@@ -299,8 +296,8 @@ TestCaseTitle(void) {
     /* test error handling */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToTitle(buffer, UPRV_LENGTHOF(buffer),
-                        NULL, UPRV_LENGTHOF(beforeTitle),
+    length=u_strToTitle(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        NULL, sizeof(beforeTitle)/U_SIZEOF_UCHAR,
                         titleIterChars, "",
                         &errorCode);
     if( errorCode!=U_ILLEGAL_ARGUMENT_ERROR ||
@@ -314,7 +311,7 @@ TestCaseTitle(void) {
 
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToTitle(buffer, UPRV_LENGTHOF(buffer),
+    length=u_strToTitle(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
                         beforeTitle, -2,
                         titleIterChars, "",
                         &errorCode);
@@ -344,7 +341,7 @@ TestCaseDutchTitle(void) {
     UErrorCode errorCode;
 
     errorCode=U_ZERO_ERROR;
-    titleIterWord=ubrk_open(UBRK_WORD, "", beforeTitle, UPRV_LENGTHOF(beforeTitle), &errorCode);
+    titleIterWord=ubrk_open(UBRK_WORD, "", beforeTitle, sizeof(beforeTitle)/U_SIZEOF_UCHAR, &errorCode);
     if(U_FAILURE(errorCode)) {
         log_err_status(errorCode, "error: ubrk_open(UBRK_WORD)->%s\n", u_errorName(errorCode));
         return;
@@ -353,12 +350,12 @@ TestCaseDutchTitle(void) {
     /* titlecase with default locale */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToTitle(buffer, UPRV_LENGTHOF(buffer),
-                        beforeTitle, UPRV_LENGTHOF(beforeTitle),
+    length=u_strToTitle(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        beforeTitle, sizeof(beforeTitle)/U_SIZEOF_UCHAR,
                         titleIterWord, "",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(titleRoot)) ||
+        length!=(sizeof(titleRoot)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(titleRoot, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -372,12 +369,12 @@ TestCaseDutchTitle(void) {
     /* titlecase with Dutch locale */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strToTitle(buffer, UPRV_LENGTHOF(buffer),
-                        beforeTitle, UPRV_LENGTHOF(beforeTitle),
+    length=u_strToTitle(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        beforeTitle, sizeof(beforeTitle)/U_SIZEOF_UCHAR,
                         titleIterWord, "nl",
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(titleDutch)) ||
+        length!=(sizeof(titleDutch)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(titleDutch, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -459,12 +456,12 @@ TestCaseFolding(void) {
     /* test full string case folding with default option and separate buffers */
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strFoldCase(buffer, UPRV_LENGTHOF(buffer),
-                        mixed, UPRV_LENGTHOF(mixed),
+    length=u_strFoldCase(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        mixed, sizeof(mixed)/U_SIZEOF_UCHAR,
                         U_FOLD_CASE_DEFAULT,
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(foldedDefault)) ||
+        length!=(sizeof(foldedDefault)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(foldedDefault, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -478,12 +475,12 @@ TestCaseFolding(void) {
     if(isUnicode_3_1) {
         buffer[0]=0xabcd;
         errorCode=U_ZERO_ERROR;
-        length=u_strFoldCase(buffer, UPRV_LENGTHOF(buffer),
-                            mixed, UPRV_LENGTHOF(mixed),
+        length=u_strFoldCase(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                            mixed, sizeof(mixed)/U_SIZEOF_UCHAR,
                             U_FOLD_CASE_EXCLUDE_SPECIAL_I,
                             &errorCode);
         if( U_FAILURE(errorCode) ||
-            length!=(UPRV_LENGTHOF(foldedExcludeSpecialI)) ||
+            length!=(sizeof(foldedExcludeSpecialI)/U_SIZEOF_UCHAR) ||
             uprv_memcmp(foldedExcludeSpecialI, buffer, length*U_SIZEOF_UCHAR)!=0 ||
             buffer[length]!=0
         ) {
@@ -496,14 +493,14 @@ TestCaseFolding(void) {
 
     /* test full string case folding with default option and in the same buffer */
     uprv_memcpy(buffer, mixed, sizeof(mixed));
-    buffer[UPRV_LENGTHOF(mixed)]=0;
+    buffer[sizeof(mixed)/U_SIZEOF_UCHAR]=0;
     errorCode=U_ZERO_ERROR;
-    length=u_strFoldCase(buffer, UPRV_LENGTHOF(buffer),
+    length=u_strFoldCase(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
                         buffer, -1, /* implicit srcLength */
                         U_FOLD_CASE_DEFAULT,
                         &errorCode);
     if( U_FAILURE(errorCode) ||
-        length!=(UPRV_LENGTHOF(foldedDefault)) ||
+        length!=(sizeof(foldedDefault)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(foldedDefault, buffer, length*U_SIZEOF_UCHAR)!=0 ||
         buffer[length]!=0
     ) {
@@ -517,12 +514,12 @@ TestCaseFolding(void) {
     if(isUnicode_3_1) {
         uprv_memcpy(buffer, mixed, sizeof(mixed));
         errorCode=U_ZERO_ERROR;
-        length=u_strFoldCase(buffer, UPRV_LENGTHOF(buffer),
-                            buffer, UPRV_LENGTHOF(mixed),
+        length=u_strFoldCase(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                            buffer, sizeof(mixed)/U_SIZEOF_UCHAR,
                             U_FOLD_CASE_EXCLUDE_SPECIAL_I,
                             &errorCode);
         if( U_FAILURE(errorCode) ||
-            length!=UPRV_LENGTHOF(foldedExcludeSpecialI) ||
+            length!=(sizeof(foldedExcludeSpecialI)/U_SIZEOF_UCHAR) ||
             uprv_memcmp(foldedExcludeSpecialI, buffer, length*U_SIZEOF_UCHAR)!=0 ||
             buffer[length]!=0
         ) {
@@ -537,11 +534,11 @@ TestCaseFolding(void) {
     buffer[0]=buffer[2]=0xabcd;
     errorCode=U_ZERO_ERROR;
     length=u_strFoldCase(buffer, 2, /* set destCapacity=2 */
-                        mixed, UPRV_LENGTHOF(mixed),
+                        mixed, sizeof(mixed)/U_SIZEOF_UCHAR,
                         U_FOLD_CASE_DEFAULT,
                         &errorCode);
     if( errorCode!=U_BUFFER_OVERFLOW_ERROR ||
-        length!=UPRV_LENGTHOF(foldedDefault) ||
+        length!=(sizeof(foldedDefault)/U_SIZEOF_UCHAR) ||
         uprv_memcmp(foldedDefault, buffer, 2*U_SIZEOF_UCHAR)!=0 ||
         buffer[2]!=0xabcd
     ) {
@@ -553,11 +550,11 @@ TestCaseFolding(void) {
 
     errorCode=U_ZERO_ERROR;
     length=u_strFoldCase(NULL, 0,
-                        mixed, UPRV_LENGTHOF(mixed),
+                        mixed, sizeof(mixed)/U_SIZEOF_UCHAR,
                         U_FOLD_CASE_DEFAULT,
                         &errorCode);
     if( errorCode!=U_BUFFER_OVERFLOW_ERROR ||
-        length!=UPRV_LENGTHOF(foldedDefault)
+        length!=(sizeof(foldedDefault)/U_SIZEOF_UCHAR)
     ) {
         log_err("error in u_strFoldCase(default pure preflighting)=%ld error=%s\n",
             length,
@@ -566,8 +563,8 @@ TestCaseFolding(void) {
 
     /* test error handling */
     errorCode=U_ZERO_ERROR;
-    length=u_strFoldCase(NULL, UPRV_LENGTHOF(buffer),
-                        mixed, UPRV_LENGTHOF(mixed),
+    length=u_strFoldCase(NULL, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        mixed, sizeof(mixed)/U_SIZEOF_UCHAR,
                         U_FOLD_CASE_DEFAULT,
                         &errorCode);
     if(errorCode!=U_ILLEGAL_ARGUMENT_ERROR) {
@@ -579,7 +576,7 @@ TestCaseFolding(void) {
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
     length=u_strFoldCase(buffer, -1,
-                        mixed, UPRV_LENGTHOF(mixed),
+                        mixed, sizeof(mixed)/U_SIZEOF_UCHAR,
                         U_FOLD_CASE_DEFAULT,
                         &errorCode);
     if( errorCode!=U_ILLEGAL_ARGUMENT_ERROR ||
@@ -593,8 +590,8 @@ TestCaseFolding(void) {
 
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strFoldCase(buffer, UPRV_LENGTHOF(buffer),
-                        NULL, UPRV_LENGTHOF(mixed),
+    length=u_strFoldCase(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
+                        NULL, sizeof(mixed)/U_SIZEOF_UCHAR,
                         U_FOLD_CASE_EXCLUDE_SPECIAL_I,
                         &errorCode);
     if( errorCode!=U_ILLEGAL_ARGUMENT_ERROR ||
@@ -608,7 +605,7 @@ TestCaseFolding(void) {
 
     buffer[0]=0xabcd;
     errorCode=U_ZERO_ERROR;
-    length=u_strFoldCase(buffer, UPRV_LENGTHOF(buffer),
+    length=u_strFoldCase(buffer, sizeof(buffer)/U_SIZEOF_UCHAR,
                         mixed, -2,
                         U_FOLD_CASE_EXCLUDE_SPECIAL_I,
                         &errorCode);
@@ -745,12 +742,11 @@ TestUCaseMap(void) {
     if(0!=strcmp(locale, "tr")) {
         log_err("ucasemap_getLocale(ucasemap_open(\"tur\"))==%s!=\"tr\"\n", locale);
     }
-    /* overly long locale IDs may get truncated to their language code to avoid unnecessary allocation */
+    /* overly long locale IDs get truncated to their language code to avoid unnecessary allocation */
     ucasemap_setLocale(csm, "I-kLInGOn-the-quick-brown-fox-jumps-over-the-lazy-dog", &errorCode);
     locale=ucasemap_getLocale(csm);
-    if(0!=strncmp(locale, "i-klingon", 9)) {
-        log_err("ucasemap_getLocale(ucasemap_setLocale(\"I-kLInGOn-the-quick-br...\"))==%s\n"
-                "    does not start with \"i-klingon\"\n", locale);
+    if(0!=strcmp(locale, "i-klingon")) {
+        log_err("ucasemap_getLocale(ucasemap_setLocale(\"I-kLInGOn-the-quick-br...\"))==%s!=\"i-klingon\"\n", locale);
     }
 
     errorCode=U_ZERO_ERROR;

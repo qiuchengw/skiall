@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *   Copyright (C) 1997-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 ******************************************************************************
 *   file name:  nfrule.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -30,7 +28,6 @@
 #include "nfrlist.h"
 #include "nfsubs.h"
 #include "patternprops.h"
-#include "putilimp.h"
 
 U_NAMESPACE_BEGIN
 
@@ -716,12 +713,6 @@ NFRule::_appendRuleText(UnicodeString& result) const
     result.append(gSemicolon);
 }
 
-int64_t NFRule::getDivisor() const
-{
-    return util64_pow(radix, exponent);
-}
-
-
 //-----------------------------------------------------------------------
 // formatting
 //-----------------------------------------------------------------------
@@ -756,7 +747,7 @@ NFRule::doFormat(int64_t number, UnicodeString& toInsertInto, int32_t pos, int32
             toInsertInto.insert(pos, ruleText.tempSubString(pluralRuleEnd + 2));
         }
         toInsertInto.insert(pos,
-            rulePatternFormat->format((int32_t)(number/util64_pow(radix, exponent)), status));
+            rulePatternFormat->format((int32_t)(number/uprv_pow(radix, exponent)), status));
         if (pluralRuleStart > 0) {
             toInsertInto.insert(pos, ruleText.tempSubString(0, pluralRuleStart));
         }
@@ -805,10 +796,10 @@ NFRule::doFormat(double number, UnicodeString& toInsertInto, int32_t pos, int32_
         if (0 <= pluralVal && pluralVal < 1) {
             // We're in a fractional rule, and we have to match the NumeratorSubstitution behavior.
             // 2.3 can become 0.2999999999999998 for the fraction due to rounding errors.
-            pluralVal = uprv_round(pluralVal * util64_pow(radix, exponent));
+            pluralVal = uprv_round(pluralVal * uprv_pow(radix, exponent));
         }
         else {
-            pluralVal = pluralVal / util64_pow(radix, exponent);
+            pluralVal = pluralVal / uprv_pow(radix, exponent);
         }
         toInsertInto.insert(pos, rulePatternFormat->format((int32_t)(pluralVal), status));
         if (pluralRuleStart > 0) {
@@ -834,7 +825,7 @@ NFRule::doFormat(double number, UnicodeString& toInsertInto, int32_t pos, int32_
 * this one in its list; false if it should use this rule
 */
 UBool
-NFRule::shouldRollBack(int64_t number) const
+NFRule::shouldRollBack(double number) const
 {
     // we roll back if the rule contains a modulus substitution,
     // the number being formatted is an even multiple of the rule's
@@ -854,7 +845,7 @@ NFRule::shouldRollBack(int64_t number) const
     // multiple of 100.  This is called the "rollback rule."
     if ((sub1 != NULL && sub1->isModulusSubstitution()) || (sub2 != NULL && sub2->isModulusSubstitution())) {
         int64_t re = util64_pow(radix, exponent);
-        return (number % re) == 0 && (baseValue % re) != 0;
+        return uprv_fmod(number, (double)re) == 0 && (baseValue % re) != 0;
     }
     return FALSE;
 }
@@ -900,7 +891,6 @@ NFRule::doParse(const UnicodeString& text,
                 ParsePosition& parsePosition,
                 UBool isFractionRule,
                 double upperBound,
-                uint32_t nonNumericalExecutedRuleMask,
                 Formattable& resVal) const
 {
     // internally we operate on a copy of the string being parsed
@@ -1003,7 +993,6 @@ NFRule::doParse(const UnicodeString& text,
         temp.setTo(ruleText, sub1Pos, sub2Pos - sub1Pos);
         double partialResult = matchToDelimiter(workText, start, tempBaseValue,
             temp, pp, sub1,
-            nonNumericalExecutedRuleMask,
             upperBound);
 
         // if we got a successful match (or were trying to match a
@@ -1024,7 +1013,6 @@ NFRule::doParse(const UnicodeString& text,
             temp.setTo(ruleText, sub2Pos, ruleText.length() - sub2Pos);
             partialResult = matchToDelimiter(workText2, 0, partialResult,
                 temp, pp2, sub2,
-                nonNumericalExecutedRuleMask,
                 upperBound);
 
             // if we got a successful match on this second
@@ -1161,7 +1149,6 @@ NFRule::matchToDelimiter(const UnicodeString& text,
                          const UnicodeString& delimiter,
                          ParsePosition& pp,
                          const NFSubstitution* sub,
-                         uint32_t nonNumericalExecutedRuleMask,
                          double upperBound) const
 {
 	UErrorCode status = U_ZERO_ERROR;
@@ -1195,7 +1182,6 @@ NFRule::matchToDelimiter(const UnicodeString& text,
 #else
                     formatter->isLenient(),
 #endif
-                    nonNumericalExecutedRuleMask,
                     result);
 
                 // if the substitution could match all the text up to
@@ -1249,7 +1235,6 @@ NFRule::matchToDelimiter(const UnicodeString& text,
 #else
             formatter->isLenient(),
 #endif
-            nonNumericalExecutedRuleMask,
             result);
         if (success && (tempPP.getIndex() != 0)) {
             // if there's a successful match (or it's a null

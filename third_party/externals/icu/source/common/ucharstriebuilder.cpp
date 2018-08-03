@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 2010-2012, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  ucharstriebuilder.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -117,7 +115,7 @@ UCharsTrieBuilder::add(const UnicodeString &s, int32_t value, UErrorCode &errorC
             return *this;
         }
         if(elementsLength>0) {
-            uprv_memcpy(newElements, elements, (size_t)elementsLength*sizeof(UCharsTrieElement));
+            uprv_memcpy(newElements, elements, elementsLength*sizeof(UCharsTrieElement));
         }
         delete[] elements;
         elements=newElements;
@@ -287,7 +285,7 @@ UCharsTrieBuilder::indexOfElementWithNextUnit(int32_t i, int32_t unitIndex, UCha
 
 UCharsTrieBuilder::UCTLinearMatchNode::UCTLinearMatchNode(const UChar *units, int32_t len, Node *nextNode)
         : LinearMatchNode(len, nextNode), s(units) {
-    hash=hash*37u+ustr_hashUCharsN(units, len);
+    hash=hash*37+ustr_hashUCharsN(units, len);
 }
 
 UBool

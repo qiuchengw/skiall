@@ -18,9 +18,8 @@
 #include "pass_fixture.h"
 #include "pass_utils.h"
 
-namespace spvtools {
-namespace opt {
 namespace {
+using namespace spvtools;
 
 // Returns the types defining instructions commonly used in many tests.
 std::vector<std::string> CommonTypes() {
@@ -115,20 +114,20 @@ class UnifyConstantTest : public PassTest<T> {
 
     // optimized code
     std::string optimized_before_strip;
-    auto status = Pass::Status::SuccessWithoutChange;
+    auto status = opt::Pass::Status::SuccessWithoutChange;
     std::tie(optimized_before_strip, status) =
-        this->template SinglePassRunAndDisassemble<UnifyConstantPass>(
+        this->template SinglePassRunAndDisassemble<opt::UnifyConstantPass>(
             test_builder.GetCode(),
-            /* skip_nop = */ true, /* do_validation = */ false);
+            /* skip_nop = */ true);
     std::string optimized_without_opnames;
     std::unordered_set<std::string> optimized_opnames;
     std::tie(optimized_without_opnames, optimized_opnames) =
         StripOpNameInstructionsToSet(optimized_before_strip);
 
     // Flag "status" should be returned correctly.
-    EXPECT_NE(Pass::Status::Failure, status);
+    EXPECT_NE(opt::Pass::Status::Failure, status);
     EXPECT_EQ(expected_without_opnames == original_without_opnames,
-              status == Pass::Status::SuccessWithoutChange);
+              status == opt::Pass::Status::SuccessWithoutChange);
     // Code except OpName instructions should be exactly the same.
     EXPECT_EQ(expected_without_opnames, optimized_without_opnames);
     // OpName instructions can be in different order, but the content must be
@@ -157,8 +156,7 @@ TEST_F(UnifyFrontEndConstantSingleTest, Basic) {
 
   expected_builder
       .AppendTypesConstantsGlobals({
-          "%uint = OpTypeInt 32 0",
-          "%_pf_uint = OpTypePointer Function %uint",
+          "%uint = OpTypeInt 32 0", "%_pf_uint = OpTypePointer Function %uint",
           "%unsigned_1 = OpConstant %uint 1",
       })
       .AppendInMain({
@@ -304,8 +302,7 @@ TEST_F(UnifyFrontEndConstantSingleTest, UnifyWithDecorationOnTypes) {
           "OpStore %flat_d_var %flat_d_1",
       })
       .AppendNames({
-          "OpName %flat_1 \"flat_1_dup\"",
-          "OpName %flat_d_1 \"flat_d_1_dup\"",
+          "OpName %flat_1 \"flat_1_dup\"", "OpName %flat_d_1 \"flat_d_1_dup\"",
       });
 
   Check(expected_builder, test_builder);
@@ -981,6 +978,4 @@ INSTANTIATE_TEST_CASE_P(Case, UnifyFrontEndConstantParamTest,
                             // clang-format on
                         })));
 
-}  // namespace
-}  // namespace opt
-}  // namespace spvtools
+}  // anonymous namespace

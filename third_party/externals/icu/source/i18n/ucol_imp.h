@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -10,7 +8,7 @@
 *
 * Private implementation header for C collation
 *   file name:  ucol_imp.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -78,7 +76,7 @@ public:
     const CollationCacheEntry *createCacheEntry(UErrorCode &errorCode);
 
 private:
-    static void U_CALLCONV loadRootRules(UErrorCode &errorCode);
+    static void loadRootRules(UErrorCode &errorCode);
 
     // The following members are used by loadTailoring()
     // and the cache callback.

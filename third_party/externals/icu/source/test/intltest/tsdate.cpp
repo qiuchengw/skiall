@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /***********************************************************************
  * Copyright (c) 1997-2009, International Business Machines Corporation
  * and others. All Rights Reserved.
@@ -13,7 +11,6 @@
 #include "unicode/smpdtfmt.h"
 #include "tsdate.h"
 #include "putilimp.h"
-#include "cstring.h"
 
 #include <float.h>
 #include <stdlib.h>

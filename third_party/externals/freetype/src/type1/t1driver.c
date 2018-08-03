@@ -270,12 +270,9 @@
       break;
 
     case PS_DICT_FONT_NAME:
-      if ( type1->font_name )
-      {
-        retval = ft_strlen( type1->font_name ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_name ), retval );
-      }
+      retval = ft_strlen( type1->font_name ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_name ), retval );
       break;
 
     case PS_DICT_UNIQUE_ID:
@@ -365,7 +362,7 @@
             ok = 1;
         }
 
-        if ( ok && type1->subrs )
+        if ( ok )
         {
           retval = type1->subrs_len[idx] + 1;
           if ( value && value_len >= retval )
@@ -562,49 +559,33 @@
       break;
 
     case PS_DICT_VERSION:
-      if ( type1->font_info.version )
-      {
-        retval = ft_strlen( type1->font_info.version ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.version ), retval );
-      }
+      retval = ft_strlen( type1->font_info.version ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.version ), retval );
       break;
 
     case PS_DICT_NOTICE:
-      if ( type1->font_info.notice )
-      {
-        retval = ft_strlen( type1->font_info.notice ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.notice ), retval );
-      }
+      retval = ft_strlen( type1->font_info.notice ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.notice ), retval );
       break;
 
     case PS_DICT_FULL_NAME:
-      if ( type1->font_info.full_name )
-      {
-        retval = ft_strlen( type1->font_info.full_name ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.full_name ), retval );
-      }
+      retval = ft_strlen( type1->font_info.full_name ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.full_name ), retval );
       break;
 
     case PS_DICT_FAMILY_NAME:
-      if ( type1->font_info.family_name )
-      {
-        retval = ft_strlen( type1->font_info.family_name ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.family_name ),
-                     retval );
-      }
+      retval = ft_strlen( type1->font_info.family_name ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.family_name ), retval );
       break;
 
     case PS_DICT_WEIGHT:
-      if ( type1->font_info.weight )
-      {
-        retval = ft_strlen( type1->font_info.weight ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.weight ), retval );
-      }
+      retval = ft_strlen( type1->font_info.weight ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.weight ), retval );
       break;
 
     case PS_DICT_ITALIC_ANGLE:

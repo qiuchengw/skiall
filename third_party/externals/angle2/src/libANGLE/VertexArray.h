@@ -88,7 +88,9 @@ class VertexArrayState final : angle::NonCopyable
     gl::AttributesMask mNullPointerClientMemoryAttribsMask;
 };
 
-class VertexArray final : public angle::ObserverInterface, public LabeledObject
+class VertexArray final : public angle::ObserverInterface,
+                          public LabeledObject,
+                          public angle::Subject
 {
   public:
     VertexArray(rx::GLImplFactory *factory, GLuint id, size_t maxAttribs, size_t maxAttribBindings);
@@ -176,6 +178,8 @@ class VertexArray final : public angle::ObserverInterface, public LabeledObject
         return mState.hasEnabledNullPointerClientArray();
     }
 
+    bool hasMappedEnabledArrayBuffer() const;
+
     // Observer implementation
     void onSubjectStateChange(const gl::Context *context,
                               angle::SubjectIndex index,
@@ -259,8 +263,7 @@ class VertexArray final : public angle::ObserverInterface, public LabeledObject
                               angle::SubjectIndex index);
 
     // These are used to optimize draw call validation.
-    void updateCachedVertexAttributeSize(size_t attribIndex);
-    void updateCachedBufferBindingSize(size_t bindingIndex);
+    void updateCachedBufferBindingSize(VertexBinding *binding);
     void updateCachedTransformFeedbackBindingValidation(size_t bindingIndex, const Buffer *buffer);
 
     GLuint mId;

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/en.xml
+// *
+// ***************************************************************************
 en{
     Currencies{
         ADP{
@@ -216,15 +222,11 @@ en{
         }
         BYB{
             "BYB",
-            "Belarusian Ruble (1994–1999)",
-        }
-        BYN{
-            "BYN",
-            "Belarusian Ruble",
+            "Belarusian New Ruble (1994–1999)",
         }
         BYR{
             "BYR",
-            "Belarusian Ruble (2000–2016)",
+            "Belarusian Ruble",
         }
         BZD{
             "BZD",
@@ -261,10 +263,6 @@ en{
         CLP{
             "CLP",
             "Chilean Peso",
-        }
-        CNH{
-            "CNH",
-            "Chinese Yuan (offshore)",
         }
         CNX{
             "CNX",
@@ -312,7 +310,7 @@ en{
         }
         CZK{
             "CZK",
-            "Czech Koruna",
+            "Czech Republic Koruna",
         }
         DDM{
             "DDM",
@@ -492,11 +490,11 @@ en{
         }
         ILR{
             "ILR",
-            "Israeli Shekel (1980–1985)",
+            "Israeli Sheqel (1980–1985)",
         }
         ILS{
             "₪",
-            "Israeli New Shekel",
+            "Israeli New Sheqel",
         }
         INR{
             "₹",
@@ -684,10 +682,6 @@ en{
         }
         MRO{
             "MRO",
-            "Mauritanian Ouguiya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Mauritanian Ouguiya",
         }
         MTL{
@@ -788,7 +782,7 @@ en{
         }
         PEN{
             "PEN",
-            "Peruvian Sol",
+            "Peruvian Nuevo Sol",
         }
         PES{
             "PES",
@@ -799,8 +793,8 @@ en{
             "Papua New Guinean Kina",
         }
         PHP{
-            "PHP",
-            "Philippine Piso",
+            "Php",
+            "Philippine Peso",
         }
         PKR{
             "PKR",
@@ -920,10 +914,6 @@ en{
         }
         STD{
             "STD",
-            "São Tomé & Príncipe Dobra (1977–2017)",
-        }
-        STN{
-            "STN",
             "São Tomé & Príncipe Dobra",
         }
         SUR{
@@ -1421,16 +1411,12 @@ en{
             other{"Botswanan pulas"}
         }
         BYB{
-            one{"Belarusian ruble (1994–1999)"}
-            other{"Belarusian rubles (1994–1999)"}
-        }
-        BYN{
-            one{"Belarusian ruble"}
-            other{"Belarusian rubles"}
+            one{"Belarusian new ruble (1994–1999)"}
+            other{"Belarusian new rubles (1994–1999)"}
         }
         BYR{
-            one{"Belarusian ruble (2000–2016)"}
-            other{"Belarusian rubles (2000–2016)"}
+            one{"Belarusian ruble"}
+            other{"Belarusian rubles"}
         }
         BZD{
             one{"Belize dollar"}
@@ -1467,10 +1453,6 @@ en{
         CLP{
             one{"Chilean peso"}
             other{"Chilean pesos"}
-        }
-        CNH{
-            one{"Chinese yuan (offshore)"}
-            other{"Chinese yuan (offshore)"}
         }
         CNX{
             one{"Chinese People’s Bank dollar"}
@@ -1517,8 +1499,8 @@ en{
             other{"Cypriot pounds"}
         }
         CZK{
-            one{"Czech koruna"}
-            other{"Czech korunas"}
+            one{"Czech Republic koruna"}
+            other{"Czech Republic korunas"}
         }
         DDM{
             one{"East German mark"}
@@ -1697,12 +1679,12 @@ en{
             other{"Israeli pounds"}
         }
         ILR{
-            one{"Israeli shekel (1980–1985)"}
-            other{"Israeli shekels (1980–1985)"}
+            one{"Israeli sheqel (1980–1985)"}
+            other{"Israeli sheqels (1980–1985)"}
         }
         ILS{
-            one{"Israeli new shekel"}
-            other{"Israeli new shekels"}
+            one{"Israeli new sheqel"}
+            other{"Israeli new sheqels"}
         }
         INR{
             one{"Indian rupee"}
@@ -1889,10 +1871,6 @@ en{
             other{"Macanese patacas"}
         }
         MRO{
-            one{"Mauritanian ouguiya (1973–2017)"}
-            other{"Mauritanian ouguiyas (1973–2017)"}
-        }
-        MRU{
             one{"Mauritanian ouguiya"}
             other{"Mauritanian ouguiyas"}
         }
@@ -1993,8 +1971,8 @@ en{
             other{"Peruvian intis"}
         }
         PEN{
-            one{"Peruvian sol"}
-            other{"Peruvian soles"}
+            one{"Peruvian nuevo sol"}
+            other{"Peruvian nuevos soles"}
         }
         PES{
             one{"Peruvian sol (1863–1965)"}
@@ -2005,8 +1983,8 @@ en{
             other{"Papua New Guinean kina"}
         }
         PHP{
-            one{"Philippine piso"}
-            other{"Philippine pisos"}
+            one{"Philippine peso"}
+            other{"Philippine pesos"}
         }
         PKR{
             one{"Pakistani rupee"}
@@ -2125,10 +2103,6 @@ en{
             other{"South Sudanese pounds"}
         }
         STD{
-            one{"São Tomé & Príncipe dobra (1977–2017)"}
-            other{"São Tomé & Príncipe dobras (1977–2017)"}
-        }
-        STN{
             one{"São Tomé & Príncipe dobra"}
             other{"São Tomé & Príncipe dobras"}
         }
@@ -2417,5 +2391,5 @@ en{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.72"}
 }

@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 ******************************************************************************
 *   file name:  udata.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -410,13 +408,8 @@ typedef enum UDataFileAccess {
     UDATA_PACKAGES_FIRST,
     /** ICU does not access the file system for data loading. @stable ICU 3.4 */
     UDATA_NO_FILES,
-#ifndef U_HIDE_DEPRECATED_API
-    /**
-     * Number of real UDataFileAccess values.
-     * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
-     */
+    /** Number of real UDataFileAccess values. @stable ICU 3.4 */
     UDATA_FILE_ACCESS_COUNT
-#endif  // U_HIDE_DEPRECATED_API
 } UDataFileAccess;
 
 /**

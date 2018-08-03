@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -10,19 +8,15 @@
 #include "unicode/decimfmt.h"
 #include "unicode/ucurr.h"
 #include "unicode/smpdtfmt.h"
-#include "unicode/strenum.h"
 #include "unicode/dtfmtsym.h"
 #include "unicode/brkiter.h"
 #include "unicode/coll.h"
-#include "unicode/ustring.h"
-#include "charstr.h"
-#include "cmemory.h"
 #include "cstring.h"
 #include <stdio.h>
 #include <string.h>
 #include "putilimp.h"
+#include "unicode/ustring.h"
 #include "hash.h"
-#include "locmap.h"
 
 static const char* const rawData[33][8] = {
 
@@ -231,8 +225,6 @@ void LocaleTest::runIndexedTest( int32_t index, UBool exec, const char* &name, c
     TESTCASE_AUTO(TestCurrencyByDate);
     TESTCASE_AUTO(TestGetVariantWithKeywords);
     TESTCASE_AUTO(TestIsRightToLeft);
-    TESTCASE_AUTO(TestBug13277);
-    TESTCASE_AUTO(TestBug13554);
     TESTCASE_AUTO_END;
 }
 
@@ -869,8 +861,8 @@ LocaleTest::TestGetLangsAndCountries()
       ;
 
     /* TODO: Change this test to be more like the cloctst version? */
-    if (testCount != 595)
-        errln("Expected getISOLanguages() to return 595 languages; it returned %d", testCount);
+    if (testCount != 593)
+        errln("Expected getISOLanguages() to return 593 languages; it returned %d", testCount);
     else {
         for (i = 0; i < 15; i++) {
             int32_t j;
@@ -1262,19 +1254,6 @@ LocaleTest::TestEuroSupport()
     if (invalidLen || U_SUCCESS(status)) {
         errln("Fail: en_QQ didn't return NULL");
     }
-
-    // The currency keyword value is as long as the destination buffer.
-    // It should detect the overflow internally, and default to the locale's currency.
-    tmp[0] = u'¤';
-    status = U_ZERO_ERROR;
-    int32_t length = ucurr_forLocale("en_US@currency=euro", tmp, 4, &status);
-    if (U_FAILURE(status) || dollarStr != UnicodeString(tmp, length)) {
-        if (U_SUCCESS(status) && tmp[0] == u'¤') {
-            errln("Fail: ucurr_forLocale(en_US@currency=euro) succeeded without writing output");
-        } else {
-            errln("Fail: ucurr_forLocale(en_US@currency=euro) != USD - %s", u_errorName(status));
-        }
-    }
 }
 
 #endif
@@ -1570,7 +1549,7 @@ LocaleTest::Test4105828()
             return;
         }
         UnicodeString result;
-        FieldPosition pos(FieldPosition::DONT_CARE);
+        FieldPosition pos(0);
         fmt->format((int32_t)1, result, pos);
         UnicodeString temp;
         if(result != "100%") {
@@ -1638,7 +1617,7 @@ LocaleTest::TestKeywordVariants(void) {
     const UnicodeString *keywordString;
     int32_t keywordLen = 0;
 
-    for(i = 0; i < UPRV_LENGTHOF(testCases); i++) {
+    for(i = 0; i < (int32_t)(sizeof(testCases)/sizeof(testCases[0])); i++) {
         status = U_ZERO_ERROR;
         Locale l(testCases[i].localeID);
         keywords = l.createKeywords(status);
@@ -1724,7 +1703,7 @@ LocaleTest::TestKeywordVariantParsing(void) {
     int32_t resultLen = 0;
     char buffer[256];
 
-    for(i = 0; i < UPRV_LENGTHOF(testCases); i++) {
+    for(i = 0; i < (int32_t)(sizeof(testCases)/sizeof(testCases[0])); i++) {
         *buffer = 0;
         Locale l(testCases[i].localeID);
         resultLen = l.getKeywordValue(testCases[i].keyword, buffer, 256, status);
@@ -1755,7 +1734,7 @@ LocaleTest::TestSetKeywordValue(void) {
 
     Locale l(Locale::getGerman());
 
-    for(i = 0; i < UPRV_LENGTHOF(testCases); i++) {
+    for(i = 0; i < (int32_t)(sizeof(testCases)/sizeof(testCases[0])); i++) {
         l.setKeywordValue(testCases[i].keyword, testCases[i].value, status);
         if(U_FAILURE(status)) {
             err("FAIL: Locale::setKeywordValue failed - %s\n", u_errorName(status));
@@ -2343,7 +2322,7 @@ void LocaleTest::TestCanonicalization(void)
 
     int32_t i, j;
     
-    for (i=0; i < UPRV_LENGTHOF(testCases); i++) {
+    for (i=0; i < (int)(sizeof(testCases)/sizeof(testCases[0])); i++) {
         for (j=0; j<3; ++j) {
             const char* expected = (j==1) ? testCases[i].canonicalID : testCases[i].getNameID;
             Locale loc = _canonicalize(j, testCases[i].localeID);
@@ -2716,36 +2695,3 @@ void LocaleTest::TestBug11421() {
         }
     }
 }
-
-//  TestBug13277. The failure manifests as valgrind errors.
-//                See the trac ticket for details.
-//                
-
-void LocaleTest::TestBug13277() {
-    UErrorCode status = U_ZERO_ERROR;
-    CharString name("en-us-x-foo", -1, status);
-    while (name.length() < 152) {
-        name.append("-x-foo", -1, status);
-    }
-
-    while (name.length() < 160) {
-        name.append('z', status);
-        Locale loc(name.data(), nullptr, nullptr, nullptr);
-    }
-}
-
-// TestBug13554 Check for read past end of array in getPosixID().
-//              The bug shows as an Address Sanitizer failure.
-
-void LocaleTest::TestBug13554() {
-    UErrorCode status = U_ZERO_ERROR;
-    const int BUFFER_SIZE = 100;
-    char  posixID[BUFFER_SIZE];
-
-    for (uint32_t hostid = 0; hostid < 0x500; ++hostid) {
-        status = U_ZERO_ERROR;
-        uprv_convertToPosix(hostid, posixID, BUFFER_SIZE, &status);
-    }
-}
-
-

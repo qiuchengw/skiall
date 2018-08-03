@@ -22,7 +22,6 @@
 #include "gmock/gmock.h"
 #include "test_fixture.h"
 
-namespace spvtools {
 namespace {
 
 using spvtest::EnumCase;
@@ -51,7 +50,7 @@ INSTANTIATE_TEST_CASE_P(
         {SpvMemoryAccessVolatileMask, "Volatile", {}},
         {SpvMemoryAccessAlignedMask, "Aligned", {16}},
         {SpvMemoryAccessNontemporalMask, "Nontemporal", {}},
-    }), );
+    }),);
 
 TEST_F(TextToBinaryTest, CombinedMemoryAccessMask) {
   const std::string input = "OpStore %ptr %value Volatile|Aligned 16";
@@ -106,5 +105,4 @@ INSTANTIATE_TEST_CASE_P(
 // TODO(dneto): OpArrayLength
 // TODO(dneto): OpGenercPtrMemSemantics
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

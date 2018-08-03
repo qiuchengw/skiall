@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2009-2015, International Business Machines Corporation and
@@ -22,8 +20,17 @@ U_NAMESPACE_BEGIN
 FieldPositionHandler::~FieldPositionHandler() {
 }
 
-void FieldPositionHandler::setShift(int32_t delta) {
-  fShift = delta;
+void
+FieldPositionHandler::addAttribute(int32_t, int32_t, int32_t) {
+}
+
+void
+FieldPositionHandler::shiftLast(int32_t) {
+}
+
+UBool
+FieldPositionHandler::isRecording(void) const {
+  return FALSE;
 }
 
 
@@ -39,8 +46,8 @@ FieldPositionOnlyHandler::~FieldPositionOnlyHandler() {
 void
 FieldPositionOnlyHandler::addAttribute(int32_t id, int32_t start, int32_t limit) {
   if (pos.getField() == id) {
-    pos.setBeginIndex(start + fShift);
-    pos.setEndIndex(limit + fShift);
+    pos.setBeginIndex(start);
+    pos.setEndIndex(limit);
   }
 }
 
@@ -82,8 +89,8 @@ FieldPositionIteratorHandler::addAttribute(int32_t id, int32_t start, int32_t li
   if (iter && U_SUCCESS(status) && start < limit) {
     int32_t size = vec->size();
     vec->addElement(id, status);
-    vec->addElement(start + fShift, status);
-    vec->addElement(limit + fShift, status);
+    vec->addElement(start, status);
+    vec->addElement(limit, status);
     if (!U_SUCCESS(status)) {
       vec->setSize(size);
     }

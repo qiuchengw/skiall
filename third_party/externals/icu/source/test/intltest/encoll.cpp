@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2009, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -15,7 +13,6 @@
 #include "unicode/unistr.h"
 #include "unicode/sortkey.h"
 #include "encoll.h"
-#include "cmemory.h"
 
 CollationEnglishTest::CollationEnglishTest()
 : myCollation(0)
@@ -263,7 +260,7 @@ void CollationEnglishTest::TestTertiary(/* char* par */)
 
     //test more interesting cases
     Collator::EComparisonResult expected;
-    const int32_t testMoreSize = UPRV_LENGTHOF(testMore);
+    const int32_t testMoreSize = (int32_t)(sizeof(testMore) / sizeof(testMore[0]));
     for (i = 0; i < testMoreSize; i++)
     {
         for (j = 0; j < testMoreSize; j++)
@@ -302,7 +299,7 @@ void CollationEnglishTest::TestSecondary(/* char* par */)
     //test acute and grave ordering (compare to french collation)
     int32_t j;
     Collator::EComparisonResult expected;
-    const int32_t testAcuteSize = UPRV_LENGTHOF(testAcute);
+    const int32_t testAcuteSize = (int32_t)(sizeof(testAcute) / sizeof(testAcute[0]));
     for (i = 0; i < testAcuteSize; i++)
     {
         for (j = 0; j < testAcuteSize; j++)

@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 2000-2011, International Business Machines
@@ -7,7 +5,7 @@
 *******************************************************************************
 *
 *   file name:  uversion.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -105,7 +103,7 @@ typedef uint8_t UVersionInfo[U_MAX_VERSION_LENGTH];
  * @stable ICU 2.4
  */
 
-/* Define C++ namespace symbols. */
+/* Define namespace symbols if the compiler supports it. */
 #ifdef __cplusplus
 #   if U_DISABLE_RENAMING
 #       define U_ICU_NAMESPACE icu
@@ -122,13 +120,7 @@ typedef uint8_t UVersionInfo[U_MAX_VERSION_LENGTH];
 #   define U_NAMESPACE_QUALIFIER U_ICU_NAMESPACE::
 
 #   ifndef U_USING_ICU_NAMESPACE
-#       if defined(U_COMBINED_IMPLEMENTATION) || defined(U_COMMON_IMPLEMENTATION) || \
-                defined(U_I18N_IMPLEMENTATION) || defined(U_IO_IMPLEMENTATION) || \
-                defined(U_LAYOUTEX_IMPLEMENTATION) || defined(U_TOOLUTIL_IMPLEMENTATION)
-#           define U_USING_ICU_NAMESPACE 0
-#       else
-#           define U_USING_ICU_NAMESPACE 0
-#       endif
+#       define U_USING_ICU_NAMESPACE 1
 #   endif
 #   if U_USING_ICU_NAMESPACE
         U_NAMESPACE_USE

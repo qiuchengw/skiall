@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
@@ -8,7 +6,7 @@
 *
 *******************************************************************************
 *   file name:  umsg.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -321,7 +319,7 @@ umsg_applyPattern(UMessageFormat *fmt,
     if(status ==NULL||U_FAILURE(*status)){
         return ;
     }
-    if(fmt==NULL || (pattern==NULL && patternLength!=0) || patternLength<-1) {
+    if(fmt==NULL||pattern==NULL||patternLength<-1){
         *status=U_ILLEGAL_ARGUMENT_ERROR;
         return ;
     }
@@ -329,8 +327,10 @@ umsg_applyPattern(UMessageFormat *fmt,
     if(parseError==NULL){
       parseError = &tErr;
     }
+    if(patternLength<-1){
+        patternLength=u_strlen(pattern);
+    }
 
-    // UnicodeString(pattern, -1) calls u_strlen().
     ((MessageFormat*)fmt)->applyPattern(UnicodeString(pattern,patternLength),*parseError,*status);  
 }
 
@@ -469,7 +469,7 @@ umsg_vformat(   const UMessageFormat *fmt,
         }
     }
     UnicodeString resultStr;
-    FieldPosition fieldPosition(FieldPosition::DONT_CARE);
+    FieldPosition fieldPosition(0);
     
     /* format the message */
     ((const MessageFormat*)fmt)->format(args,count,resultStr,fieldPosition,*status);

@@ -1,17 +1,16 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/lrc.xml
+// *
+// ***************************************************************************
 lrc{
-    Version{"2.1.38.69"}
+    Version{"2.1.19.97"}
     durationUnits{
-        hm{"h:mm"}
-        hms{"h:mm:ss"}
-        ms{"m:ss"}
-    }
-    units{
-        area{
-            square-kilometer{
-                other{"{0} km²"}
-            }
-        }
+        hm{"ساأت:دئقه"}
+        hms{"ساأت:دئقه:ثانیه"}
+        ms{"دئیقه:ثانیه"}
     }
 }

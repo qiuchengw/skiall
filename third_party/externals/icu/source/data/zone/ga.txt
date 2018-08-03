@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ga.xml
+// *
+// ***************************************************************************
 ga{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -214,7 +220,7 @@ ga{
             ec{"Belém"}
         }
         "America:Belize"{
-            ec{"an Bheilís"}
+            ec{"An Bheilís"}
         }
         "America:Blanc-Sablon"{
             ec{"Blanc-Sablon"}
@@ -301,10 +307,7 @@ ga{
             ec{"Eirunepé"}
         }
         "America:El_Salvador"{
-            ec{"an tSalvadóir"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
+            ec{"An tSalvadóir"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -334,7 +337,7 @@ ga{
             ec{"Guayaquil"}
         }
         "America:Guyana"{
-            ec{"an Ghuáin"}
+            ec{"An Ghuáin"}
         }
         "America:Halifax"{
             ec{"Halifax"}
@@ -507,9 +510,6 @@ ga{
         "America:Puerto_Rico"{
             ec{"Portó Ríce"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -565,7 +565,7 @@ ga{
             ec{"St. Thomas"}
         }
         "America:St_Vincent"{
-            ec{"San Uinseann"}
+            ec{"St. Vincent"}
         }
         "America:Swift_Current"{
             ec{"Swift Current"}
@@ -660,9 +660,6 @@ ga{
         "Asia:Ashgabat"{
             ec{"Ashgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -674,9 +671,6 @@ ga{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Béiriút"}
@@ -700,7 +694,7 @@ ga{
             ec{"Colombo"}
         }
         "Asia:Damascus"{
-            ec{"an Damaisc"}
+            ec{"An Damaisc"}
         }
         "Asia:Dhaka"{
             ec{"Dhaka"}
@@ -713,9 +707,6 @@ ga{
         }
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -784,7 +775,7 @@ ga{
             ec{"Muscat"}
         }
         "Asia:Nicosia"{
-            ec{"an Niocóis"}
+            ec{"An Niocóis"}
         }
         "Asia:Novokuznetsk"{
             ec{"Novokuznetsk"}
@@ -858,9 +849,6 @@ ga{
         "Asia:Tokyo"{
             ec{"Tóiceo"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulaanbaatar"}
         }
@@ -886,13 +874,13 @@ ga{
             ec{"Eireaván"}
         }
         "Atlantic:Azores"{
-            ec{"na hAsóir"}
+            ec{"Na hAsóir"}
         }
         "Atlantic:Bermuda"{
             ec{"Beirmiúda"}
         }
         "Atlantic:Canary"{
-            ec{"na hOileáin Chanáracha"}
+            ec{"Na hOileáin Chanáracha"}
         }
         "Atlantic:Cape_Verde"{
             ec{"Rinn Verde"}
@@ -907,7 +895,7 @@ ga{
             ec{"Réicivíc"}
         }
         "Atlantic:South_Georgia"{
-            ec{"an tSeoirsia Theas"}
+            ec{"An tSeoirsia Theas"}
         }
         "Atlantic:St_Helena"{
             ec{"San Héilin"}
@@ -951,9 +939,6 @@ ga{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Am Uilíoch Lárnach"}
-        }
         "Etc:Unknown"{
             ec{"Cathair Anaithnid"}
         }
@@ -963,11 +948,8 @@ ga{
         "Europe:Andorra"{
             ec{"Andóra"}
         }
-        "Europe:Astrakhan"{
-            ec{"an Astracáin"}
-        }
         "Europe:Athens"{
-            ec{"an Aithin"}
+            ec{"An Aithin"}
         }
         "Europe:Belgrade"{
             ec{"Béalgrád"}
@@ -976,10 +958,10 @@ ga{
             ec{"Beirlín"}
         }
         "Europe:Bratislava"{
-            ec{"an Bhratasláiv"}
+            ec{"An Bhratasláiv"}
         }
         "Europe:Brussels"{
-            ec{"an Bhruiséil"}
+            ec{"An Bhruiséil"}
         }
         "Europe:Bucharest"{
             ec{"Búcairist"}
@@ -1024,9 +1006,6 @@ ga{
         }
         "Europe:Kiev"{
             ec{"Cív"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Liospóin"}
@@ -1076,7 +1055,7 @@ ga{
             ec{"Ríge"}
         }
         "Europe:Rome"{
-            ec{"an Róimh"}
+            ec{"An Róimh"}
         }
         "Europe:Samara"{
             ec{"Samara"}
@@ -1086,9 +1065,6 @@ ga{
         }
         "Europe:Sarajevo"{
             ec{"Sairéavó"}
-        }
-        "Europe:Saratov"{
-            ec{"Saratov"}
         }
         "Europe:Simferopol"{
             ec{"Simferopol"}
@@ -1107,9 +1083,6 @@ ga{
         }
         "Europe:Tirane"{
             ec{"Tirane"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Ulyanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Uzhgorod"}
@@ -1235,7 +1208,7 @@ ga{
             ec{"Majuro"}
         }
         "Pacific:Marquesas"{
-            ec{"na hOileáin Mharcasacha"}
+            ec{"Na hOileáin Mharcasacha"}
         }
         "Pacific:Midway"{
             ec{"Oileáin Midway"}
@@ -1347,9 +1320,6 @@ ga{
             ld{"Am Samhraidh an Aigéin Chiúin"}
             lg{"Am an Aigéin Chiúin"}
             ls{"Am Caighdeánach an Aigéin Chiúin"}
-            sd{"ASAC"}
-            sg{"AAC"}
-            ss{"ACAC"}
         }
         "meta:Anadyr"{
             ld{"Am Samhraidh Anadyr"}
@@ -1825,9 +1795,6 @@ ga{
         }
         "meta:Ponape"{
             ls{"Am Phohnpei"}
-        }
-        "meta:Pyongyang"{
-            ls{"Am Pyongyang"}
         }
         "meta:Qyzylorda"{
             ld{"Am Samhraidh Qyzylorda"}

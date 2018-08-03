@@ -1,14 +1,10 @@
 /*  
- ***********************************************************************
- * © 2016 and later: Unicode, Inc. and others.
- * License & terms of use: http://www.unicode.org/copyright.html#License
- ***********************************************************************
- ***********************************************************************
+ **********************************************************************
  *   Copyright (C) 2002-2014, International Business Machines
  *   Corporation and others.  All Rights Reserved.
- ***********************************************************************
+ **********************************************************************
  *  file name:  utrie2perf.cpp
- *  encoding:   UTF-8
+ *  encoding:   US-ASCII
  *  tab size:   8 (not used)
  *  indentation:4
  *

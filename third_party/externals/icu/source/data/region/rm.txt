@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/rm.xml
+// *
+// ***************************************************************************
 rm{
     Countries{
         001{"mund"}
@@ -38,6 +44,7 @@ rm{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Antillas Ollandaisas"}
         AO{"Angola"}
         AQ{"Antarctica"}
         AR{"Argentinia"}
@@ -60,7 +67,7 @@ rm{
         BM{"Bermudas"}
         BN{"Brunei"}
         BO{"Bolivia"}
-        BR{"Brasilia"}
+        BR{"Brasila"}
         BS{"Bahamas"}
         BT{"Bhutan"}
         BV{"Insla Bouvet"}
@@ -125,7 +132,7 @@ rm{
         GW{"Guinea-Bissau"}
         GY{"Guyana"}
         HK{"Regiun d’administraziun speziala da Hongkong, China"}
-        HM{"Inslas da Heard e da McDonald"}
+        HM{"Inslas da Heard e da McDonlad"}
         HN{"Honduras"}
         HR{"Croazia"}
         HT{"Haiti"}
@@ -267,8 +274,8 @@ rm{
         VA{"Citad dal Vatican"}
         VC{"Saint Vincent e las Grenadinas"}
         VE{"Venezuela"}
-        VG{"Inslas Virginas Britannicas"}
-        VI{"Inslas Virginas Americanas"}
+        VG{"Inslas Verginas Britannicas"}
+        VI{"Inslas Verginas Americanas"}
         VN{"Vietnam"}
         VU{"Vanuatu"}
         WF{"Wallis e Futuna"}
@@ -280,5 +287,5 @@ rm{
         ZW{"Simbabwe"}
         ZZ{"Regiun betg encouschenta u nunvalaivla"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.14"}
 }

@@ -23,6 +23,7 @@ typedef struct {
     unsigned char category;
     unsigned char combining;
     unsigned char bidi_class;
+    unsigned char mirrored;
     unsigned char east_asian_width;
     unsigned char script;
     unsigned char linebreak_class;
@@ -42,7 +43,7 @@ typedef struct {
     short count, index;
 } Reindex;
 
-#include "ucdn_db.h"
+#include "unicodedata_db.h"
 
 /* constants required for Hangul (de)composition */
 #define SBASE 0xAC00
@@ -90,30 +91,20 @@ static const unsigned short *get_decomp_record(uint32_t code)
     return &decomp_data[index];
 }
 
-static int compare_reindex(const void *a, const void *b)
+static int get_comp_index(uint32_t code, const Reindex *idx)
 {
-    Reindex *ra = (Reindex *)a;
-    Reindex *rb = (Reindex *)b;
+    int i;
 
-    if (ra->start < rb->start)
-        return -1;
-    else if (ra->start > (rb->start + rb->count))
-        return 1;
-    else
-        return 0;
-}
+    for (i = 0; idx[i].start; i++) {
+        const Reindex *cur = &idx[i];
+        if (code < cur->start)
+            return -1;
+        if (code <= cur->start + cur->count) {
+            return cur->index + (code - cur->start);
+        }
+    }
 
-static int get_comp_index(uint32_t code, const Reindex *idx, size_t len)
-{
-    Reindex *res;
-    Reindex r = {0, 0, 0};
-    r.start = code;
-    res = (Reindex *) bsearch(&r, idx, len, sizeof(Reindex), compare_reindex);
-
-    if (res != NULL)
-        return res->index + (code - res->start);
-    else
-        return -1;
+    return -1;
 }
 
 static int compare_mp(const void *a, const void *b)
@@ -136,8 +127,8 @@ static BracketPair *search_bp(uint32_t code)
     BracketPair *res;
 
     bp.from = code;
-    res = (BracketPair *) bsearch(&bp, bracket_pairs, BIDI_BRACKET_LEN,
-                                 sizeof(BracketPair), compare_bp);
+    res = bsearch(&bp, bracket_pairs, BIDI_BRACKET_LEN, sizeof(BracketPair),
+            compare_bp);
     return res;
 }
 
@@ -163,18 +154,23 @@ static int hangul_pair_decompose(uint32_t code, uint32_t *a, uint32_t *b)
 
 static int hangul_pair_compose(uint32_t *code, uint32_t a, uint32_t b)
 {
-    if (a >= SBASE && a < (SBASE + SCOUNT) && b >= TBASE && b < (TBASE + TCOUNT)) {
+    if (b < VBASE || b >= (TBASE + TCOUNT))
+        return 0;
+
+    if ((a < LBASE || a >= (LBASE + LCOUNT))
+            && (a < SBASE || a >= (SBASE + SCOUNT)))
+        return 0;
+
+    if (a >= SBASE) {
         /* LV,T */
         *code = a + (b - TBASE);
         return 3;
-    } else if (a >= LBASE && a < (LBASE + LCOUNT) && b >= VBASE && b < (VBASE + VCOUNT)) {
+    } else {
         /* L,V */
         int li = a - LBASE;
         int vi = b - VBASE;
         *code = SBASE + li * NCOUNT + vi * TCOUNT;
         return 2;
-    } else {
-        return 0;
     }
 }
 
@@ -182,7 +178,7 @@ static uint32_t decode_utf16(const unsigned short **code_ptr)
 {
     const unsigned short *code = *code_ptr;
 
-    if (code[0] < 0xd800 || code[0] > 0xdc00) {
+    if ((code[0] & 0xd800) != 0xd800) {
         *code_ptr += 1;
         return (uint32_t)code[0];
     } else {
@@ -219,7 +215,7 @@ int ucdn_get_bidi_class(uint32_t code)
 
 int ucdn_get_mirrored(uint32_t code)
 {
-    return ucdn_mirror(code) != code;
+    return get_ucd_record(code)->mirrored;
 }
 
 int ucdn_get_script(uint32_t code)
@@ -268,9 +264,12 @@ uint32_t ucdn_mirror(uint32_t code)
     MirrorPair mp = {0};
     MirrorPair *res;
 
+    if (get_ucd_record(code)->mirrored == 0)
+        return code;
+
     mp.from = code;
-    res = (MirrorPair *) bsearch(&mp, mirror_pairs, BIDI_MIRROR_LEN,
-                                sizeof(MirrorPair), compare_mp);
+    res = bsearch(&mp, mirror_pairs, BIDI_MIRROR_LEN, sizeof(MirrorPair),
+            compare_mp);
 
     if (res == NULL)
         return code;
@@ -327,8 +326,8 @@ int ucdn_compose(uint32_t *code, uint32_t a, uint32_t b)
     if (hangul_pair_compose(code, a, b))
         return 1;
 
-    l = get_comp_index(a, nfc_first, sizeof(nfc_first) / sizeof(Reindex));
-    r = get_comp_index(b, nfc_last, sizeof(nfc_last) / sizeof(Reindex));
+    l = get_comp_index(a, nfc_first);
+    r = get_comp_index(b, nfc_last);
 
     if (l < 0 || r < 0)
         return 0;

@@ -2603,32 +2603,6 @@ void State::getBooleani_v(GLenum target, GLuint index, GLboolean *data)
     }
 }
 
-bool State::hasMappedBuffer(BufferBinding target) const
-{
-    if (target == BufferBinding::Array)
-    {
-        const VertexArray *vao     = getVertexArray();
-        const auto &vertexAttribs  = vao->getVertexAttributes();
-        const auto &vertexBindings = vao->getVertexBindings();
-        for (size_t attribIndex : vao->getEnabledAttributesMask())
-        {
-            const VertexAttribute &vertexAttrib = vertexAttribs[attribIndex];
-            auto *boundBuffer = vertexBindings[vertexAttrib.bindingIndex].getBuffer().get();
-            if (vertexAttrib.enabled && boundBuffer && boundBuffer->isMapped())
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    else
-    {
-        Buffer *buffer = getTargetBuffer(target);
-        return (buffer && buffer->isMapped());
-    }
-}
-
 Error State::syncDirtyObjects(const Context *context, const DirtyObjects &bitset)
 {
     const DirtyObjects &dirtyObjects = mDirtyObjects & bitset;
@@ -2791,26 +2765,6 @@ void State::setObjectDirty(GLenum target)
             mDirtyObjects.set(DIRTY_OBJECT_PROGRAM_TEXTURES);
             mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
             break;
-    }
-}
-
-void State::setFramebufferDirty(const Framebuffer *framebuffer) const
-{
-    if (framebuffer == mReadFramebuffer)
-    {
-        mDirtyObjects.set(DIRTY_OBJECT_READ_FRAMEBUFFER);
-    }
-    if (framebuffer == mDrawFramebuffer)
-    {
-        mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
-    }
-}
-
-void State::setVertexArrayDirty(const VertexArray *vertexArray) const
-{
-    if (vertexArray == mVertexArray)
-    {
-        mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
     }
 }
 

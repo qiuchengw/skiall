@@ -219,7 +219,6 @@
     {
       FT_Memory  memory = stream->memory;
 
-
 #ifdef FT_DEBUG_MEMORY
       ft_mem_free( memory, *pbytes );
       *pbytes = NULL;

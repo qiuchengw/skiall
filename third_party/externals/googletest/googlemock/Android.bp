@@ -18,19 +18,13 @@ cc_defaults {
     local_include_dirs: ["include"],
     export_include_dirs: ["include"],
 
-    cflags: [
-        "-Wall",
-        "-Werror",
-        "-Wno-missing-field-initializers",
-        "-Wno-sign-compare",
-        "-Wno-unused-parameter",
-    ],
+    cflags: ["-Wno-missing-field-initializers", "-Wno-unused-parameter"],
 }
 
 cc_defaults {
     name: "gmock_ndk",
     sdk_version: "9",
-    stl: "c++_static",
+    stl: "gnustl_static",
     cppflags: ["-std=c++11"],
 }
 
@@ -54,14 +48,14 @@ cc_library_static {
     name: "libgmock_ndk",
     defaults: ["gmock_ndk", "gmock_flags"],
     srcs: ["src/gmock-all.cc"],
-    static_libs: ["libgtest_ndk_c++"],
+    static_libs: ["libgtest_ndk_gnustl"],
 }
 
 cc_library_static {
     name: "libgmock_main_ndk",
     defaults: ["gmock_ndk", "gmock_flags"],
     srcs: ["src/gmock_main.cc"],
-    static_libs: ["libgtest_ndk_c++"],
+    static_libs: ["libgtest_ndk_gnustl"],
 }
 
 cc_library_static {

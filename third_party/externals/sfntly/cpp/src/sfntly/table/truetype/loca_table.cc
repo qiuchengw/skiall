@@ -40,11 +40,7 @@ int32_t LocaTable::GlyphLength(int32_t glyph_id) {
 #endif
     return 0;
   }
-  int32_t glyph_val = Loca(glyph_id);
-  int32_t glyph_next_val = Loca(glyph_id + 1);
-  if (glyph_val < 0 || glyph_next_val < 0 || glyph_next_val <= glyph_val)
-    return 0;
-  return glyph_next_val - glyph_val;
+  return Loca(glyph_id + 1) - Loca(glyph_id);
 }
 
 int32_t LocaTable::NumLocas() {
@@ -113,11 +109,11 @@ LocaTable::Builder* LocaTable::Builder::CreateBuilder(Header* header,
   return builder.Detach();
 }
 
-std::vector<int32_t>* LocaTable::Builder::LocaList() {
+IntegerList* LocaTable::Builder::LocaList() {
   return GetLocaList();
 }
 
-void LocaTable::Builder::SetLocaList(std::vector<int32_t>* list) {
+void LocaTable::Builder::SetLocaList(IntegerList* list) {
   loca_.clear();
   if (list) {
     loca_ = *list;
@@ -140,7 +136,6 @@ int32_t LocaTable::Builder::GlyphLength(int32_t glyph_id) {
 }
 
 void LocaTable::Builder::SetNumGlyphs(int32_t num_glyphs) {
-  assert(num_glyphs >= 0);
   num_glyphs_ = num_glyphs;
 }
 
@@ -188,7 +183,7 @@ bool LocaTable::Builder::SubReadyToSerialize() {
 
 int32_t LocaTable::Builder::SubSerialize(WritableFontData* new_data) {
   int32_t size = 0;
-  for (std::vector<int32_t>::iterator l = loca_.begin(), end = loca_.end();
+  for (IntegerList::iterator l = loca_.begin(), end = loca_.end();
                              l != end; ++l) {
     if (format_version_ == IndexToLocFormat::kLongOffset) {
       size += new_data->WriteULong(size, *l);
@@ -233,7 +228,7 @@ int32_t LocaTable::Builder::LastGlyphIndex() {
   return !loca_.empty() ? loca_.size() - 2 : num_glyphs_ - 1;
 }
 
-std::vector<int32_t>* LocaTable::Builder::GetLocaList() {
+IntegerList* LocaTable::Builder::GetLocaList() {
   if (loca_.empty()) {
     Initialize(InternalReadData());
     set_model_changed();

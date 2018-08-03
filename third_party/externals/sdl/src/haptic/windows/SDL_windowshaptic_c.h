@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_windowshaptic_c_h_
-#define SDL_windowshaptic_c_h_
+#ifndef _SDL_windowshaptic_c_h
+#define _SDL_windowshaptic_c_h
 
 #include "SDL_thread.h"
 #include "../SDL_syshaptic.h"
@@ -82,7 +82,7 @@ extern SDL_hapticlist_item *SDL_hapticlist;
 extern int SDL_SYS_AddHapticDevice(SDL_hapticlist_item *item);
 extern int SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_item *item);
 
-#endif /* SDL_windowshaptic_c_h_ */
+#endif /* _SDL_windowshaptic_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

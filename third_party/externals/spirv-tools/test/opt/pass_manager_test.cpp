@@ -20,15 +20,14 @@
 #include "opt/make_unique.h"
 #include "pass_fixture.h"
 
-namespace spvtools {
-namespace opt {
 namespace {
 
+using namespace spvtools;
 using spvtest::GetIdBound;
 using ::testing::Eq;
 
 // A null pass whose construtors accept arguments
-class NullPassWithArgs : public NullPass {
+class NullPassWithArgs : public opt::NullPass {
  public:
   NullPassWithArgs(uint32_t) {}
   NullPassWithArgs(std::string) {}
@@ -39,19 +38,19 @@ class NullPassWithArgs : public NullPass {
 };
 
 TEST(PassManager, Interface) {
-  PassManager manager;
+  opt::PassManager manager;
   EXPECT_EQ(0u, manager.NumPasses());
 
-  manager.AddPass<StripDebugInfoPass>();
+  manager.AddPass<opt::StripDebugInfoPass>();
   EXPECT_EQ(1u, manager.NumPasses());
   EXPECT_STREQ("strip-debug", manager.GetPass(0)->name());
 
-  manager.AddPass(MakeUnique<NullPass>());
+  manager.AddPass(MakeUnique<opt::NullPass>());
   EXPECT_EQ(2u, manager.NumPasses());
   EXPECT_STREQ("strip-debug", manager.GetPass(0)->name());
   EXPECT_STREQ("null", manager.GetPass(1)->name());
 
-  manager.AddPass<StripDebugInfoPass>();
+  manager.AddPass<opt::StripDebugInfoPass>();
   EXPECT_EQ(3u, manager.NumPasses());
   EXPECT_STREQ("strip-debug", manager.GetPass(0)->name());
   EXPECT_STREQ("null", manager.GetPass(1)->name());
@@ -71,26 +70,26 @@ TEST(PassManager, Interface) {
   EXPECT_STREQ("null-with-args", manager.GetPass(6)->name());
 }
 
-// A pass that appends an OpNop instruction to the debug1 section.
-class AppendOpNopPass : public Pass {
+// A pass that appends an OpNop instruction to the debug section.
+class AppendOpNopPass : public opt::Pass {
  public:
   const char* name() const override { return "AppendOpNop"; }
-  Status Process() override {
-    context()->AddDebug1Inst(MakeUnique<Instruction>(context()));
+  Status Process(ir::Module* module) override {
+    module->AddDebugInst(MakeUnique<ir::Instruction>());
     return Status::SuccessWithChange;
   }
 };
 
-// A pass that appends specified number of OpNop instructions to the debug1
+// A pass that appends specified number of OpNop instructions to the debug
 // section.
-class AppendMultipleOpNopPass : public Pass {
+class AppendMultipleOpNopPass : public opt::Pass {
  public:
   explicit AppendMultipleOpNopPass(uint32_t num_nop) : num_nop_(num_nop) {}
 
   const char* name() const override { return "AppendOpNop"; }
-  Status Process() override {
+  Status Process(ir::Module* module) override {
     for (uint32_t i = 0; i < num_nop_; i++) {
-      context()->AddDebug1Inst(MakeUnique<Instruction>(context()));
+      module->AddDebugInst(MakeUnique<ir::Instruction>());
     }
     return Status::SuccessWithChange;
   }
@@ -99,14 +98,13 @@ class AppendMultipleOpNopPass : public Pass {
   uint32_t num_nop_;
 };
 
-// A pass that duplicates the last instruction in the debug1 section.
-class DuplicateInstPass : public Pass {
+// A pass that duplicates the last instruction in the debug section.
+class DuplicateInstPass : public opt::Pass {
  public:
   const char* name() const override { return "DuplicateInst"; }
-  Status Process() override {
-    auto inst =
-        MakeUnique<Instruction>(*(--context()->debug1_end())->Clone(context()));
-    context()->AddDebug1Inst(std::move(inst));
+  Status Process(ir::Module* module) override {
+    auto inst = MakeUnique<ir::Instruction>(*(--module->debug_end()));
+    module->AddDebugInst(std::move(inst));
     return Status::SuccessWithChange;
   }
 };
@@ -136,15 +134,15 @@ TEST_F(PassManagerTest, Run) {
 }
 
 // A pass that appends an OpTypeVoid instruction that uses a given id.
-class AppendTypeVoidInstPass : public Pass {
+class AppendTypeVoidInstPass : public opt::Pass {
  public:
   explicit AppendTypeVoidInstPass(uint32_t result_id) : result_id_(result_id) {}
 
   const char* name() const override { return "AppendTypeVoidInstPass"; }
-  Status Process() override {
-    auto inst = MakeUnique<Instruction>(context(), SpvOpTypeVoid, 0, result_id_,
-                                        std::vector<Operand>{});
-    context()->AddType(std::move(inst));
+  Status Process(ir::Module* module) override {
+    auto inst = MakeUnique<ir::Instruction>(SpvOpTypeVoid, 0, result_id_,
+                                            std::vector<ir::Operand>{});
+    module->AddType(std::move(inst));
     return Status::SuccessWithChange;
   }
 
@@ -153,37 +151,33 @@ class AppendTypeVoidInstPass : public Pass {
 };
 
 TEST(PassManager, RecomputeIdBoundAutomatically) {
-  PassManager manager;
-  std::unique_ptr<Module> module(new Module());
-  IRContext context(SPV_ENV_UNIVERSAL_1_2, std::move(module),
-                    manager.consumer());
-  EXPECT_THAT(GetIdBound(*context.module()), Eq(0u));
+  ir::Module module;
+  EXPECT_THAT(GetIdBound(module), Eq(0u));
 
-  manager.Run(&context);
+  opt::PassManager manager;
+  manager.Run(&module);
   manager.AddPass<AppendOpNopPass>();
   // With no ID changes, the ID bound does not change.
-  EXPECT_THAT(GetIdBound(*context.module()), Eq(0u));
+  EXPECT_THAT(GetIdBound(module), Eq(0u));
 
   // Now we force an Id of 100 to be used.
   manager.AddPass(MakeUnique<AppendTypeVoidInstPass>(100));
-  EXPECT_THAT(GetIdBound(*context.module()), Eq(0u));
-  manager.Run(&context);
+  EXPECT_THAT(GetIdBound(module), Eq(0u));
+  manager.Run(&module);
   // The Id has been updated automatically, even though the pass
   // did not update it.
-  EXPECT_THAT(GetIdBound(*context.module()), Eq(101u));
+  EXPECT_THAT(GetIdBound(module), Eq(101u));
 
   // Try one more time!
   manager.AddPass(MakeUnique<AppendTypeVoidInstPass>(200));
-  manager.Run(&context);
-  EXPECT_THAT(GetIdBound(*context.module()), Eq(201u));
+  manager.Run(&module);
+  EXPECT_THAT(GetIdBound(module), Eq(201u));
 
   // Add another pass, but which uses a lower Id.
   manager.AddPass(MakeUnique<AppendTypeVoidInstPass>(10));
-  manager.Run(&context);
+  manager.Run(&module);
   // The Id stays high.
-  EXPECT_THAT(GetIdBound(*context.module()), Eq(201u));
+  EXPECT_THAT(GetIdBound(module), Eq(201u));
 }
 
 }  // anonymous namespace
-}  // namespace opt
-}  // namespace spvtools

@@ -26,6 +26,9 @@ const int32_t ByteArray::COPY_BUFFER_SIZE = 8192;
 
 ByteArray::~ByteArray() {}
 
+int32_t ByteArray::Length() { return filled_length_; }
+int32_t ByteArray::Size() { return storage_length_; }
+
 int32_t ByteArray::SetFilledLength(int32_t filled_length) {
   filled_length_ = std::min<int32_t>(filled_length, storage_length_);
   return filled_length_;
@@ -37,27 +40,24 @@ int32_t ByteArray::Get(int32_t index) {
   return InternalGet(index) & 0xff;
 }
 
-int32_t ByteArray::Get(int32_t index, std::vector<uint8_t>* b) {
+int32_t ByteArray::Get(int32_t index, ByteVector* b) {
   assert(b);
   return Get(index, &((*b)[0]), 0, b->size());
 }
 
 int32_t ByteArray::Get(int32_t index,
-                       uint8_t* b,
+                       byte_t* b,
                        int32_t offset,
                        int32_t length) {
   assert(b);
-  if (index < 0 || index >= filled_length_)
+  if (index < 0 || index >= filled_length_) {
     return 0;
-
-  if (length <= 0)
-    return 0;
-
+  }
   int32_t actual_length = std::min<int32_t>(length, filled_length_ - index);
   return InternalGet(index, b, offset, actual_length);
 }
 
-void ByteArray::Put(int32_t index, uint8_t b) {
+void ByteArray::Put(int32_t index, byte_t b) {
   if (index < 0 || index >= Size()) {
 #if defined (SFNTLY_NO_EXCEPTION)
     return;
@@ -70,13 +70,13 @@ void ByteArray::Put(int32_t index, uint8_t b) {
   filled_length_ = std::max<int32_t>(filled_length_, index + 1);
 }
 
-int32_t ByteArray::Put(int index, std::vector<uint8_t>* b) {
+int32_t ByteArray::Put(int index, ByteVector* b) {
   assert(b);
   return Put(index, &((*b)[0]), 0, b->size());
 }
 
 int32_t ByteArray::Put(int32_t index,
-                       uint8_t* b,
+                       byte_t* b,
                        int32_t offset,
                        int32_t length) {
   assert(b);
@@ -109,7 +109,7 @@ int32_t ByteArray::CopyTo(int32_t dst_offset, ByteArray* array,
     return -1;
   }
 
-  std::vector<uint8_t> b(COPY_BUFFER_SIZE);
+  ByteVector b(COPY_BUFFER_SIZE);
   int32_t bytes_read = 0;
   int32_t index = 0;
   int32_t remaining_length = length;
@@ -130,7 +130,7 @@ int32_t ByteArray::CopyTo(OutputStream* os) {
 }
 
 int32_t ByteArray::CopyTo(OutputStream* os, int32_t offset, int32_t length) {
-  std::vector<uint8_t> b(COPY_BUFFER_SIZE);
+  ByteVector b(COPY_BUFFER_SIZE);
   int32_t bytes_read = 0;
   int32_t index = 0;
   int32_t buffer_length = std::min<int32_t>(COPY_BUFFER_SIZE, length);
@@ -143,7 +143,7 @@ int32_t ByteArray::CopyTo(OutputStream* os, int32_t offset, int32_t length) {
 }
 
 bool ByteArray::CopyFrom(InputStream* is, int32_t length) {
-  std::vector<uint8_t> b(COPY_BUFFER_SIZE);
+  ByteVector b(COPY_BUFFER_SIZE);
   int32_t bytes_read = 0;
   int32_t index = 0;
   int32_t buffer_length = std::min<int32_t>(COPY_BUFFER_SIZE, length);
@@ -163,7 +163,7 @@ bool ByteArray::CopyFrom(InputStream* is, int32_t length) {
 }
 
 bool ByteArray::CopyFrom(InputStream* is) {
-  std::vector<uint8_t> b(COPY_BUFFER_SIZE);
+  ByteVector b(COPY_BUFFER_SIZE);
   int32_t bytes_read = 0;
   int32_t index = 0;
   int32_t buffer_length = COPY_BUFFER_SIZE;

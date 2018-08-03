@@ -1,8 +1,6 @@
-// Copyright (C) 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 //*******************************************************************************
 //*
-//*   Copyright (C) 1998-2016, International Business Machines
+//*   Copyright (C) 1998-2015, International Business Machines
 //*   Corporation and others.  All Rights Reserved.
 //*
 //*******************************************************************************
@@ -13,8 +11,8 @@
 root
 {
     Version { 44.0 }
-    ExpectCLDRVersionAtLeast { 33.1 } // 'base' cldr version. Allow up to version =.=.* of this
-    CurrentCLDRVersion { 33.1 } // Current CLDR version as of the test update. Warn if not an exact match.
+    ExpectCLDRVersionAtLeast { 28.0 } // 'base' cldr version. Allow up to version =.=.* of this
+    CurrentCLDRVersion { 28.0 } // Current CLDR version as of the test update. Warn if not an exact match.
 
     ShortLanguage { xxx }
 

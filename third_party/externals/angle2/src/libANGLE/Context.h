@@ -98,16 +98,30 @@ class StateCache final : angle::NonCopyable
     AttributesMask getActiveClientAttribsMask() const { return mCachedActiveClientAttribsMask; }
     bool hasAnyEnabledClientAttrib() const { return mCachedHasAnyEnabledClientAttrib; }
 
+    // Places that can trigger updateVertexElementLimits:
+    // 1. Context: bindVertexArray.
+    // 2. Context: any executable change (linkProgram/useProgram/programBinary).
+    // 3. Vertex Array: any state change call.
+    // 4. Buffer: a dependent buffer resize.
+    GLint64 getNonInstancedVertexElementLimit() const
+    {
+        return mCachedNonInstancedVertexElementLimit;
+    }
+    GLint64 getInstancedVertexElementLimit() const { return mCachedInstancedVertexElementLimit; }
+
     // Cache update functions.
     void updateActiveAttribsMask(Context *context);
+    void updateVertexElementLimits(Context *context);
 
   private:
     AttributesMask mCachedActiveBufferedAttribsMask;
     AttributesMask mCachedActiveClientAttribsMask;
     bool mCachedHasAnyEnabledClientAttrib;
+    GLint64 mCachedNonInstancedVertexElementLimit;
+    GLint64 mCachedInstancedVertexElementLimit;
 };
 
-class Context final : public egl::LabeledObject, angle::NonCopyable
+class Context final : public egl::LabeledObject, angle::NonCopyable, public angle::ObserverInterface
 {
   public:
     Context(rx::EGLImplFactory *implFactory,
@@ -1521,6 +1535,10 @@ class Context final : public egl::LabeledObject, angle::NonCopyable
 
     const StateCache &getStateCache() const { return mStateCache; }
 
+    void onSubjectStateChange(const Context *context,
+                              angle::SubjectIndex index,
+                              angle::SubjectMessage message) override;
+
   private:
     void initialize();
 
@@ -1657,6 +1675,11 @@ class Context final : public egl::LabeledObject, angle::NonCopyable
     State::DirtyObjects mComputeDirtyObjects;
 
     Workarounds mWorkarounds;
+
+    // Binding to container objects that use dependent state updates.
+    angle::ObserverBinding mVertexArrayObserverBinding;
+    angle::ObserverBinding mDrawFramebufferObserverBinding;
+    angle::ObserverBinding mReadFramebufferObserverBinding;
 
     // Not really a property of context state. The size and contexts change per-api-call.
     mutable angle::ScratchBuffer mScratchBuffer;

@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT: 
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2009, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /********************************************************************************
@@ -33,7 +31,6 @@
 #include "encoll.h"
 #include "ccolltst.h"
 #include "callcoll.h"
-#include "cmemory.h"
 #include "unicode/ustring.h"
 
 static UCollator *myCollation = NULL;
@@ -291,7 +288,7 @@ static void TestTertiary( )
         }
    }
     /*test more interesting cases */
-    testMoreSize = UPRV_LENGTHOF(testMore);
+    testMoreSize = sizeof(testMore) / sizeof(testMore[0]);
     for (i = 0; i < testMoreSize; i++)
     {
         for (j = 0; j < testMoreSize; j++)
@@ -343,7 +340,7 @@ static void TestSecondary()
     
 
     /*test acute and grave ordering (compare to french collation) */
-    testAcuteSize = UPRV_LENGTHOF(testAcute);
+    testAcuteSize = sizeof(testAcute) / sizeof(testAcute[0]);
     for (i = 0; i < testAcuteSize; i++)
     {
         for (j = 0; j < testAcuteSize; j++)

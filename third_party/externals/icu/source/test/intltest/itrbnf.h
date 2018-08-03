@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
  *******************************************************************************
  * Copyright (C) 1996-2015, International Business Machines Corporation and    *
@@ -145,10 +143,6 @@ class IntlTestRBNF : public IntlTest {
     void TestInfinityNaN();
     void TestVariableDecimalPoint();
     void TestRounding();
-    void TestLargeNumbers();
-    void TestCompactDecimalFormatStyle();
-    void TestParseFailure();
-    void TestMinMaxIntegerDigitsIgnored();
 
 protected:
   virtual void doTest(RuleBasedNumberFormat* formatter, const char* const testData[][2], UBool testParsing);

@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/fo.xml
+// *
+// ***************************************************************************
 fo{
     Countries{
         001{"heimur"}
@@ -31,7 +37,6 @@ fo{
         151{"Eysturevropa"}
         154{"Norðurevropa"}
         155{"Vesturevropa"}
-        202{"Afrika sunnanfyri Sahara"}
         419{"Latínamerika"}
         AC{"Ascension"}
         AD{"Andorra"}
@@ -41,6 +46,7 @@ fo{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Niðurlendsku Antilloyggjarnar"}
         AO{"Angola"}
         AQ{"Antarktis"}
         AR{"Argentina"}
@@ -59,7 +65,7 @@ fo{
         BH{"Barein"}
         BI{"Burundi"}
         BJ{"Benin"}
-        BL{"St. Barthélemy"}
+        BL{"St-Barthélemy"}
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
@@ -98,7 +104,7 @@ fo{
         DM{"Dominika"}
         DO{"Dominikalýðveldið"}
         DZ{"Algeria"}
-        EA{"Ceuta & Melilla"}
+        EA{"Ceuta og Melilla"}
         EC{"Ekvador"}
         EE{"Estland"}
         EG{"Egyptaland"}
@@ -107,7 +113,6 @@ fo{
         ES{"Spania"}
         ET{"Etiopia"}
         EU{"Evropasamveldið"}
-        EZ{"Evrasona"}
         FI{"Finnland"}
         FJ{"Fiji"}
         FK{"Falklandsoyggjar"}
@@ -133,7 +138,7 @@ fo{
         GU{"Guam"}
         GW{"Guinea-Bissau"}
         GY{"Gujana"}
-        HK{"Hong Kong SAR Kina"}
+        HK{"Hong Kong"}
         HM{"Heard og McDonaldoyggjar"}
         HN{"Honduras"}
         HR{"Kroatia"}
@@ -187,7 +192,7 @@ fo{
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
-        MO{"Makao SAR Kina"}
+        MO{"Makao"}
         MP{"Norðaru Mariuoyggjar"}
         MQ{"Martinique"}
         MR{"Móritania"}
@@ -219,10 +224,10 @@ fo{
         PH{"Filipsoyggjar"}
         PK{"Pakistan"}
         PL{"Pólland"}
-        PM{"Saint Pierre & Miquelon"}
+        PM{"Saint Pierre og Miquelon"}
         PN{"Pitcairnoyggjar"}
         PR{"Puerto Riko"}
-        PS{"Palestinskt landøki"}
+        PS{"Palestina"}
         PT{"Portugal"}
         PW{"Palau"}
         PY{"Paraguai"}
@@ -274,7 +279,6 @@ fo{
         UA{"Ukraina"}
         UG{"Uganda"}
         UM{"Sambandsríki Amerikas fjarskotnu oyggjar"}
-        UN{"Sameindu Tjóðir"}
         US{"Sambandsríki Amerika"}
         UY{"Uruguai"}
         UZ{"Usbekistan"}
@@ -297,14 +301,10 @@ fo{
     }
     Countries%short{
         GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"Makao"}
-        PS{"Palestina"}
         US{"USA"}
     }
     Countries%variant{
-        FK{"Falklandsoyggjar (Islas Malvinas)"}
         MK{"Makedónia (FJM)"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.17"}
 }

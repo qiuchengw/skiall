@@ -15,21 +15,10 @@
 #ifndef LIBSPIRV_VAL_CONSTRUCT_H_
 #define LIBSPIRV_VAL_CONSTRUCT_H_
 
-#include "val/basic_block.h"
-
 #include <cstdint>
-#include <set>
 #include <vector>
 
-namespace spvtools {
-namespace val {
-
-/// Functor for ordering BasicBlocks. BasicBlock pointers must not be null.
-struct less_than_id {
-  bool operator()(const BasicBlock* lhs, const BasicBlock* rhs) const {
-    return lhs->id() < rhs->id();
-  }
-};
+namespace libspirv {
 
 enum class ConstructType : int {
   kNone = 0,
@@ -50,7 +39,7 @@ enum class ConstructType : int {
   kCase
 };
 
-class Function;
+class BasicBlock;
 
 /// @brief This class tracks the CFG constructs as defined in the SPIR-V spec
 class Construct {
@@ -102,13 +91,6 @@ class Construct {
     return type_ == ConstructType::kLoop || type_ == ConstructType::kSelection;
   }
 
-  using ConstructBlockSet = std::set<BasicBlock*, less_than_id>;
-
-  // Returns the basic blocks in this construct. This function should not
-  // be called before the exit block is set and dominators have been
-  // calculated.
-  ConstructBlockSet blocks(Function* function) const;
-
  private:
   /// The type of the construct
   ConstructType type_;
@@ -145,7 +127,6 @@ class Construct {
   BasicBlock* exit_block_;
 };
 
-}  // namespace val
-}  // namespace spvtools
+}  /// namespace libspirv
 
 #endif  /// LIBSPIRV_VAL_CONSTRUCT_H_

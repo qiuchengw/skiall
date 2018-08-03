@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
-*   Copyright (C) 2003-2016, International Business Machines
+*   Copyright (C) 2003-2013, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
 *   file name:  ucnv_ext.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -23,7 +21,6 @@
 #if !UCONFIG_NO_CONVERSION && !UCONFIG_NO_LEGACY_CONVERSION
 
 #include "unicode/uset.h"
-#include "unicode/ustring.h"
 #include "ucnv_bld.h"
 #include "ucnv_cnv.h"
 #include "ucnv_ext.h"
@@ -693,13 +690,10 @@ ucnv_extWriteFromU(UConverter *cnv, const int32_t *cx,
         switch(length) {
         case 3:
             *p++=(uint8_t)(value>>16);
-            U_FALLTHROUGH;
-        case 2:
+        case 2: /*fall through*/
             *p++=(uint8_t)(value>>8);
-            U_FALLTHROUGH;
-        case 1:
+        case 1: /*fall through*/
             *p++=(uint8_t)value;
-            U_FALLTHROUGH;
         default:
             break; /* will never occur */
         }
@@ -886,7 +880,7 @@ ucnv_extContinueMatchFromU(UConverter *cnv,
         } else {
             /* the match did not use all of preFromU[] - keep the rest for replay */
             int32_t length=cnv->preFromULength-match;
-            u_memmove(cnv->preFromU, cnv->preFromU+match, length);
+            uprv_memmove(cnv->preFromU, cnv->preFromU+match, length*U_SIZEOF_UCHAR);
             cnv->preFromULength=(int8_t)-length;
         }
 

@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *                                                                            *
@@ -8,7 +6,7 @@
 *                                                                            *
 ******************************************************************************
 *   file name:  ucln_io.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -35,7 +33,7 @@ static const char copyright[] = U_COPYRIGHT_STRING;
 
 static cleanupFunc *gCleanupFunctions[UCLN_IO_COUNT];
 
-static UBool U_CALLCONV io_cleanup(void)
+static UBool io_cleanup(void)
 {
     int32_t libType = UCLN_IO_START;
 

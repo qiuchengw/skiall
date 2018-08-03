@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/gl.xml
+// *
+// ***************************************************************************
 gl{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.94"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -16,7 +22,7 @@ gl{
             ec{"Alxer"}
         }
         "Africa:Asmera"{
-            ec{"Asmara"}
+            ec{"Asmak"}
         }
         "Africa:Bamako"{
             ec{"Bamaco"}
@@ -40,7 +46,7 @@ gl{
             ec{"Bujumbura"}
         }
         "Africa:Cairo"{
-            ec{"O Cairo"}
+            ec{"Cairo"}
         }
         "Africa:Casablanca"{
             ec{"Casablanca"}
@@ -52,13 +58,13 @@ gl{
             ec{"Conakry"}
         }
         "Africa:Dakar"{
-            ec{"Dakar"}
+            ec{"Dacar"}
         }
         "Africa:Dar_es_Salaam"{
             ec{"Dar es Salaam"}
         }
         "Africa:Djibouti"{
-            ec{"Djibuti"}
+            ec{"Xibutí"}
         }
         "Africa:Douala"{
             ec{"Douala"}
@@ -133,7 +139,7 @@ gl{
             ec{"Nairobi"}
         }
         "Africa:Ndjamena"{
-            ec{"N’Djamena"}
+            ec{"Xamena"}
         }
         "Africa:Niamey"{
             ec{"Niamey"}
@@ -142,19 +148,19 @@ gl{
             ec{"Nouakchott"}
         }
         "Africa:Ouagadougou"{
-            ec{"Uagadugu"}
+            ec{"Uagadugú"}
         }
         "Africa:Porto-Novo"{
-            ec{"Porto-Novo"}
+            ec{"Porto Novo"}
         }
         "Africa:Sao_Tome"{
-            ec{"San Tomé"}
+            ec{"São Tomé"}
         }
         "Africa:Tripoli"{
             ec{"Trípoli"}
         }
         "Africa:Tunis"{
-            ec{"Tunes"}
+            ec{"Túnez"}
         }
         "Africa:Windhoek"{
             ec{"Windhoek"}
@@ -175,7 +181,7 @@ gl{
             ec{"Araguaína"}
         }
         "America:Argentina:La_Rioja"{
-            ec{"A Rioxa"}
+            ec{"La Rioja"}
         }
         "America:Argentina:Rio_Gallegos"{
             ec{"Río Gallegos"}
@@ -202,10 +208,10 @@ gl{
             ec{"Asunción"}
         }
         "America:Bahia"{
-            ec{"Baía"}
+            ec{"Bahia"}
         }
         "America:Bahia_Banderas"{
-            ec{"Bahía de Banderas"}
+            ec{"Baía de Bandeiras"}
         }
         "America:Barbados"{
             ec{"Barbados"}
@@ -214,7 +220,7 @@ gl{
             ec{"Belém"}
         }
         "America:Belize"{
-            ec{"Belize"}
+            ec{"Belice"}
         }
         "America:Blanc-Sablon"{
             ec{"Blanc-Sablon"}
@@ -229,10 +235,10 @@ gl{
             ec{"Boise"}
         }
         "America:Buenos_Aires"{
-            ec{"Buenos Aires"}
+            ec{"Bos Aires"}
         }
         "America:Cambridge_Bay"{
-            ec{"Cambridge Bay"}
+            ec{"Abadía de Cambridge"}
         }
         "America:Campo_Grande"{
             ec{"Campo Grande"}
@@ -298,13 +304,10 @@ gl{
             ec{"Edmonton"}
         }
         "America:Eirunepe"{
-            ec{"Eirunepé"}
+            ec{"Eirunepe"}
         }
         "America:El_Salvador"{
             ec{"O Salvador"}
-        }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
         }
         "America:Fortaleza"{
             ec{"Fortaleza"}
@@ -319,7 +322,7 @@ gl{
             ec{"Goose Bay"}
         }
         "America:Grand_Turk"{
-            ec{"Grand Turk"}
+            ec{"Gran Turca"}
         }
         "America:Grenada"{
             ec{"Granada"}
@@ -340,7 +343,7 @@ gl{
             ec{"Halifax"}
         }
         "America:Havana"{
-            ec{"A Habana"}
+            ec{"Habana"}
         }
         "America:Hermosillo"{
             ec{"Hermosillo"}
@@ -352,7 +355,7 @@ gl{
             ec{"Marengo, Indiana"}
         }
         "America:Indiana:Petersburg"{
-            ec{"Petersburg, Indiana"}
+            ec{"Petersburgo, Indiana"}
         }
         "America:Indiana:Tell_City"{
             ec{"Tell City, Indiana"}
@@ -391,7 +394,7 @@ gl{
             ec{"Kralendijk"}
         }
         "America:La_Paz"{
-            ec{"A Paz"}
+            ec{"La Paz"}
         }
         "America:Lima"{
             ec{"Lima"}
@@ -448,7 +451,7 @@ gl{
             ec{"Moncton"}
         }
         "America:Monterrey"{
-            ec{"Monterrey"}
+            ec{"Monterrei"}
         }
         "America:Montevideo"{
             ec{"Montevideo"}
@@ -472,13 +475,13 @@ gl{
             ec{"Noronha"}
         }
         "America:North_Dakota:Beulah"{
-            ec{"Beulah, Dacota do Norte"}
+            ec{"Beulah, Dakota do Norte"}
         }
         "America:North_Dakota:Center"{
-            ec{"Center, Dacota do Norte"}
+            ec{"Center, Dakota do Norte"}
         }
         "America:North_Dakota:New_Salem"{
-            ec{"New Salem, Dacota do Norte"}
+            ec{"New Salem, Dakota do Norte"}
         }
         "America:Ojinaga"{
             ec{"Ojinaga"}
@@ -507,9 +510,6 @@ gl{
         "America:Puerto_Rico"{
             ec{"Porto Rico"}
         }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
-        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -532,7 +532,7 @@ gl{
             ec{"Santa Isabel"}
         }
         "America:Santarem"{
-            ec{"Santarém"}
+            ec{"Santarem"}
         }
         "America:Santiago"{
             ec{"Santiago"}
@@ -550,19 +550,19 @@ gl{
             ec{"Sitka"}
         }
         "America:St_Barthelemy"{
-            ec{"Saint-Barthélemy"}
+            ec{"San Bartolomé"}
         }
         "America:St_Johns"{
-            ec{"Saint John’s"}
+            ec{"St. John’s"}
         }
         "America:St_Kitts"{
-            ec{"Saint Kitts"}
+            ec{"San Cristovo"}
         }
         "America:St_Lucia"{
-            ec{"Santa Lucía"}
+            ec{"St. Lucia"}
         }
         "America:St_Thomas"{
-            ec{"Saint Thomas"}
+            ec{"San Tomé"}
         }
         "America:St_Vincent"{
             ec{"San Vicente"}
@@ -586,7 +586,7 @@ gl{
             ec{"Toronto"}
         }
         "America:Tortola"{
-            ec{"Tórtola"}
+            ec{"Tortola"}
         }
         "America:Vancouver"{
             ec{"Vancouver"}
@@ -649,19 +649,16 @@ gl{
             ec{"Amán"}
         }
         "Asia:Anadyr"{
-            ec{"Anadyr"}
+            ec{"Anadir"}
         }
         "Asia:Aqtau"{
-            ec{"Aktau"}
+            ec{"Aqtau"}
         }
         "Asia:Aqtobe"{
-            ec{"Aktobe"}
+            ec{"Aqtobe"}
         }
         "Asia:Ashgabat"{
-            ec{"Achkhabad"}
-        }
-        "Asia:Atyrau"{
-            ec{"Atyrau"}
+            ec{"Ashgabat"}
         }
         "Asia:Baghdad"{
             ec{"Bagdad"}
@@ -675,9 +672,6 @@ gl{
         "Asia:Bangkok"{
             ec{"Bangkok"}
         }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
-        }
         "Asia:Beirut"{
             ec{"Beirut"}
         }
@@ -689,9 +683,6 @@ gl{
         }
         "Asia:Calcutta"{
             ec{"Calcuta"}
-        }
-        "Asia:Chita"{
-            ec{"Chitá"}
         }
         "Asia:Choibalsan"{
             ec{"Choibalsan"}
@@ -714,14 +705,11 @@ gl{
         "Asia:Dushanbe"{
             ec{"Dushanbe"}
         }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
-        }
         "Asia:Gaza"{
             ec{"Gaza"}
         }
         "Asia:Hebron"{
-            ec{"Hebrón"}
+            ec{"Hebron"}
         }
         "Asia:Hong_Kong"{
             ec{"Hong Kong"}
@@ -736,10 +724,10 @@ gl{
             ec{"Iacarta"}
         }
         "Asia:Jayapura"{
-            ec{"Jayapura"}
+            ec{"Jaiapura"}
         }
         "Asia:Jerusalem"{
-            ec{"Xerusalén"}
+            ec{"Jerusalem"}
         }
         "Asia:Kabul"{
             ec{"Cabul"}
@@ -751,10 +739,10 @@ gl{
             ec{"Karachi"}
         }
         "Asia:Katmandu"{
-            ec{"Katmandú"}
+            ec{"Kathmandu"}
         }
         "Asia:Khandyga"{
-            ec{"Chandyga"}
+            ec{"Khandyga"}
         }
         "Asia:Krasnoyarsk"{
             ec{"Krasnoyarsk"}
@@ -781,7 +769,7 @@ gl{
             ec{"Manila"}
         }
         "Asia:Muscat"{
-            ec{"Mascate"}
+            ec{"Mascat"}
         }
         "Asia:Nicosia"{
             ec{"Nicosia"}
@@ -811,10 +799,10 @@ gl{
             ec{"Qatar"}
         }
         "Asia:Qyzylorda"{
-            ec{"Kyzylorda"}
+            ec{"Qyzylorda"}
         }
         "Asia:Rangoon"{
-            ec{"Yangon"}
+            ec{"Rangoon"}
         }
         "Asia:Riyadh"{
             ec{"Riad"}
@@ -837,9 +825,6 @@ gl{
         "Asia:Singapore"{
             ec{"Singapur"}
         }
-        "Asia:Srednekolymsk"{
-            ec{"Srednekolimsk"}
-        }
         "Asia:Taipei"{
             ec{"Taipei"}
         }
@@ -850,19 +835,16 @@ gl{
             ec{"Tbilisi"}
         }
         "Asia:Tehran"{
-            ec{"Teherán"}
+            ec{"Tehran"}
         }
         "Asia:Thimphu"{
-            ec{"Thimbu"}
+            ec{"Timbu"}
         }
         "Asia:Tokyo"{
-            ec{"Tokyo"}
-        }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
+            ec{"Toquio"}
         }
         "Asia:Ulaanbaatar"{
-            ec{"Ulaanbaatar"}
+            ec{"Ulán Bátor"}
         }
         "Asia:Urumqi"{
             ec{"Urumqi"}
@@ -877,10 +859,10 @@ gl{
             ec{"Vladivostok"}
         }
         "Asia:Yakutsk"{
-            ec{"Iakutsk"}
+            ec{"Yakutsk"}
         }
         "Asia:Yekaterinburg"{
-            ec{"Ekaterinburgo"}
+            ec{"Ecaterinburgo"}
         }
         "Asia:Yerevan"{
             ec{"Iereván"}
@@ -898,7 +880,7 @@ gl{
             ec{"Cabo Verde"}
         }
         "Atlantic:Faeroe"{
-            ec{"Feroe"}
+            ec{"Faroe"}
         }
         "Atlantic:Madeira"{
             ec{"Madeira"}
@@ -916,7 +898,7 @@ gl{
             ec{"Stanley"}
         }
         "Australia:Adelaide"{
-            ec{"Adelaida"}
+            ec{"Adelaide"}
         }
         "Australia:Brisbane"{
             ec{"Brisbane"}
@@ -951,9 +933,6 @@ gl{
         "Australia:Sydney"{
             ec{"Sidney"}
         }
-        "Etc:UTC"{
-            ls{"Horario universal coordinado"}
-        }
         "Etc:Unknown"{
             ec{"Cidade descoñecida"}
         }
@@ -963,11 +942,8 @@ gl{
         "Europe:Andorra"{
             ec{"Andorra"}
         }
-        "Europe:Astrakhan"{
-            ec{"Astrakán"}
-        }
         "Europe:Athens"{
-            ec{"Atenas"}
+            ec{"Athens"}
         }
         "Europe:Belgrade"{
             ec{"Belgrado"}
@@ -994,7 +970,7 @@ gl{
             ec{"Chisinau"}
         }
         "Europe:Copenhagen"{
-            ec{"Copenhague"}
+            ec{"Copenhaguen"}
         }
         "Europe:Dublin"{
             ec{"Dublín"}
@@ -1004,16 +980,16 @@ gl{
             ec{"Xibraltar"}
         }
         "Europe:Guernsey"{
-            ec{"Guernsey"}
+            ec{"Guernesei"}
         }
         "Europe:Helsinki"{
-            ec{"Helsinqui"}
+            ec{"Helsinki"}
         }
         "Europe:Isle_of_Man"{
             ec{"Illa de Man"}
         }
         "Europe:Istanbul"{
-            ec{"Istanbul"}
+            ec{"Estanbul"}
         }
         "Europe:Jersey"{
             ec{"Jersey"}
@@ -1023,9 +999,6 @@ gl{
         }
         "Europe:Kiev"{
             ec{"Kiev"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lisboa"}
@@ -1074,7 +1047,7 @@ gl{
             ec{"Riga"}
         }
         "Europe:Rome"{
-            ec{"Roma"}
+            ec{"Rome"}
         }
         "Europe:Samara"{
             ec{"Samara"}
@@ -1083,34 +1056,28 @@ gl{
             ec{"San Marino"}
         }
         "Europe:Sarajevo"{
-            ec{"Saraxevo"}
-        }
-        "Europe:Saratov"{
-            ec{"Saratov"}
+            ec{"Sarajevo"}
         }
         "Europe:Simferopol"{
-            ec{"Simferópol"}
+            ec{"Simferopol"}
         }
         "Europe:Skopje"{
             ec{"Skopje"}
         }
         "Europe:Sofia"{
-            ec{"Sofía"}
+            ec{"Sofia"}
         }
         "Europe:Stockholm"{
-            ec{"Estocolmo"}
+            ec{"Stockholm"}
         }
         "Europe:Tallinn"{
-            ec{"Tallinn"}
+            ec{"Talín"}
         }
         "Europe:Tirane"{
             ec{"Tirana"}
         }
-        "Europe:Ulyanovsk"{
-            ec{"Ulianovsk"}
-        }
         "Europe:Uzhgorod"{
-            ec{"Úzhgorod"}
+            ec{"Uzhgorod"}
         }
         "Europe:Vaduz"{
             ec{"Vaduz"}
@@ -1137,7 +1104,7 @@ gl{
             ec{"Zaporizhia"}
         }
         "Europe:Zurich"{
-            ec{"Zürich"}
+            ec{"Zúric"}
         }
         "Indian:Antananarivo"{
             ec{"Antananarivo"}
@@ -1158,7 +1125,7 @@ gl{
             ec{"Kerguelen"}
         }
         "Indian:Mahe"{
-            ec{"Mahé"}
+            ec{"Mahe"}
         }
         "Indian:Maldives"{
             ec{"Maldivas"}
@@ -1177,9 +1144,6 @@ gl{
         }
         "Pacific:Auckland"{
             ec{"Auckland"}
-        }
-        "Pacific:Bougainville"{
-            ec{"Bougainville"}
         }
         "Pacific:Chatham"{
             ec{"Chatham"}
@@ -1269,7 +1233,7 @@ gl{
             ec{"Rarotonga"}
         }
         "Pacific:Saipan"{
-            ec{"Saipan"}
+            ec{"Saipán"}
         }
         "Pacific:Tahiti"{
             ec{"Tahití"}
@@ -1299,7 +1263,7 @@ gl{
             ls{"Horario de África Oriental"}
         }
         "meta:Africa_Southern"{
-            ls{"Horario estándar de África do Sur"}
+            ls{"Horario estándar de Sudáfrica"}
         }
         "meta:Africa_Western"{
             ld{"Horario de verán de África Occidental"}
@@ -1317,24 +1281,24 @@ gl{
             ls{"Horario estándar do Amazonas"}
         }
         "meta:America_Central"{
-            ld{"Horario de verán central, Norteamérica"}
-            lg{"Horario central, Norteamérica"}
-            ls{"Horario estándar central, Norteamérica"}
+            ld{"Horario de verán da zona central"}
+            lg{"Horario central"}
+            ls{"Horario estándar central"}
         }
         "meta:America_Eastern"{
-            ld{"Horario de verán do leste, Norteamérica"}
-            lg{"Horario do leste, Norteamérica"}
-            ls{"Horario estándar do leste, Norteamérica"}
+            ld{"Horario de verán de América Oriental"}
+            lg{"Horario de América Oriental"}
+            ls{"Horario estándar América Oriental"}
         }
         "meta:America_Mountain"{
-            ld{"Horario de verán da montaña, Norteamérica"}
-            lg{"Horario da montaña, Norteamérica"}
-            ls{"Horario estándar da montaña, Norteamérica"}
+            ld{"Horario de verán das montañas americanas"}
+            lg{"Horario das montañas americanas"}
+            ls{"Horario estándar das montañas americanas"}
         }
         "meta:America_Pacific"{
-            ld{"Horario de verán do Pacífico, Norteamérica"}
-            lg{"Horario do Pacífico, Norteamérica"}
-            ls{"Horario estándar do Pacífico, Norteamérica"}
+            ld{"Horario de verán do Pacífico"}
+            lg{"Horario do Pacífico"}
+            ls{"Horario estándar do Pacífico"}
         }
         "meta:Anadyr"{
             ld{"Horario de verán de Anadir"}
@@ -1352,14 +1316,14 @@ gl{
             ls{"Horario estándar árabe"}
         }
         "meta:Argentina"{
-            ld{"Horario de verán da Arxentina"}
-            lg{"Horario da Arxentina"}
-            ls{"Horario estándar da Arxentina"}
+            ld{"Horario de verán de Arxentina"}
+            lg{"Horario de Arxentina"}
+            ls{"Horario estándar de Arxentina"}
         }
         "meta:Argentina_Western"{
-            ld{"Horario de verán da Arxentina Occidental"}
-            lg{"Horario da Arxentina Occidental"}
-            ls{"Horario estándar da Arxentina Occidental"}
+            ld{"Horario de verán de Arxentina Occidental"}
+            lg{"Horario de Arxentina Occidental"}
+            ls{"Horario estándar de Arxentina Occidental"}
         }
         "meta:Armenia"{
             ld{"Horario de verán de Armenia"}
@@ -1426,7 +1390,7 @@ gl{
             ls{"Horario estándar de Cabo Verde"}
         }
         "meta:Chamorro"{
-            ls{"Horario estándar chamorro"}
+            ls{"Horario estándar de Chamorro"}
         }
         "meta:Chatham"{
             ld{"Horario de verán de Chatham"}
@@ -1439,9 +1403,9 @@ gl{
             ls{"Horario estándar de Chile"}
         }
         "meta:China"{
-            ld{"Horario de verán da China"}
-            lg{"Horario da China"}
-            ls{"Horario estándar da China"}
+            ld{"Horario de verán de China"}
+            lg{"Horario de China"}
+            ls{"Horario estándar de China"}
         }
         "meta:Choibalsan"{
             ld{"Horario de verán de Choibalsan"}
@@ -1503,7 +1467,7 @@ gl{
             ss{"EET"}
         }
         "meta:Europe_Further_Eastern"{
-            ls{"Horario do extremo leste europeo"}
+            ls{"Horario de Kaliningrado"}
         }
         "meta:Europe_Western"{
             ld{"Horario de verán de Europa Occidental"}
@@ -1548,14 +1512,14 @@ gl{
             ls{"Horario das Illas Gilbert"}
         }
         "meta:Greenland_Eastern"{
-            ld{"Horario de verán de Groenlandia Oriental"}
-            lg{"Horario de Groenlandia Oriental"}
-            ls{"Horario estándar de Groenlandia Oriental"}
+            ld{"Horario de verán de Grenlandia Oriental"}
+            lg{"Horario de Grenlandia Oriental"}
+            ls{"Horario estándar de Grenlandia Oriental"}
         }
         "meta:Greenland_Western"{
-            ld{"Horario de verán de Groenlandia Occidental"}
-            lg{"Horario de Groenlandia Occidental"}
-            ls{"Horario estándar de Groenlandia Occidental"}
+            ld{"Horario de verán de Grenlandia Occidental"}
+            lg{"Horario de Grenlandia Occidental"}
+            ls{"Horario estándar de Grenlandia Occidental"}
         }
         "meta:Gulf"{
             ls{"Horario estándar do Golfo"}
@@ -1612,9 +1576,9 @@ gl{
             ls{"Horario estándar de Israel"}
         }
         "meta:Japan"{
-            ld{"Horario de verán do Xapón"}
-            lg{"Horario do Xapón"}
-            ls{"Horario estándar do Xapón"}
+            ld{"Horario de verán de Xapón"}
+            lg{"Horario de Xapón"}
+            ls{"Horario estándar de Xapón"}
         }
         "meta:Kamchatka"{
             ld{"Horario de verán de Petropávlovsk-Kamchatski"}
@@ -1622,10 +1586,10 @@ gl{
             ls{"Horario estándar de Petropávlovsk-Kamchatski"}
         }
         "meta:Kazakhstan_Eastern"{
-            ls{"Horario de Casaquistán Oriental"}
+            ls{"Horario de Casaquistán este"}
         }
         "meta:Kazakhstan_Western"{
-            ls{"Horario de Casaquistán Occidental"}
+            ls{"Horario de Casaquistán oeste"}
         }
         "meta:Korea"{
             ld{"Horario de verán de Corea"}
@@ -1641,7 +1605,7 @@ gl{
             ls{"Horario estándar de Krasnoyarsk"}
         }
         "meta:Kyrgystan"{
-            ls{"Horario de Kirguizistán"}
+            ls{"Horario de Quirguicistán"}
         }
         "meta:Line_Islands"{
             ls{"Horario das Illas da Liña"}
@@ -1655,9 +1619,9 @@ gl{
             ls{"Horario da Illa Macquarie"}
         }
         "meta:Magadan"{
-            ld{"Horario de verán de Magadan"}
-            lg{"Horario de Magadan"}
-            ls{"Horario estándar de Magadan"}
+            ld{"Horario de verán de Magadán"}
+            lg{"Horario de Magadán"}
+            ls{"Horario estándar de Magadán"}
         }
         "meta:Malaysia"{
             ls{"Horario de Malaisia"}
@@ -1680,9 +1644,9 @@ gl{
             ls{"Horario de Mawson"}
         }
         "meta:Mexico_Northwest"{
-            ld{"Horario de verán do noroeste de México"}
-            lg{"Horario do noroeste de México"}
-            ls{"Horario estándar do noroeste de México"}
+            ld{"Horario de verán de México Noroeste"}
+            lg{"Horario de México Noroeste"}
+            ls{"Horario estándar de México Noroeste"}
         }
         "meta:Mexico_Pacific"{
             ld{"Horario de verán do Pacífico mexicano"}
@@ -1690,9 +1654,9 @@ gl{
             ls{"Horario estándar do Pacífico mexicano"}
         }
         "meta:Mongolia"{
-            ld{"Horario de verán de Ulaanbaatar"}
-            lg{"Horario de Ulaanbaatar"}
-            ls{"Horario estándar de Ulaanbaatar"}
+            ld{"Horario de verán de Ulán Bátor"}
+            lg{"Horario de Ulán Bátor"}
+            ls{"Horario estándar de Ulán Bátor"}
         }
         "meta:Moscow"{
             ld{"Horario de verán de Moscova"}
@@ -1714,9 +1678,9 @@ gl{
             ls{"Horario estándar de Nova Caledonia"}
         }
         "meta:New_Zealand"{
-            ld{"Horario de verán de Nova Zelandia"}
-            lg{"Horario de Nova Zelandia"}
-            ls{"Horario estándar de Nova Zelandia"}
+            ld{"Horario de verán de Nova Celandia"}
+            lg{"Horario de Nova Celandia"}
+            ls{"Horario estándar de Nova Celandia"}
         }
         "meta:Newfoundland"{
             ld{"Horario de verán de Terranova"}
@@ -1753,7 +1717,7 @@ gl{
             ls{"Horario de Palau"}
         }
         "meta:Papua_New_Guinea"{
-            ls{"Horario de Papúa-Nova Guinea"}
+            ls{"Horario de Papúa Nova Guinea"}
         }
         "meta:Paraguay"{
             ld{"Horario de verán de Paraguai"}
@@ -1761,9 +1725,9 @@ gl{
             ls{"Horario estándar de Paraguai"}
         }
         "meta:Peru"{
-            ld{"Horario de verán do Perú"}
-            lg{"Horario do Perú"}
-            ls{"Horario estándar do Perú"}
+            ld{"Horario de verán de Perú"}
+            lg{"Horario de Perú"}
+            ls{"Horario estándar de Perú"}
         }
         "meta:Philippines"{
             ld{"Horario de verán de Filipinas"}
@@ -1774,18 +1738,15 @@ gl{
             ls{"Horario das Illas Fénix"}
         }
         "meta:Pierre_Miquelon"{
-            ld{"Horario de verán de Saint-Pierre-et-Miquelon"}
-            lg{"Horario de Saint-Pierre-et-Miquelon"}
-            ls{"Horario estándar de Saint-Pierre-et-Miquelon"}
+            ld{"Horario de verán de San Pedro e Miguelón"}
+            lg{"Horario de San Pedro e Miguelón"}
+            ls{"Horario estándar de San Pedro e Miguelón"}
         }
         "meta:Pitcairn"{
             ls{"Horario de Pitcairn"}
         }
         "meta:Ponape"{
             ls{"Horario de Pohnpei"}
-        }
-        "meta:Pyongyang"{
-            ls{"Horario de Pyongyang"}
         }
         "meta:Reunion"{
             ls{"Horario de Reunión"}
@@ -1809,7 +1770,7 @@ gl{
             ls{"Horario estándar de Samoa"}
         }
         "meta:Seychelles"{
-            ls{"Horario das Seychelles"}
+            ls{"Horario das Seixeles"}
         }
         "meta:Singapore"{
             ls{"Horario estándar de Singapur"}
@@ -1821,7 +1782,7 @@ gl{
             ls{"Horario de Xeorxia do Sur"}
         }
         "meta:Suriname"{
-            ls{"Horario de Suriname"}
+            ls{"Horario de Surinam"}
         }
         "meta:Syowa"{
             ls{"Horario de Syowa"}
@@ -1838,7 +1799,7 @@ gl{
             ls{"Horario de Taxiquistán"}
         }
         "meta:Tokelau"{
-            ls{"Horario de Tokelau"}
+            ls{"Horario de Toquelau"}
         }
         "meta:Tonga"{
             ld{"Horario de verán de Tonga"}
@@ -1857,14 +1818,14 @@ gl{
             ls{"Horario de Tuvalu"}
         }
         "meta:Uruguay"{
-            ld{"Horario de verán do Uruguai"}
-            lg{"Horario do Uruguai"}
-            ls{"Horario estándar do Uruguai"}
+            ld{"Horario de verán de Uruguai"}
+            lg{"Horario de Uruguai"}
+            ls{"Horario estándar de Uruguai"}
         }
         "meta:Uzbekistan"{
-            ld{"Horario de verán de Uzbequistán"}
-            lg{"Horario de Uzbequistán"}
-            ls{"Horario estándar de Uzbequistán"}
+            ld{"Horario de verán de Usbequistán"}
+            lg{"Horario de Usbequistán"}
+            ls{"Horario estándar de Usbequistán"}
         }
         "meta:Vanuatu"{
             ld{"Horario de verán de Vanuatu"}
@@ -1907,8 +1868,8 @@ gl{
         gmtFormat{"GMT{0}"}
         gmtZeroFormat{"GMT"}
         hourFormat{"+HH:mm;-HH:mm"}
-        regionFormat{"Horario de: {0}"}
-        regionFormatDaylight{"Horario de verán de: {0}"}
-        regionFormatStandard{"Horario estándar de: {0}"}
+        regionFormat{"Horario de {0}"}
+        regionFormatDaylight{"Horario de verán de {0}"}
+        regionFormatStandard{"Horario estándar de {0}"}
     }
 }

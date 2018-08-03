@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
  * Copyright (c) 2002-2014, International Business Machines Corporation and
@@ -31,7 +29,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#if defined(__GLIBCXX__)
+#if !defined(_MSC_VER)
 namespace std { class type_info; } // WORKAROUND: http://llvm.org/bugs/show_bug.cgi?id=13364
 #endif
 
@@ -454,9 +452,8 @@ void DecimalFormatTest::execFormatTest(int32_t lineNum,
     }
     
     if (result != expected) {
-        errln("[%s] file dcfmtest.txt, line %d: expected \"%s\", got \"%s\", %s",
-            typeStr, lineNum, UnicodeStringPiece(expected).data(), UnicodeStringPiece(result).data(),
-            u_errorName(status));
+        errln("[%s] file dcfmtest.txt, line %d: expected \"%s\", got \"%s\"",
+            typeStr, lineNum, UnicodeStringPiece(expected).data(), UnicodeStringPiece(result).data());
     }
 }
 

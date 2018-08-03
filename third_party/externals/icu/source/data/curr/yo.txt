@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/yo.xml
+// *
+// ***************************************************************************
 yo{
     Currencies{
         AED{
@@ -124,10 +130,6 @@ yo{
         }
         MRO{
             "MRO",
-            "Ouguiya ti Orílẹ́ède Maritania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Ouguiya ti Orílẹ́ède Maritania",
         }
         MUR{
@@ -184,10 +186,6 @@ yo{
         }
         STD{
             "STD",
-            "Dobira ti Orílẹ́ède Sao tome Ati Pirisipe (1977–2017)",
-        }
-        STN{
-            "STN",
             "Dobira ti Orílẹ́ède Sao tome Ati Pirisipe",
         }
         SZL{
@@ -235,8 +233,5 @@ yo{
             "Dọla ti Orílẹ́ède Siibabuwe",
         }
     }
-    CurrencyUnitPatterns{
-        other{"{0} {1}"}
-    }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.80"}
 }

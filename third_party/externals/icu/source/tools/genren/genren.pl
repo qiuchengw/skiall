@@ -1,6 +1,4 @@
 #!/usr/bin/perl 
-# Copyright (C) 2016 and later: Unicode, Inc. and others.
-# License & terms of use: http://www.unicode.org/copyright.html
 #*
 #*******************************************************************************
 #*   Copyright (C) 2001-2012, International Business Machines
@@ -8,7 +6,7 @@
 #*******************************************************************************
 #*
 #*   file name:  genren.pl
-#*   encoding:   UTF-8
+#*   encoding:   US-ASCII
 #*   tab size:   8 (not used)
 #*   indentation:4
 #*
@@ -70,17 +68,17 @@ $HEADERDEF =~ s/\./_/;
 
 #We will print our copyright here + warnings
 
+$YEAR = strftime "%Y",localtime;
+
 print HEADER <<"EndOfHeaderComment";
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-*   Copyright (C) 2002-2016, International Business Machines
+*   Copyright (C) 2002-$YEAR, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *
 *   file name:  $headername
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -105,9 +103,6 @@ print HEADER <<"EndOfHeaderComment";
 #include "unicode/uconfig.h"
 
 #if !U_DISABLE_RENAMING
-
-// Disable Renaming for Visual Studio's IntelliSense feature, so that 'Go-to-Definition' (F12) will work.
-#if defined(_MSC_VER) && defined(__INTELLISENSE__)
 
 /* We need the U_ICU_ENTRY_POINT_RENAME definition. There's a default one in unicode/uvernum.h we can use, but we will give
    the platform a chance to define it first.
@@ -239,15 +234,8 @@ foreach(sort keys(%CFuncs)) {
 #    print HEADER "#define $_ $_$U_ICU_VERSION_SUFFIX\n";
 }
 
-
-print HEADER <<"EndOfHeaderFooter";
-
-#endif /* defined(_MSC_VER) && defined(__INTELLISENSE__) */
-#endif /* U_DISABLE_RENAMING */
-#endif /* URENAME_H */
-
-EndOfHeaderFooter
-
+print HEADER "\n#endif\n";
+print HEADER "\n#endif\n";
 
 close HEADER;
 

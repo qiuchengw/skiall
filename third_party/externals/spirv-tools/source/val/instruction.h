@@ -24,8 +24,7 @@
 #include "spirv-tools/libspirv.h"
 #include "table.h"
 
-namespace spvtools {
-namespace val {
+namespace libspirv {
 
 class BasicBlock;
 class Function;
@@ -67,41 +66,29 @@ class Instruction {
   /// The words used to define the Instruction
   const std::vector<uint32_t>& words() const { return words_; }
 
-  /// Returns the operand at |idx|.
-  const spv_parsed_operand_t& operand(size_t idx) const {
-    return operands_[idx];
-  }
-
   /// The operands of the Instruction
   const std::vector<spv_parsed_operand_t>& operands() const {
     return operands_;
   }
 
   /// Provides direct access to the stored C instruction object.
-  const spv_parsed_instruction_t& c_inst() const { return inst_; }
-
-  /// Provides direct access to instructions spv_ext_inst_type_t object.
-  const spv_ext_inst_type_t& ext_inst_type() const {
-    return inst_.ext_inst_type;
+  const spv_parsed_instruction_t& c_inst() const {
+    return inst_;
   }
 
   // Casts the words belonging to the operand under |index| to |T| and returns.
   template <typename T>
   T GetOperandAs(size_t index) const {
-    const spv_parsed_operand_t& o = operands_.at(index);
-    assert(o.num_words * 4 >= sizeof(T));
-    assert(o.offset + o.num_words <= inst_.num_words);
-    return *reinterpret_cast<const T*>(&words_[o.offset]);
+    const spv_parsed_operand_t& operand = operands_.at(index);
+    assert(operand.num_words * 4 >= sizeof(T));
+    assert(operand.offset + operand.num_words <= inst_.num_words);
+    return *reinterpret_cast<const T*>(&words_[operand.offset]);
   }
-
-  int InstructionPosition() const { return instruction_position_; }
-  void SetInstructionPosition(int pos) { instruction_position_ = pos; }
 
  private:
   const std::vector<uint32_t> words_;
   const std::vector<spv_parsed_operand_t> operands_;
   spv_parsed_instruction_t inst_;
-  int instruction_position_;
 
   /// The function in which this instruction was declared
   Function* function_;
@@ -124,20 +111,18 @@ OPERATOR(<);
 OPERATOR(==);
 #undef OPERATOR
 
-}  // namespace val
-}  // namespace spvtools
+}  // namespace libspirv
 
 // custom specialization of std::hash for Instruction
 namespace std {
 template <>
-struct hash<spvtools::val::Instruction> {
-  typedef spvtools::val::Instruction argument_type;
+struct hash<libspirv::Instruction> {
+  typedef libspirv::Instruction argument_type;
   typedef std::size_t result_type;
   result_type operator()(const argument_type& inst) const {
     return hash<uint32_t>()(inst.id());
   }
 };
-
-}  // namespace std
+}  /// namespace std
 
 #endif  // LIBSPIRV_VAL_INSTRUCTION_H_

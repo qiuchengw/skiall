@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 1997-2016, International Business Machines
+*   Copyright (C) 1997-2013, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
 *   file name:  locdispnames.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -542,7 +540,7 @@ uloc_getDisplayName(const char *locale,
             return 0;
         }
         separator = (const UChar *)p0 + subLen;
-        sepLen = static_cast<int32_t>(p1 - separator);
+        sepLen = p1 - separator;
     }
 
     if(patLen==0 || (patLen==defaultPatLen && !u_strncmp(pattern, defaultPattern, patLen))) {
@@ -558,8 +556,8 @@ uloc_getDisplayName(const char *locale,
             *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
             return 0;
         }
-        sub0Pos = static_cast<int32_t>(p0-pattern);
-        sub1Pos = static_cast<int32_t>(p1-pattern);
+        sub0Pos=p0-pattern;
+        sub1Pos=p1-pattern;
         if (sub1Pos < sub0Pos) { /* a very odd pattern */
             int32_t t=sub0Pos; sub0Pos=sub1Pos; sub1Pos=t;
             langi=1;
@@ -640,7 +638,7 @@ uloc_getDisplayName(const char *locale,
                             break;
                         case 3:
                             kenum = uloc_openKeywords(locale, pErrorCode);
-                            U_FALLTHROUGH;
+                            /* fall through */
                         default: {
                             const char* kw=uenum_next(kenum, &len, pErrorCode);
                             if (kw == NULL) {
@@ -821,8 +819,6 @@ uloc_getDisplayKeywordValue(   const char* locale,
     /* get the keyword value */
     keywordValue[0]=0;
     keywordValueLen = uloc_getKeywordValue(locale, keyword, keywordValue, capacity, status);
-    if (*status == U_STRING_NOT_TERMINATED_WARNING)
-      *status = U_BUFFER_OVERFLOW_ERROR;
 
     /* 
      * if the keyword is equal to currency .. then to get the display name 
@@ -856,7 +852,7 @@ uloc_getDisplayKeywordValue(   const char* locale,
         /* now copy the dispName over if not NULL */
         if(dispName != NULL){
             if(dispNameLen <= destCapacity){
-                u_memcpy(dest, dispName, dispNameLen);
+                uprv_memcpy(dest, dispName, dispNameLen * U_SIZEOF_UCHAR);
                 return u_terminateUChars(dest, destCapacity, dispNameLen, status);
             }else{
                 *status = U_BUFFER_OVERFLOW_ERROR;

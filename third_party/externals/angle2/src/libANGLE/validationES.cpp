@@ -81,8 +81,7 @@ bool DifferenceCanOverflow(GLint a, GLint b)
 
 bool ValidateDrawClientAttribs(Context *context)
 {
-    if (!context->getStateCache().hasAnyEnabledClientAttrib())
-        return true;
+    ASSERT(context->getStateCache().hasAnyEnabledClientAttrib());
 
     const gl::State &state = context->getGLState();
 
@@ -107,81 +106,29 @@ bool ValidateDrawClientAttribs(Context *context)
     return true;
 }
 
-bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex, GLint vertexCount)
+bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex)
 {
-    const gl::State &state     = context->getGLState();
-    const gl::Program *program = state.getProgram();
-
-    if (!ValidateDrawClientAttribs(context))
-    {
-        return false;
-    }
-
     // If we're drawing zero vertices, we have enough data.
-    if (vertexCount <= 0 || primcount <= 0)
+    ASSERT(primcount > 0);
+
+    if (maxVertex <= context->getStateCache().getNonInstancedVertexElementLimit() &&
+        (primcount - 1) <= context->getStateCache().getInstancedVertexElementLimit())
     {
         return true;
     }
 
-    const VertexArray *vao     = state.getVertexArray();
-    const auto &vertexAttribs  = vao->getVertexAttributes();
-    const auto &vertexBindings = vao->getVertexBindings();
-
-    const AttributesMask &activeAttribs = context->getStateCache().getActiveBufferedAttribsMask();
-
-    for (size_t attributeIndex : activeAttribs)
+    // An overflow can happen when adding the offset. Negative indicates overflow.
+    if (context->getStateCache().getNonInstancedVertexElementLimit() < 0 ||
+        context->getStateCache().getInstancedVertexElementLimit() < 0)
     {
-        const VertexAttribute &attrib = vertexAttribs[attributeIndex];
-        ASSERT(attrib.enabled);
-
-        const VertexBinding &binding = vertexBindings[attrib.bindingIndex];
-        ASSERT(context->isGLES1() || program->isAttribLocationActive(attributeIndex));
-
-        GLint maxVertexElement = maxVertex;
-        GLuint divisor         = binding.getDivisor();
-        if (divisor != 0)
-        {
-            maxVertexElement = (primcount - 1) / divisor;
-        }
-
-        // We do manual overflow checks here instead of using safe_math.h because it was
-        // a bottleneck. Thanks to some properties of GL we know inequalities that can
-        // help us make the overflow checks faster.
-
-        // The max possible attribSize is 16 for a vector of 4 32 bit values.
-        constexpr uint64_t kMaxAttribSize = 16;
-        constexpr uint64_t kIntMax        = std::numeric_limits<int>::max();
-        constexpr uint64_t kUint64Max     = std::numeric_limits<uint64_t>::max();
-
-        // We know attribStride is given as a GLsizei which is typedefed to int.
-        // We also know an upper bound for attribSize.
-        static_assert(std::is_same<int, GLsizei>::value, "Unexpected type");
-        ASSERT(ComputeVertexAttributeStride(attrib, binding) == binding.getStride());
-        uint64_t attribStride = binding.getStride();
-        ASSERT(attribStride <= kIntMax && ComputeVertexAttributeTypeSize(attrib) <= kMaxAttribSize);
-
-        // Computing the product of two 32-bit ints will fit in 64 bits without overflow.
-        static_assert(kIntMax * kIntMax < kUint64Max, "Unexpected overflow");
-        uint64_t attribDataSizeMinusAttribSize = maxVertexElement * attribStride;
-
-        // An overflow can happen when adding the offset, check for it.
-        if (attribDataSizeMinusAttribSize > kUint64Max - attrib.cachedSizePlusRelativeOffset)
-        {
-            ANGLE_VALIDATION_ERR(context, InvalidOperation(), IntegerOverflow);
-            return false;
-        }
-
-        // [OpenGL ES 3.0.2] section 2.9.4 page 40:
-        // We can return INVALID_OPERATION if our array buffer does not have enough backing data.
-        if (attribDataSizeMinusAttribSize + attrib.cachedSizePlusRelativeOffset >
-            binding.getCachedBufferSizeMinusOffset())
-        {
-            ANGLE_VALIDATION_ERR(context, InvalidOperation(), InsufficientVertexBufferSize);
-            return false;
-        }
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), IntegerOverflow);
+        return false;
     }
 
-    return true;
+    // [OpenGL ES 3.0.2] section 2.9.4 page 40:
+    // We can return INVALID_OPERATION if our buffer does not have enough backing data.
+    ANGLE_VALIDATION_ERR(context, InvalidOperation(), InsufficientVertexBufferSize);
+    return false;
 }
 
 bool ValidReadPixelsTypeEnum(Context *context, GLenum type)
@@ -2681,15 +2628,10 @@ bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
     // WebGL buffers cannot be mapped/unmapped because the MapBufferRange, FlushMappedBufferRange,
     // and UnmapBuffer entry points are removed from the WebGL 2.0 API.
     // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.14
-    if (!extensions.webglCompatibility)
+    if (!extensions.webglCompatibility && state.getVertexArray()->hasMappedEnabledArrayBuffer())
     {
-        // Check for mapped buffers
-        // TODO(jmadill): Optimize this check for non - WebGL contexts.
-        if (state.hasMappedBuffer(BufferBinding::Array))
-        {
-            context->handleError(InvalidOperation());
-            return false;
-        }
+        context->handleError(InvalidOperation());
+        return false;
     }
 
     // Note: these separate values are not supported in WebGL, due to D3D's limitations. See
@@ -2734,10 +2676,17 @@ bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
         return false;
     }
 
+    if (context->getStateCache().hasAnyEnabledClientAttrib())
+    {
+        if (!ValidateDrawClientAttribs(context))
+        {
+            return false;
+        }
+    }
+
     // If we are running GLES1, there is no current program.
     if (context->getClientVersion() >= Version(2, 0))
     {
-
         gl::Program *program = state.getProgram();
         if (!program)
         {
@@ -2936,7 +2885,7 @@ bool ValidateDrawArraysCommon(Context *context,
     // - if count < 0, skip validating no-op draw calls.
     // From this we know maxVertex will be positive, and only need to check if it overflows GLint.
     ASSERT(first >= 0);
-    if (count > 0)
+    if (count > 0 && primcount > 0)
     {
         int64_t maxVertex = static_cast<int64_t>(first) + static_cast<int64_t>(count) - 1;
         if (maxVertex > static_cast<int64_t>(std::numeric_limits<GLint>::max()))
@@ -2945,7 +2894,7 @@ bool ValidateDrawArraysCommon(Context *context,
             return false;
         }
 
-        if (!ValidateDrawAttribs(context, primcount, static_cast<GLint>(maxVertex), count))
+        if (!ValidateDrawAttribs(context, primcount, static_cast<GLint>(maxVertex)))
         {
             return false;
         }
@@ -3041,20 +2990,6 @@ bool ValidateDrawElementsCommon(Context *context,
         return false;
     }
 
-    // WebGL buffers cannot be mapped/unmapped because the MapBufferRange, FlushMappedBufferRange,
-    // and UnmapBuffer entry points are removed from the WebGL 2.0 API.
-    // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.14
-    if (!context->getExtensions().webglCompatibility)
-    {
-        // Check for mapped buffers
-        // TODO(jmadill): Optimize this check for non - WebGL contexts.
-        if (state.hasMappedBuffer(gl::BufferBinding::ElementArray))
-        {
-            context->handleError(InvalidOperation() << "Index buffer is mapped.");
-            return false;
-        }
-    }
-
     const gl::VertexArray *vao     = state.getVertexArray();
     gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer().get();
 
@@ -3080,6 +3015,14 @@ bool ValidateDrawElementsCommon(Context *context,
             ANGLE_VALIDATION_ERR(context, InvalidValue(), NegativeOffset);
             return false;
         }
+    }
+    else if (elementArrayBuffer && elementArrayBuffer->isMapped())
+    {
+        // WebGL buffers cannot be mapped/unmapped because the MapBufferRange,
+        // FlushMappedBufferRange, and UnmapBuffer entry points are removed from the WebGL 2.0 API.
+        // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.14
+        context->handleError(InvalidOperation() << "Index buffer is mapped.");
+        return false;
     }
 
     if (context->getExtensions().webglCompatibility ||
@@ -3151,15 +3094,7 @@ bool ValidateDrawElementsCommon(Context *context,
         }
     }
 
-    if (context->getExtensions().robustBufferAccessBehavior || count == 0)
-    {
-        // Special checks are needed for client attribs. But we don't need to validate overflows.
-        if (!ValidateDrawClientAttribs(context))
-        {
-            return false;
-        }
-    }
-    else
+    if (!context->getExtensions().robustBufferAccessBehavior && count > 0 && primcount > 0)
     {
         // Use the parameter buffer to retrieve and cache the index range.
         const DrawCallParams &params = context->getParams<DrawCallParams>();
@@ -3175,8 +3110,7 @@ bool ValidateDrawElementsCommon(Context *context,
             return false;
         }
 
-        if (!ValidateDrawAttribs(context, primcount, static_cast<GLint>(indexRange.end),
-                                 static_cast<GLint>(indexRange.vertexCount())))
+        if (!ValidateDrawAttribs(context, primcount, static_cast<GLint>(indexRange.end)))
         {
             return false;
         }

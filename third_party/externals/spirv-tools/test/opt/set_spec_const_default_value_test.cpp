@@ -16,15 +16,15 @@
 
 #include <gmock/gmock.h>
 
-namespace spvtools {
-namespace opt {
 namespace {
+using namespace spvtools;
 
 using testing::Eq;
+
 using SpecIdToValueStrMap =
-    SetSpecConstantDefaultValuePass::SpecIdToValueStrMap;
+    opt::SetSpecConstantDefaultValuePass::SpecIdToValueStrMap;
 using SpecIdToValueBitPatternMap =
-    SetSpecConstantDefaultValuePass::SpecIdToValueBitPatternMap;
+    opt::SetSpecConstantDefaultValuePass::SpecIdToValueBitPatternMap;
 
 struct DefaultValuesStringParsingTestCase {
   const char* default_values_str;
@@ -37,13 +37,12 @@ using DefaultValuesStringParsingTest =
 
 TEST_P(DefaultValuesStringParsingTest, TestCase) {
   const auto& tc = GetParam();
-  auto actual_map = SetSpecConstantDefaultValuePass::ParseDefaultValuesString(
-      tc.default_values_str);
+  auto actual_map =
+      opt::SetSpecConstantDefaultValuePass::ParseDefaultValuesString(
+          tc.default_values_str);
   if (tc.expect_success) {
     EXPECT_NE(nullptr, actual_map);
-    if (actual_map) {
-      EXPECT_THAT(*actual_map, Eq(tc.expected_map));
-    }
+    if (actual_map) { EXPECT_THAT(*actual_map, Eq(tc.expected_map)); }
   } else {
     EXPECT_EQ(nullptr, actual_map);
   }
@@ -143,7 +142,7 @@ using SetSpecConstantDefaultValueInStringFormParamTest = PassTest<
 
 TEST_P(SetSpecConstantDefaultValueInStringFormParamTest, TestCase) {
   const auto& tc = GetParam();
-  SinglePassRunAndCheck<SetSpecConstantDefaultValuePass>(
+  SinglePassRunAndCheck<opt::SetSpecConstantDefaultValuePass>(
       tc.code, tc.expected, /* skip_nop = */ false, tc.default_values);
 }
 
@@ -235,7 +234,7 @@ INSTANTIATE_TEST_CASE_P(
             "OpDecorate %2 SpecId 202\n"
             "%double = OpTypeFloat 64\n"
             "%1 = OpSpecConstant %double 3.14159265358979\n"
-            "%2 = OpSpecConstant %double 0.14285\n",
+            "%2 = OpSpecConstant %double 0.142857\n",
             // default values
             SpecIdToValueStrMap{{201, "0x1.fffffffffffffp+1024"},
                                 {202, "-32.5"}},
@@ -273,9 +272,7 @@ INSTANTIATE_TEST_CASE_P(
             "%3 = OpSpecConstantTrue %bool\n",
             // default values
             SpecIdToValueStrMap{
-                {201, "0x1.fffffffffffffp+1024"},
-                {202, "2048"},
-                {203, "false"},
+                {201, "0x1.fffffffffffffp+1024"}, {202, "2048"}, {203, "false"},
             },
             // expected
             "OpDecorate %1 SpecId 201\n"
@@ -412,17 +409,17 @@ INSTANTIATE_TEST_CASE_P(
             "OpDecorate %2 SpecId 202\n"
             "%float = OpTypeFloat 32\n"
             "%double = OpTypeFloat 64\n"
-            "%1 = OpSpecConstant %float 3.1415\n"
-            "%2 = OpSpecConstant %double 0.14285\n",
+            "%1 = OpSpecConstant %float 3.14159\n"
+            "%2 = OpSpecConstant %double 0.142857\n",
             // default values
-            SpecIdToValueStrMap{{201, "3.1415"}, {202, "0.14285"}},
+            SpecIdToValueStrMap{{201, "3.14159"}, {202, "0.142857"}},
             // expected
             "OpDecorate %1 SpecId 201\n"
             "OpDecorate %2 SpecId 202\n"
             "%float = OpTypeFloat 32\n"
             "%double = OpTypeFloat 64\n"
-            "%1 = OpSpecConstant %float 3.1415\n"
-            "%2 = OpSpecConstant %double 0.14285\n",
+            "%1 = OpSpecConstant %float 3.14159\n"
+            "%2 = OpSpecConstant %double 0.142857\n",
         },
         // 17. OpGroupDecorate may have multiple target ids defined by the same
         // eligible spec constant
@@ -467,13 +464,11 @@ INSTANTIATE_TEST_CASE_P(
         {
             // code
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n",
             // default values
             SpecIdToValueStrMap{{100, "0x7fffffff"}},
             // expected
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n",
         },
         // 2. Do nothing when SpecId decoration is not attached to a
@@ -481,14 +476,12 @@ INSTANTIATE_TEST_CASE_P(
         {
             // code
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n"
             "%int_101 = OpConstant %int 101\n",
             // default values
             SpecIdToValueStrMap{{100, "0x7fffffff"}},
             // expected
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n"
             "%int_101 = OpConstant %int 101\n",
         },
@@ -536,7 +529,6 @@ INSTANTIATE_TEST_CASE_P(
             // code
             "OpDecorate %1 SpecId 100\n"
             "%1 = OpDecorationGroup\n"
-            "%2 = OpDecorationGroup\n"
             "OpGroupDecorate %1 %2\n"
             "%int = OpTypeInt 32 1\n"
             "%int_100 = OpConstant %int 100\n",
@@ -545,7 +537,6 @@ INSTANTIATE_TEST_CASE_P(
             // expected
             "OpDecorate %1 SpecId 100\n"
             "%1 = OpDecorationGroup\n"
-            "%2 = OpDecorationGroup\n"
             "OpGroupDecorate %1 %2\n"
             "%int = OpTypeInt 32 1\n"
             "%int_100 = OpConstant %int 100\n",
@@ -605,7 +596,7 @@ using SetSpecConstantDefaultValueInBitPatternFormParamTest =
 
 TEST_P(SetSpecConstantDefaultValueInBitPatternFormParamTest, TestCase) {
   const auto& tc = GetParam();
-  SinglePassRunAndCheck<SetSpecConstantDefaultValuePass>(
+  SinglePassRunAndCheck<opt::SetSpecConstantDefaultValuePass>(
       tc.code, tc.expected, /* skip_nop = */ false, tc.default_values);
 }
 
@@ -699,7 +690,7 @@ INSTANTIATE_TEST_CASE_P(
             "OpDecorate %2 SpecId 202\n"
             "%double = OpTypeFloat 64\n"
             "%1 = OpSpecConstant %double 3.14159265358979\n"
-            "%2 = OpSpecConstant %double 0.14285\n",
+            "%2 = OpSpecConstant %double 0.142857\n",
             // default values
             SpecIdToValueBitPatternMap{{201, {0xffffffff, 0x7fffffff}},
                                        {202, {0x00000000, 0xc0404000}}},
@@ -959,13 +950,11 @@ INSTANTIATE_TEST_CASE_P(
         {
             // code
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n",
             // default values
             SpecIdToValueBitPatternMap{{100, {0x7fffffff}}},
             // expected
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n",
         },
         // 2. Do nothing when SpecId decoration is not attached to a
@@ -973,14 +962,12 @@ INSTANTIATE_TEST_CASE_P(
         {
             // code
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n"
             "%int_101 = OpConstant %int 101\n",
             // default values
             SpecIdToValueBitPatternMap{{100, {0x7fffffff}}},
             // expected
             "OpDecorate %1 SpecId 100\n"
-            "%1 = OpDecorationGroup\n"
             "%int = OpTypeInt 32 1\n"
             "%int_101 = OpConstant %int 101\n",
         },
@@ -1028,7 +1015,6 @@ INSTANTIATE_TEST_CASE_P(
             // code
             "OpDecorate %1 SpecId 100\n"
             "%1 = OpDecorationGroup\n"
-            "%2 = OpDecorationGroup\n"
             "OpGroupDecorate %1 %2\n"
             "%int = OpTypeInt 32 1\n"
             "%int_100 = OpConstant %int 100\n",
@@ -1037,7 +1023,6 @@ INSTANTIATE_TEST_CASE_P(
             // expected
             "OpDecorate %1 SpecId 100\n"
             "%1 = OpDecorationGroup\n"
-            "%2 = OpDecorationGroup\n"
             "OpGroupDecorate %1 %2\n"
             "%int = OpTypeInt 32 1\n"
             "%int_100 = OpConstant %int 100\n",
@@ -1054,7 +1039,7 @@ INSTANTIATE_TEST_CASE_P(
             "%double = OpTypeFloat 64\n"
             "%1 = OpSpecConstant %int 100\n"
             "%2 = OpSpecConstant %ulong 200\n"
-            "%3 = OpSpecConstant %double 3.141592653\n",
+            "%3 = OpSpecConstant %double 3.1415926\n",
             // default values
             SpecIdToValueBitPatternMap{
                 {100, {10, 0}}, {101, {11}}, {102, {0xffffffff}}},
@@ -1067,10 +1052,8 @@ INSTANTIATE_TEST_CASE_P(
             "%double = OpTypeFloat 64\n"
             "%1 = OpSpecConstant %int 100\n"
             "%2 = OpSpecConstant %ulong 200\n"
-            "%3 = OpSpecConstant %double 3.141592653\n",
+            "%3 = OpSpecConstant %double 3.1415926\n",
         },
     }));
 
-}  // namespace
-}  // namespace opt
-}  // namespace spvtools
+}  // anonymous namespace

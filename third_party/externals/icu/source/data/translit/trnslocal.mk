@@ -1,1 +1,1 @@
-TRANSLIT_SOURCE=root_subset.txt
+TRANSLIT_SOURCE=css3transform.txt

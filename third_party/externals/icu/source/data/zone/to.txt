@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/to.xml
+// *
+// ***************************************************************************
 to{
-    Version{"2.1.38.39"}
+    Version{"2.1.19.14"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -148,7 +154,7 @@ to{
             ec{"Porto-Novo"}
         }
         "Africa:Sao_Tome"{
-            ec{"Sao Tomé"}
+            ec{"São Tomé"}
         }
         "Africa:Tripoli"{
             ec{"Tripoli"}
@@ -274,7 +280,7 @@ to{
             ec{"Cuiaba"}
         }
         "America:Curacao"{
-            ec{"Curaçao"}
+            ec{"Curacao"}
         }
         "America:Danmarkshavn"{
             ec{"Danmarkshavn"}
@@ -928,7 +934,7 @@ to{
             ec{"Senē"}
         }
         "Etc:Unknown"{
-            ec{"Feituʻu taʻeʻiloa"}
+            ec{"Halaʻata"}
         }
         "Europe:Amsterdam"{
             ec{"Amsterdam"}
@@ -1248,7 +1254,7 @@ to{
             ec{"ʻUvea"}
         }
         "meta:Acre"{
-            ld{"houa fakaʻakelī taimi liliu"}
+            ld{"houa fakaʻakelī taimi fakaliliu"}
             lg{"houa fakaʻakelī"}
             ls{"houa fakaʻakelī taimi totonu"}
         }
@@ -1380,9 +1386,9 @@ to{
             ls{"houa fakaʻāsolesi taimi totonu"}
         }
         "meta:Bangladesh"{
-            ld{"houa fakapāngilātesi taimi liliu"}
-            lg{"houa fakapāngilātesi"}
-            ls{"houa fakapāngilātesi taimi totonu"}
+            ld{"houa fakapengilātesi taimi liliu"}
+            lg{"houa fakapengilātesi"}
+            ls{"houa fakapengilātesi taimi totonu"}
         }
         "meta:Bhutan"{
             ls{"houa fakapūtani"}
@@ -1895,7 +1901,7 @@ to{
         gmtZeroFormat{"GMT"}
         hourFormat{"+HH:mm;-HH:mm"}
         regionFormat{"Taimi {0}"}
-        regionFormatDaylight{"{0} Taimi liliu"}
+        regionFormatDaylight{"{0} Taimi Liliu"}
         regionFormatStandard{"{0} Taimi totonu"}
     }
 }

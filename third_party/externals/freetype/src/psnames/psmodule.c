@@ -392,9 +392,7 @@
         /* Reallocate if the number of used entries is much smaller. */
         if ( count < num_glyphs / 2 )
         {
-          (void)FT_RENEW_ARRAY( table->maps,
-                                num_glyphs + EXTRA_GLYPH_LIST_SIZE,
-                                count );
+          (void)FT_RENEW_ARRAY( table->maps, num_glyphs, count );
           error = FT_Err_Ok;
         }
 

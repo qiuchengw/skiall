@@ -1,34 +1,22 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/pt_PT.xml
+// *
+// ***************************************************************************
 pt_PT{
-    Version{"2.1.41.97"}
+    Version{"2.1.19.79"}
     zoneStrings{
-        "Africa:Addis_Ababa"{
-            ec{"Adis-Abeba"}
-        }
-        "Africa:Bamako"{
-            ec{"Bamaco"}
-        }
-        "Africa:Dakar"{
-            ec{"Dacar"}
-        }
         "Africa:Djibouti"{
             ec{"Jibuti"}
         }
-        "Africa:Kampala"{
-            ec{"Campala"}
-        }
-        "Africa:Lusaka"{
-            ec{"Lusaca"}
+        "Africa:Johannesburg"{
+            ec{"Joanesburgo"}
         }
         "Africa:Nairobi"{
             ec{"Nairobi"}
-        }
-        "Africa:Ndjamena"{
-            ec{"Ndjamena"}
-        }
-        "Africa:Niamey"{
-            ec{"Niamei"}
         }
         "Africa:Porto-Novo"{
             ec{"Porto-Novo"}
@@ -51,9 +39,6 @@ pt_PT{
         "America:Bahia"{
             ec{"Baía"}
         }
-        "America:Bahia_Banderas"{
-            ec{"Bahia Banderas"}
-        }
         "America:Cancun"{
             ec{"Cancun"}
         }
@@ -66,26 +51,23 @@ pt_PT{
         "America:Dominica"{
             ec{"Domínica"}
         }
+        "America:Monterrey"{
+            ec{"Monterrey"}
+        }
         "America:Montevideo"{
             ec{"Montevideu"}
         }
-        "America:Montserrat"{
-            ec{"Monserrate"}
-        }
         "America:New_York"{
             ec{"Nova Iorque"}
+        }
+        "America:North_Dakota:Center"{
+            ec{"Center, Dakota do Norte"}
         }
         "America:Port-au-Prince"{
             ec{"Port-au-Prince"}
         }
         "America:Port_of_Spain"{
             ec{"Porto de Espanha"}
-        }
-        "America:St_Johns"{
-            ec{"St. John’s"}
-        }
-        "America:St_Thomas"{
-            ec{"St. Thomas"}
         }
         "Antarctica:Syowa"{
             ec{"Syowa"}
@@ -108,23 +90,14 @@ pt_PT{
         "Asia:Dhaka"{
             ec{"Daca"}
         }
-        "Asia:Hebron"{
-            ec{"Hebron"}
-        }
         "Asia:Kabul"{
             ec{"Cabul"}
         }
         "Asia:Kuala_Lumpur"{
             ec{"Kuala Lumpur"}
         }
-        "Asia:Kuwait"{
-            ec{"Koweit"}
-        }
-        "Asia:Makassar"{
-            ec{"Macassar"}
-        }
-        "Asia:Qatar"{
-            ec{"Catar"}
+        "Asia:Riyadh"{
+            ec{"Riade"}
         }
         "Asia:Saigon"{
             ec{"Cidade de Ho Chi Minh"}
@@ -144,11 +117,11 @@ pt_PT{
         "Atlantic:Faeroe"{
             ec{"Faroé"}
         }
+        "Atlantic:Reykjavik"{
+            ec{"Reiquiavique"}
+        }
         "Australia:Lord_Howe"{
             ec{"Ilha de Lord Howe"}
-        }
-        "Etc:UTC"{
-            ls{"Hora Coordenada Universal"}
         }
         "Europe:Amsterdam"{
             ec{"Amesterdão"}
@@ -160,7 +133,7 @@ pt_PT{
             ec{"Copenhaga"}
         }
         "Europe:Dublin"{
-            ld{"Hora de verão da Irlanda"}
+            ld{"Hora de Verão da Irlanda"}
         }
         "Europe:Helsinki"{
             ec{"Helsínquia"}
@@ -169,7 +142,7 @@ pt_PT{
             ec{"Caliningrado"}
         }
         "Europe:London"{
-            ld{"Hora de verão Britânica"}
+            ld{"Hora de Verão Britânica"}
         }
         "Europe:Madrid"{
             ec{"Madrid"}
@@ -179,6 +152,9 @@ pt_PT{
         }
         "Europe:Moscow"{
             ec{"Moscovo"}
+        }
+        "Europe:Podgorica"{
+            ec{"Podgorica"}
         }
         "Europe:San_Marino"{
             ec{"São Marinho"}
@@ -194,9 +170,6 @@ pt_PT{
         }
         "Indian:Mauritius"{
             ec{"Maurícia"}
-        }
-        "Pacific:Apia"{
-            ec{"Apia"}
         }
         "Pacific:Easter"{
             ec{"Ilha da Páscoa"}
@@ -379,12 +352,12 @@ pt_PT{
             ls{"Hora padrão de Cabo Verde"}
         }
         "meta:Chamorro"{
-            ls{"Hora padrão de Chamorro"}
+            ls{"Hora padrão do Chamorro"}
         }
         "meta:Chatham"{
-            ld{"Hora de verão de Chatham"}
-            lg{"Hora de Chatham"}
-            ls{"Hora padrão de Chatham"}
+            ld{"Hora de verão do Chatham"}
+            lg{"Hora do Chatham"}
+            ls{"Hora padrão do Chatham"}
         }
         "meta:Chile"{
             ld{"Hora de verão do Chile"}
@@ -687,7 +660,7 @@ pt_PT{
             ls{"Hora padrão da Terra Nova"}
         }
         "meta:Niue"{
-            ls{"Hora de Niuê"}
+            ls{"Hora de Niue"}
         }
         "meta:Norfolk"{
             ls{"Hora da Ilha Norfolk"}
@@ -749,9 +722,6 @@ pt_PT{
         }
         "meta:Ponape"{
             ls{"Hora de Ponape"}
-        }
-        "meta:Pyongyang"{
-            ls{"Hora de Pyongyang"}
         }
         "meta:Qyzylorda"{
             ld{"Hora de verão de Qyzylorda"}

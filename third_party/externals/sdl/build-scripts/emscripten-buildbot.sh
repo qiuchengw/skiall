@@ -1,13 +1,9 @@
 #!/bin/bash
 
-if [ -z "$SDKDIR" ]; then
-    SDKDIR="/emsdk_portable"
-fi
-
+SDKDIR="/emsdk_portable"
 ENVSCRIPT="$SDKDIR/emsdk_env.sh"
 if [ ! -f "$ENVSCRIPT" ]; then
    echo "ERROR: This script expects the Emscripten SDK to be in '$SDKDIR'." 1>&2
-   echo "ERROR: Set the \$SDKDIR environment variable to override this." 1>&2
    exit 1
 fi
 
@@ -55,7 +51,7 @@ mkdir buildbot
 pushd buildbot
 
 echo "Configuring..."
-emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --disable-cpuinfo CFLAGS="-O2 -Wno-warn-absolute-paths -Wdeclaration-after-statement -Werror=declaration-after-statement" --prefix="$PWD/emscripten-sdl2-installed" || exit $?
+emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --enable-cpuinfo=false CFLAGS="-O2 -Wno-warn-absolute-paths -Wdeclaration-after-statement -Werror=declaration-after-statement" --prefix="$PWD/emscripten-sdl2-installed" || exit $?
 
 echo "Building..."
 emmake $MAKE || exit $?

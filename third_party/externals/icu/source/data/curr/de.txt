@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/de.xml
+// *
+// ***************************************************************************
 de{
     Currencies{
         ADP{
@@ -156,7 +162,7 @@ de{
         }
         BOB{
             "BOB",
-            "Bolivianischer Boliviano",
+            "Bolivanischer Boliviano",
         }
         BOL{
             "BOL",
@@ -218,13 +224,9 @@ de{
             "BYB",
             "Belarus-Rubel (1994–1999)",
         }
-        BYN{
-            "BYN",
-            "Weißrussischer Rubel",
-        }
         BYR{
             "BYR",
-            "Weißrussischer Rubel (2000–2016)",
+            "Weißrussischer Rubel",
         }
         BZD{
             "BZD",
@@ -261,10 +263,6 @@ de{
         CLP{
             "CLP",
             "Chilenischer Peso",
-        }
-        CNH{
-            "CNH",
-            "Renminbi Yuan (Off–Shore)",
         }
         CNX{
             "CNX",
@@ -304,7 +302,7 @@ de{
         }
         CVE{
             "CVE",
-            "Cabo-Verde-Escudo",
+            "Kap-Verde-Escudo",
         }
         CYP{
             "CYP",
@@ -684,10 +682,6 @@ de{
         }
         MRO{
             "MRO",
-            "Mauretanischer Ouguiya (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "Mauretanischer Ouguiya",
         }
         MTL{
@@ -788,7 +782,7 @@ de{
         }
         PEN{
             "PEN",
-            "Peruanischer Sol",
+            "Peruanischer Neuer Sol",
         }
         PES{
             "PES",
@@ -920,10 +914,6 @@ de{
         }
         STD{
             "STD",
-            "São-toméischer Dobra (1977–2017)",
-        }
-        STN{
-            "STN",
             "São-toméischer Dobra",
         }
         SUR{
@@ -1220,7 +1210,7 @@ de{
         BRL{"R$"}
         BSD{"$"}
         BWP{"P"}
-        BYN{"р."}
+        BYR{"р."}
         BZD{"$"}
         CAD{"$"}
         CLP{"$"}
@@ -1238,7 +1228,6 @@ de{
         FJD{"$"}
         FKP{"Fl£"}
         GBP{"£"}
-        GEL{"₾"}
         GIP{"£"}
         GNF{"F.G."}
         GTQ{"Q"}
@@ -1279,7 +1268,6 @@ de{
         PKR{"Rs"}
         PLN{"zł"}
         PYG{"₲"}
-        RON{"L"}
         RUB{"₽"}
         RUR{"р."}
         RWF{"F.Rw"}
@@ -1289,7 +1277,7 @@ de{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
-        STN{"Db"}
+        STD{"Db"}
         SYP{"SYP"}
         THB{"฿"}
         TOP{"T$"}
@@ -1463,7 +1451,7 @@ de{
             other{"Brunei-Dollar"}
         }
         BOB{
-            one{"Bolivianischer Boliviano"}
+            one{"Bolivanischer Boliviano"}
             other{"Bolivianische Bolivianos"}
         }
         BOL{
@@ -1526,13 +1514,9 @@ de{
             one{"Belarus-Rubel (1994–1999)"}
             other{"Belarus-Rubel (1994–1999)"}
         }
-        BYN{
+        BYR{
             one{"Weißrussischer Rubel"}
             other{"Weißrussische Rubel"}
-        }
-        BYR{
-            one{"Weißrussischer Rubel (2000–2016)"}
-            other{"Weißrussische Rubel (2000–2016)"}
         }
         BZD{
             one{"Belize-Dollar"}
@@ -1569,10 +1553,6 @@ de{
         CLP{
             one{"Chilenischer Peso"}
             other{"Chilenische Pesos"}
-        }
-        CNH{
-            one{"Renminbi Yuan (Off–Shore)"}
-            other{"Renminbi Yuan (Off–Shore)"}
         }
         CNX{
             one{"Dollar der Chinesischen Volksbank"}
@@ -1611,8 +1591,8 @@ de{
             other{"Kubanische Pesos"}
         }
         CVE{
-            one{"Cabo-Verde-Escudo"}
-            other{"Cabo-Verde-Escudos"}
+            one{"Kap-Verde-Escudo"}
+            other{"Kap-Verde-Escudos"}
         }
         CYP{
             one{"Zypern Pfund"}
@@ -1724,7 +1704,7 @@ de{
         }
         GIP{
             one{"Gibraltar-Pfund"}
-            other{"Gibraltar-Pfund"}
+            other{"Gibraltar Pfund"}
         }
         GMD{
             one{"Gambia-Dalasi"}
@@ -1991,10 +1971,6 @@ de{
             other{"Macao-Pataca"}
         }
         MRO{
-            one{"Mauretanischer Ouguiya (1973–2017)"}
-            other{"Mauretanische Ouguiya (1973–2017)"}
-        }
-        MRU{
             one{"Mauretanischer Ouguiya"}
             other{"Mauretanische Ouguiya"}
         }
@@ -2095,8 +2071,8 @@ de{
             other{"Peruanische Inti"}
         }
         PEN{
-            one{"Peruanischer Sol"}
-            other{"Peruanische Sol"}
+            one{"Peruanischer Neuer Sol"}
+            other{"Peruanische Neue Sol"}
         }
         PES{
             one{"Peruanischer Sol (1863–1965)"}
@@ -2227,10 +2203,6 @@ de{
             other{"Südsudanesische Pfund"}
         }
         STD{
-            one{"São-toméischer Dobra (1977–2017)"}
-            other{"São-toméische Dobra (1977–2017)"}
-        }
-        STN{
             one{"São-toméischer Dobra"}
             other{"São-toméische Dobra"}
         }
@@ -2519,5 +2491,5 @@ de{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.72"}
 }

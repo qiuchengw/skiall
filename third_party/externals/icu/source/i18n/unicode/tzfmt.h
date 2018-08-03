@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2011-2015, International Business Machines Corporation and
@@ -237,10 +235,10 @@ typedef enum UTimeZoneFormatParseOption {
      */
     UTZFMT_PARSE_OPTION_ALL_STYLES  = 0x01,
      /**
-      * When parsing a time zone display name in \link UTZFMT_STYLE_SPECIFIC_SHORT \endlink,
+      * When parsing a time zone display name in UTZFMT_STYLE_SPECIFIC_SHORT,
       * look for the IANA tz database compatible zone abbreviations in addition
-      * to the localized names coming from the icu::TimeZoneNames currently
-      * used by the icu::TimeZoneFormat.
+      * to the localized names coming from the {@link TimeZoneNames} currently
+      * used by the {@link TimeZoneFormat}. 
       * @stable ICU 54
       */
     UTZFMT_PARSE_OPTION_TZ_DATABASE_ABBREVIATIONS = 0x02

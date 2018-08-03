@@ -24,12 +24,11 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#ifndef VIEW_CAIRO_HH
-#define VIEW_CAIRO_HH
-
-#include "hb-private.hh"
 #include "options.hh"
 #include "helper-cairo.hh"
+
+#ifndef VIEW_CAIRO_HH
+#define VIEW_CAIRO_HH
 
 
 struct view_cairo_t
@@ -40,10 +39,11 @@ struct view_cairo_t
 		 direction (HB_DIRECTION_INVALID),
 		 lines (0), scale_bits (0) {}
   ~view_cairo_t (void) {
-    cairo_debug_reset_static_data ();
+    if (debug)
+      cairo_debug_reset_static_data ();
   }
 
-  void init (hb_buffer_t *buffer, const font_options_t *font_opts)
+  void init (const font_options_t *font_opts)
   {
     lines = g_array_new (false, false, sizeof (helper_cairo_line_t));
     scale_bits = -font_opts->subpixel_bits;
@@ -57,9 +57,12 @@ struct view_cairo_t
 		     hb_bool_t     utf8_clusters)
   {
   }
-  void error (const char *message)
+  void shape_failed (hb_buffer_t  *buffer,
+		     const char   *text,
+		     unsigned int  text_len,
+		     hb_bool_t     utf8_clusters)
   {
-    g_printerr ("%s: %s\n", g_get_prgname (), message);
+    fail (false, "all shapers failed");
   }
   void consume_glyphs (hb_buffer_t  *buffer,
 		       const char   *text,
@@ -71,7 +74,7 @@ struct view_cairo_t
     helper_cairo_line_from_buffer (&l, buffer, text, text_len, scale_bits, utf8_clusters);
     g_array_append_val (lines, l);
   }
-  void finish (hb_buffer_t *buffer, const font_options_t *font_opts)
+  void finish (const font_options_t *font_opts)
   {
     render (font_opts);
 

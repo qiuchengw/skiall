@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 **********************************************************************
 * Copyright (c) 2014, International Business Machines
@@ -15,8 +13,8 @@
 #include "unicode/fpositer.h"
 #include "unicode/utf16.h"
 #include "unicode/uniset.h"
+#include "decfmtst.h"
 #include "unicode/decimfmt.h"
-#include "static_unicode_sets.h"
 
 U_NAMESPACE_BEGIN
 
@@ -129,6 +127,7 @@ UnicodeString &ScientificNumberFormatter::SuperscriptStyle::format(
         const UnicodeString &original,
         FieldPositionIterator &fpi,
         const UnicodeString &preExponent,
+        const DecimalFormatStaticSets &staticSets,
         UnicodeString &appendTo,
         UErrorCode &status) const {
     if (U_FAILURE(status)) {
@@ -148,17 +147,16 @@ UnicodeString &ScientificNumberFormatter::SuperscriptStyle::format(
             break;
         case UNUM_EXPONENT_SIGN_FIELD:
             {
-                using namespace icu::numparse::impl;
                 int32_t beginIndex = fp.getBeginIndex();
                 int32_t endIndex = fp.getEndIndex();
                 UChar32 aChar = original.char32At(beginIndex);
-                if (unisets::get(unisets::MINUS_SIGN)->contains(aChar)) {
+                if (staticSets.fMinusSigns->contains(aChar)) {
                     appendTo.append(
                             original,
                             copyFromOffset,
                             beginIndex - copyFromOffset);
                     appendTo.append(kSuperscriptMinusSign);
-                } else if (unisets::get(unisets::PLUS_SIGN)->contains(aChar)) {
+                } else if (staticSets.fPlusSigns->contains(aChar)) {
                     appendTo.append(
                            original,
                            copyFromOffset,
@@ -203,6 +201,7 @@ UnicodeString &ScientificNumberFormatter::MarkupStyle::format(
         const UnicodeString &original,
         FieldPositionIterator &fpi,
         const UnicodeString &preExponent,
+        const DecimalFormatStaticSets & /*unusedDecimalFormatSets*/,
         UnicodeString &appendTo,
         UErrorCode &status) const {
     if (U_FAILURE(status)) {
@@ -242,7 +241,8 @@ ScientificNumberFormatter::ScientificNumberFormatter(
         DecimalFormat *fmtToAdopt, Style *styleToAdopt, UErrorCode &status)
         : fPreExponent(),
           fDecimalFormat(fmtToAdopt),
-          fStyle(styleToAdopt) {
+          fStyle(styleToAdopt),
+          fStaticSets(NULL) {
     if (U_FAILURE(status)) {
         return;
     }
@@ -256,6 +256,7 @@ ScientificNumberFormatter::ScientificNumberFormatter(
         return;
     }
     getPreExponent(*sym, fPreExponent);
+    fStaticSets = DecimalFormatStaticSets::getStaticSets(status);
 }
 
 ScientificNumberFormatter::ScientificNumberFormatter(
@@ -263,7 +264,8 @@ ScientificNumberFormatter::ScientificNumberFormatter(
         : UObject(other),
           fPreExponent(other.fPreExponent),
           fDecimalFormat(NULL),
-          fStyle(NULL) {
+          fStyle(NULL),
+          fStaticSets(other.fStaticSets) {
     fDecimalFormat = static_cast<DecimalFormat *>(
             other.fDecimalFormat->clone());
     fStyle = other.fStyle->clone();
@@ -288,6 +290,7 @@ UnicodeString &ScientificNumberFormatter::format(
             original,
             fpi,
             fPreExponent,
+            *fStaticSets,
             appendTo,
             status);
 }

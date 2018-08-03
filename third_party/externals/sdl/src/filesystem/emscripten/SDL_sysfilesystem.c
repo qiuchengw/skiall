@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,14 +46,6 @@ SDL_GetPrefPath(const char *org, const char *app)
     char *retval;
     size_t len = 0;
 
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
-
     len = SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *) SDL_malloc(len);
     if (!retval) {
@@ -61,11 +53,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", append, org, app);
-    } else {
-        SDL_snprintf(retval, len, "%s%s/", append, app);
-    }
+    SDL_snprintf(retval, len, "%s%s/%s/", append, org, app);
 
     if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
         SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));

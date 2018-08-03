@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/qu.xml
+// *
+// ***************************************************************************
 qu{
     Languages{
         af{"Afrikaans Simi"}
@@ -134,5 +140,5 @@ qu{
     Variants{
         VALENCIA{"Valenciano Simi"}
     }
-    Version{"2.1.38.72"}
+    Version{"2.1.19.14"}
 }

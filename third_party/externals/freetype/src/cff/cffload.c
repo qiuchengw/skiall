@@ -1398,14 +1398,7 @@
     FT_UInt       master;
 
 
-    /* protect against malformed fonts */
-    if ( !( lenNDV == 0 || NDV ) )
-    {
-      FT_TRACE4(( " cff_blend_build_vector:"
-                  " Malformed Normalize Design Vector data\n" ));
-      error = FT_THROW( Invalid_File_Format );
-      goto Exit;
-    }
+    FT_ASSERT( lenNDV == 0 || NDV );
 
     blend->builtBV = FALSE;
 

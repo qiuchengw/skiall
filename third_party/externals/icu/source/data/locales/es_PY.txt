@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/es_PY.xml
+// *
+// ***************************************************************************
 es_PY{
     %%Parent{"es_419"}
     NumberElements{
@@ -13,17 +19,9 @@ es_PY{
             }
         }
     }
-    Version{"2.1.38.39"}
+    Version{"2.1.19.94"}
     calendar{
         gregorian{
-            AmPmMarkers{
-                "a. m.",
-                "p. m.",
-            }
-            AmPmMarkersAbbr{
-                "a. m.",
-                "p. m.",
-            }
             dayNames{
                 format{
                     short{
@@ -49,19 +47,17 @@ es_PY{
                 }
             }
             dayPeriod{
-                stand-alone{
-                    abbreviated{
-                        am{"a. m."}
-                        pm{"p. m."}
-                    }
+                format{
                     narrow{
-                        am{"a. m."}
-                        noon{"m."}
-                        pm{"p. m."}
+                        evening1{"de la tarde"}
+                        morning1{"de la madrugada"}
+                        morning2{"de la mañana"}
+                        night1{"de la noche"}
                     }
-                    wide{
-                        am{"a. m."}
-                        pm{"p. m."}
+                }
+                stand-alone{
+                    narrow{
+                        noon{"m."}
                     }
                 }
             }
@@ -136,7 +132,7 @@ es_PY{
         day{
             relative{
                 "-1"{"ayer"}
-                "-2"{"anteayer"}
+                "-2"{"antes de ayer"}
                 "0"{"hoy"}
                 "1"{"mañana"}
                 "2"{"pasado mañana"}
@@ -187,6 +183,9 @@ es_PY{
                 "0"{"este mar."}
                 "1"{"el próximo mar."}
             }
+        }
+        zone{
+            dn{"zona horaria"}
         }
     }
     listPattern{

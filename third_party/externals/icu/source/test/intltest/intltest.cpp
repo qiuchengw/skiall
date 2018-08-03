@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 
@@ -13,37 +11,34 @@
  * IntlTest is a base class for tests.
  */
 
+#include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <cmath>
 
-#include "unicode/ctest.h" // for str_timeDelta
-#include "unicode/curramt.h"
-#include "unicode/locid.h"
-#include "unicode/putil.h"
-#include "unicode/smpdtfmt.h"
-#include "unicode/timezone.h"
-#include "unicode/uclean.h"
-#include "unicode/ucnv.h"
 #include "unicode/unistr.h"
 #include "unicode/ures.h"
-#include "unicode/utf16.h"
+#include "unicode/smpdtfmt.h"
+#include "unicode/ucnv.h"
+#include "unicode/uclean.h"
+#include "unicode/timezone.h"
+#include "unicode/curramt.h"
+#include "unicode/putil.h"
 
 #include "intltest.h"
-
 #include "caltztst.h"
-#include "cmemory.h"
-#include "cstring.h"
 #include "itmajor.h"
-#include "mutex.h"
-#include "putilimp.h" // for uprv_getRawUTCtime()
-#include "uassert.h"
-#include "udbgutil.h"
+#include "cstring.h"
 #include "umutex.h"
+#include "uassert.h"
+#include "cmemory.h"
 #include "uoptions.h"
+
+#include "putilimp.h" // for uprv_getRawUTCtime()
+#include "unicode/locid.h"
+#include "unicode/ctest.h" // for str_timeDelta
+#include "udbgutil.h"
 
 #ifdef XP_MAC_CONSOLE
 #include <console.h>
@@ -105,18 +100,6 @@ Int64ToUnicodeString(int64_t num)
 #else
     sprintf(buffer, "%lld", (long long)num);
 #endif
-    assert(danger == 'p');
-
-    return buffer;
-}
-
-UnicodeString
-DoubleToUnicodeString(double num)
-{
-    char buffer[64];    // nos changed from 10 to 64
-    char danger = 'p';  // guard against overrunning the buffer (rtg)
-
-    sprintf(buffer, "%1.14e", num);
     assert(danger == 'p');
 
     return buffer;
@@ -238,12 +221,6 @@ UnicodeString toString(UBool b) {
   return b ? UnicodeString("TRUE"):UnicodeString("FALSE");
 }
 
-UnicodeString toString(const UnicodeSet& uniset, UErrorCode& status) {
-    UnicodeString result;
-    uniset.toPattern(result, status);
-    return result;
-}
-
 // stephen - cleaned up 05/05/99
 UnicodeString operator+(const UnicodeString& left, char num)
 { return left + (long)num; }
@@ -285,25 +262,18 @@ IntlTest::appendHex(uint32_t number,
     {
     case 8:
         target += digitString[(number >> 28) & 0xF];
-        U_FALLTHROUGH;
     case 7:
         target += digitString[(number >> 24) & 0xF];
-        U_FALLTHROUGH;
     case 6:
         target += digitString[(number >> 20) & 0xF];
-        U_FALLTHROUGH;
     case 5:
         target += digitString[(number >> 16) & 0xF];
-        U_FALLTHROUGH;
     case 4:
         target += digitString[(number >> 12) & 0xF];
-        U_FALLTHROUGH;
     case 3:
         target += digitString[(number >>  8) & 0xF];
-        U_FALLTHROUGH;
     case 2:
         target += digitString[(number >>  4) & 0xF];
-        U_FALLTHROUGH;
     case 1:
         target += digitString[(number >>  0) & 0xF];
         break;
@@ -575,7 +545,7 @@ IntlTest::IntlTest()
     warn_on_missing_data = FALSE;
     quick = FALSE;
     leaks = FALSE;
-    threadCount = 12;
+    threadCount = 1;
     testoutfp = stdout;
     LL_indentlevel = indentLevel_offset;
     numProps = 0;
@@ -716,10 +686,10 @@ UBool IntlTest::runTest( char* name, char* par, char *baseName )
     return rval;
 }
 
-// call individual tests, to be overridden to call implementations
+// call individual tests, to be overriden to call implementations
 void IntlTest::runIndexedTest( int32_t /*index*/, UBool /*exec*/, const char* & /*name*/, char* /*par*/ )
 {
-    // to be overridden by a method like:
+    // to be overriden by a method like:
     /*
     switch (index) {
         case 0: name = "First Test"; if (exec) FirstTest( par ); break;
@@ -727,7 +697,7 @@ void IntlTest::runIndexedTest( int32_t /*index*/, UBool /*exec*/, const char* & 
         default: name = ""; break;
     }
     */
-    this->errln("*** runIndexedTest needs to be overridden! ***");
+    this->errln("*** runIndexedTest needs to be overriden! ***");
 }
 
 
@@ -964,7 +934,7 @@ void IntlTest::log(const char *fmt, ...)
     vsprintf(buffer, fmt, ap);
     va_end(ap);
     if( verbose ) {
-        log(UnicodeString(buffer, (const char *)NULL));
+        log(UnicodeString(buffer, ""));
     }
 }
 
@@ -978,7 +948,7 @@ void IntlTest::logln(const char *fmt, ...)
     vsprintf(buffer, fmt, ap);
     va_end(ap);
     if( verbose ) {
-        logln(UnicodeString(buffer, (const char *)NULL));
+        logln(UnicodeString(buffer, ""));
     }
 }
 
@@ -991,7 +961,7 @@ UBool IntlTest::logKnownIssue(const char *ticket, const char *fmt, ...)
     /* sprintf it just to make sure that the information is valid */
     vsprintf(buffer, fmt, ap);
     va_end(ap);
-    return logKnownIssue(ticket, UnicodeString(buffer, (const char *)NULL));
+    return logKnownIssue(ticket, UnicodeString(buffer, ""));
 }
 
 UBool IntlTest::logKnownIssue(const char *ticket) {
@@ -1029,7 +999,7 @@ void IntlTest::info(const char *fmt, ...)
     /* sprintf it just to make sure that the information is valid */
     vsprintf(buffer, fmt, ap);
     va_end(ap);
-    info(UnicodeString(buffer, (const char *)NULL));
+    info(UnicodeString(buffer, ""));
 }
 
 void IntlTest::infoln(const char *fmt, ...)
@@ -1041,7 +1011,7 @@ void IntlTest::infoln(const char *fmt, ...)
     /* sprintf it just to make sure that the information is valid */
     vsprintf(buffer, fmt, ap);
     va_end(ap);
-    infoln(UnicodeString(buffer, (const char *)NULL));
+    infoln(UnicodeString(buffer, ""));
 }
 
 void IntlTest::err(const char *fmt, ...)
@@ -1052,7 +1022,7 @@ void IntlTest::err(const char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
     va_end(ap);
-    err(UnicodeString(buffer, (const char *)NULL));
+    err(UnicodeString(buffer, ""));
 }
 
 void IntlTest::errln(const char *fmt, ...)
@@ -1063,7 +1033,7 @@ void IntlTest::errln(const char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
     va_end(ap);
-    errln(UnicodeString(buffer, (const char *)NULL));
+    errln(UnicodeString(buffer, ""));
 }
 
 void IntlTest::dataerrln(const char *fmt, ...)
@@ -1074,7 +1044,7 @@ void IntlTest::dataerrln(const char *fmt, ...)
     va_start(ap, fmt);
     vsprintf(buffer, fmt, ap);
     va_end(ap);
-    dataerrln(UnicodeString(buffer, (const char *)NULL));
+    dataerrln(UnicodeString(buffer, ""));
 }
 
 void IntlTest::errcheckln(UErrorCode status, const char *fmt, ...)
@@ -1087,9 +1057,9 @@ void IntlTest::errcheckln(UErrorCode status, const char *fmt, ...)
     va_end(ap);
     
     if (status == U_FILE_ACCESS_ERROR || status == U_MISSING_RESOURCE_ERROR) {
-        dataerrln(UnicodeString(buffer, (const char *)NULL));
+        dataerrln(UnicodeString(buffer, ""));
     } else {
-        errln(UnicodeString(buffer, (const char *)NULL));
+        errln(UnicodeString(buffer, ""));
     }
 }
 
@@ -1109,16 +1079,8 @@ UBool IntlTest::printKnownIssues()
   }
 }
 
-static UMutex messageMutex = U_MUTEX_INITIALIZER;
-
 void IntlTest::LL_message( UnicodeString message, UBool newline )
 {
-    // Synchronize this function.
-    // All error messages generated by tests funnel through here.
-    // Multithreaded tests can concurrently generate errors, requiring synchronization
-    // to keep each message together.
-    Mutex lock(&messageMutex);
-
     // string that starts with a LineFeed character and continues
     // with spaces according to the current indentation
     static const UChar indentUChars[] = {
@@ -1134,7 +1096,6 @@ void IntlTest::LL_message( UnicodeString message, UBool newline )
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32
     };
-    U_ASSERT(1 + LL_indentlevel <= UPRV_LENGTHOF(indentUChars));
     UnicodeString indent(FALSE, indentUChars, 1 + LL_indentlevel);
 
     char buffer[30000];
@@ -1225,7 +1186,7 @@ main(int argc, char* argv[])
     const char *summary_file = NULL;
     UBool warnOnMissingData = FALSE;
     UBool defaultDataFound = FALSE;
-    int32_t threadCount = 12;
+    int32_t threadCount = 1;
     UErrorCode errorCode = U_ZERO_ERROR;
     UConverter *cnv = NULL;
     const char *warnOrErr = "Failure";
@@ -1310,8 +1271,9 @@ main(int argc, char* argv[])
                 "### Options are: verbose (v), all (a), noerrormsg (n), \n"
                 "### exhaustive (e), leaks (l), -x xmlfile.xml, prop:<propery>=<value>, \n"
                 "### notime (T), \n"
-                "### threads:<threadCount>\n"
-                "###     (The default thread count is 12.),\n"
+                "### threads:<threadCount> (Mulithreading must first be \n"
+                "###     enabled otherwise this will be ignored. \n"
+                "###     The default thread count is 1.),\n"
                 "### (Specify either -all (shortcut -a) or a test name). \n"
                 "### -all will run all of the tests.\n"
                 "### \n"
@@ -1819,39 +1781,6 @@ float IntlTest::random() {
     return random(&RAND_SEED);
 }
 
-
-/*
- * Integer random number class implementation.
- * Similar to C++ std::minstd_rand, with the same algorithm & constants.
- */
-IntlTest::icu_rand::icu_rand(uint32_t seed) {
-    seed = seed % 2147483647UL;
-    if (seed == 0) {
-        seed = 1;
-    }
-    fLast = seed;
-}
-
-IntlTest::icu_rand::~icu_rand() {}
-
-void IntlTest::icu_rand::seed(uint32_t seed) {
-    if (seed == 0) {
-        seed = 1;
-    }
-    fLast = seed;
-}
-
-uint32_t IntlTest::icu_rand::operator() () {
-    fLast = ((uint64_t)fLast * 48271UL) % 2147483647UL;
-    return fLast;
-}
-
-uint32_t IntlTest::icu_rand::getSeed() {
-    return (uint32_t) fLast;
-}
-
-
-
 static inline UChar toHex(int32_t i) {
     return (UChar)(i + (i < 10 ? 0x30 : (0x41 - 10)));
 }
@@ -1901,13 +1830,9 @@ UBool IntlTest::assertTrue(const char* message, UBool condition, UBool quiet, UB
     return condition;
 }
 
-UBool IntlTest::assertFalse(const char* message, UBool condition, UBool quiet, UBool possibleDataError) {
+UBool IntlTest::assertFalse(const char* message, UBool condition, UBool quiet) {
     if (condition) {
-        if (possibleDataError) {
-            dataerrln("FAIL: assertTrue() failed: %s", message);
-        } else {
-            errln("FAIL: assertTrue() failed: %s", message);
-        }
+        errln("FAIL: assertFalse() failed: %s", message);
     } else if (!quiet) {
         logln("Ok: %s", message);
     }
@@ -2009,8 +1934,7 @@ UBool IntlTest::assertEquals(const char* message,
 UBool IntlTest::assertEquals(const char* message,
                              double expected,
                              double actual) {
-    bool bothNaN = std::isnan(expected) && std::isnan(actual);
-    if (expected != actual && !bothNaN) {
+    if (expected != actual) {
         errln((UnicodeString)"FAIL: " + message + "; got " +
               actual + 
               "; expected " + expected);
@@ -2041,43 +1965,6 @@ UBool IntlTest::assertEquals(const char* message,
 #endif
     return TRUE;
 }
-
-
-UBool IntlTest::assertEquals(const char* message,
-                             UErrorCode expected,
-                             UErrorCode actual) {
-    if (expected != actual) {
-        errln((UnicodeString)"FAIL: " + message + "; got " +
-              u_errorName(actual) + 
-              "; expected " + u_errorName(expected));
-        return FALSE;
-    }
-#ifdef VERBOSE_ASSERTIONS
-    else {
-        logln((UnicodeString)"Ok: " + message + "; got " + u_errorName(actual));
-    }
-#endif
-    return TRUE;
-}
-
-UBool IntlTest::assertEquals(const char* message,
-                             const UnicodeSet& expected,
-                             const UnicodeSet& actual) {
-    IcuTestErrorCode status(*this, "assertEqualsUniSet");
-    if (expected != actual) {
-        errln((UnicodeString)"FAIL: " + message + "; got " +
-              toString(actual, status) +
-              "; expected " + toString(expected, status));
-        return FALSE;
-    }
-#ifdef VERBOSE_ASSERTIONS
-    else {
-        logln((UnicodeString)"Ok: " + message + "; got " + toString(actual, status));
-    }
-#endif
-    return TRUE;
-}
-
 
 #if !UCONFIG_NO_FORMATTING
 UBool IntlTest::assertEquals(const char* message,
@@ -2115,12 +2002,12 @@ static const char* extractToAssertBuf(const UnicodeString& message) {
     return ASSERT_BUF;
 }
 
-UBool IntlTest::assertTrue(const UnicodeString& message, UBool condition, UBool quiet, UBool possibleDataError) {
-    return assertTrue(extractToAssertBuf(message), condition, quiet, possibleDataError);
+UBool IntlTest::assertTrue(const UnicodeString& message, UBool condition, UBool quiet) {
+    return assertTrue(extractToAssertBuf(message), condition, quiet);
 }
 
-UBool IntlTest::assertFalse(const UnicodeString& message, UBool condition, UBool quiet, UBool possibleDataError) {
-    return assertFalse(extractToAssertBuf(message), condition, quiet, possibleDataError);
+UBool IntlTest::assertFalse(const UnicodeString& message, UBool condition, UBool quiet) {
+    return assertFalse(extractToAssertBuf(message), condition, quiet);
 }
 
 UBool IntlTest::assertSuccess(const UnicodeString& message, UErrorCode ec) {
@@ -2152,21 +2039,6 @@ UBool IntlTest::assertEquals(const UnicodeString& message,
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              int64_t expected,
                              int64_t actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
-}
-UBool IntlTest::assertEquals(const UnicodeString& message,
-                             double expected,
-                             double actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
-}
-UBool IntlTest::assertEquals(const UnicodeString& message,
-                             UErrorCode expected,
-                             UErrorCode actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
-}
-UBool IntlTest::assertEquals(const UnicodeString& message,
-                             const UnicodeSet& expected,
-                             const UnicodeSet& actual) {
     return assertEquals(extractToAssertBuf(message), expected, actual);
 }
 

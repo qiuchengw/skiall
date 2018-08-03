@@ -14,16 +14,14 @@
 
 #include "enum_string_mapping.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cstring>
 #include <string>
 #include <unordered_map>
 
 #include "extensions.h"
 
-namespace spvtools {
+namespace libspirv {
 
 #include "enum_string_mapping.inc"
 
-}  // namespace spvtools
+}  // namespace libspirv

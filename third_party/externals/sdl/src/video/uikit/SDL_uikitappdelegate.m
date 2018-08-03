@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     return exit_status;
 }
 
-static void SDLCALL
+static void
 SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     BOOL disable = (hint && *hint != '0');
@@ -422,24 +422,14 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     return YES;
 }
 
-- (UIWindow *)window
+- (void)applicationWillTerminate:(UIApplication *)application
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this) {
-        SDL_Window *window = NULL;
-        for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-            if (data != nil) {
-                return data.uiwindow;
-            }
-        }
-    }
-    return nil;
+    SDL_SendAppEvent(SDL_APP_TERMINATING);
 }
 
-- (void)setWindow:(UIWindow *)window
+- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
 {
-    /* Do nothing. */
+    SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
 #if !TARGET_OS_TV
@@ -472,34 +462,41 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 }
 #endif
 
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-    SDL_OnApplicationWillTerminate();
-}
-
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
-{
-    SDL_OnApplicationDidReceiveMemoryWarning();
-}
-
 - (void)applicationWillResignActive:(UIApplication*)application
 {
-    SDL_OnApplicationWillResignActive();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        SDL_Window *window;
+        for (window = _this->windows; window != nil; window = window->next) {
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+        }
+    }
+    SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
-    SDL_OnApplicationDidEnterBackground();
+    SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 }
 
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
-    SDL_OnApplicationWillEnterForeground();
+    SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    SDL_OnApplicationDidBecomeActive();
+    SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
+
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        SDL_Window *window;
+        for (window = _this->windows; window != nil; window = window->next) {
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+        }
+    }
 }
 
 - (void)sendDropFileForURL:(NSURL *)url
@@ -513,24 +510,23 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_SendDropComplete(NULL);
 }
 
-#if TARGET_OS_TV || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
-
+#if TARGET_OS_TV
+/* TODO: Use this on iOS 9+ as well? */
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
     /* TODO: Handle options */
     [self sendDropFileForURL:url];
     return YES;
 }
+#endif /* TARGET_OS_TV */
 
-#else
-
+#if !TARGET_OS_TV
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
 {
     [self sendDropFileForURL:url];
     return YES;
 }
-
-#endif
+#endif /* !TARGET_OS_TV */
 
 @end
 

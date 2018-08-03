@@ -18,26 +18,23 @@
 #include <memory>
 #include <string>
 
-#include "ir_context.h"
 #include "module.h"
 #include "spirv-tools/libspirv.hpp"
 
 namespace spvtools {
 
-// Builds an Module returns the owning IRContext from the given SPIR-V
-// |binary|. |size| specifies number of words in |binary|. The |binary| will be
-// decoded according to the given target |env|. Returns nullptr if errors occur
-// and sends the errors to |consumer|.
-std::unique_ptr<opt::IRContext> BuildModule(spv_target_env env,
-                                            MessageConsumer consumer,
-                                            const uint32_t* binary,
-                                            size_t size);
+// Builds and returns an ir::Module from the given SPIR-V |binary|. |size|
+// specifies number of words in |binary|. The |binary| will be decoded
+// according to the given target |env|. Returns nullptr if erors occur and
+// sends the errors to |consumer|.
+std::unique_ptr<ir::Module> BuildModule(
+    spv_target_env env, MessageConsumer consumer, const uint32_t* binary,
+    size_t size);
 
-// Builds an Module and returns the owning IRContext from the given
-// SPIR-V assembly |text|.  The |text| will be encoded according to the given
-// target |env|. Returns nullptr if errors occur and sends the errors to
-// |consumer|.
-std::unique_ptr<opt::IRContext> BuildModule(
+// Builds and returns an ir::Module from the given SPIR-V assembly |text|.
+// The |text| will be encoded according to the given target |env|. Returns
+// nullptr if erors occur and sends the errors to |consumer|.
+std::unique_ptr<ir::Module> BuildModule(
     spv_target_env env, MessageConsumer consumer, const std::string& text,
     uint32_t assemble_options = SpirvTools::kDefaultAssembleOption);
 

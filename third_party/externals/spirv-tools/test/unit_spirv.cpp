@@ -17,7 +17,6 @@
 #include "gmock/gmock.h"
 #include "test_fixture.h"
 
-namespace spvtools {
 namespace {
 
 using spvtest::MakeVector;
@@ -51,5 +50,4 @@ TEST_P(RoundTripTest, Sample) {
       << GetParam();
 }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

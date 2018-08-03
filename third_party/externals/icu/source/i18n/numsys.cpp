@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2010-2015, International Business Machines Corporation and
@@ -25,7 +23,6 @@
 #include "unicode/schriter.h"
 #include "unicode/numsys.h"
 #include "cstring.h"
-#include "uassert.h"
 #include "uresimp.h"
 #include "numsys_impl.h"
 
@@ -116,13 +113,7 @@ NumberingSystem::createInstance(const Locale & inLocale, UErrorCode& status) {
     UBool usingFallback = FALSE;
     char buffer[ULOC_KEYWORDS_CAPACITY];
     int32_t count = inLocale.getKeywordValue("numbers",buffer, sizeof(buffer),status);
-    if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING) {
-        // the "numbers" keyword exceeds ULOC_KEYWORDS_CAPACITY; ignore and use default.
-        count = 0;
-        status = U_ZERO_ERROR;
-    }
     if ( count > 0 ) { // @numbers keyword was specified in the locale
-        U_ASSERT(count < ULOC_KEYWORDS_CAPACITY);
         buffer[count] = '\0'; // Make sure it is null terminated.
         if ( !uprv_strcmp(buffer,gDefault) || !uprv_strcmp(buffer,gNative) || 
              !uprv_strcmp(buffer,gTraditional) || !uprv_strcmp(buffer,gFinance)) {
@@ -237,7 +228,7 @@ void NumberingSystem::setAlgorithmic(UBool c) {
     algorithmic = c;
 }
 
-void NumberingSystem::setDesc(const UnicodeString &d) {
+void NumberingSystem::setDesc(UnicodeString d) {
     desc.setTo(d);
 }
 void NumberingSystem::setName(const char *n) {

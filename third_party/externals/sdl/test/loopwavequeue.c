@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,11 +25,12 @@
 #include <signal.h>
 #endif
 
-static struct
+struct
 {
     SDL_AudioSpec spec;
     Uint8 *sound;               /* Pointer to wave data */
     Uint32 soundlen;            /* Length of wave data */
+    int soundpos;               /* Current play position */
 } wave;
 
 

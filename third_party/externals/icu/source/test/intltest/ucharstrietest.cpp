@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *   Copyright (C) 2010-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  ucharstrietest.cpp
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -23,7 +21,6 @@
 #include "unicode/ucharstriebuilder.h"
 #include "unicode/uniset.h"
 #include "unicode/unistr.h"
-#include "unicode/utf16.h"
 #include "intltest.h"
 #include "cmemory.h"
 
@@ -559,7 +556,7 @@ void UCharsTrieTest::TestIteratorFromBranch() {
     trie->next(u_n);
     IcuTestErrorCode errorCode(*this, "TestIteratorFromBranch()");
     UCharsTrie::Iterator iter(*trie, 0, errorCode);
-    if(errorCode.errIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
+    if(errorCode.logIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
         return;
     }
     // Expected data: Same as in buildMonthsTrie(), except only the suffixes
@@ -610,7 +607,7 @@ void UCharsTrieTest::TestIteratorFromLinearMatch() {
     trie->next(u_a);
     IcuTestErrorCode errorCode(*this, "TestIteratorFromLinearMatch()");
     UCharsTrie::Iterator iter(*trie, 0, errorCode);
-    if(errorCode.errIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
+    if(errorCode.logIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
         return;
     }
     // Expected data: Same as in buildMonthsTrie(), except only the suffixes
@@ -632,7 +629,7 @@ void UCharsTrieTest::TestTruncatingIteratorFromRoot() {
     }
     IcuTestErrorCode errorCode(*this, "TestTruncatingIteratorFromRoot()");
     UCharsTrie::Iterator iter(*trie, 4, errorCode);
-    if(errorCode.errIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
+    if(errorCode.logIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
         return;
     }
     // Expected data: Same as in buildMonthsTrie(), except only the first 4 characters
@@ -687,7 +684,7 @@ void UCharsTrieTest::TestTruncatingIteratorFromLinearMatchShort() {
     IcuTestErrorCode errorCode(*this, "TestTruncatingIteratorFromLinearMatchShort()");
     // Truncate within the linear-match node.
     UCharsTrie::Iterator iter(*trie, 2, errorCode);
-    if(errorCode.errIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
+    if(errorCode.logIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
         return;
     }
     static const StringAndValue expected[]={
@@ -716,7 +713,7 @@ void UCharsTrieTest::TestTruncatingIteratorFromLinearMatchLong() {
     IcuTestErrorCode errorCode(*this, "TestTruncatingIteratorFromLinearMatchLong()");
     // Truncate after the linear-match node.
     UCharsTrie::Iterator iter(*trie, 3, errorCode);
-    if(errorCode.errIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
+    if(errorCode.logIfFailureAndReset("UCharsTrie::Iterator(trie) constructor")) {
         return;
     }
     static const StringAndValue expected[]={
@@ -792,7 +789,7 @@ UCharsTrie *UCharsTrieTest::buildTrie(const StringAndValue data[], int32_t dataL
     UnicodeString trieUChars;
     builder_->buildUnicodeString(buildOption, trieUChars, errorCode);
     LocalPointer<UCharsTrie> trie(builder_->build(buildOption, errorCode));
-    if(!errorCode.errIfFailureAndReset("add()/build()")) {
+    if(!errorCode.logIfFailureAndReset("add()/build()")) {
         builder_->add("zzz", 999, errorCode);
         if(errorCode.reset()!=U_NO_WRITE_PERMISSION) {
             errln("builder.build().add(zzz) did not set U_NO_WRITE_PERMISSION");
@@ -1011,7 +1008,7 @@ void UCharsTrieTest::checkIterator(UCharsTrie &trie,
                                    const StringAndValue data[], int32_t dataLength) {
     IcuTestErrorCode errorCode(*this, "checkIterator()");
     UCharsTrie::Iterator iter(trie, 0, errorCode);
-    if(errorCode.errIfFailureAndReset("UCharsTrie::Iterator(trieUChars) constructor")) {
+    if(errorCode.logIfFailureAndReset("UCharsTrie::Iterator(trieUChars) constructor")) {
         return;
     }
     checkIterator(iter, data, dataLength);
@@ -1026,7 +1023,7 @@ void UCharsTrieTest::checkIterator(UCharsTrie::Iterator &iter,
             break;
         }
         UBool hasNext=iter.next(errorCode);
-        if(errorCode.errIfFailureAndReset("trie iterator next() for item %d: %s", (int)i, data[i].s)) {
+        if(errorCode.logIfFailureAndReset("trie iterator next() for item %d: %s", (int)i, data[i].s)) {
             break;
         }
         if(!hasNext) {
@@ -1052,7 +1049,7 @@ void UCharsTrieTest::checkIterator(UCharsTrie::Iterator &iter,
         errln("trie iterator hasNext()=TRUE after all items");
     }
     UBool hasNext=iter.next(errorCode);
-    errorCode.errIfFailureAndReset("trie iterator next() after all items");
+    errorCode.logIfFailureAndReset("trie iterator next() after all items");
     if(hasNext) {
         errln("trie iterator next()=TRUE after all items");
     }

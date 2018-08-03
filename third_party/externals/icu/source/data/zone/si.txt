@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/si.xml
+// *
+// ***************************************************************************
 si{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"අබිජාන්"}
@@ -214,7 +220,7 @@ si{
             ec{"බෙලෙම්"}
         }
         "America:Belize"{
-            ec{"බෙලීස්"}
+            ec{"බේලිස්"}
         }
         "America:Blanc-Sablon"{
             ec{"බ්ලැන්ක්-සැබ්ලන්"}
@@ -302,9 +308,6 @@ si{
         }
         "America:El_Salvador"{
             ec{"එල්සැල්වදෝර්"}
-        }
-        "America:Fort_Nelson"{
-            ec{"ෆෝට් නෙල්සන්"}
         }
         "America:Fortaleza"{
             ec{"ෆොර්ටලේසා"}
@@ -507,9 +510,6 @@ si{
         "America:Puerto_Rico"{
             ec{"පුවටොරිකෝව"}
         }
-        "America:Punta_Arenas"{
-            ec{"පුන්ටා ඇරිනාස්"}
-        }
         "America:Rainy_River"{
             ec{"රෙයිනි ගඟ"}
         }
@@ -601,7 +601,7 @@ si{
             ec{"යකුටට්"}
         }
         "America:Yellowknife"{
-            ec{"යෙලෝනයිෆ්"}
+            ec{"යෙලෝනයිෆ"}
         }
         "Antarctica:Casey"{
             ec{"කැසේ"}
@@ -660,9 +660,6 @@ si{
         "Asia:Ashgabat"{
             ec{"අශ්ගබැට්"}
         }
-        "Asia:Atyrau"{
-            ec{"ඇටිරවු"}
-        }
         "Asia:Baghdad"{
             ec{"බැග්ඩෑඩ්"}
         }
@@ -674,9 +671,6 @@ si{
         }
         "Asia:Bangkok"{
             ec{"බැංකොක්"}
-        }
-        "Asia:Barnaul"{
-            ec{"බර්නෞල්"}
         }
         "Asia:Beirut"{
             ec{"බීරුට්"}
@@ -713,9 +707,6 @@ si{
         }
         "Asia:Dushanbe"{
             ec{"ඩුශන්බේ"}
-        }
-        "Asia:Famagusta"{
-            ec{"ෆැමගුස්ටා"}
         }
         "Asia:Gaza"{
             ec{"ගාසා"}
@@ -858,9 +849,6 @@ si{
         "Asia:Tokyo"{
             ec{"ටෝකියෝ"}
         }
-        "Asia:Tomsk"{
-            ec{"ටොම්ස්ක්"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"උලාන්බාටර්"}
         }
@@ -889,7 +877,7 @@ si{
             ec{"ඇසොරේ"}
         }
         "Atlantic:Bermuda"{
-            ec{"බර්මියුඩා"}
+            ec{"බර්මියුඩාව"}
         }
         "Atlantic:Canary"{
             ec{"කැනරි"}
@@ -951,9 +939,6 @@ si{
         "Australia:Sydney"{
             ec{"සිඩ්නි"}
         }
-        "Etc:UTC"{
-            ls{"සමකක්ෂ සාර්ව වේලාව"}
-        }
         "Etc:Unknown"{
             ec{"හඳුනා නොගත් නගරය"}
         }
@@ -962,9 +947,6 @@ si{
         }
         "Europe:Andorra"{
             ec{"ඇන්ඩෝරාව"}
-        }
-        "Europe:Astrakhan"{
-            ec{"අස්ට්‍රඛාන්"}
         }
         "Europe:Athens"{
             ec{"ඇතැන්ස්"}
@@ -998,7 +980,7 @@ si{
         }
         "Europe:Dublin"{
             ec{"ඩබ්ලින්"}
-            ld{"අයර්ලන්ත සම්මත වේලාව"}
+            ld{"අයර්ලන්ත ගිම්හාන කාලය"}
         }
         "Europe:Gibraltar"{
             ec{"ජිබ්රෝල්ටා"}
@@ -1024,9 +1006,6 @@ si{
         "Europe:Kiev"{
             ec{"කිව්"}
         }
-        "Europe:Kirov"{
-            ec{"කිරොව්"}
-        }
         "Europe:Lisbon"{
             ec{"ලිස්බන්"}
         }
@@ -1035,7 +1014,7 @@ si{
         }
         "Europe:London"{
             ec{"ලන්ඩන්"}
-            ld{"බ්‍රිතාන්‍ය ගිම්හාන වේලාව"}
+            ld{"බ්‍රිතාන්‍ය ගිම්හාන කාලය"}
         }
         "Europe:Luxembourg"{
             ec{"ලක්සැම්බර්ග්"}
@@ -1085,9 +1064,6 @@ si{
         "Europe:Sarajevo"{
             ec{"සරාජෙවෝ"}
         }
-        "Europe:Saratov"{
-            ec{"සරටොව්"}
-        }
         "Europe:Simferopol"{
             ec{"සිම්ෆෙරෝපොල්"}
         }
@@ -1105,9 +1081,6 @@ si{
         }
         "Europe:Tirane"{
             ec{"ටිරානේ"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"උල්යනොව්ස්ක්"}
         }
         "Europe:Uzhgorod"{
             ec{"උස්ගොරෝඩ්"}
@@ -1766,9 +1739,6 @@ si{
         }
         "meta:Ponape"{
             ls{"පොනපේ වේලාව"}
-        }
-        "meta:Pyongyang"{
-            ls{"ප්යොන්ග්යන් වේලාව"}
         }
         "meta:Reunion"{
             ls{"රියුනියන් වේලාව"}

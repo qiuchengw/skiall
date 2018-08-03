@@ -18,9 +18,10 @@
 #include "enum_set.h"
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
+using libspirv::EnumSet;
+using libspirv::CapabilitySet;
 using spvtest::ElementsIn;
 using ::testing::Eq;
 using ::testing::ValuesIn;
@@ -284,5 +285,4 @@ INSTANTIATE_TEST_CASE_P(Samples, CapabilitySetForEachTest,
                               static_cast<SpvCapability>(0x7fffffff)}},
                         }), );
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

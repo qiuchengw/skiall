@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ksb.xml
+// *
+// ***************************************************************************
 ksb{
     Currencies{
         AED{
@@ -124,10 +130,6 @@ ksb{
         }
         MRO{
             "MRO",
-            "ugwiya ya Molitania (1973–2017)",
-        }
-        MRU{
-            "MRU",
             "ugwiya ya Molitania",
         }
         MUR{
@@ -184,10 +186,6 @@ ksb{
         }
         STD{
             "STD",
-            "dobla ya Sao Tome na Plincipe (1977–2017)",
-        }
-        STN{
-            "STN",
             "dobla ya Sao Tome na Plincipe",
         }
         SZL{
@@ -235,5 +233,5 @@ ksb{
             "dola ya Zimbabwe",
         }
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

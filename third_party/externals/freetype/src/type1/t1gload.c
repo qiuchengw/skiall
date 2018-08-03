@@ -62,7 +62,6 @@
     PS_Driver  driver = (PS_Driver)FT_FACE_DRIVER( face );
 #endif
 
-
     decoder->font_matrix = type1->font_matrix;
     decoder->font_offset = type1->font_offset;
 
@@ -250,8 +249,6 @@
 
     *max_advance = 0;
 
-    FT_TRACE6(( "T1_Compute_Max_Advance:\n" ));
-
     /* for each glyph, parse the glyph charstring and extract */
     /* the advance width                                      */
     for ( glyph_index = 0; glyph_index < type1->num_glyphs; glyph_index++ )
@@ -263,9 +260,6 @@
 
       /* ignore the error if one occurred - skip to next glyph */
     }
-
-    FT_TRACE6(( "T1_Compute_Max_Advance: max advance: %f\n",
-                *max_advance / 65536.0 ));
 
     psaux->t1_decoder_funcs->done( &decoder );
 
@@ -288,17 +282,10 @@
     FT_Error       error;
 
 
-    FT_TRACE5(( "T1_Get_Advances:\n" ));
-
     if ( load_flags & FT_LOAD_VERTICAL_LAYOUT )
     {
       for ( nn = 0; nn < count; nn++ )
-      {
         advances[nn] = 0;
-
-        FT_TRACE5(( "  idx %d: advance height 0 font units\n",
-                    first + nn ));
-      }
 
       return FT_Err_Ok;
     }
@@ -333,11 +320,6 @@
         advances[nn] = FIXED_TO_INT( decoder.builder.advance.x );
       else
         advances[nn] = 0;
-
-      FT_TRACE5(( "  idx %d: advance width %d font unit%s\n",
-                  first + nn,
-                  advances[nn],
-                  advances[nn] == 1 ? "" : "s" ));
     }
 
     return FT_Err_Ok;

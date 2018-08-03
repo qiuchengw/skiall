@@ -15,7 +15,6 @@
 #ifndef LIBSPIRV_OPT_ELIMINATE_DEAD_CONSTANT_PASS_H_
 #define LIBSPIRV_OPT_ELIMINATE_DEAD_CONSTANT_PASS_H_
 
-#include "ir_context.h"
 #include "module.h"
 #include "pass.h"
 
@@ -26,7 +25,7 @@ namespace opt {
 class EliminateDeadConstantPass : public Pass {
  public:
   const char* name() const override { return "eliminate-dead-const"; }
-  Status Process() override;
+  Status Process(ir::Module*) override;
 };
 
 }  // namespace opt

@@ -1,12 +1,10 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-*   Copyright (C) 2010-2016, International Business Machines
+*   Copyright (C) 2010-2014, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  bytestriebuilder.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -31,6 +29,7 @@ U_NAMESPACE_BEGIN
 
 class BytesTrieElement;
 class CharString;
+
 /**
  * Builder class for BytesTrie.
  *
@@ -66,7 +65,7 @@ public:
      * @return *this
      * @stable ICU 4.8
      */
-    BytesTrieBuilder &add(StringPiece s, int32_t value, UErrorCode &errorCode);
+    BytesTrieBuilder &add(const StringPiece &s, int32_t value, UErrorCode &errorCode);
 
     /**
      * Builds a BytesTrie for the add()ed data.
@@ -143,7 +142,7 @@ private:
     virtual int32_t getMaxLinearMatchLength() const { return BytesTrie::kMaxLinearMatchLength; }
 
     /**
-     * @internal (private)
+     * @internal
      */
     class BTLinearMatchNode : public LinearMatchNode {
     public:
@@ -153,7 +152,7 @@ private:
     private:
         const char *s;
     };
-    
+
     virtual Node *createLinearMatchNode(int32_t i, int32_t byteIndex, int32_t length,
                                         Node *nextNode) const;
 

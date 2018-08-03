@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/et.xml
+// *
+// ***************************************************************************
 et{
-    Version{"2.1.41.97"}
+    Version{"2.1.20.4"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -85,7 +91,7 @@ et{
             ec{"Kampala"}
         }
         "Africa:Khartoum"{
-            ec{"Hartum"}
+            ec{"Khartoum"}
         }
         "Africa:Kigali"{
             ec{"Kigali"}
@@ -133,7 +139,7 @@ et{
             ec{"Nairobi"}
         }
         "Africa:Ndjamena"{
-            ec{"N’Djamena"}
+            ec{"Ndjamena"}
         }
         "Africa:Niamey"{
             ec{"Niamey"}
@@ -303,9 +309,6 @@ et{
         "America:El_Salvador"{
             ec{"El Salvador"}
         }
-        "America:Fort_Nelson"{
-            ec{"Fort Nelson"}
-        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -472,13 +475,13 @@ et{
             ec{"Noronha"}
         }
         "America:North_Dakota:Beulah"{
-            ec{"Beulah, Põhja-Dakota"}
+            ec{"Beulah, North Dakota"}
         }
         "America:North_Dakota:Center"{
-            ec{"Center, Põhja-Dakota"}
+            ec{"Center, North Dakota"}
         }
         "America:North_Dakota:New_Salem"{
-            ec{"New Salem, Põhja-Dakota"}
+            ec{"New Salem, North Dakota"}
         }
         "America:Ojinaga"{
             ec{"Ojinaga"}
@@ -506,9 +509,6 @@ et{
         }
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
-        }
-        "America:Punta_Arenas"{
-            ec{"Punta Arenas"}
         }
         "America:Rainy_River"{
             ec{"Rainy River"}
@@ -550,7 +550,7 @@ et{
             ec{"Sitka"}
         }
         "America:St_Barthelemy"{
-            ec{"Saint-Barthélemy"}
+            ec{"Saint Barthélemy"}
         }
         "America:St_Johns"{
             ec{"Saint John’s"}
@@ -660,9 +660,6 @@ et{
         "Asia:Ashgabat"{
             ec{"Aşgabat"}
         }
-        "Asia:Atyrau"{
-            ec{"Atõrau"}
-        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -674,9 +671,6 @@ et{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
-        }
-        "Asia:Barnaul"{
-            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beirut"}
@@ -713,9 +707,6 @@ et{
         }
         "Asia:Dushanbe"{
             ec{"Dušanbe"}
-        }
-        "Asia:Famagusta"{
-            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -858,9 +849,6 @@ et{
         "Asia:Tokyo"{
             ec{"Tōkyō"}
         }
-        "Asia:Tomsk"{
-            ec{"Tomsk"}
-        }
         "Asia:Ulaanbaatar"{
             ec{"Ulaanbaatar"}
         }
@@ -898,7 +886,7 @@ et{
             ec{"Roheneemesaared"}
         }
         "Atlantic:Faeroe"{
-            ec{"Fääri saared"}
+            ec{"Fääri"}
         }
         "Atlantic:Madeira"{
             ec{"Madeira"}
@@ -951,9 +939,6 @@ et{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
-        "Etc:UTC"{
-            ls{"Koordineeritud maailmaaeg"}
-        }
         "Etc:Unknown"{
             ec{"määramata linn"}
         }
@@ -962,9 +947,6 @@ et{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
-        }
-        "Europe:Astrakhan"{
-            ec{"Astrahan"}
         }
         "Europe:Athens"{
             ec{"Ateena"}
@@ -988,7 +970,7 @@ et{
             ec{"Budapest"}
         }
         "Europe:Busingen"{
-            ec{"Büsingen"}
+            ec{"Busingen"}
         }
         "Europe:Chisinau"{
             ec{"Chișinău"}
@@ -1023,9 +1005,6 @@ et{
         }
         "Europe:Kiev"{
             ec{"Kiiev"}
-        }
-        "Europe:Kirov"{
-            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lissabon"}
@@ -1085,9 +1064,6 @@ et{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
-        "Europe:Saratov"{
-            ec{"Saratov"}
-        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1105,9 +1081,6 @@ et{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
-        }
-        "Europe:Ulyanovsk"{
-            ec{"Uljanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Užgorod"}
@@ -1149,7 +1122,7 @@ et{
             ec{"Jõulusaar"}
         }
         "Indian:Cocos"{
-            ec{"Kookossaared"}
+            ec{"Cocos"}
         }
         "Indian:Comoro"{
             ec{"Comoro"}
@@ -1233,7 +1206,7 @@ et{
             ec{"Majuro"}
         }
         "Pacific:Marquesas"{
-            ec{"Markiisaared"}
+            ec{"Marquesas"}
         }
         "Pacific:Midway"{
             ec{"Midway"}
@@ -1254,7 +1227,7 @@ et{
             ec{"Pago Pago"}
         }
         "Pacific:Palau"{
-            ec{"Belau"}
+            ec{"Palau"}
         }
         "Pacific:Pitcairn"{
             ec{"Pitcairn"}
@@ -1397,9 +1370,9 @@ et{
             ls{"Kesk-Austraalia standardaeg"}
         }
         "meta:Australia_CentralWestern"{
-            ld{"Austraalia Kesk-Lääne suveaeg"}
-            lg{"Austraalia Kesk-Lääne aeg"}
-            ls{"Austraalia Kesk-Lääne standardaeg"}
+            ld{"Kesk-Lääne Austraalia suveaeg"}
+            lg{"Kesk-Lääne Austraalia aeg"}
+            ls{"Kesk-Lääne Austraalia standardaeg"}
         }
         "meta:Australia_Eastern"{
             ld{"Ida-Austraalia suveaeg"}
@@ -1444,9 +1417,6 @@ et{
             ld{"Roheneemesaarte suveaeg"}
             lg{"Roheneemesaarte aeg"}
             ls{"Roheneemesaarte standardaeg"}
-        }
-        "meta:Casey"{
-            ls{"Casey aeg"}
         }
         "meta:Chamorro"{
             ls{"Tšamorro standardaeg"}
@@ -1581,7 +1551,7 @@ et{
         }
         "meta:Hawaii_Aleutian"{
             ld{"Hawaii-Aleuudi suveaeg"}
-            lg{"Hawaii-Aleuudi aeg"}
+            lg{"Hawaii-aleuudi aeg"}
             ls{"Hawaii-Aleuudi standardaeg"}
         }
         "meta:Hong_Kong"{
@@ -1659,21 +1629,13 @@ et{
         "meta:Kyrgystan"{
             ls{"Kõrgõzstani aeg"}
         }
-        "meta:Lanka"{
-            ls{"Sri Lanka aeg"}
-        }
         "meta:Line_Islands"{
             ls{"Line’i saarte aeg"}
         }
         "meta:Lord_Howe"{
-            ld{"Lord Howe’i suveaeg"}
-            lg{"Lord Howe’i aeg"}
-            ls{"Lord Howe’i standardaeg"}
-        }
-        "meta:Macau"{
-            ld{"Macau suveaeg"}
-            lg{"Macau aeg"}
-            ls{"Macau standardaeg"}
+            ld{"Lord Howe suveaeg"}
+            lg{"Lord Howe aeg"}
+            ls{"Lord Howe standardaeg"}
         }
         "meta:Macquarie"{
             ls{"Macquarie saare aeg"}
@@ -1758,9 +1720,6 @@ et{
             lg{"Fernando de Noronha aeg"}
             ls{"Fernando de Noronha standardaeg"}
         }
-        "meta:North_Mariana"{
-            ls{"Põhja-Mariaani aeg"}
-        }
         "meta:Novosibirsk"{
             ld{"Novosibirski suveaeg"}
             lg{"Novosibirski aeg"}
@@ -1810,9 +1769,6 @@ et{
         }
         "meta:Ponape"{
             ls{"Pohnpei aeg"}
-        }
-        "meta:Pyongyang"{
-            ls{"Pyongyangi aeg"}
         }
         "meta:Qyzylorda"{
             ld{"Kõzõlorda suveaeg"}
@@ -1936,7 +1892,7 @@ et{
             ls{"Jekaterinburgi standardaeg"}
         }
         fallbackFormat{"{1} ({0})"}
-        gmtFormat{"GMT {0}"}
+        gmtFormat{"GMT{0}"}
         gmtZeroFormat{"GMT"}
         hourFormat{"+HH:mm;−HH:mm"}
         regionFormat{"({0})"}

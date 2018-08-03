@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,24 +20,16 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef SDL_sysrender_h_
-#define SDL_sysrender_h_
+#ifndef _SDL_sysrender_h
+#define _SDL_sysrender_h
 
 #include "SDL_render.h"
 #include "SDL_events.h"
-#include "SDL_mutex.h"
 #include "SDL_yuv_sw_c.h"
 
 /* The SDL 2D rendering system */
 
 typedef struct SDL_RenderDriver SDL_RenderDriver;
-
-typedef enum
-{
-    SDL_ScaleModeNearest,
-    SDL_ScaleModeLinear,
-    SDL_ScaleModeBest
-} SDL_ScaleMode;
 
 typedef struct
 {
@@ -63,7 +55,6 @@ struct SDL_Texture
     int h;                      /**< The height of the texture */
     int modMode;                /**< The texture modulation mode */
     SDL_BlendMode blendMode;    /**< The texture blend mode */
-    SDL_ScaleMode scaleMode;    /**< The texture scale mode */
     Uint8 r, g, b, a;           /**< Texture modulation values */
 
     SDL_Renderer *renderer;
@@ -88,7 +79,6 @@ struct SDL_Renderer
 
     void (*WindowEvent) (SDL_Renderer * renderer, const SDL_WindowEvent *event);
     int (*GetOutputSize) (SDL_Renderer * renderer, int *w, int *h);
-    SDL_bool (*SupportsBlendMode)(SDL_Renderer * renderer, SDL_BlendMode blendMode);
     int (*CreateTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*SetTextureColorMod) (SDL_Renderer * renderer,
                                SDL_Texture * texture);
@@ -132,9 +122,6 @@ struct SDL_Renderer
     int (*GL_BindTexture) (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh);
     int (*GL_UnbindTexture) (SDL_Renderer * renderer, SDL_Texture *texture);
 
-    void *(*GetMetalLayer) (SDL_Renderer * renderer);
-    void *(*GetMetalCommandEncoder) (SDL_Renderer * renderer);
-
     /* The current renderer info */
     SDL_RendererInfo info;
 
@@ -167,13 +154,9 @@ struct SDL_Renderer
     SDL_FPoint scale;
     SDL_FPoint scale_backup;
 
-    /* The pixel to point coordinate scale */
-    SDL_FPoint dpi_scale;
-
     /* The list of textures */
     SDL_Texture *textures;
     SDL_Texture *target;
-    SDL_mutex *target_mutex;
 
     Uint8 r, g, b, a;                   /**< Color for drawing operations values */
     SDL_BlendMode blendMode;            /**< The drawing blend mode */
@@ -190,25 +173,33 @@ struct SDL_RenderDriver
     SDL_RendererInfo info;
 };
 
-/* Not all of these are available in a given build. Use #ifdefs, etc. */
+#if !SDL_RENDER_DISABLED
+
+#if SDL_VIDEO_RENDER_D3D
 extern SDL_RenderDriver D3D_RenderDriver;
+#endif
+#if SDL_VIDEO_RENDER_D3D11
 extern SDL_RenderDriver D3D11_RenderDriver;
+#endif
+#if SDL_VIDEO_RENDER_OGL
 extern SDL_RenderDriver GL_RenderDriver;
+#endif
+#if SDL_VIDEO_RENDER_OGL_ES2
 extern SDL_RenderDriver GLES2_RenderDriver;
+#endif
+#if SDL_VIDEO_RENDER_OGL_ES
 extern SDL_RenderDriver GLES_RenderDriver;
+#endif
+#if SDL_VIDEO_RENDER_DIRECTFB
 extern SDL_RenderDriver DirectFB_RenderDriver;
-extern SDL_RenderDriver METAL_RenderDriver;
+#endif
+#if SDL_VIDEO_RENDER_PSP
 extern SDL_RenderDriver PSP_RenderDriver;
+#endif
 extern SDL_RenderDriver SW_RenderDriver;
 
-/* Blend mode functions */
-extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
-extern SDL_BlendFactor SDL_GetBlendModeDstColorFactor(SDL_BlendMode blendMode);
-extern SDL_BlendOperation SDL_GetBlendModeColorOperation(SDL_BlendMode blendMode);
-extern SDL_BlendFactor SDL_GetBlendModeSrcAlphaFactor(SDL_BlendMode blendMode);
-extern SDL_BlendFactor SDL_GetBlendModeDstAlphaFactor(SDL_BlendMode blendMode);
-extern SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode);
+#endif /* !SDL_RENDER_DISABLED */
 
-#endif /* SDL_sysrender_h_ */
+#endif /* _SDL_sysrender_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

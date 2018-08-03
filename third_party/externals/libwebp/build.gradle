@@ -152,13 +152,11 @@ model {
             include "upsampling_msa.c"
             include "upsampling_neon.$NEON"
             include "upsampling_sse2.c"
-            include "upsampling_sse41.c"
             include "yuv.c"
             include "yuv_mips32.c"
             include "yuv_mips_dsp_r2.c"
             include "yuv_neon.$NEON"
             include "yuv_sse2.c"
-            include "yuv_sse41.c"
             srcDir "src/utils"
             include "bit_reader_utils.c"
             include "color_cache_utils.c"
@@ -198,6 +196,7 @@ model {
             include "backward_references_enc.c"
             include "config_enc.c"
             include "cost_enc.c"
+            include "delta_palettization_enc.c"
             include "filter_enc.c"
             include "frame_enc.c"
             include "histogram_enc.c"
@@ -289,7 +288,6 @@ model {
     imagedec(NativeLibrarySpec) {
       binaries {
         all {
-          lib library: "webpdemux", linkage: "static"
           lib library: "webp", linkage: "static"
         }
       }
@@ -332,7 +330,6 @@ model {
           lib library: "example_util", linkage: "static"
           lib library: "imagedec", linkage: "static"
           lib library: "imageio_util", linkage: "static"
-          lib library: "webpdemux", linkage: "static"
           lib library: "webp", linkage: "static"
         }
       }
@@ -353,7 +350,6 @@ model {
           lib library: "imagedec", linkage: "static"
           lib library: "imageenc", linkage: "static"
           lib library: "imageio_util", linkage: "static"
-          lib library: "webpdemux", linkage: "static"
           lib library: "webp"
         }
       }
@@ -393,7 +389,6 @@ model {
           lib library: "imagedec", linkage: "static"
           lib library: "imageio_util", linkage: "static"
           lib library: "webpmux", linkage: "static"
-          lib library: "webpdemux", linkage: "static"
           lib library: "webp"
         }
       }

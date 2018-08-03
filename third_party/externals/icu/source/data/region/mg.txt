@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/mg.xml
+// *
+// ***************************************************************************
 mg{
     Countries{
         AD{"Andorra"}
@@ -9,6 +15,7 @@ mg{
         AI{"Anguilla"}
         AL{"Albania"}
         AM{"Armenia"}
+        AN{"Vondronosy karaiba holandey"}
         AO{"Angola"}
         AR{"Arzantina"}
         AS{"Samoa amerikanina"}
@@ -227,5 +234,5 @@ mg{
         ZM{"Zambia"}
         ZW{"Zimbaboe"}
     }
-    Version{"2.1.39.11"}
+    Version{"2.1.19.14"}
 }

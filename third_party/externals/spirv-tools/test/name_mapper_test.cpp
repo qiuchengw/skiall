@@ -19,14 +19,15 @@
 
 #include "source/name_mapper.h"
 
-namespace spvtools {
-namespace {
-
+using libspirv::NameMapper;
+using libspirv::FriendlyNameMapper;
 using spvtest::ScopedContext;
 using ::testing::Eq;
 
+namespace {
+
 TEST(TrivialNameTest, Samples) {
-  auto mapper = GetTrivialNameMapper();
+  auto mapper = libspirv::GetTrivialNameMapper();
   EXPECT_EQ(mapper(1), "1");
   EXPECT_EQ(mapper(1999), "1999");
   EXPECT_EQ(mapper(1024), "1024");
@@ -196,8 +197,7 @@ INSTANTIATE_TEST_CASE_P(ExoticTypes, FriendlyNameTest,
                             {"%1 = OpTypeDeviceEvent", 1, "DeviceEvent"},
                             {"%1 = OpTypeReserveId", 1, "ReserveId"},
                             {"%1 = OpTypeQueue", 1, "Queue"},
-                            {"%1 = OpTypeOpaque \"hello world!\"", 1,
-                             "Opaque_hello_world_"},
+                            {"%1 = OpTypeOpaque \"hello world!\"", 1, "Opaque_hello_world_"},
                             {"%1 = OpTypePipe ReadOnly", 1, "PipeReadOnly"},
                             {"%1 = OpTypePipe WriteOnly", 1, "PipeWriteOnly"},
                             {"%1 = OpTypePipe ReadWrite", 1, "PipeReadWrite"},
@@ -310,7 +310,7 @@ INSTANTIATE_TEST_CASE_P(
         {"%1 = OpTypeFloat 16\n%2 = OpConstant %1 -0x1.d2cp-10", 2,
          "half_n0x1_d2cpn10"},
         // 32-bit floats
-        {"%1 = OpTypeFloat 32\n%2 = OpConstant %1 -3.125", 2, "float_n3_125"},
+        {"%1 = OpTypeFloat 32\n%2 = OpConstant %1 -3.275", 2, "float_n3_275"},
         {"%1 = OpTypeFloat 32\n%2 = OpConstant %1 0x1.8p+128", 2,
          "float_0x1_8p_128"},  // NaN
         {"%1 = OpTypeFloat 32\n%2 = OpConstant %1 -0x1.0002p+128", 2,
@@ -320,7 +320,7 @@ INSTANTIATE_TEST_CASE_P(
         {"%1 = OpTypeFloat 32\n%2 = OpConstant %1 -0x1p+128", 2,
          "float_n0x1p_128"},  // -Inf
                               // 64-bit floats
-        {"%1 = OpTypeFloat 64\n%2 = OpConstant %1 -3.125", 2, "double_n3_125"},
+        {"%1 = OpTypeFloat 64\n%2 = OpConstant %1 -3.275", 2, "double_n3_275"},
         {"%1 = OpTypeFloat 64\n%2 = OpConstant %1 0x1.ffffffffffffap-1023", 2,
          "double_0x1_ffffffffffffapn1023"},  // small normal
         {"%1 = OpTypeFloat 64\n%2 = OpConstant %1 -0x1.ffffffffffffap-1023", 2,
@@ -342,5 +342,4 @@ INSTANTIATE_TEST_CASE_P(
         {"%1 = OpTypeBool\n%2 = OpConstantFalse %1", 2, "false"},
     }), );
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

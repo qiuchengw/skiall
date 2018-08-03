@@ -14,12 +14,10 @@
 
 #include "unit_spirv.h"
 
-namespace spvtools {
 namespace {
 
 TEST(Macros, BitShiftInnerParens) { ASSERT_EQ(65536, SPV_BIT(2 << 3)); }
 
 TEST(Macros, BitShiftOuterParens) { ASSERT_EQ(15, SPV_BIT(4) - 1); }
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace

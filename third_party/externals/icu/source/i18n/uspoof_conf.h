@@ -1,14 +1,12 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
-*   Copyright (C) 2008-2016, International Business Machines
+*   Copyright (C) 2008-2011, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
 *   file name:  uspoof_conf.h
-*   encoding:   UTF-8
+*   encoding:   US-ASCII
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -21,14 +19,10 @@
 #ifndef __USPOOF_BUILDCONF_H__
 #define __USPOOF_BUILDCONF_H__
 
-#include "unicode/utypes.h"
-
 #if !UCONFIG_NO_NORMALIZATION
 
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS 
 
-#include "unicode/uregex.h"
-#include "uhash.h"
 #include "uspoof_impl.h"
 
 U_NAMESPACE_BEGIN
@@ -40,9 +34,9 @@ U_NAMESPACE_BEGIN
 
 struct SPUString : public UMemory {
     UnicodeString  *fStr;             // The actual string.
-    int32_t         fCharOrStrTableIndex;   // Index into the final runtime data for this
-                                      // string (or, for length 1, the single string char
-                                      // itself, there being no string table entry for it.)
+    int32_t         fStrTableIndex;   // Index into the final runtime data for this string.
+                                      //  (or, for length 1, the single string char itself,
+                                      //   there being no string table entry for it.)
     SPUString(UnicodeString *s);
     ~SPUString();
 };
@@ -90,7 +84,10 @@ class ConfusabledataBuilder : public UMemory {
   private:
     SpoofImpl  *fSpoofImpl;
     UChar      *fInput;
-    UHashtable *fTable;
+    UHashtable *fSLTable;
+    UHashtable *fSATable; 
+    UHashtable *fMLTable; 
+    UHashtable *fMATable;
     UnicodeSet *fKeySet;     // A set of all keys (UChar32s) that go into the four mapping tables.
 
     // The binary data is first assembled into the following four collections, then
@@ -98,6 +95,7 @@ class ConfusabledataBuilder : public UMemory {
     UVector            *fKeyVec;
     UVector            *fValueVec;
     UnicodeString      *fStringTable;
+    UVector            *fStringLengthsTable;
     
     SPUStringPool      *stringPool;
     URegularExpression *fParseLine;

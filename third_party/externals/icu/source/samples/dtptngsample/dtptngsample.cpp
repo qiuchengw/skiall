@@ -1,6 +1,4 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
-/********************************************************************
+﻿/********************************************************************
  * COPYRIGHT: 
  * Copyright (c) 2008-2014, International Business Machines Corporation and
  * others. All Rights Reserved.
@@ -13,7 +11,6 @@
 //! [getBestPatternExample1]
 
 using namespace std;
-using namespace icu;
 
 static void getBestPatternExample() {
 	    

@@ -1,9 +1,7 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
 *
-*   Copyright (C) 1997-2016, International Business Machines
+*   Copyright (C) 1997-2015, International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 ******************************************************************************
@@ -72,13 +70,22 @@
 typedef size_t uintptr_t;
 #endif
 
+/**
+ * \def U_HAVE_MSVC_2003_OR_EARLIER
+ * Flag for workaround of MSVC 2003 optimization bugs
+ * @internal
+ */
+#if !defined(U_HAVE_MSVC_2003_OR_EARLIER) && defined(_MSC_VER) && (_MSC_VER < 1400)
+#define U_HAVE_MSVC_2003_OR_EARLIER
+#endif
+
 /*===========================================================================*/
 /** @{ Information about POSIX support                                       */
 /*===========================================================================*/
 
 #ifdef U_HAVE_NL_LANGINFO_CODESET
     /* Use the predefined value. */
-#elif U_PLATFORM_USES_ONLY_WIN32_API || U_PLATFORM == U_PF_ANDROID || U_PLATFORM == U_PF_QNX
+#elif U_PLATFORM_HAS_WIN32_API || U_PLATFORM == U_PF_ANDROID || U_PLATFORM == U_PF_QNX
 #   define U_HAVE_NL_LANGINFO_CODESET 0
 #else
 #   define U_HAVE_NL_LANGINFO_CODESET 1
@@ -97,10 +104,7 @@ typedef size_t uintptr_t;
 #ifdef U_TZSET
     /* Use the predefined value. */
 #elif U_PLATFORM_USES_ONLY_WIN32_API
-    // UWP doesn't support tzset or environment variables for tz
-#if U_PLATFORM_HAS_WINUWP_API == 0
 #   define U_TZSET _tzset
-#endif
 #elif U_PLATFORM == U_PF_OS400
    /* not defined */
 #else
@@ -111,15 +115,15 @@ typedef size_t uintptr_t;
     /* Use the predefined value. */
 #elif U_PLATFORM == U_PF_ANDROID
 #   define U_TIMEZONE timezone
-#elif defined(__UCLIBC__)
-    // uClibc does not have __timezone or _timezone.
-#elif defined(_NEWLIB_VERSION)
-#   define U_TIMEZONE _timezone
-#elif defined(__GLIBC__)
-    // glibc
-#   define U_TIMEZONE __timezone
 #elif U_PLATFORM_IS_LINUX_BASED
-    // not defined
+#   if defined(__UCLIBC__)
+       /* uClibc does not have __timezone or _timezone. */
+#   elif defined(_NEWLIB_VERSION)
+#      define U_TIMEZONE      _timezone
+#   elif defined(__GLIBC__)
+       /* glibc */
+#      define U_TIMEZONE      __timezone
+#   endif
 #elif U_PLATFORM_USES_ONLY_WIN32_API
 #   define U_TIMEZONE _timezone
 #elif U_PLATFORM == U_PF_BSD && !defined(__NetBSD__)
@@ -135,10 +139,7 @@ typedef size_t uintptr_t;
 #ifdef U_TZNAME
     /* Use the predefined value. */
 #elif U_PLATFORM_USES_ONLY_WIN32_API
-    /* not usable on all windows platforms */
-#if U_PLATFORM_HAS_WINUWP_API == 0
 #   define U_TZNAME _tzname
-#endif
 #elif U_PLATFORM == U_PF_OS400
    /* not defined */
 #else
@@ -147,7 +148,7 @@ typedef size_t uintptr_t;
 
 #ifdef U_HAVE_MMAP
     /* Use the predefined value. */
-#elif U_PLATFORM_USES_ONLY_WIN32_API
+#elif U_PLATFORM_HAS_WIN32_API
 #   define U_HAVE_MMAP 0
 #else
 #   define U_HAVE_MMAP 1
@@ -170,7 +171,7 @@ typedef size_t uintptr_t;
  */
 #ifdef U_HAVE_DIRENT_H
     /* Use the predefined value. */
-#elif U_PLATFORM_USES_ONLY_WIN32_API
+#elif U_PLATFORM_HAS_WIN32_API
 #   define U_HAVE_DIRENT_H 0
 #else
 #   define U_HAVE_DIRENT_H 1
@@ -205,7 +206,7 @@ typedef size_t uintptr_t;
 /**
  * \def U_HAVE_STD_ATOMICS
  * Defines whether the standard C++11 <atomic> is available.
- * ICU will use this when available,
+ * ICU will use this when avialable,
  * otherwise will fall back to compiler or platform specific alternatives.
  * @internal
  */
@@ -230,7 +231,7 @@ typedef size_t uintptr_t;
 
 /**
  *  \def U_HAVE_CLANG_ATOMICS
- *  Defines whether Clang c11 style built-in atomics are available.
+ *  Defines whether Clang c11 style built-in atomics are avaialable.
  *  These are used in preference to gcc atomics when both are available.
  */
 #ifdef U_HAVE_CLANG_ATOMICS
@@ -268,7 +269,7 @@ typedef size_t uintptr_t;
 
 /**
  * Platform utilities isolates the platform dependencies of the
- * library.  For each platform which this code is ported to, these
+ * libarary.  For each platform which this code is ported to, these
  * functions may have to be re-implemented.
  */
 
@@ -391,32 +392,6 @@ U_INTERNAL double  U_EXPORT2 uprv_log(double d);
  */
 U_INTERNAL double  U_EXPORT2 uprv_round(double x);
 
-/**
- * Adds the signed integers a and b, storing the result in res.
- * Checks for signed integer overflow.
- * Similar to the GCC/Clang extension __builtin_add_overflow
- *
- * @param a The first operand.
- * @param b The second operand.
- * @param res a + b
- * @return true if overflow occurred; false if no overflow occurred.
- * @internal
- */
-U_INTERNAL UBool U_EXPORT2 uprv_add32_overflow(int32_t a, int32_t b, int32_t* res);
-
-/**
- * Multiplies the signed integers a and b, storing the result in res.
- * Checks for signed integer overflow.
- * Similar to the GCC/Clang extension __builtin_mul_overflow
- *
- * @param a The first multiplicand.
- * @param b The second multiplicand.
- * @param res a * b
- * @return true if overflow occurred; false if no overflow occurred.
- * @internal
- */
-U_INTERNAL UBool U_EXPORT2 uprv_mul32_overflow(int32_t a, int32_t b, int32_t* res);
-
 #if 0
 /**
  * Returns the number of digits after the decimal point in a double number x.
@@ -442,7 +417,7 @@ U_INTERNAL const char*  U_EXPORT2 uprv_getDefaultCodepage(void);
 
 /**
  * Please use uloc_getDefault() instead.
- * Return the default locale ID string by querying the system, or
+ * Return the default locale ID string by querying ths system, or
  *     zero if one cannot be found. 
  * This function can call setlocale() on Unix platforms. Please read the
  * platform documentation on setlocale() before calling this function.

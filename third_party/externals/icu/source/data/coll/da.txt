@@ -1,7 +1,13 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/collation/da.xml
+// *
+// ***************************************************************************
 da{
-    Version{"2.1.34.8"}
+    Version{"2.1.19.14"}
     collations{
         search{
             Sequence{
@@ -9,19 +15,18 @@ da{
                 "[import da-u-co-standard]"
                 "[caseFirst off]"
             }
-            Version{"33.1"}
+            Version{"28"}
         }
         standard{
             Sequence{
                 "[caseFirst upper]"
                 "&D<<đ<<<Đ<<ð<<<Ð"
-                "&th<<<þ"
-                "&TH<<<Þ"
+                "&t<<<þ/h"
+                "&T<<<Þ/H"
                 "&Y<<ü<<<Ü<<ű<<<Ű"
-                "&[before 1]ǀ<æ<<<Æ<<ä<<<Ä<ø<<<Ø<<ö<<<Ö<<ő<<<Ő<å<<<Å<<<aa<<<Aa<<<AA"
-                "&oe<<œ<<<Œ"
+                "&[before 1]ǀ<æ<<<Æ<<ä<<<Ä<ø<<<Ø<<ö<<<Ö<<ő<<<Ő<<œ<<<Œ<å<<<Å<<<aa<<<Aa<<<AA"
             }
-            Version{"33.1"}
+            Version{"28"}
         }
     }
 }

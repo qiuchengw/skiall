@@ -1,5 +1,11 @@
-﻿// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html#License
+﻿// ***************************************************************************
+// *
+// * Copyright (C) 2015 International Business Machines
+// * Corporation and others. All Rights Reserved.
+// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
+// * Source File: <path>/common/main/ky.xml
+// *
+// ***************************************************************************
 ky{
     AuxExemplarCharacters{"[в ф ц щ ь]"}
     Ellipsis{
@@ -12,7 +18,6 @@ ky{
     }
     ExemplarCharacters{"[а б г д е ё ж з и й к л м н ӊ о ө п р с т у ү х ч ш ъ ы э ю я]"}
     ExemplarCharactersIndex{"[А Б В Г Д Е Ё Ж З И Й К Л М Н Ң О Ө П Р С Т У Ү Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я]"}
-    ExemplarCharactersNumbers{"[  \\- , % ‰ + 0 1 2 3 4 5 6 7 8 9]"}
     ExemplarCharactersPunctuation{
         "[\\- ‐ – — , ; \\: ! ? . … ' ‘ ‚ \u0022 “ „ « » ( ) \\[ \\] \\{ \\} § @ * / "
         "\\& #]"
@@ -123,16 +128,16 @@ ky{
                         other{"000 млд ¤"}
                     }
                     1000000000000{
-                        one{"0 трлн ¤"}
-                        other{"0 трлн ¤"}
+                        one{"0 трн ¤"}
+                        other{"0 трн ¤"}
                     }
                     10000000000000{
-                        one{"00 трлн ¤"}
-                        other{"00 трлн ¤"}
+                        one{"00 трн ¤"}
+                        other{"00 трн ¤"}
                     }
                     100000000000000{
-                        one{"000 трлн ¤"}
-                        other{"000 трлн ¤"}
+                        one{"000 трн ¤"}
+                        other{"000 трн ¤"}
                     }
                 }
                 decimalFormat{
@@ -173,16 +178,16 @@ ky{
                         other{"000 млд"}
                     }
                     1000000000000{
-                        one{"0 трлн"}
-                        other{"0 трлн"}
+                        one{"0 трн"}
+                        other{"0 трн"}
                     }
                     10000000000000{
-                        one{"00 трлн"}
-                        other{"00 трлн"}
+                        one{"00 трн"}
+                        other{"00 трн"}
                     }
                     100000000000000{
-                        one{"000 трлн"}
-                        other{"000 трлн"}
+                        one{"000 трн"}
+                        other{"000 трн"}
                     }
                 }
             }
@@ -200,19 +205,10 @@ ky{
                 timeSeparator{":"}
             }
         }
-        minimalPairs{
-            ordinal{
-                other{"{0}-бурулуштан оңго бурулуңуз."}
-            }
-            plural{
-                one{"Себетте {0} Х бар. Аны аласызбы?"}
-                other{"Себетте {0} Х бар. Аларды аласызбы?"}
-            }
-        }
         minimumGroupingDigits{"1"}
         native{"latn"}
     }
-    Version{"2.1.41.97"}
+    Version{"2.1.19.19"}
     calendar{
         generic{
             DateTimePatterns{
@@ -231,45 +227,29 @@ ky{
                 "{1} {0}",
             }
             availableFormats{
-                Bh{"h B"}
-                Bhm{"h:mm B"}
-                Bhms{"h:mm:ss B"}
                 E{"ccc"}
-                EBhm{"E h:mm B"}
-                EBhms{"E h:mm:ss B"}
-                EHm{"E HH:mm"}
-                EHms{"E HH:mm:ss"}
                 Ed{"d, E"}
-                Ehm{"E h:mm a"}
-                Ehms{"E h:mm:ss a"}
                 Gy{"G y"}
                 GyMMM{"G y MMM"}
                 GyMMMEd{"G y-'ж'. d-MMM, E"}
                 GyMMMd{"G y-'ж'. d-MMM"}
-                H{"HH"}
-                Hm{"HH:mm"}
-                Hms{"HH:mm:ss"}
                 M{"L"}
-                MEd{"dd/MM, E"}
+                MEd{"MM-dd, E"}
                 MMM{"LLL"}
                 MMMEd{"d-MMM, E"}
-                MMMMd{"d MMMM"}
+                MMMMd{"MMMM d"}
                 MMMd{"d-MMM"}
-                Md{"dd/MM"}
+                Md{"MM-dd"}
                 d{"d"}
-                h{"h a"}
-                hm{"h:mm a"}
-                hms{"h:mm:ss a"}
-                ms{"mm:ss"}
                 y{"y-G"}
                 yyyy{"y-G"}
                 yyyyM{"GGGGG y-MM"}
-                yyyyMEd{"GGGGG y-dd-MM, E"}
+                yyyyMEd{"GGGGG y-MM-dd, E"}
                 yyyyMMM{"G y-'ж'. MMM"}
                 yyyyMMMEd{"G y-'ж'. d-MMM, E"}
-                yyyyMMMM{"G y-'ж'., MMMM"}
+                yyyyMMMM{"G y MMMM"}
                 yyyyMMMd{"G y-'ж'. d-MMM"}
-                yyyyMd{"GGGGG y-dd-MM"}
+                yyyyMd{"GGGGG y-MM-dd"}
                 yyyyQQQ{"G y-'ж'. QQQ"}
                 yyyyQQQQ{"G y-'ж'. QQQQ"}
             }
@@ -301,7 +281,7 @@ ky{
                 }
                 fallback{"{0} - {1}"}
                 y{
-                    y{"y-'ж'.–y-'ж'. G"}
+                    y{"y–y G"}
                 }
                 yM{
                     M{"MM.y – MM.y G"}
@@ -355,10 +335,10 @@ ky{
                 "HH:mm:ss z",
                 "HH:mm:ss",
                 "HH:mm",
-                "y-'ж'., d-MMMM, EEEE",
-                "y-'ж'., d-MMMM",
-                "y-'ж'., d-MMM",
-                "d/M/yy",
+                "EEEE, d-MMMM, y-'ж'.",
+                "y MMMM d",
+                "y MMM d",
+                "dd.MM.yy",
                 "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
@@ -369,12 +349,7 @@ ky{
                 Timezone{"{0} {1}"}
             }
             availableFormats{
-                Bh{"h B"}
-                Bhm{"h:mm B"}
-                Bhms{"h:mm:ss B"}
                 E{"ccc"}
-                EBhm{"E h:mm B"}
-                EBhms{"E h:mm:ss B"}
                 EHm{"E HH:mm"}
                 EHms{"E HH:mm:ss"}
                 Ed{"d, E"}
@@ -393,11 +368,7 @@ ky{
                 MEd{"dd-MM, E"}
                 MMM{"LLL"}
                 MMMEd{"d-MMM, E"}
-                MMMMW{
-                    one{"MMM 'айынын' W-'аптасы'"}
-                    other{"MMM 'айынын' W-'аптасы'"}
-                }
-                MMMMd{"d-MMMM"}
+                MMMMd{"MMMM d"}
                 MMMd{"d-MMM"}
                 Md{"dd-MM"}
                 d{"d"}
@@ -409,18 +380,14 @@ ky{
                 ms{"mm:ss"}
                 y{"y"}
                 yM{"y-MM"}
-                yMEd{"y-dd-MM, E"}
+                yMEd{"y-MM-dd, E"}
                 yMMM{"y-'ж'. MMM"}
                 yMMMEd{"y-'ж'. d-MMM, E"}
-                yMMMM{"y-'ж'., MMMM"}
+                yMMMM{"y MMMM"}
                 yMMMd{"y-'ж'. d-MMM"}
-                yMd{"y-dd-MM"}
+                yMd{"y-MM-dd"}
                 yQQQ{"y-'ж'., QQQ"}
                 yQQQQ{"y-'ж'., QQQQ"}
-                yw{
-                    one{"Y-'жылдын' w-'аптасы'"}
-                    other{"Y-'жылдын' w-'аптасы'"}
-                }
             }
             dayNames{
                 format{
@@ -569,10 +536,6 @@ ky{
                     "биздин заманга чейин",
                     "биздин заман",
                 }
-                wide%variant{
-                    "б.з.ч.",
-                    "CE",
-                }
             }
             intervalFormats{
                 H{
@@ -593,15 +556,15 @@ ky{
                     M{"MM–MM"}
                 }
                 MEd{
-                    M{"dd-MM, E – dd-MM, E"}
-                    d{"dd-MM, E – dd-MM, E"}
+                    M{"MM-dd, E – MM-dd, E"}
+                    d{"MM-dd, E – MM-dd, E"}
                 }
                 MMM{
                     M{"MMM–MMM"}
                 }
                 MMMEd{
-                    M{"d-MMM, E – d-MMM, E"}
-                    d{"d-MMM, E – d-MMM, E"}
+                    M{"MMM d, E – MMM d, E"}
+                    d{"MMM d, E – MMM d, E"}
                 }
                 MMMd{
                     M{"d-MMM – d-MMM"}
@@ -641,22 +604,22 @@ ky{
                     y{"MM.y – MM.y"}
                 }
                 yMEd{
-                    M{"y-dd-MM, E – y-dd-MM, E"}
+                    M{"y-MM-dd, E – y-MM-dd, E"}
                     d{"E, dd.MM.y – E, dd.MM.y"}
-                    y{"y-dd-MM, E – y-dd-MM, E"}
+                    y{"y-MM-dd, E – y-MM-dd, E"}
                 }
                 yMMM{
                     M{"MMM–MMM y-'ж'."}
                     y{"MMM y-'ж'. - MMM y-'ж'."}
                 }
                 yMMMEd{
-                    M{"y-'ж'., d-MMM, E – d-MMM E"}
-                    d{"y-'ж'., d-MMM, E – d-MMM, E"}
-                    y{"y-'ж'., d-MMM, E – y-'ж'., d-MMM, E"}
+                    M{"y MMM d, E – MMM d, E"}
+                    d{"y MMM d, E – MMM d, E"}
+                    y{"y MMM d, E – y MMM d, E"}
                 }
                 yMMMM{
-                    M{"MMMM – MMMM, y-'ж'."}
-                    y{"MMMM, y-'ж'. – MMMM, y-'ж'."}
+                    M{"MMMM – MMMM y"}
+                    y{"MMMM y – MMMM y"}
                 }
                 yMMMd{
                     M{"d-MMM – d-MMM y-'ж'."}
@@ -803,94 +766,6 @@ ky{
             }
         }
     }
-    characterLabel{
-        activities{"аракеттер"}
-        african_scripts{"африка жазуулары"}
-        american_scripts{"америка жазуулары"}
-        animal{"жаныбар"}
-        animals_nature{"жаныбарлар же жаратылыш"}
-        arrows{"жебелер"}
-        body{"дене"}
-        box_drawing{"кутуча чийүү"}
-        braille{"Брайль"}
-        building{"имарат"}
-        bullets_stars{"маркерлер/жылдызчалар"}
-        consonantal_jamo{"үнсүз жамо"}
-        currency_symbols{"валюта белгилери"}
-        dash_connector{"тире/байламта"}
-        digits{"сандар"}
-        dingbats{"полиграфиялык белгилер"}
-        divination_symbols{"төлгө белгиси"}
-        downwards_arrows{"төмөн караган жебе"}
-        downwards_upwards_arrows{"төмөн жана жогору караган жебе"}
-        east_asian_scripts{"Чыгыш Азия өлкөлөрүнүн жазуулары"}
-        emoji{"быйтыкча"}
-        european_scripts{"Европа өлкөлөрүнүн жазуулары"}
-        female{"аял"}
-        flag{"желек"}
-        flags{"желектер"}
-        food_drink{"тамак-аш жана суусундуктар"}
-        format{"формат"}
-        format_whitespace{"формат жана боштук"}
-        full_width_form_variant{"Толук жазы формасынын варианттары"}
-        geometric_shapes{"геометриялык фигуралар"}
-        half_width_form_variant{"Жарым жазы формасынын варианттары"}
-        han_characters{"Хань белгилери"}
-        han_radicals{"Хань уңгулары"}
-        hanja{"Ханья"}
-        hanzi_simplified{"Ханьзи (Жөнөкөйлөштүрүлгөн)"}
-        hanzi_traditional{"Ханьзи (Салттуу)"}
-        heart{"жүрөк"}
-        historic_scripts{"тарыхый жазуулар"}
-        ideographic_desc_characters{"ideographic desc. character"}
-        japanese_kana{"Жапон Канасы"}
-        kanbun{"Канбун"}
-        kanji{"Кандзи"}
-        keycap{"клавиатура калпакчасы"}
-        leftwards_arrows{"Солго караган жебелер"}
-        leftwards_rightwards_arrows{"Солго жана оңго караган жебелер"}
-        letterlike_symbols{"Тамга сымал белгилер"}
-        limited_use{"Колдонулушу чектелген"}
-        male{"эркек"}
-        math_symbols{"Математикалык белгилер"}
-        middle_eastern_scripts{"Жакынкы Чыгыш өлкөлөрүнүн жазуулары"}
-        miscellaneous{"Башка"}
-        modern_scripts{"Заманбап жазуулар"}
-        modifier{"Өзгөрткүч"}
-        musical_symbols{"Музыкалык белгилер"}
-        nature{"жаратылыш"}
-        nonspacing{"Боштугу жок"}
-        numbers{"Сандар"}
-        objects{"Объекттер"}
-        other{"Башкалар"}
-        paired{"Жупташкан"}
-        person{"адам"}
-        phonetic_alphabet{"Фонетикалык алфавит"}
-        pictographs{"Пиктограмма"}
-        place{"жер"}
-        plant{"өсүмдүк"}
-        punctuation{"Пунктуация"}
-        rightwards_arrows{"Оңго караган жебелер"}
-        sign_standard_symbols{"Белги/Стандарттык символдор"}
-        small_form_variant{"Кичинекей формадагы варианттар"}
-        smiley{"быйтыкча"}
-        smileys_people{"Быйтыкчалар жана адамдар"}
-        south_asian_scripts{"Түштүк Азия өлкөлөрүнүн жазуулары"}
-        southeast_asian_scripts{"Түштүк-Чыгыш Азия өлкөлөрүнүн жазуулары"}
-        spacing{"Боштук калтыруу"}
-        sport{"спорт"}
-        symbols{"Символдор"}
-        technical_symbols{"Техникалык символдор"}
-        tone_marks{"Интонация белгилери"}
-        travel{"саякат"}
-        travel_places{"Саякаттоо"}
-        upwards_arrows{"Жогору караган жебелер"}
-        variant_forms{"Кош формалар"}
-        vocalic_jamo{"Үндүү Жамо"}
-        weather{"аба-ырайы"}
-        western_asian_scripts{"Батыш Азия өлкөлөрүнүн жазуулары"}
-        whitespace{"Боштук"}
-    }
     delimiters{
         alternateQuotationEnd{"“"}
         alternateQuotationStart{"„"}
@@ -921,36 +796,30 @@ ky{
         day-narrow{
             dn{"күн"}
             relative{
-                "-1"{"кечээ"}
                 "-2"{"мурдагы күнү"}
-                "0"{"бүгүн"}
-                "1"{"эртеӊ"}
                 "2"{"бүрсүгүнү"}
             }
             relativeTime{
                 future{
-                    one{"{0} күн. кийин"}
-                    other{"{0} күн. кийин"}
+                    one{"+{0} күн"}
+                    other{"+{0} күн"}
                 }
                 past{
-                    one{"{0} күн мурун"}
-                    other{"{0} күн мурун"}
+                    one{"-{0} күн"}
+                    other{"-{0} күн"}
                 }
             }
         }
         day-short{
             dn{"күн"}
             relative{
-                "-1"{"кечээ"}
                 "-2"{"мурдагы күнү"}
-                "0"{"бүгүн"}
-                "1"{"эртеӊ"}
                 "2"{"бүрсүгүнү"}
             }
             relativeTime{
                 future{
-                    one{"{0} күн. кийин"}
-                    other{"{0} күн. кийин"}
+                    one{"{0} күндөн кийин"}
+                    other{"{0} күндөн кийин"}
                 }
                 past{
                     one{"{0} күн мурун"}
@@ -958,31 +827,10 @@ ky{
                 }
             }
         }
-        dayOfYear{
-            dn{"жылдын күнү"}
-        }
-        dayOfYear-narrow{
-            dn{"жылдын күнү"}
-        }
-        dayOfYear-short{
-            dn{"жылдын күнү"}
-        }
         dayperiod{
             dn{"ТЧ/ТК"}
         }
-        dayperiod-narrow{
-            dn{"ТЧ/ТК"}
-        }
-        dayperiod-short{
-            dn{"ТЧ/ТК"}
-        }
         era{
-            dn{"заман"}
-        }
-        era-narrow{
-            dn{"заман"}
-        }
-        era-short{
             dn{"заман"}
         }
         fri{
@@ -991,56 +839,23 @@ ky{
                 "0"{"ушул жума күнү"}
                 "1"{"келерки жума күнү"}
             }
-            relativeTime{
-                future{
-                    one{"{0} жумадан кийин"}
-                    other{"{0} жумадан кийин"}
-                }
-                past{
-                    one{"{0} жума мурун"}
-                    other{"{0} жума мурун"}
-                }
-            }
         }
         fri-narrow{
             relative{
-                "-1"{"өткөн жм"}
-                "0"{"ушул жм"}
-                "1"{"келерки жм"}
-            }
-            relativeTime{
-                future{
-                    one{"{0} жм кийн"}
-                    other{"{0} жм кийн"}
-                }
-                past{
-                    one{"{0} жм мурн"}
-                    other{"{0} жм мурн"}
-                }
+                "-1"{"өткөн жума күнү"}
+                "0"{"ушул жума күнү"}
+                "1"{"келерки жума күнү"}
             }
         }
         fri-short{
             relative{
-                "-1"{"өткөн жм."}
-                "0"{"өткөн жм."}
-                "1"{"келерки жм."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} жм кийин"}
-                    other{"{0} жм кийин"}
-                }
-                past{
-                    one{"{0} жм мурн"}
-                    other{"{0} жм мурн"}
-                }
+                "-1"{"өткөн жума күнү"}
+                "0"{"ушул жума күнү"}
+                "1"{"келерки жума күнү"}
             }
         }
         hour{
             dn{"саат"}
-            relative{
-                "0"{"ушул саатта"}
-            }
             relativeTime{
                 future{
                     one{"{0} сааттан кийин"}
@@ -1056,12 +871,12 @@ ky{
             dn{"ст"}
             relativeTime{
                 future{
-                    one{"{0} с. кийн"}
-                    other{"{0} с. кийн"}
+                    one{"+{0} с."}
+                    other{"+{0} с."}
                 }
                 past{
-                    one{"{0} с. мурн"}
-                    other{"{0} с. мурн"}
+                    one{"-{0} с."}
+                    other{"-{0} с."}
                 }
             }
         }
@@ -1080,9 +895,6 @@ ky{
         }
         minute{
             dn{"мүнөт"}
-            relative{
-                "0"{"ушул мүнөттө"}
-            }
             relativeTime{
                 future{
                     one{"{0} мүнөттөн кийин"}
@@ -1098,12 +910,12 @@ ky{
             dn{"м."}
             relativeTime{
                 future{
-                    one{"{0} мүн. кийн"}
-                    other{"{0} мүн. кийн"}
+                    one{"+{0} м."}
+                    other{"-{0} м."}
                 }
                 past{
-                    one{"{0} мүн. мурн"}
-                    other{"{0} мүн. мурн"}
+                    one{"-{0} м."}
+                    other{"-{0} м."}
                 }
             }
         }
@@ -1126,16 +938,6 @@ ky{
                 "0"{"ушул дүйшөмбүдө"}
                 "1"{"келерки дүйшөмбүдө"}
             }
-            relativeTime{
-                future{
-                    one{"{0} дүйшөмбүдөн кийин"}
-                    other{"{0} дүйшөмбүдөн кийин"}
-                }
-                past{
-                    one{"{0} дүйшөмбү мурун"}
-                    other{"{0} дүйшөмбү мурун"}
-                }
-            }
         }
         mon-narrow{
             relative{
@@ -1143,32 +945,12 @@ ky{
                 "0"{"ушул дш."}
                 "1"{"келерки дш."}
             }
-            relativeTime{
-                future{
-                    one{"{0} дш. кийн"}
-                    other{"{0} дш. кийн"}
-                }
-                past{
-                    one{"{0} дш. мурн"}
-                    other{"{0} дш. мурн"}
-                }
-            }
         }
         mon-short{
             relative{
                 "-1"{"өткөн дүйш."}
                 "0"{"ушул дүйш."}
                 "1"{"келерки дүйш."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} дүйш. кийн"}
-                    other{"{0} дүйш. кийн"}
-                }
-                past{
-                    one{"{0} дүйш. мурн"}
-                    other{"{0} дүйш. мурн"}
-                }
             }
         }
         month{
@@ -1198,12 +980,12 @@ ky{
             }
             relativeTime{
                 future{
-                    one{"{0} айд. кийн"}
-                    other{"{0} айд. кийн"}
+                    one{"+{0} ай"}
+                    other{"+{0} ай"}
                 }
                 past{
-                    one{"{0} ай мурн"}
-                    other{"{0} ай мурн"}
+                    one{"-{0} ай"}
+                    other{"-{0} ай"}
                 }
             }
         }
@@ -1216,8 +998,8 @@ ky{
             }
             relativeTime{
                 future{
-                    one{"{0} айд. кийин"}
-                    other{"{0} айд. кийин"}
+                    one{"{0} айдан кийин"}
+                    other{"{0} айдан кийин"}
                 }
                 past{
                     one{"{0} ай мурун"}
@@ -1234,8 +1016,8 @@ ky{
             }
             relativeTime{
                 future{
-                    one{"{0} чейректен кийин"}
-                    other{"{0} чейректен кийин"}
+                    one{"кийинки {0} чейректе"}
+                    other{"кийинки {0} чейректе"}
                 }
                 past{
                     one{"{0} чейрек мурун"}
@@ -1252,12 +1034,12 @@ ky{
             }
             relativeTime{
                 future{
-                    one{"{0} чейр. кийин"}
-                    other{"{0} чейр. кийин"}
+                    one{"+{0} чейр."}
+                    other{"+{0} чейр."}
                 }
                 past{
-                    one{"{0} чейр. мурун"}
-                    other{"{0} чейр. мурун"}
+                    one{"-{0} чейр."}
+                    other{"-{0} чейр."}
                 }
             }
         }
@@ -1270,8 +1052,8 @@ ky{
             }
             relativeTime{
                 future{
-                    one{"{0} чейректен кийин"}
-                    other{"{0} чейректен кийин"}
+                    one{"кийинки {0} чейр."}
+                    other{"кийинки {0} чейр."}
                 }
                 past{
                     one{"{0} чейр. мурун"}
@@ -1285,16 +1067,6 @@ ky{
                 "0"{"ушул ишембиде"}
                 "1"{"келерки ишембиде"}
             }
-            relativeTime{
-                future{
-                    one{"{0} ишембиден кийин"}
-                    other{"{0} ишембиден кийин"}
-                }
-                past{
-                    one{"{0} ишемби мурун"}
-                    other{"{0} ишемби мурун"}
-                }
-            }
         }
         sat-narrow{
             relative{
@@ -1302,32 +1074,12 @@ ky{
                 "0"{"ушул ишм."}
                 "1"{"келерки ишм."}
             }
-            relativeTime{
-                future{
-                    one{"{0} ишм. кийин"}
-                    other{"{0} ишм. кийин"}
-                }
-                past{
-                    one{"{0} ишм. мурн"}
-                    other{"{0} ишм. мурн"}
-                }
-            }
         }
         sat-short{
             relative{
                 "-1"{"өткөн ишм."}
                 "0"{"ушул ишм."}
                 "1"{"келерки ишм."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} ишм. кийин"}
-                    other{"{0} ишм. кийин"}
-                }
-                past{
-                    one{"{0} ишм. мурн"}
-                    other{"{0} ишм. мурн"}
-                }
             }
         }
         second{
@@ -1350,12 +1102,12 @@ ky{
             dn{"сек."}
             relativeTime{
                 future{
-                    one{"{0} сек. кийн"}
-                    other{"{0} сек. кийн"}
+                    one{"+{0} сек."}
+                    other{"+{0} сек."}
                 }
                 past{
-                    one{"{0} сек. мурн"}
-                    other{"{0} сек. мурн"}
+                    one{"-{0} сек. мурун"}
+                    other{"-{0} сек. мурун"}
                 }
             }
         }
@@ -1378,32 +1130,12 @@ ky{
                 "0"{"ушул жекшембиде"}
                 "1"{"келерки жекшембиде"}
             }
-            relativeTime{
-                future{
-                    one{"{0} жекшембиден кийин"}
-                    other{"{0} жекшембиден кийин"}
-                }
-                past{
-                    one{"{0} жекшемби мурун"}
-                    other{"{0} жекшемби мурун"}
-                }
-            }
         }
         sun-narrow{
             relative{
                 "-1"{"өткөн жекш."}
                 "0"{"ушул жекш."}
                 "1"{"келерки жекш."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} жекшемб. кийн"}
-                    other{"{0} жекшемб. кийн"}
-                }
-                past{
-                    one{"{0} жекшемб. мурн"}
-                    other{"{0} жекшемб. мурн"}
-                }
             }
         }
         sun-short{
@@ -1412,32 +1144,12 @@ ky{
                 "0"{"ушул жекш."}
                 "1"{"келерки жекш."}
             }
-            relativeTime{
-                future{
-                    one{"{0} жекшемб. кийн"}
-                    other{"{0} жекшемб. кийн"}
-                }
-                past{
-                    one{"{0} жекшемб. мурн"}
-                    other{"{0} жекшемб. мурн"}
-                }
-            }
         }
         thu{
             relative{
                 "-1"{"өткөн бейшембиде"}
                 "0"{"ушул бейшембиде"}
                 "1"{"келерки бейшембиде"}
-            }
-            relativeTime{
-                future{
-                    one{"{0} бейшембиден кийин"}
-                    other{"{0} бейшембиден кийин"}
-                }
-                past{
-                    one{"{0} бейшемби мурун"}
-                    other{"{0} бейшемби мурун"}
-                }
             }
         }
         thu-narrow{
@@ -1446,32 +1158,12 @@ ky{
                 "0"{"ушул бш."}
                 "1"{"келерки бш."}
             }
-            relativeTime{
-                future{
-                    one{"{0} бш. кийн"}
-                    other{"{0} бш. кийн"}
-                }
-                past{
-                    one{"{0} бш. мурн"}
-                    other{"{0} бш. мурн"}
-                }
-            }
         }
         thu-short{
             relative{
                 "-1"{"өткөн бейш."}
                 "0"{"ушул бейш."}
                 "1"{"келерки бейш."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} бейш. кийин"}
-                    other{"{0} бейш. кийин"}
-                }
-                past{
-                    one{"{0} бейш. мурун"}
-                    other{"{0} бейш. мурун"}
-                }
             }
         }
         tue{
@@ -1480,32 +1172,12 @@ ky{
                 "0"{"ушул шейшембиде"}
                 "1"{"келерки шейшембиде"}
             }
-            relativeTime{
-                future{
-                    one{"{0} шейшембиден кийин"}
-                    other{"{0} шейшембиден кийин"}
-                }
-                past{
-                    one{"{0} шейшемби мурун"}
-                    other{"{0} шейшемби мурун"}
-                }
-            }
         }
         tue-narrow{
             relative{
-                "-1"{"өткөн шейш."}
-                "0"{"ушул шейш."}
+                "-1"{"өткөн шш."}
+                "0"{"ушул шш."}
                 "1"{"келерки шейш."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} шейш. кийн"}
-                    other{"{0} шейш. кийн"}
-                }
-                past{
-                    one{"{0} шейш. мурн"}
-                    other{"{0} шейш. мурн"}
-                }
             }
         }
         tue-short{
@@ -1514,32 +1186,12 @@ ky{
                 "0"{"ушул шейш."}
                 "1"{"келерки шейш."}
             }
-            relativeTime{
-                future{
-                    one{"{0} шейш. кийн"}
-                    other{"{0} шейш. кийн"}
-                }
-                past{
-                    one{"{0} шейш. мурн"}
-                    other{"{0} шейш. мурн"}
-                }
-            }
         }
         wed{
             relative{
                 "-1"{"өткөн шаршембиде"}
                 "0"{"ушул шаршембиде"}
                 "1"{"келерки шаршембиде"}
-            }
-            relativeTime{
-                future{
-                    one{"{0} шаршембиден кийин"}
-                    other{"{0} шаршембиден кийин"}
-                }
-                past{
-                    one{"{0} шаршемби мурун"}
-                    other{"{0} шаршемби мурун"}
-                }
             }
         }
         wed-narrow{
@@ -1548,32 +1200,12 @@ ky{
                 "0"{"ушул шр."}
                 "1"{"келерки шр."}
             }
-            relativeTime{
-                future{
-                    one{"{0} шр. кийн"}
-                    other{"{0} шр. кийн"}
-                }
-                past{
-                    one{"{0} шр. мурн"}
-                    other{"{0} шр. мурн"}
-                }
-            }
         }
         wed-short{
             relative{
                 "-1"{"өткөн шарш."}
                 "0"{"ушул шарш."}
                 "1"{"келерки шарш."}
-            }
-            relativeTime{
-                future{
-                    one{"{0} шарш. кийн"}
-                    other{"{0} шарш. кийн"}
-                }
-                past{
-                    one{"{0} шарш. мурн"}
-                    other{"{0} шарш. мурн"}
-                }
             }
         }
         week{
@@ -1583,7 +1215,6 @@ ky{
                 "0"{"ушул аптада"}
                 "1"{"келерки аптада"}
             }
-            relativePeriod{"{0} апта ичинде"}
             relativeTime{
                 future{
                     one{"{0} аптадан кийин"}
@@ -1596,32 +1227,30 @@ ky{
             }
         }
         week-narrow{
-            dn{"апт"}
+            dn{"апта"}
             relative{
                 "-1"{"өткөн апт."}
                 "0"{"ушул апт."}
                 "1"{"келерки апт."}
             }
-            relativePeriod{"{0} апта ичинде"}
             relativeTime{
                 future{
-                    one{"{0} апт. кийин"}
-                    other{"{0} апт. кийин"}
+                    one{"+{0} апт."}
+                    other{"+{0} апт."}
                 }
                 past{
-                    one{"{0} апт. мурун"}
-                    other{"{0} апт. мурун"}
+                    one{"-{0} апт."}
+                    other{"-{0} апт."}
                 }
             }
         }
         week-short{
-            dn{"апт"}
+            dn{"апта"}
             relative{
                 "-1"{"өткөн апт."}
                 "0"{"ушул апт."}
                 "1"{"келерки апт."}
             }
-            relativePeriod{"{0} апта ичинде"}
             relativeTime{
                 future{
                     one{"{0} апт. кийин"}
@@ -1633,32 +1262,8 @@ ky{
                 }
             }
         }
-        weekOfMonth{
-            dn{"айдын жумасы"}
-        }
-        weekOfMonth-narrow{
-            dn{"айдын жумасы"}
-        }
-        weekOfMonth-short{
-            dn{"айдын жумасы"}
-        }
         weekday{
             dn{"аптанын күнү"}
-        }
-        weekday-narrow{
-            dn{"аптанын күнү"}
-        }
-        weekday-short{
-            dn{"аптанын күнү"}
-        }
-        weekdayOfMonth{
-            dn{"айдын жумуш күнү"}
-        }
-        weekdayOfMonth-narrow{
-            dn{"айдын жумуш күнү"}
-        }
-        weekdayOfMonth-short{
-            dn{"айдын жумуш күнү"}
         }
         year{
             dn{"жыл"}
@@ -1717,27 +1322,9 @@ ky{
         zone{
             dn{"убакыт алкагы"}
         }
-        zone-narrow{
-            dn{"убакыт алкагы"}
-        }
-        zone-short{
-            dn{"убакыт алкагы"}
-        }
     }
     listPattern{
-        or{
-            2{"{0} же {1}"}
-            end{"{0}, же {1}"}
-            middle{"{0}, {1}"}
-            start{"{0}, {1}"}
-        }
         standard{
-            2{"{0} жана {1}"}
-            end{"{0} жана {1}"}
-            middle{"{0}, {1}"}
-            start{"{0}, {1}"}
-        }
-        standard-short{
             2{"{0} жана {1}"}
             end{"{0} жана {1}"}
             middle{"{0}, {1}"}

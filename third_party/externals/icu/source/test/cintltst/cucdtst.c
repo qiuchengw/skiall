@@ -1,8 +1,6 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
- * Copyright (c) 1997-2016, International Business Machines Corporation and
+ * Copyright (c) 1997-2015, International Business Machines Corporation and
  * others. All Rights Reserved.
  ********************************************************************/
 /*******************************************************************************
@@ -25,8 +23,7 @@
 #include "unicode/ustring.h"
 #include "unicode/uloc.h"
 #include "unicode/unorm2.h"
-#include "unicode/utf16.h"
-#include "unicode/utf_old.h"
+
 #include "cintltst.h"
 #include "putilimp.h"
 #include "uparse.h"
@@ -35,7 +32,7 @@
 #include "uprops.h"
 #include "uset_imp.h"
 #include "usc_impl.h"
-#include "udatamem.h"
+#include "udatamem.h" /* for testing ucase_openBinary() */
 #include "cucdapi.h"
 #include "cmemory.h"
 
@@ -60,6 +57,8 @@ static void TestNumericProperties(void);
 static void TestPropertyNames(void);
 static void TestPropertyValues(void);
 static void TestConsistency(void);
+static void TestUCase(void);
+static void TestUBiDiProps(void);
 static void TestCaseFolding(void);
 
 /* internal methods used */
@@ -195,6 +194,8 @@ void addUnicodeTest(TestNode** root)
     addTest(root, &TestPropertyNames, "tsutil/cucdtst/TestPropertyNames");
     addTest(root, &TestPropertyValues, "tsutil/cucdtst/TestPropertyValues");
     addTest(root, &TestConsistency, "tsutil/cucdtst/TestConsistency");
+    addTest(root, &TestUCase, "tsutil/cucdtst/TestUCase");
+    addTest(root, &TestUBiDiProps, "tsutil/cucdtst/TestUBiDiProps");
     addTest(root, &TestCaseFolding, "tsutil/cucdtst/TestCaseFolding");
 }
 
@@ -322,7 +323,7 @@ Checks LetterLike Symbols which were previously a source of confusion
             0x1FFC,
             0x1FFC,
         };
-        int32_t num = UPRV_LENGTHOF(expected);
+        int32_t num = sizeof(expected)/sizeof(expected[0]);
         for(i=0; i<num; i++){
             if(!u_istitle(expected[i])){
                 log_err("u_istitle failed for 0x%4X. Expected TRUE, got FALSE\n",expected[i]);
@@ -1216,8 +1217,6 @@ enumDefaultsRange(const void *context, UChar32 start, UChar32 limit, UCharCatego
         { 0x0590, U_LEFT_TO_RIGHT },
         { 0x0600, U_RIGHT_TO_LEFT },
         { 0x07C0, U_RIGHT_TO_LEFT_ARABIC },
-        { 0x0860, U_RIGHT_TO_LEFT },
-        { 0x0870, U_RIGHT_TO_LEFT_ARABIC },  // Unicode 10 changes U+0860..U+086F from R to AL.
         { 0x08A0, U_RIGHT_TO_LEFT },
         { 0x0900, U_RIGHT_TO_LEFT_ARABIC },  /* Unicode 6.1 changes U+08A0..U+08FF from R to AL */
         { 0x20A0, U_LEFT_TO_RIGHT },
@@ -1227,17 +1226,9 @@ enumDefaultsRange(const void *context, UChar32 start, UChar32 limit, UCharCatego
         { 0xFE00, U_RIGHT_TO_LEFT_ARABIC },
         { 0xFE70, U_LEFT_TO_RIGHT },
         { 0xFF00, U_RIGHT_TO_LEFT_ARABIC },
-
         { 0x10800, U_LEFT_TO_RIGHT },
-        { 0x10D00, U_RIGHT_TO_LEFT },  // Unicode 11 changes U+10D00..U+10D3F from R to AL.
-        { 0x10D40, U_RIGHT_TO_LEFT_ARABIC },
-        { 0x10F30, U_RIGHT_TO_LEFT },  // Unicode 11 changes U+10F30..U+10F6F from R to AL.
-        { 0x10F70, U_RIGHT_TO_LEFT_ARABIC },
         { 0x11000, U_RIGHT_TO_LEFT },
-
         { 0x1E800, U_LEFT_TO_RIGHT },  /* new default-R range in Unicode 5.2: U+1E800 - U+1EFFF */
-        { 0x1EC70, U_RIGHT_TO_LEFT },  // Unicode 11 changes U+1EC70..U+1ECBF from R to AL.
-        { 0x1ECC0, U_RIGHT_TO_LEFT_ARABIC },
         { 0x1EE00, U_RIGHT_TO_LEFT },
         { 0x1EF00, U_RIGHT_TO_LEFT_ARABIC },  /* Unicode 6.1 changes U+1EE00..U+1EEFF from R to AL */
         { 0x1F000, U_RIGHT_TO_LEFT },
@@ -1269,7 +1260,20 @@ enumDefaultsRange(const void *context, UChar32 start, UChar32 limit, UCharCatego
 
     /*
      * Verify default Bidi classes.
-     * See DerivedBidiClass.txt, especially for unassigned code points.
+     * For recent Unicode versions, see UCD.html.
+     *
+     * For older Unicode versions:
+     * See table 3-7 "Bidirectional Character Types" in UAX #9.
+     * http://www.unicode.org/reports/tr9/
+     *
+     * See also DerivedBidiClass.txt for Cn code points!
+     *
+     * Unicode 4.0.1/Public Review Issue #28 (http://www.unicode.org/review/resolved-pri.html)
+     * changed some default values.
+     * In particular, non-characters and unassigned Default Ignorable Code Points
+     * change from L to BN.
+     *
+     * UCD.html version 4.0.1 does not yet reflect these changes.
      */
     if(type==U_UNASSIGNED || type==U_PRIVATE_USE_CHAR) {
         /* enumerate the intersections of defaultBidi ranges with [start..limit[ */
@@ -1392,28 +1396,8 @@ static void TestCodeUnit(){
 
     int32_t i;
 
-    for(i=0; i<UPRV_LENGTHOF(codeunit); i++){
+    for(i=0; i<(int32_t)(sizeof(codeunit)/sizeof(codeunit[0])); i++){
         UChar c=codeunit[i];
-        if(i<4){
-            if(!(U16_IS_SINGLE(c)) || (U16_IS_LEAD(c)) || (U16_IS_TRAIL(c)) ||
-                    U16_IS_SURROGATE(c) || U_IS_SURROGATE(c)) {
-                log_err("ERROR: U+%04x is a single", c);
-            }
-
-        }
-        if(i >= 4 && i< 8){
-            if(!(U16_IS_LEAD(c)) || U16_IS_SINGLE(c) || U16_IS_TRAIL(c) ||
-                    !U16_IS_SURROGATE(c) || !U_IS_SURROGATE(c)){
-                log_err("ERROR: U+%04x is a first surrogate", c);
-            }
-        }
-        if(i >= 8 && i< 12){
-            if(!(U16_IS_TRAIL(c)) || U16_IS_SINGLE(c) || U16_IS_LEAD(c) ||
-                    !U16_IS_SURROGATE(c) || !U_IS_SURROGATE(c)){
-                log_err("ERROR: U+%04x is a second surrogate", c);
-            }
-        }
-#if !U_HIDE_OBSOLETE_UTF_OLD_H
         if(i<4){
             if(!(UTF_IS_SINGLE(c)) || (UTF_IS_LEAD(c)) || (UTF_IS_TRAIL(c)) ||(UTF_IS_SURROGATE(c))){
                 log_err("ERROR: U+%04x is a single", c);
@@ -1430,8 +1414,8 @@ static void TestCodeUnit(){
                 log_err("ERROR: U+%04x is a second surrogate", c);
             }
         }
-#endif
     }
+
 }
 
 static void TestCodePoint(){
@@ -1464,93 +1448,62 @@ static void TestCodePoint(){
         0xfffe,
     };
     int32_t i;
-    for(i=0; i<UPRV_LENGTHOF(codePoint); i++) {
+    for(i=0; i<(int32_t)(sizeof(codePoint)/sizeof(codePoint[0])); i++){
         UChar32 c=codePoint[i];
-        if(i<6) {
-            if(!U_IS_SURROGATE(c) || !U16_IS_SURROGATE(c)) {
-                log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
-            }
-            if(U_IS_UNICODE_CHAR(c)) {
-                log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
-            }
-        } else if(i >=6 && i<18) {
-            if(U_IS_SURROGATE(c) || U16_IS_SURROGATE(c)) {
-                log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
-            }
-            if(!U_IS_UNICODE_CHAR(c)) {
-                log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
-            }
-        } else if(i >=18 && i<20) {
-            if(U_IS_SURROGATE(c) || U16_IS_SURROGATE(c)) {
-                log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
-            }
-            if(!U_IS_UNICODE_CHAR(c)) {
-                log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
-            }
-        } else if(i >=18 && i<UPRV_LENGTHOF(codePoint)) {
-            if(U_IS_SURROGATE(c) || U16_IS_SURROGATE(c)) {
-                log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
-            }
-            if(U_IS_UNICODE_CHAR(c)) {
-                log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
-            }
-        }
-#if !U_HIDE_OBSOLETE_UTF_OLD_H
         if(i<6){
-            if(!UTF_IS_SURROGATE(c)){
+            if(!UTF_IS_SURROGATE(c) || !U_IS_SURROGATE(c) || !U16_IS_SURROGATE(c)){
                 log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
             }
             if(UTF_IS_VALID(c)){
                 log_err("ERROR: isValid() failed for U+%04x\n", c);
             }
-            if(UTF_IS_UNICODE_CHAR(c)){
+            if(UTF_IS_UNICODE_CHAR(c) || U_IS_UNICODE_CHAR(c)){
                 log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
             }
             if(UTF_IS_ERROR(c)){
                 log_err("ERROR: isError() failed for U+%04x\n", c);
             }
         }else if(i >=6 && i<18){
-            if(UTF_IS_SURROGATE(c)){
+            if(UTF_IS_SURROGATE(c) || U_IS_SURROGATE(c) || U16_IS_SURROGATE(c)){
                 log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
             }
             if(!UTF_IS_VALID(c)){
                 log_err("ERROR: isValid() failed for U+%04x\n", c);
             }
-            if(!UTF_IS_UNICODE_CHAR(c)){
+            if(!UTF_IS_UNICODE_CHAR(c) || !U_IS_UNICODE_CHAR(c)){
                 log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
             }
             if(UTF_IS_ERROR(c)){
                 log_err("ERROR: isError() failed for U+%04x\n", c);
             }
         }else if(i >=18 && i<20){
-            if(UTF_IS_SURROGATE(c)){
+            if(UTF_IS_SURROGATE(c) || U_IS_SURROGATE(c) || U16_IS_SURROGATE(c)){
                 log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
             }
             if(UTF_IS_VALID(c)){
                 log_err("ERROR: isValid() failed for U+%04x\n", c);
             }
-            if(!UTF_IS_UNICODE_CHAR(c)){
+            if(!UTF_IS_UNICODE_CHAR(c) || !U_IS_UNICODE_CHAR(c)){
                 log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
             }
             if(!UTF_IS_ERROR(c)){
                 log_err("ERROR: isError() failed for U+%04x\n", c);
             }
         }
-        else if(i >=18 && i<UPRV_LENGTHOF(codePoint)){
-            if(UTF_IS_SURROGATE(c)){
+        else if(i >=18 && i<(int32_t)(sizeof(codePoint)/sizeof(codePoint[0]))){
+            if(UTF_IS_SURROGATE(c) || U_IS_SURROGATE(c) || U16_IS_SURROGATE(c)){
                 log_err("ERROR: isSurrogate() failed for U+%04x\n", c);
             }
             if(UTF_IS_VALID(c)){
                 log_err("ERROR: isValid() failed for U+%04x\n", c);
             }
-            if(UTF_IS_UNICODE_CHAR(c)){
+            if(UTF_IS_UNICODE_CHAR(c) || U_IS_UNICODE_CHAR(c)){
                 log_err("ERROR: isUnicodeChar() failed for U+%04x\n", c);
             }
             if(!UTF_IS_ERROR(c)){
                 log_err("ERROR: isError() failed for U+%04x\n", c);
             }
         }
-#endif
     }
 
     if(
@@ -1588,24 +1541,16 @@ static void TestCharLength()
     };
 
     int32_t i;
-#if !U_HIDE_OBSOLETE_UTF_OLD_H
     UBool multiple;
-#endif
-    for(i=0; i<UPRV_LENGTHOF(codepoint); i=(int16_t)(i+2)){
+    for(i=0; i<(int32_t)(sizeof(codepoint)/sizeof(codepoint[0])); i=(int16_t)(i+2)){
         UChar32 c=codepoint[i+1];
-        if(
-#if !U_HIDE_OBSOLETE_UTF_OLD_H
-                UTF_CHAR_LENGTH(c) != codepoint[i] ||
-#endif
-                U16_LENGTH(c) != codepoint[i]) {
+        if(UTF_CHAR_LENGTH(c) != codepoint[i] || U16_LENGTH(c) != codepoint[i]){
             log_err("The no: of code units for U+%04x:- Expected: %d Got: %d\n", c, codepoint[i], U16_LENGTH(c));
         }
-#if !U_HIDE_OBSOLETE_UTF_OLD_H
         multiple=(UBool)(codepoint[i] == 1 ? FALSE : TRUE);
         if(UTF_NEED_MULTIPLE_UCHAR(c) != multiple){
             log_err("ERROR: Unicode::needMultipleUChar() failed for U+%04x\n", c);
         }
-#endif
     }
 }
 
@@ -1682,7 +1627,7 @@ enumCharNamesFn(void *context,
     }
 
     ++*pCount;
-    for(i=0; i<UPRV_LENGTHOF(names); ++i) {
+    for(i=0; i<sizeof(names)/sizeof(names[0]); ++i) {
         if(code==(UChar32)names[i].code) {
             switch (nameChoice) {
                 case U_EXTENDED_CHAR_NAME:
@@ -1777,7 +1722,7 @@ TestCharNames() {
     /* ### TODO same tests for max ISO comment length as for max name length */
 
     log_verbose("Testing u_charName()\n");
-    for(i=0; i<UPRV_LENGTHOF(names); ++i) {
+    for(i=0; i<(int32_t)(sizeof(names)/sizeof(names[0])); ++i) {
         /* modern Unicode character name */
         length=u_charName(names[i].code, U_UNICODE_CHAR_NAME, name, sizeof(name), &errorCode);
         if(U_FAILURE(errorCode)) {
@@ -2523,7 +2468,7 @@ TestAdditionalProperties() {
         { 0x155A, UCHAR_BLOCK, UBLOCK_UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS },
         { 0x1717, UCHAR_BLOCK, UBLOCK_TAGALOG },
         { 0x1900, UCHAR_BLOCK, UBLOCK_LIMBU },
-        { 0x0870, UCHAR_BLOCK, UBLOCK_NO_BLOCK },
+        { 0x1CBF, UCHAR_BLOCK, UBLOCK_NO_BLOCK },
         { 0x3040, UCHAR_BLOCK, UBLOCK_HIRAGANA },
         { 0x1D0FF, UCHAR_BLOCK, UBLOCK_BYZANTINE_MUSICAL_SYMBOLS },
         { 0x50000, UCHAR_BLOCK, UBLOCK_NO_BLOCK },
@@ -2599,7 +2544,7 @@ TestAdditionalProperties() {
 
         /* UCHAR_NUMERIC_TYPE tested in TestNumericProperties() */
 
-        /* UCHAR_SCRIPT tested in cucdapi.c TestUScriptCodeAPI() */
+        /* UCHAR_SCRIPT tested in TestUScriptCodeAPI() */
 
         { 0x10ff, UCHAR_HANGUL_SYLLABLE_TYPE, 0 },
         { 0x1100, UCHAR_HANGUL_SYLLABLE_TYPE, U_HST_LEADING_JAMO },
@@ -2740,17 +2685,6 @@ TestAdditionalProperties() {
         { 0x10AEF, UCHAR_JOINING_GROUP, U_JG_MANICHAEAN_HUNDRED },
         { 0x10AF0, UCHAR_JOINING_GROUP, U_JG_NO_JOINING_GROUP },
 
-        { -1, 0xa00, 0 },  // version break for Unicode 10
-
-        { 0x1F1E5, UCHAR_REGIONAL_INDICATOR, FALSE },
-        { 0x1F1E7, UCHAR_REGIONAL_INDICATOR, TRUE },
-        { 0x1F1FF, UCHAR_REGIONAL_INDICATOR, TRUE },
-        { 0x1F200, UCHAR_REGIONAL_INDICATOR, FALSE },
-
-        { 0x0600, UCHAR_PREPENDED_CONCATENATION_MARK, TRUE },
-        { 0x0606, UCHAR_PREPENDED_CONCATENATION_MARK, FALSE },
-        { 0x110BD, UCHAR_PREPENDED_CONCATENATION_MARK, TRUE },
-
         /* undefined UProperty values */
         { 0x61, 0x4a7, 0 },
         { 0x234bc, 0x15ed, 0 }
@@ -2773,7 +2707,7 @@ TestAdditionalProperties() {
     }
 
     /* test u_charAge() */
-    for(i=0; i<UPRV_LENGTHOF(charAges); ++i) {
+    for(i=0; i<sizeof(charAges)/sizeof(charAges[0]); ++i) {
         u_charAge(charAges[i].c, version);
         if(0!=memcmp(version, charAges[i].version, sizeof(UVersionInfo))) {
             log_err("error: u_charAge(U+%04lx)={ %u, %u, %u, %u } instead of { %u, %u, %u, %u }\n",
@@ -2851,7 +2785,7 @@ TestAdditionalProperties() {
     }
 
     /* test u_hasBinaryProperty() and u_getIntPropertyValue() */
-    for(i=0; i<UPRV_LENGTHOF(props); ++i) {
+    for(i=0; i<sizeof(props)/sizeof(props[0]); ++i) {
         const char *whichName;
 
         if(props[i][0]<0) {
@@ -3306,6 +3240,100 @@ TestConsistency() {
     }
     uset_close(set1);
     uset_close(set2);
+}
+
+/*
+ * Starting with ICU4C 3.4, the core Unicode properties files
+ * (uprops.icu, ucase.icu, ubidi.icu, unorm.icu)
+ * are hardcoded in the common DLL and therefore not included
+ * in the data package any more.
+ * Test requiring these files are disabled so that
+ * we need not jump through hoops (like adding snapshots of these files
+ * to testdata).
+ * See Jitterbug 4497.
+ */
+#define HARDCODED_DATA_4497 1
+
+/* API coverage for ucase.c */
+static void TestUCase() {
+#if !HARDCODED_DATA_4497
+    UDataMemory *pData;
+    UCaseProps *csp;
+    const UCaseProps *ccsp;
+    UErrorCode errorCode;
+
+    /* coverage for ucase_openBinary() */
+    errorCode=U_ZERO_ERROR;
+    pData=udata_open(NULL, UCASE_DATA_TYPE, UCASE_DATA_NAME, &errorCode);
+    if(U_FAILURE(errorCode)) {
+        log_data_err("unable to open " UCASE_DATA_NAME "." UCASE_DATA_TYPE ": %s\n",
+                    u_errorName(errorCode));
+        return;
+    }
+
+    csp=ucase_openBinary((const uint8_t *)pData->pHeader, -1, &errorCode);
+    if(U_FAILURE(errorCode)) {
+        log_err("ucase_openBinary() fails for the contents of " UCASE_DATA_NAME "." UCASE_DATA_TYPE ": %s\n",
+                u_errorName(errorCode));
+        udata_close(pData);
+        return;
+    }
+
+    if(UCASE_LOWER!=ucase_getType(csp, 0xdf)) { /* verify islower(sharp s) */
+        log_err("ucase_openBinary() does not seem to return working UCaseProps\n");
+    }
+
+    ucase_close(csp);
+    udata_close(pData);
+
+    /* coverage for ucase_getDummy() */
+    errorCode=U_ZERO_ERROR;
+    ccsp=ucase_getDummy(&errorCode);
+    if(ucase_tolower(ccsp, 0x41)!=0x41) {
+        log_err("ucase_tolower(dummy, A)!=A\n");
+    }
+#endif
+}
+
+/* API coverage for ubidi_props.c */
+static void TestUBiDiProps() {
+#if !HARDCODED_DATA_4497
+    UDataMemory *pData;
+    UBiDiProps *bdp;
+    const UBiDiProps *cbdp;
+    UErrorCode errorCode;
+
+    /* coverage for ubidi_openBinary() */
+    errorCode=U_ZERO_ERROR;
+    pData=udata_open(NULL, UBIDI_DATA_TYPE, UBIDI_DATA_NAME, &errorCode);
+    if(U_FAILURE(errorCode)) {
+        log_data_err("unable to open " UBIDI_DATA_NAME "." UBIDI_DATA_TYPE ": %s\n",
+                    u_errorName(errorCode));
+        return;
+    }
+
+    bdp=ubidi_openBinary((const uint8_t *)pData->pHeader, -1, &errorCode);
+    if(U_FAILURE(errorCode)) {
+        log_err("ubidi_openBinary() fails for the contents of " UBIDI_DATA_NAME "." UBIDI_DATA_TYPE ": %s\n",
+                u_errorName(errorCode));
+        udata_close(pData);
+        return;
+    }
+
+    if(0x2215!=ubidi_getMirror(bdp, 0x29F5)) { /* verify some data */
+        log_err("ubidi_openBinary() does not seem to return working UBiDiProps\n");
+    }
+
+    ubidi_closeProps(bdp);
+    udata_close(pData);
+
+    /* coverage for ubidi_getDummy() */
+    errorCode=U_ZERO_ERROR;
+    cbdp=ubidi_getDummy(&errorCode);
+    if(ubidi_getClass(cbdp, 0x20)!=0) {
+        log_err("ubidi_getClass(dummy, space)!=0\n");
+    }
+#endif
 }
 
 /* test case folding, compare return values with CaseFolding.txt ------------ */

@@ -9,8 +9,8 @@
 #include "SDL_visualtest_variator_common.h"
 #include "SDL_visualtest_action_configparser.h"
 
-#ifndef SDL_visualtest_harness_argparser_h_
-#define SDL_visualtest_harness_argparser_h_
+#ifndef _SDL_visualtest_harness_argparser_h
+#define _SDL_visualtest_harness_argparser_h
 
 /** Maximum length of a path string */
 #define MAX_PATH_LEN 300
@@ -70,6 +70,4 @@ void SDLVisualTest_FreeHarnessState(SDLVisualTest_HarnessState* state);
 }
 #endif
 
-#endif /* SDL_visualtest_harness_argparser_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* _SDL_visualtest_harness_argparser_h */

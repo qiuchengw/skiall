@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2018 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -103,10 +103,7 @@ void RunBasicTest()
 #define NInter (CountTo/CountInc/NThreads)
 #define Expect (CountTo-NInter*CountInc*NThreads)
 
-enum {
-   CountTo_GreaterThanZero = CountTo > 0,
-};
-SDL_COMPILE_TIME_ASSERT(size, CountTo_GreaterThanZero); /* check for rollover */
+SDL_COMPILE_TIME_ASSERT(size, CountTo>0); /* check for rollover */
 
 static SDL_atomic_t good = { 42 };
 
@@ -117,7 +114,7 @@ static SDL_atomic_t threadsRunning;
 static SDL_sem *threadDone;
 
 static
-int SDLCALL adder(void* junk)
+int adder(void* junk)
 {
     unsigned long N=NInter;
     SDL_Log("Thread subtracting %d %lu times\n",CountInc,N);
@@ -495,7 +492,7 @@ typedef struct
     char padding[SDL_CACHELINE_SIZE-(sizeof(SDL_EventQueue*)+sizeof(int)*NUM_WRITERS+sizeof(int)+sizeof(SDL_bool))%SDL_CACHELINE_SIZE];
 } ReaderData;
 
-static int SDLCALL FIFO_Writer(void* _data)
+static int FIFO_Writer(void* _data)
 {
     WriterData *data = (WriterData *)_data;
     SDL_EventQueue *queue = data->queue;
@@ -530,7 +527,7 @@ static int SDLCALL FIFO_Writer(void* _data)
     return 0;
 }
 
-static int SDLCALL FIFO_Reader(void* _data)
+static int FIFO_Reader(void* _data)
 {
     ReaderData *data = (ReaderData *)_data;
     SDL_EventQueue *queue = data->queue;
@@ -570,7 +567,7 @@ static int SDLCALL FIFO_Reader(void* _data)
 
 #ifdef TEST_SPINLOCK_FIFO
 /* This thread periodically locks the queue for no particular reason */
-static int SDLCALL FIFO_Watcher(void* _data)
+static int FIFO_Watcher(void* _data)
 {
     SDL_EventQueue *queue = (SDL_EventQueue *)_data;
 
@@ -600,7 +597,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     int i, j;
     int grand_total;
     char textBuffer[1024];
-    size_t len;
+    int len;
 
     SDL_Log("\nFIFO test---------------------------------------\n\n");
     SDL_Log("Mode: %s\n", lock_free ? "LockFree" : "Mutex");

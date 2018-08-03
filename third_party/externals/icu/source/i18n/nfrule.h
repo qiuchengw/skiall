@@ -1,5 +1,3 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 1997-2015, International Business Machines
@@ -17,6 +15,7 @@
 #include "unicode/utypes.h"
 #include "unicode/uobject.h"
 #include "unicode/unistr.h"
+#include "putilimp.h"
 
 U_NAMESPACE_BEGIN
 
@@ -65,7 +64,7 @@ public:
 
     UChar getDecimalPoint() const { return decimalPoint; }
 
-    int64_t getDivisor() const;
+    double getDivisor() const { return uprv_pow(radix, exponent); }
 
     void doFormat(int64_t number, UnicodeString& toAppendTo, int32_t pos, int32_t recursionCount, UErrorCode& status) const;
     void doFormat(double  number, UnicodeString& toAppendTo, int32_t pos, int32_t recursionCount, UErrorCode& status) const;
@@ -74,10 +73,9 @@ public:
                   ParsePosition& pos, 
                   UBool isFractional, 
                   double upperBound,
-                  uint32_t nonNumericalExecutedRuleMask,
                   Formattable& result) const;
 
-    UBool shouldRollBack(int64_t number) const;
+    UBool shouldRollBack(double number) const;
 
     void _appendRuleText(UnicodeString& result) const;
 
@@ -95,7 +93,6 @@ private:
     int32_t indexOfAnyRulePrefix() const;
     double matchToDelimiter(const UnicodeString& text, int32_t startPos, double baseValue,
                             const UnicodeString& delimiter, ParsePosition& pp, const NFSubstitution* sub, 
-                            uint32_t nonNumericalExecutedRuleMask,
                             double upperBound) const;
     void stripPrefix(UnicodeString& text, const UnicodeString& prefix, ParsePosition& pp) const;
 

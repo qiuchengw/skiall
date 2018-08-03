@@ -1,6 +1,4 @@
-// © 2016 and later: Unicode, Inc. and others.
-// License & terms of use: http://www.unicode.org/copyright.html
-/******************************************************************************
+﻿/******************************************************************************
 * Copyright (C) 2008-2014, International Business Machines Corporation and
 * others. All Rights Reserved.
 *******************************************************************************
@@ -12,7 +10,6 @@
 //! [dtitvfmtPreDefined1]
 
 using namespace std;
-using namespace icu;
 
 static void dtitvfmtPreDefined() {
 	  

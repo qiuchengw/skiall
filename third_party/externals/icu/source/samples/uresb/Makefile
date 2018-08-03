@@ -1,6 +1,3 @@
-# Copyright (C) 2016 and later: Unicode, Inc. and others.
-# License & terms of use: http://www.unicode.org/copyright.html#License
-#
 # Copyright (c) 2000-2005 IBM, Inc. and others
 # conversion sample code
 # Usage:
@@ -64,7 +61,7 @@ sr.res : sr.txt
 # Can change this to LINK.c if it is a C only program
 # Can add more libraries here. 
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGET) $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 # Make check: simply runs the sample, logged to a file
 check: $(TARGET) $(RESOURCES)

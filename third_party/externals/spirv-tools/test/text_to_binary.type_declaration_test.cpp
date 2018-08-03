@@ -17,10 +17,9 @@
 
 #include "unit_spirv.h"
 
-#include "gmock/gmock.h"
 #include "test_fixture.h"
+#include "gmock/gmock.h"
 
-namespace spvtools {
 namespace {
 
 using spvtest::EnumCase;
@@ -236,12 +235,9 @@ TEST_F(OpTypeForwardPointerTest, WrongClass) {
 
 using OpSizeOfTest = spvtest::TextToBinaryTest;
 
-// We should be able to assemble it.  Validation checks are in another test
-// file.
-TEST_F(OpSizeOfTest, OpcodeAssemblesInV10) {
-  EXPECT_THAT(
-      CompiledInstructions("%1 = OpSizeOf %2 %3", SPV_ENV_UNIVERSAL_1_0),
-      Eq(MakeInstruction(SpvOpSizeOf, {1, 2, 3})));
+TEST_F(OpSizeOfTest, OpcodeUnrecognizedInV10) {
+  EXPECT_THAT(CompileFailure("%1 = OpSizeOf %2 %3", SPV_ENV_UNIVERSAL_1_0),
+              Eq("Invalid Opcode name 'OpSizeOf'"));
 }
 
 TEST_F(OpSizeOfTest, ArgumentCount) {
@@ -287,5 +283,4 @@ TEST_F(OpSizeOfTest, ArgumentTypes) {
 // TODO(dneto): OpTypeReserveId
 // TODO(dneto): OpTypeQueue
 
-}  // namespace
-}  // namespace spvtools
+}  // anonymous namespace
