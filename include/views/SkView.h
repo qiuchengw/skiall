@@ -66,7 +66,7 @@ public:
     void        setHeight(SkScalar height) { this->setSize(fWidth, height); }
 
     /** Call this to have the view draw into the specified canvas. */
-    virtual void draw(SkCanvas* canvas);
+    virtual void draw(SkCanvas* canvas, const SkPoint& topleft = SkPoint());
 
     //  Click handling
 

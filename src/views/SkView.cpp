@@ -48,21 +48,21 @@ void SkView::setSize(SkScalar width, SkScalar height) {
     }
 }
 
-void SkView::draw(SkCanvas* canvas) {
+void SkView::draw(SkCanvas* canvas, const SkPoint& topleft/* = SkPoint()*/) {
     if (fWidth && fHeight && this->isVisible()) {
         SkRect    r;
-        r.set(0, 0, fWidth, fHeight);
+        r.set(topleft.x(), topleft.y(), fWidth, fHeight);
         if (this->isClipToBounds() && canvas->quickReject(r)) {
             return;
         }
 
         SkAutoCanvasRestore    as(canvas, true);
 
-        if (this->isClipToBounds()) {
-            canvas->clipRect(r);
-        }
-
         int sc = canvas->save();
+        canvas->translate(topleft.x(), topleft.y());
+        if (this->isClipToBounds()) {
+            canvas->clipRect(SkRect::MakeWH(fWidth, fHeight));
+        }
         this->onDraw(canvas);
         canvas->restoreToCount(sc);
     }
