@@ -170,10 +170,10 @@ void QueryTexParameterBase(const Texture *texture, GLenum pname, ParamType *para
             *params = CastFromGLintStateValue<ParamType>(pname, texture->getMaxLevel());
             break;
         case GL_TEXTURE_MIN_LOD:
-            *params = CastFromStateValue<ParamType>(pname, texture->getSamplerState().minLod);
+            *params = CastFromStateValue<ParamType>(pname, texture->getMinLod());
             break;
         case GL_TEXTURE_MAX_LOD:
-            *params = CastFromStateValue<ParamType>(pname, texture->getSamplerState().maxLod);
+            *params = CastFromStateValue<ParamType>(pname, texture->getMaxLod());
             break;
         case GL_TEXTURE_COMPARE_MODE:
             *params = CastFromGLintStateValue<ParamType>(pname, texture->getCompareMode());
@@ -333,7 +333,10 @@ void QuerySamplerParameterBase(const Sampler *sampler, GLenum pname, ParamType *
 }
 
 template <typename ParamType>
-void SetSamplerParameterBase(Sampler *sampler, GLenum pname, const ParamType *params)
+void SetSamplerParameterBase(Context *context,
+                             Sampler *sampler,
+                             GLenum pname,
+                             const ParamType *params)
 {
     switch (pname)
     {
@@ -374,6 +377,8 @@ void SetSamplerParameterBase(Sampler *sampler, GLenum pname, const ParamType *pa
             UNREACHABLE();
             break;
     }
+
+    sampler->onStateChange(context, angle::SubjectMessage::CONTENTS_CHANGED);
 }
 
 // Warning: you should ensure binding really matches attrib.bindingIndex before using this function.
@@ -523,6 +528,10 @@ GLint GetOutputResourceProperty(const Program *program, GLuint index, const GLen
 
         case GL_LOCATION:
             return program->getFragDataLocation(outputVariable.name);
+
+        case GL_LOCATION_INDEX_EXT:
+            // EXT_blend_func_extended
+            return program->getFragDataIndex(outputVariable.name);
 
         case GL_REFERENCED_BY_FRAGMENT_SHADER:
             return 1;
@@ -838,8 +847,7 @@ bool IsTextureEnvEnumParameter(TextureEnvParameter pname)
         case TextureEnvParameter::Op0Alpha:
         case TextureEnvParameter::Op1Alpha:
         case TextureEnvParameter::Op2Alpha:
-        case TextureEnvParameter::RgbScale:
-        case TextureEnvParameter::AlphaScale:
+        case TextureEnvParameter::PointCoordReplace:
             return true;
         default:
             return false;
@@ -1019,6 +1027,9 @@ void QueryProgramiv(const Context *context, const Program *program, GLenum pname
         case GL_LINK_STATUS:
             *params = program->isLinked();
             return;
+        case GL_COMPLETION_STATUS_KHR:
+            *params = program->isLinking() ? GL_FALSE : GL_TRUE;
+            return;
         case GL_VALIDATE_STATUS:
             *params = program->isValidated();
             return;
@@ -1041,7 +1052,9 @@ void QueryProgramiv(const Context *context, const Program *program, GLenum pname
             *params = program->getActiveUniformMaxLength();
             return;
         case GL_PROGRAM_BINARY_LENGTH_OES:
-            *params = program->getBinaryLength(context);
+            *params = context->getCaps().programBinaryFormats.empty()
+                          ? 0
+                          : program->getBinaryLength(context);
             return;
         case GL_ACTIVE_UNIFORM_BLOCKS:
             *params = program->getActiveUniformBlockCount();
@@ -1147,7 +1160,7 @@ void QueryRenderbufferiv(const Context *context,
     }
 }
 
-void QueryShaderiv(const Context *context, Shader *shader, GLenum pname, GLint *params)
+void QueryShaderiv(Shader *shader, GLenum pname, GLint *params)
 {
     ASSERT(shader != nullptr);
 
@@ -1160,16 +1173,19 @@ void QueryShaderiv(const Context *context, Shader *shader, GLenum pname, GLint *
             *params = shader->isFlaggedForDeletion();
             return;
         case GL_COMPILE_STATUS:
-            *params = shader->isCompiled(context) ? GL_TRUE : GL_FALSE;
+            *params = shader->isCompiled() ? GL_TRUE : GL_FALSE;
+            return;
+        case GL_COMPLETION_STATUS_KHR:
+            *params = shader->isCompleted() ? GL_TRUE : GL_FALSE;
             return;
         case GL_INFO_LOG_LENGTH:
-            *params = shader->getInfoLogLength(context);
+            *params = shader->getInfoLogLength();
             return;
         case GL_SHADER_SOURCE_LENGTH:
             *params = shader->getSourceLength();
             return;
         case GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE:
-            *params = shader->getTranslatedSourceWithDebugInfoLength(context);
+            *params = shader->getTranslatedSourceWithDebugInfoLength();
             return;
         default:
             UNREACHABLE();
@@ -1397,43 +1413,46 @@ void SetTexParameteriv(Context *context, Texture *texture, GLenum pname, const G
     SetTexParameterBase(context, texture, pname, params);
 }
 
-void SetSamplerParameterf(Sampler *sampler, GLenum pname, GLfloat param)
+void SetSamplerParameterf(Context *context, Sampler *sampler, GLenum pname, GLfloat param)
 {
-    SetSamplerParameterBase(sampler, pname, &param);
+    SetSamplerParameterBase(context, sampler, pname, &param);
 }
 
-void SetSamplerParameterfv(Sampler *sampler, GLenum pname, const GLfloat *params)
+void SetSamplerParameterfv(Context *context, Sampler *sampler, GLenum pname, const GLfloat *params)
 {
-    SetSamplerParameterBase(sampler, pname, params);
+    SetSamplerParameterBase(context, sampler, pname, params);
 }
 
-void SetSamplerParameteri(Sampler *sampler, GLenum pname, GLint param)
+void SetSamplerParameteri(Context *context, Sampler *sampler, GLenum pname, GLint param)
 {
-    SetSamplerParameterBase(sampler, pname, &param);
+    SetSamplerParameterBase(context, sampler, pname, &param);
 }
 
-void SetSamplerParameteriv(Sampler *sampler, GLenum pname, const GLint *params)
+void SetSamplerParameteriv(Context *context, Sampler *sampler, GLenum pname, const GLint *params)
 {
-    SetSamplerParameterBase(sampler, pname, params);
+    SetSamplerParameterBase(context, sampler, pname, params);
 }
 
-void SetFramebufferParameteri(Framebuffer *framebuffer, GLenum pname, GLint param)
+void SetFramebufferParameteri(const Context *context,
+                              Framebuffer *framebuffer,
+                              GLenum pname,
+                              GLint param)
 {
     ASSERT(framebuffer);
 
     switch (pname)
     {
         case GL_FRAMEBUFFER_DEFAULT_WIDTH:
-            framebuffer->setDefaultWidth(param);
+            framebuffer->setDefaultWidth(context, param);
             break;
         case GL_FRAMEBUFFER_DEFAULT_HEIGHT:
-            framebuffer->setDefaultHeight(param);
+            framebuffer->setDefaultHeight(context, param);
             break;
         case GL_FRAMEBUFFER_DEFAULT_SAMPLES:
-            framebuffer->setDefaultSamples(param);
+            framebuffer->setDefaultSamples(context, param);
             break;
         case GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS:
-            framebuffer->setDefaultFixedSampleLocations(ConvertToBool(param));
+            framebuffer->setDefaultFixedSampleLocations(context, ConvertToBool(param));
             break;
         case GL_FRAMEBUFFER_DEFAULT_LAYERS_EXT:
             framebuffer->setDefaultLayers(param);
@@ -2164,6 +2183,7 @@ unsigned int GetTextureEnvParameterCount(TextureEnvParameter pname)
         case TextureEnvParameter::Op2Alpha:
         case TextureEnvParameter::RgbScale:
         case TextureEnvParameter::AlphaScale:
+        case TextureEnvParameter::PointCoordReplace:
             return 1;
         case TextureEnvParameter::Color:
             return 4;
@@ -2217,7 +2237,6 @@ void ConvertTextureEnvFromFixed(TextureEnvParameter pname, const GLfixed *input,
             {
                 output[i] = FixedToFloat(input[i]);
             }
-            break;
             break;
         default:
             UNREACHABLE();

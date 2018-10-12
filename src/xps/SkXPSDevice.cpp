@@ -332,7 +332,7 @@ bool SkXPSDevice::endSheet() {
 static HRESULT subset_typeface(SkXPSDevice::TypefaceUse* current) {
     //CreateFontPackage wants unsigned short.
     //Microsoft, Y U NO stdint.h?
-    SkTDArray<unsigned short> keepList;
+    std::vector<unsigned short> keepList;
     current->glyphsUsed->exportTo(&keepList);
 
     int ttcCount = (current->ttcIndex + 1);
@@ -353,8 +353,8 @@ static HRESULT subset_typeface(SkXPSDevice::TypefaceUse* current) {
         0,
         0,
         0,
-        keepList.begin(),
-        keepList.count(),
+        keepList.data(),
+        SkTo<unsigned short>(keepList.size()),
         sk_malloc_throw,
         sk_realloc_throw,
         sk_free,
@@ -1156,7 +1156,7 @@ void SkXPSDevice::drawPoints(SkCanvas::PointMode mode,
     draw(this, &SkDraw::drawPoints, mode, count, points, paint, this);
 }
 
-void SkXPSDevice::drawVertices(const SkVertices* v, const SkMatrix* bones, int boneCount,
+void SkXPSDevice::drawVertices(const SkVertices* v, const SkVertices::Bone bones[], int boneCount,
                                SkBlendMode blendMode, const SkPaint& paint) {
     draw(this, &SkDraw::drawVertices, v->mode(), v->vertexCount(), v->positions(), v->texCoords(),
          v->colors(), v->boneIndices(), v->boneWeights(), blendMode, v->indices(), v->indexCount(),
@@ -1185,7 +1185,7 @@ void SkXPSDevice::drawRRect(const SkRRect& rr,
                             const SkPaint& paint) {
     SkPath path;
     path.addRRect(rr);
-    this->drawPath(path, paint, nullptr, true);
+    this->drawPath(path, paint, true);
 }
 
 static SkIRect size(const SkBaseDevice& dev) { return {0, 0, dev.width(), dev.height()}; }
@@ -1204,7 +1204,7 @@ void SkXPSDevice::internalDrawRect(const SkRect& r,
         SkPath tmp;
         tmp.addRect(r);
         tmp.setFillType(SkPath::kWinding_FillType);
-        this->drawPath(tmp, paint, nullptr, true);
+        this->drawPath(tmp, paint, true);
         return;
     }
 
@@ -1328,28 +1328,28 @@ HRESULT SkXPSDevice::addXpsPathGeometry(
             }
             case SkPath::kLine_Verb:
                 if (iter.isCloseLine()) break; //ignore the line, auto-closed
-                segmentTypes.push(XPS_SEGMENT_TYPE_LINE);
-                segmentStrokes.push(stroke);
-                segmentData.push(SkScalarToFLOAT(points[1].fX));
-                segmentData.push(SkScalarToFLOAT(points[1].fY));
+                segmentTypes.push_back(XPS_SEGMENT_TYPE_LINE);
+                segmentStrokes.push_back(stroke);
+                segmentData.push_back(SkScalarToFLOAT(points[1].fX));
+                segmentData.push_back(SkScalarToFLOAT(points[1].fY));
                 break;
             case SkPath::kQuad_Verb:
-                segmentTypes.push(XPS_SEGMENT_TYPE_QUADRATIC_BEZIER);
-                segmentStrokes.push(stroke);
-                segmentData.push(SkScalarToFLOAT(points[1].fX));
-                segmentData.push(SkScalarToFLOAT(points[1].fY));
-                segmentData.push(SkScalarToFLOAT(points[2].fX));
-                segmentData.push(SkScalarToFLOAT(points[2].fY));
+                segmentTypes.push_back(XPS_SEGMENT_TYPE_QUADRATIC_BEZIER);
+                segmentStrokes.push_back(stroke);
+                segmentData.push_back(SkScalarToFLOAT(points[1].fX));
+                segmentData.push_back(SkScalarToFLOAT(points[1].fY));
+                segmentData.push_back(SkScalarToFLOAT(points[2].fX));
+                segmentData.push_back(SkScalarToFLOAT(points[2].fY));
                 break;
             case SkPath::kCubic_Verb:
-                segmentTypes.push(XPS_SEGMENT_TYPE_BEZIER);
-                segmentStrokes.push(stroke);
-                segmentData.push(SkScalarToFLOAT(points[1].fX));
-                segmentData.push(SkScalarToFLOAT(points[1].fY));
-                segmentData.push(SkScalarToFLOAT(points[2].fX));
-                segmentData.push(SkScalarToFLOAT(points[2].fY));
-                segmentData.push(SkScalarToFLOAT(points[3].fX));
-                segmentData.push(SkScalarToFLOAT(points[3].fY));
+                segmentTypes.push_back(XPS_SEGMENT_TYPE_BEZIER);
+                segmentStrokes.push_back(stroke);
+                segmentData.push_back(SkScalarToFLOAT(points[1].fX));
+                segmentData.push_back(SkScalarToFLOAT(points[1].fY));
+                segmentData.push_back(SkScalarToFLOAT(points[2].fX));
+                segmentData.push_back(SkScalarToFLOAT(points[2].fY));
+                segmentData.push_back(SkScalarToFLOAT(points[3].fX));
+                segmentData.push_back(SkScalarToFLOAT(points[3].fY));
                 break;
             case SkPath::kConic_Verb: {
                 const SkScalar tol = SK_Scalar1 / 4;
@@ -1357,12 +1357,12 @@ HRESULT SkXPSDevice::addXpsPathGeometry(
                 const SkPoint* quads =
                     converter.computeQuads(points, iter.conicWeight(), tol);
                 for (int i = 0; i < converter.countQuads(); ++i) {
-                    segmentTypes.push(XPS_SEGMENT_TYPE_QUADRATIC_BEZIER);
-                    segmentStrokes.push(stroke);
-                    segmentData.push(SkScalarToFLOAT(quads[2 * i + 1].fX));
-                    segmentData.push(SkScalarToFLOAT(quads[2 * i + 1].fY));
-                    segmentData.push(SkScalarToFLOAT(quads[2 * i + 2].fX));
-                    segmentData.push(SkScalarToFLOAT(quads[2 * i + 2].fY));
+                    segmentTypes.push_back(XPS_SEGMENT_TYPE_QUADRATIC_BEZIER);
+                    segmentStrokes.push_back(stroke);
+                    segmentData.push_back(SkScalarToFLOAT(quads[2 * i + 1].fX));
+                    segmentData.push_back(SkScalarToFLOAT(quads[2 * i + 1].fY));
+                    segmentData.push_back(SkScalarToFLOAT(quads[2 * i + 2].fX));
+                    segmentData.push_back(SkScalarToFLOAT(quads[2 * i + 2].fY));
                 }
                 break;
             }
@@ -1502,7 +1502,6 @@ HRESULT SkXPSDevice::shadePath(IXpsOMPath* shadedPath,
 
 void SkXPSDevice::drawPath(const SkPath& platonicPath,
                            const SkPaint& origPaint,
-                           const SkMatrix* prePathMatrix,
                            bool pathIsMutable) {
     SkTCopyOnFirstWrite<SkPaint> paint(origPaint);
 
@@ -1519,17 +1518,6 @@ void SkXPSDevice::drawPath(const SkPath& platonicPath,
     //Apply pre-path matrix [Platonic-path -> Skeletal-path].
     SkMatrix matrix = this->ctm();
     SkPath* skeletalPath = const_cast<SkPath*>(&platonicPath);
-    if (prePathMatrix) {
-        if (paintHasPathEffect) {
-            if (!pathIsMutable) {
-                skeletalPath = &modifiedPath;
-                pathIsMutable = true;
-            }
-            platonicPath.transform(*prePathMatrix, skeletalPath);
-        } else {
-            matrix.preConcat(*prePathMatrix);
-        }
-    }
 
     //Apply path effect [Skeletal-path -> Fillable-path].
     SkPath* fillablePath = skeletalPath;
@@ -1821,6 +1809,8 @@ void SkXPSDevice::drawSprite(const SkBitmap& bitmap, int x, int y, const SkPaint
     SkDEBUGF("XPS drawSprite not yet implemented.");
 }
 
+#if 0
+
 HRESULT SkXPSDevice::CreateTypefaceUse(const SkPaint& paint,
                                        TypefaceUse** typefaceUse) {
     SkAutoResolveDefaultTypeface typeface(paint.getTypeface());
@@ -2103,7 +2093,7 @@ void SkXPSDevice::drawPosText(const void* text, size_t byteLen,
                   this->ctm(),
                   paint));
 }
-
+#endif
 void SkXPSDevice::drawDevice( SkBaseDevice* dev,
                              int x, int y,
                              const SkPaint&) {
@@ -2147,7 +2137,7 @@ SkBaseDevice* SkXPSDevice::onCreateDevice(const CreateInfo& info, const SkPaint*
 void SkXPSDevice::drawOval( const SkRect& o, const SkPaint& p) {
     SkPath path;
     path.addOval(o);
-    this->drawPath(path, p, nullptr, true);
+    this->drawPath(path, p, true);
 }
 
 void SkXPSDevice::drawBitmapRect(const SkBitmap& bitmap,

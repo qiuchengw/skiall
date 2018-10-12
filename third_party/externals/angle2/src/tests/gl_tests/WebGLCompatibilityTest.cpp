@@ -1470,6 +1470,51 @@ TEST_P(WebGLCompatibilityTest, DrawArraysBufferOutOfBoundsNonInstanced)
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
 
+// Test that index values outside of the 32-bit integer range do not read out of bounds
+TEST_P(WebGLCompatibilityTest, LargeIndexRange)
+{
+    ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_OES_element_index_uint"));
+
+    const std::string &vert =
+        "attribute vec4 a_Position;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_Position = a_Position;\n"
+        "}\n";
+
+    ANGLE_GL_PROGRAM(program, vert, essl1_shaders::fs::Red());
+    glUseProgram(program.get());
+
+    glEnableVertexAttribArray(glGetAttribLocation(program, "a_Position"));
+
+    constexpr float kVertexData[] = {
+        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    };
+
+    GLBuffer vertexBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(kVertexData), kVertexData, GL_STREAM_DRAW);
+
+    constexpr GLuint kMaxIntAsGLuint = static_cast<GLuint>(std::numeric_limits<GLint>::max());
+    constexpr GLuint kIndexData[]    = {
+        kMaxIntAsGLuint, kMaxIntAsGLuint + 1, kMaxIntAsGLuint + 2, kMaxIntAsGLuint + 3,
+    };
+
+    GLBuffer indexBuffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(kIndexData), kIndexData, GL_DYNAMIC_DRAW);
+
+    EXPECT_GL_NO_ERROR();
+
+    // First index is representable as 32-bit int but second is not
+    glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, 0);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    // Neither index is representable as 32-bit int
+    glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, reinterpret_cast<void *>(sizeof(GLuint) * 2));
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+}
+
 // Test for drawing with a null index buffer
 TEST_P(WebGLCompatibilityTest, NullIndexBuffer)
 {
@@ -2721,13 +2766,13 @@ TEST_P(WebGLCompatibilityTest, RGB32FTextures)
         {
             bool texture = extensionEnabled("GL_OES_texture_float");
             bool filter  = extensionEnabled("GL_OES_texture_float_linear");
-            bool render  = extensionEnabled("GL_CHROMIUM_color_buffer_float_rgb");
+            bool render  = false;
             TestFloatTextureFormat(GL_RGB, GL_RGB, GL_FLOAT, texture, filter, render, data, data);
         }
 
         if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
         {
-            // Sized RGBA 32F
+            // Sized RGB 32F
             bool texture =
                 (getClientMajorVersion() >= 3) || (extensionEnabled("GL_OES_texture_float") &&
                                                    extensionEnabled("GL_EXT_texture_storage"));
@@ -2755,8 +2800,7 @@ TEST_P(WebGLCompatibilityTest, RGBA32FTextures)
         {
             bool texture = extensionEnabled("GL_OES_texture_float");
             bool filter  = extensionEnabled("GL_OES_texture_float_linear");
-            bool render  = extensionEnabled("GL_EXT_color_buffer_float") ||
-                          extensionEnabled("GL_CHROMIUM_color_buffer_float_rgba");
+            bool render  = false;
             TestFloatTextureFormat(GL_RGBA, GL_RGBA, GL_FLOAT, texture, filter, render, data, data);
         }
 
@@ -2794,9 +2838,8 @@ TEST_P(WebGLCompatibilityTest, R16FTextures)
         {
             bool texture = extensionEnabled("GL_OES_texture_half_float") &&
                            extensionEnabled("GL_EXT_texture_rg");
-            bool filter = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render = false;
             TestFloatTextureFormat(GL_RED, GL_RED, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -2810,15 +2853,23 @@ TEST_P(WebGLCompatibilityTest, R16FTextures)
                                    textureData, readPixelsData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3)
         {
             // Sized R 16F
-            bool texture = getClientMajorVersion() >= 3;
-            bool filter  = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float") ||
-                          extensionEnabled("GL_EXT_color_buffer_float");
+            bool texture = true;
+            bool filter  = true;
+            bool render  = extensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_R16F, GL_RED, GL_HALF_FLOAT, texture, filter, render,
+                                   textureData, readPixelsData);
+        }
+        else if (extensionEnabled("GL_EXT_texture_storage"))
+        {
+            // Sized R 16F (OES)
+            bool texture = extensionEnabled("GL_OES_texture_half_float") &&
+                           extensionEnabled("GL_EXT_texture_rg");
+            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            TestFloatTextureFormat(GL_R16F, GL_RED, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
     }
@@ -2843,10 +2894,8 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
         {
             bool texture = extensionEnabled("GL_OES_texture_half_float") &&
                            extensionEnabled("GL_EXT_texture_rg");
-            bool filter = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float") &&
-                          extensionEnabled("GL_EXT_texture_rg");
+            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render = false;
             TestFloatTextureFormat(GL_RG, GL_RG, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -2860,15 +2909,23 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
                                    textureData, readPixelsData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3)
         {
             // Sized RG 16F
-            bool texture = getClientMajorVersion() >= 3;
-            bool filter  = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float") ||
-                          extensionEnabled("GL_EXT_color_buffer_float");
+            bool texture = true;
+            bool filter  = true;
+            bool render  = extensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RG16F, GL_RG, GL_HALF_FLOAT, texture, filter, render,
+                                   textureData, readPixelsData);
+        }
+        else if (extensionEnabled("GL_EXT_texture_storage"))
+        {
+            // Sized RG 16F (OES)
+            bool texture = extensionEnabled("GL_OES_texture_half_float") &&
+                           extensionEnabled("GL_EXT_texture_rg");
+            bool filter = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            TestFloatTextureFormat(GL_RG16F, GL_RG, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
     }
@@ -2894,9 +2951,8 @@ TEST_P(WebGLCompatibilityTest, RGB16FTextures)
         // Unsized RGB 16F (OES)
         {
             bool texture = extensionEnabled("GL_OES_texture_half_float");
-            bool filter  = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
+            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = false;
             TestFloatTextureFormat(GL_RGB, GL_RGB, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -2910,14 +2966,25 @@ TEST_P(WebGLCompatibilityTest, RGB16FTextures)
                                    textureData, readPixelsData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3)
         {
             // Sized RGB 16F
-            bool texture = getClientMajorVersion() >= 3;
-            bool filter  = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
+            bool texture = true;
+            bool filter  = true;
+            // It is unclear how EXT_color_buffer_half_float applies to ES3.0 and above, however,
+            // dEQP GLES3 es3fFboColorbufferTests.cpp verifies that texture attachment of GL_RGB16F
+            // is possible, so assume that all GLES implementations support it.
             bool render = extensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGB16F, GL_RGB, GL_HALF_FLOAT, texture, filter, render,
+                                   textureData, readPixelsData);
+        }
+        else if (extensionEnabled("GL_EXT_texture_storage"))
+        {
+            // Sized RGB 16F (OES)
+            bool texture = extensionEnabled("GL_OES_texture_half_float");
+            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = extensionEnabled("GL_EXT_color_buffer_half_float");
+            TestFloatTextureFormat(GL_RGB16F, GL_RGB, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
     }
@@ -2943,10 +3010,8 @@ TEST_P(WebGLCompatibilityTest, RGBA16FTextures)
         // Unsized RGBA 16F (OES)
         {
             bool texture = extensionEnabled("GL_OES_texture_half_float");
-            bool filter  = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float") ||
-                          extensionEnabled("GL_EXT_color_buffer_float");
+            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = extensionEnabled("GL_EXT_color_buffer_half_float");
             TestFloatTextureFormat(GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
@@ -2960,15 +3025,22 @@ TEST_P(WebGLCompatibilityTest, RGBA16FTextures)
                                    textureData, readPixelsData);
         }
 
-        if (getClientMajorVersion() >= 3 || extensionEnabled("GL_EXT_texture_storage"))
+        if (getClientMajorVersion() >= 3)
         {
             // Sized RGBA 16F
-            bool texture = getClientMajorVersion() >= 3;
-            bool filter  = getClientMajorVersion() >= 3 ||
-                          extensionEnabled("GL_OES_texture_half_float_linear");
-            bool render = extensionEnabled("GL_EXT_color_buffer_half_float") ||
-                          extensionEnabled("GL_EXT_color_buffer_float");
+            bool texture = true;
+            bool filter  = true;
+            bool render  = extensionEnabled("GL_EXT_color_buffer_float");
             TestFloatTextureFormat(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT, texture, filter, render,
+                                   textureData, readPixelsData);
+        }
+        else if (extensionEnabled("GL_EXT_texture_storage"))
+        {
+            // Sized RGBA 16F (OES)
+            bool texture = extensionEnabled("GL_OES_texture_half_float");
+            bool filter  = extensionEnabled("GL_OES_texture_half_float_linear");
+            bool render  = extensionEnabled("GL_EXT_color_buffer_half_float");
+            TestFloatTextureFormat(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT_OES, texture, filter, render,
                                    textureData, readPixelsData);
         }
     }
@@ -3187,12 +3259,12 @@ TEST_P(WebGL2CompatibilityTest, RenderingFeedbackLoopWithDepthStencil)
     // Create textures and allocate storage
     GLTexture tex0;
     GLTexture tex1;
-    GLRenderbuffer rb;
+    GLTexture tex2;
     FillTexture2D(tex0.get(), width, height, GLColor::black, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
     FillTexture2D(tex1.get(), width, height, 0x80, 0, GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT,
                   GL_UNSIGNED_INT);
-    glBindRenderbuffer(GL_RENDERBUFFER, rb.get());
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+    FillTexture2D(tex2.get(), width, height, 0x40, 0, GL_DEPTH_STENCIL, GL_DEPTH_STENCIL,
+                  GL_UNSIGNED_INT_24_8);
     ASSERT_GL_NO_ERROR();
 
     GLFramebuffer fbo;
@@ -3207,23 +3279,25 @@ TEST_P(WebGL2CompatibilityTest, RenderingFeedbackLoopWithDepthStencil)
     // The same image is used as depth buffer during rendering.
     glEnable(GL_DEPTH_TEST);
     drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
-    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Same image as depth buffer should fail";
 
     // The same image is used as depth buffer. But depth mask is false.
+    // This is now considered a feedback loop and should generate an error. http://crbug.com/763695
     glDepthMask(GL_FALSE);
     drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
-    EXPECT_GL_NO_ERROR();
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Depth writes disabled should still fail";
 
     // The same image is used as depth buffer. But depth test is not enabled during rendering.
+    // This is now considered a feedback loop and should generate an error. http://crbug.com/763695
     glDepthMask(GL_TRUE);
     glDisable(GL_DEPTH_TEST);
     drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
-    EXPECT_GL_NO_ERROR();
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Depth read disabled should still fail";
 
     // Test rendering and sampling feedback loop for stencil buffer
-    glBindTexture(GL_RENDERBUFFER, rb.get());
+    glBindTexture(GL_TEXTURE_2D, tex2.get());
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rb.get());
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, tex2.get(), 0);
     ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
     constexpr GLint stencilClearValue = 0x40;
     glClearBufferiv(GL_STENCIL, 0, &stencilClearValue);
@@ -3231,18 +3305,20 @@ TEST_P(WebGL2CompatibilityTest, RenderingFeedbackLoopWithDepthStencil)
     // The same image is used as stencil buffer during rendering.
     glEnable(GL_STENCIL_TEST);
     drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
-    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Same image as stencil buffer should fail";
 
     // The same image is used as stencil buffer. But stencil mask is zero.
+    // This is now considered a feedback loop and should generate an error. http://crbug.com/763695
     glStencilMask(0x0);
     drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
-    EXPECT_GL_NO_ERROR();
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Stencil mask zero should still fail";
 
     // The same image is used as stencil buffer. But stencil test is not enabled during rendering.
+    // This is now considered a feedback loop and should generate an error. http://crbug.com/763695
     glStencilMask(0xffff);
     glDisable(GL_STENCIL_TEST);
     drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
-    EXPECT_GL_NO_ERROR();
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Stencil test disabled should still fail";
 }
 
 // The source and the target for CopyTexSubImage3D are the same 3D texture.
@@ -4176,6 +4252,21 @@ TEST_P(WebGL2CompatibilityTest, TransformFeedbackCheckNullDeref)
     // This should fail because it is trying to pull a vertex from an empty buffer.
     glDrawArrays(GL_POINTS, 0, 1);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+}
+
+// Check the return type of a given parameter upon getting the active uniforms.
+TEST_P(WebGL2CompatibilityTest, UniformVariablesReturnTypes)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+
+    std::vector<GLuint> validUniformIndices = {0};
+    std::vector<GLint> uniformNameLengthBuf(validUniformIndices.size());
+
+    // This should fail because GL_UNIFORM_NAME_LENGTH cannot be used in WebGL2.
+    glGetActiveUniformsiv(program, static_cast<GLsizei>(validUniformIndices.size()),
+                          &validUniformIndices[0], GL_UNIFORM_NAME_LENGTH,
+                          &uniformNameLengthBuf[0]);
+    EXPECT_GL_ERROR(GL_INVALID_ENUM);
 }
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these

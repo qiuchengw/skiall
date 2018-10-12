@@ -1819,7 +1819,7 @@ void GrGLLightingEffect::emitCode(EmitArgs& args) {
     GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
     SkString lightFunc;
     this->emitLightFunc(uniformHandler, fragBuilder, &lightFunc);
-    static const GrShaderVar gSobelArgs[] =  {
+    const GrShaderVar gSobelArgs[] =  {
         GrShaderVar("a", kHalf_GrSLType),
         GrShaderVar("b", kHalf_GrSLType),
         GrShaderVar("c", kHalf_GrSLType),
@@ -1837,7 +1837,7 @@ void GrGLLightingEffect::emitCode(EmitArgs& args) {
                               gSobelArgs,
                               "\treturn (-a + b - 2.0 * c + 2.0 * d -e + f) * scale;\n",
                               &sobelFuncName);
-    static const GrShaderVar gPointToNormalArgs[] =  {
+    const GrShaderVar gPointToNormalArgs[] =  {
         GrShaderVar("x", kHalf_GrSLType),
         GrShaderVar("y", kHalf_GrSLType),
         GrShaderVar("scale", kHalf_GrSLType),
@@ -1850,7 +1850,7 @@ void GrGLLightingEffect::emitCode(EmitArgs& args) {
                               "\treturn normalize(half3(-x * scale, -y * scale, 1));\n",
                               &pointToNormalName);
 
-    static const GrShaderVar gInteriorNormalArgs[] =  {
+    const GrShaderVar gInteriorNormalArgs[] =  {
         GrShaderVar("m", kHalf_GrSLType, 9),
         GrShaderVar("surfaceScale", kHalf_GrSLType),
     };
@@ -1938,14 +1938,14 @@ void GrGLDiffuseLightingEffect::emitLightFunc(GrGLSLUniformHandler* uniformHandl
     const char* kd;
     fKDUni = uniformHandler->addUniform(kFragment_GrShaderFlag, kHalf_GrSLType, "KD", &kd);
 
-    static const GrShaderVar gLightArgs[] = {
+    const GrShaderVar gLightArgs[] = {
         GrShaderVar("normal", kHalf3_GrSLType),
         GrShaderVar("surfaceToLight", kHalf3_GrSLType),
         GrShaderVar("lightColor", kHalf3_GrSLType)
     };
     SkString lightBody;
     lightBody.appendf("\thalf colorScale = %s * dot(normal, surfaceToLight);\n", kd);
-    lightBody.appendf("\treturn half4(lightColor * clamp(colorScale, 0.0, 1.0), 1.0);\n");
+    lightBody.appendf("\treturn half4(lightColor * saturate(colorScale), 1.0);\n");
     fragBuilder->emitFunction(kHalf4_GrSLType,
                               "light",
                               SK_ARRAY_COUNT(gLightArgs),
@@ -2034,7 +2034,7 @@ void GrGLSpecularLightingEffect::emitLightFunc(GrGLSLUniformHandler* uniformHand
                                                "Shininess",
                                                &shininess);
 
-    static const GrShaderVar gLightArgs[] = {
+    const GrShaderVar gLightArgs[] = {
         GrShaderVar("normal", kHalf3_GrSLType),
         GrShaderVar("surfaceToLight", kHalf3_GrSLType),
         GrShaderVar("lightColor", kHalf3_GrSLType)
@@ -2043,7 +2043,7 @@ void GrGLSpecularLightingEffect::emitLightFunc(GrGLSLUniformHandler* uniformHand
     lightBody.appendf("\thalf3 halfDir = half3(normalize(surfaceToLight + half3(0, 0, 1)));\n");
     lightBody.appendf("\tfloat colorScale = %s * pow(dot(normal, halfDir), %s);\n",
                       ks, shininess);
-    lightBody.appendf("\thalf3 color = lightColor * clamp(colorScale, 0.0, 1.0);\n");
+    lightBody.appendf("\thalf3 color = lightColor * saturate(colorScale);\n");
     lightBody.appendf("\treturn half4(color, max(max(color.r, color.g), color.b));\n");
     fragBuilder->emitFunction(kHalf4_GrSLType,
                               "light",
@@ -2164,7 +2164,7 @@ void GrGLSpotLight::emitLightColor(GrGLSLUniformHandler* uniformHandler,
                                                "ConeScale", &coneScale);
     fSUni = uniformHandler->addUniform(kFragment_GrShaderFlag, kHalf3_GrSLType, "S", &s);
 
-    static const GrShaderVar gLightColorArgs[] = {
+    const GrShaderVar gLightColorArgs[] = {
         GrShaderVar("surfaceToLight", kHalf3_GrSLType)
     };
     SkString lightColorBody;

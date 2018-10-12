@@ -28,6 +28,8 @@
 #define SK_LASTFRAGCOLOR_BUILTIN       10008
 #define SK_MAIN_X_BUILTIN              10009
 #define SK_MAIN_Y_BUILTIN              10010
+#define SK_WIDTH_BUILTIN               10011
+#define SK_HEIGHT_BUILTIN              10012
 #define SK_FRAGCOORD_BUILTIN              15
 #define SK_CLOCKWISE_BUILTIN              17
 #define SK_VERTEXID_BUILTIN               42
@@ -61,9 +63,24 @@ public:
         kPermitInvalidStaticTests_Flag = 1,
     };
 
-    enum class FormatArg {
-        kInput,
-        kOutput
+    struct FormatArg {
+        enum class Kind {
+            kInput,
+            kOutput,
+            kUniform,
+            kChildProcessor
+        };
+
+        FormatArg(Kind kind)
+                : fKind(kind) {}
+
+        FormatArg(Kind kind, int index)
+                : fKind(kind)
+                , fIndex(index) {}
+
+        Kind fKind;
+
+        int fIndex;
     };
 
     Compiler(Flags flags = kNone_Flags);

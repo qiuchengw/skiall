@@ -31,8 +31,6 @@ gn_desc_cmd = [gn, 'desc', '.', '--root=%s' % absolute_source, '--format=json',
                '*']
 
 desc_json_txt = ''
-
-print "----->", gn_desc_cmd
 try:
   desc_json_txt = subprocess.check_output(gn_desc_cmd)
 except subprocess.CalledProcessError as e:

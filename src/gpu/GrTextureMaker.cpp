@@ -58,7 +58,7 @@ sk_sp<GrTextureProxy> GrTextureMaker::onRefTextureProxyForParams(const GrSampler
 
     GrSurfaceOrigin origOrigin = original ? original->origin() : kTopLeft_GrSurfaceOrigin;
     GrUniqueKey copyKey;
-    this->makeCopyKey(copyParams, &copyKey, dstColorSpace);
+    this->makeCopyKey(copyParams, &copyKey);
     sk_sp<GrTextureProxy> cachedProxy;
     if (copyKey.isValid()) {
         cachedProxy = proxyProvider->findOrCreateProxyByUniqueKey(copyKey, origOrigin);
@@ -152,5 +152,6 @@ std::unique_ptr<GrFragmentProcessor> GrTextureMaker::createFragmentProcessor(
     SkASSERT(kTightCopy_DomainMode != domainMode);
     auto fp = CreateFragmentProcessorForDomainAndFilter(std::move(proxy), adjustedMatrix,
                                                         domainMode, domain, filterOrNullForBicubic);
-    return GrColorSpaceXformEffect::Make(std::move(fp), texColorSpace.get(), dstColorSpace);
+    return GrColorSpaceXformEffect::Make(std::move(fp), texColorSpace.get(), this->alphaType(),
+                                         dstColorSpace);
 }

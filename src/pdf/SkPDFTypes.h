@@ -8,16 +8,20 @@
 #ifndef SkPDFTypes_DEFINED
 #define SkPDFTypes_DEFINED
 
-#include <new>
-#include <type_traits>
-
 #include "SkRefCnt.h"
 #include "SkScalar.h"
 #include "SkTHash.h"
 #include "SkTo.h"
 #include "SkTypes.h"
 
+#include <new>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 class SkData;
+class SkPDFCanon;
+class SkPDFDocument;
 class SkPDFObjNumMap;
 class SkPDFObject;
 class SkStreamAsset;
@@ -25,7 +29,7 @@ class SkString;
 class SkWStream;
 
 #ifdef SK_PDF_IMAGE_STATS
-#include "SkAtomics.h"
+    #include <atomic>
 #endif
 
 /** \class SkPDFObject
@@ -107,6 +111,8 @@ public:
 
     static SkPDFUnion ColorComponent(uint8_t);
 
+    static SkPDFUnion ColorComponentF(float);
+
     /** These two functions do NOT take ownership of char*, and do NOT
         copy the string.  Suitable for passing in static const
         strings. For example:
@@ -155,6 +161,7 @@ private:
         kDestroyed = 0,
         kInt,
         kColorComponent,
+        kColorComponentF,
         kBool,
         kScalar,
         kName,
@@ -167,12 +174,19 @@ private:
     Type fType;
 
     SkPDFUnion(Type);
+    SkPDFUnion(Type, int32_t);
+    SkPDFUnion(Type, bool);
+    SkPDFUnion(Type, SkScalar);
+    SkPDFUnion(Type, const SkString&);
     // We do not now need copy constructor and copy assignment, so we
     // will disable this functionality.
     SkPDFUnion& operator=(const SkPDFUnion&) = delete;
     SkPDFUnion(const SkPDFUnion&) = delete;
 };
 static_assert(sizeof(SkString) == sizeof(void*), "SkString_size");
+
+// Exposed for unit testing.
+void SkPDFWriteString(SkWStream* wStream, const char* cin, size_t len);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -214,7 +228,7 @@ public:
 
     /** The size of the array.
      */
-    int size() const;
+    size_t size() const;
 
     /** Preallocate space for the given number of entries.
      *  @param length The number of array slots to preallocate.
@@ -236,10 +250,28 @@ public:
     void appendObjRef(sk_sp<SkPDFObject>);
 
 private:
-    SkTArray<SkPDFUnion> fValues;
+    std::vector<SkPDFUnion> fValues;
     void append(SkPDFUnion&& value);
     SkDEBUGCODE(bool fDumped;)
 };
+
+static inline void SkPDFArray_Append(SkPDFArray* a, int v) { a->appendInt(v); }
+
+static inline void SkPDFArray_Append(SkPDFArray* a, SkScalar v) { a->appendScalar(v); }
+
+template <typename T, typename... Args>
+inline void SkPDFArray_Append(SkPDFArray* a, T v, Args... args) {
+    SkPDFArray_Append(a, v);
+    SkPDFArray_Append(a, args...);
+}
+
+template <typename... Args>
+inline sk_sp<SkPDFArray> SkPDFMakeArray(Args... args) {
+    auto ret = sk_make_sp<SkPDFArray>();
+    ret->reserve(sizeof...(Args));
+    SkPDFArray_Append(ret.get(), args...);
+    return ret;
+}
 
 /** \class SkPDFDict
 
@@ -262,7 +294,7 @@ public:
 
     /** The size of the dictionary.
      */
-    int size() const;
+    size_t size() const;
 
     /** Preallocate space for n key-value pairs */
     void reserve(int n);
@@ -284,6 +316,7 @@ public:
     void insertInt(const char key[], int32_t value);
     void insertInt(const char key[], size_t value);
     void insertScalar(const char key[], SkScalar value);
+    void insertColorComponentF(const char key[], SkScalar value);
     void insertName(const char key[], const char nameValue[]);
     void insertName(const char key[], const SkString& nameValue);
     void insertString(const char key[], const char value[]);
@@ -299,7 +332,7 @@ private:
         SkPDFUnion fKey;
         SkPDFUnion fValue;
     };
-    SkTArray<Record> fRecords;
+    std::vector<Record> fRecords;
     SkDEBUGCODE(bool fDumped;)
 };
 
@@ -386,19 +419,19 @@ public:
      */
     int32_t getObjectNumber(SkPDFObject* obj) const;
 
-    const SkTArray<sk_sp<SkPDFObject>>& objects() const { return fObjects; }
+    const std::vector<sk_sp<SkPDFObject>>& objects() const { return fObjects; }
 
 private:
-    SkTArray<sk_sp<SkPDFObject>> fObjects;
+    std::vector<sk_sp<SkPDFObject>> fObjects;
     SkTHashMap<SkPDFObject*, int32_t> fObjectNumbers;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef SK_PDF_IMAGE_STATS
-extern SkAtomic<int> gDrawImageCalls;
-extern SkAtomic<int> gJpegImageObjects;
-extern SkAtomic<int> gRegularImageObjects;
+extern std::atomic<int> gDrawImageCalls;
+extern std::atomic<int> gJpegImageObjects;
+extern std::atomic<int> gRegularImageObjects;
 extern void SkPDFImageDumpStats();
 #endif // SK_PDF_IMAGE_STATS
 

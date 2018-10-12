@@ -4,6 +4,10 @@
 
 #Class SkPicture
 
+#Code
+#Populate
+##
+
 Picture records drawing commands made to Canvas. The command stream may be
 played in whole or in part at a later time.
 
@@ -14,18 +18,6 @@ Picture may contain any Canvas drawing command, as well as one or more
 Canvas_Matrix or Canvas_Clip. Picture has a cull Rect, which is used as
 a bounding box hint. To limit Picture bounds, use Canvas_Clip when
 recording or drawing Picture.
-
-#Subtopic Overview
-#Populate
-##
-
-#Subtopic Class
-#Populate
-##
-
-#Subtopic Member_Function
-#Populate
-##
 
 # ------------------------------------------------------------------------------
 
@@ -50,7 +42,7 @@ If AbortCallback::abort returns true, SkPicture::playback is interrupted.
 # ------------------------------------------------------------------------------
 
 #Method AbortCallback()
-#In Constructor
+#In Constructors
 #Line # defines default constructor ##
 Has no effect.
 
@@ -66,7 +58,7 @@ Has no effect.
 # ------------------------------------------------------------------------------
 
 #Method virtual ~AbortCallback()
-#In Constructor
+#In Constructors
 #Line # defines default destructor ##
 Has no effect.
 
@@ -136,10 +128,17 @@ void draw(SkCanvas* canvas) {
 
 #Method static sk_sp<SkPicture> MakeFromStream(SkStream* stream,
                                            const SkDeserialProcs* procs = nullptr)
-#In Constructor
+#In Constructors
 #Line # constructs Picture from stream ##
 
-Recreates a picture that was serialized into a stream.
+Recreates Picture that was serialized into a stream. Returns constructed Picture
+if successful; otherwise, returns nullptr. Fails if data does not permit
+constructing valid Picture.
+
+procs.fPictureProc permits supplying a custom function to decode Picture.
+If procs.fPictureProc is nullptr, default decoding is used. procs.fPictureCtx
+may be used to provide user context to procs.fPictureProc; procs.fPictureProc
+is called with a pointer to data, data byte length, and user context.
 
 #Param stream  container for serial data ##
 #Param procs  custom serial data decoders; may be nullptr ##
@@ -169,10 +168,17 @@ Recreates a picture that was serialized into a stream.
 
 #Method static sk_sp<SkPicture> MakeFromData(const SkData* data,
                                          const SkDeserialProcs* procs = nullptr)
-#In Constructor
+#In Constructors
 #Line # constructs Picture from data ##
 
-Recreates a picture that was serialized into data.
+Recreates Picture that was serialized into data. Returns constructed Picture
+if successful; otherwise, returns nullptr. Fails if data does not permit
+constructing valid Picture.
+
+procs.fPictureProc permits supplying a custom function to decode Picture.
+If procs.fPictureProc is nullptr, default decoding is used. procs.fPictureCtx
+may be used to provide user context to procs.fPictureProc; procs.fPictureProc
+is called with a pointer to data, data byte length, and user context.
 
 #Param data  container for serial data ##
 #Param procs  custom serial data decoders; may be nullptr ##
@@ -207,7 +213,14 @@ Recreates a picture that was serialized into data.
 #Param size  size of data ##
 #Param procs  custom serial data decoders; may be nullptr ##
 
-Recreates a picture that was serialized into data.
+Recreates Picture that was serialized into data. Returns constructed Picture
+if successful; otherwise, returns nullptr. Fails if size is smaller than
+required data length, or if data does not permit constructing valid Picture.
+
+procs.fPictureProc permits supplying a custom function to decode Picture.
+If procs.fPictureProc is nullptr, default decoding is used. procs.fPictureCtx
+may be used to provide user context to procs.fPictureProc; procs.fPictureProc
+is called with a pointer to data, data byte length, and user context.
 
 #Return Picture constructed from data ##
 
@@ -328,9 +341,14 @@ placeholder id = 2
 
 #Method sk_sp<SkData> serialize(const SkSerialProcs* procs = nullptr) const
 #In Utility
-#Line # writes Picture to data ##
-Returns storage containing data describing Picture, using optional custom
+#Line # writes Picture to Data ##
+Returns storage containing Data describing Picture, using optional custom
 encoders.
+
+procs.fPictureProc permits supplying a custom function to encode Picture.
+If procs.fPictureProc is nullptr, default encoding is used. procs.fPictureCtx
+may be used to provide user context to procs.fPictureProc; procs.fPictureProc
+is called with a pointer to Picture and user context.
 
 #Param procs  custom serial data encoders; may be nullptr ##
 
@@ -358,6 +376,11 @@ encoders.
 #Method void serialize(SkWStream* stream, const SkSerialProcs* procs = nullptr) const
 Writes picture to stream, using optional custom encoders.
 
+procs.fPictureProc permits supplying a custom function to encode Picture.
+If procs.fPictureProc is nullptr, default encoding is used. procs.fPictureCtx
+may be used to provide user context to procs.fPictureProc; procs.fPictureProc
+is called with a pointer to Picture and user context.
+
 #Param stream  writable serial data stream ##
 #Param procs  custom serial data encoders; may be nullptr ##
 
@@ -383,7 +406,7 @@ Writes picture to stream, using optional custom encoders.
 # ------------------------------------------------------------------------------
 
 #Method static sk_sp<SkPicture> MakePlaceholder(SkRect cull)
-#In Constructor
+#In Constructors
 #Line # constructs placeholder with unique identifier ##
 
 Returns a placeholder SkPicture. Result does not draw, and contains only

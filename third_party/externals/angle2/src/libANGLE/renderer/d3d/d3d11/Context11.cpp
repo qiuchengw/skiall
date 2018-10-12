@@ -13,7 +13,6 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/MemoryProgramCache.h"
 #include "libANGLE/renderer/d3d/CompilerD3D.h"
-#include "libANGLE/renderer/d3d/ProgramD3D.h"
 #include "libANGLE/renderer/d3d/RenderbufferD3D.h"
 #include "libANGLE/renderer/d3d/SamplerD3D.h"
 #include "libANGLE/renderer/d3d/ShaderD3D.h"
@@ -22,6 +21,7 @@
 #include "libANGLE/renderer/d3d/d3d11/Fence11.h"
 #include "libANGLE/renderer/d3d/d3d11/Framebuffer11.h"
 #include "libANGLE/renderer/d3d/d3d11/IndexBuffer11.h"
+#include "libANGLE/renderer/d3d/d3d11/Program11.h"
 #include "libANGLE/renderer/d3d/d3d11/ProgramPipeline11.h"
 #include "libANGLE/renderer/d3d/d3d11/Renderer11.h"
 #include "libANGLE/renderer/d3d/d3d11/StateManager11.h"
@@ -105,21 +105,10 @@ gl::Error ReadbackIndirectBuffer(const gl::Context *context,
     *bufferPtrOut = reinterpret_cast<const IndirectBufferT *>(bufferData + offset);
     return gl::NoError();
 }
-
-GLenum DefaultGLErrorCode(HRESULT hr)
-{
-    switch (hr)
-    {
-        case E_OUTOFMEMORY:
-            return GL_OUT_OF_MEMORY;
-        default:
-            return GL_INVALID_OPERATION;
-    }
-}
 }  // anonymous namespace
 
 Context11::Context11(const gl::ContextState &state, Renderer11 *renderer)
-    : ContextImpl(state), mRenderer(renderer)
+    : ContextD3D(state), mRenderer(renderer)
 {
 }
 
@@ -156,7 +145,7 @@ ShaderImpl *Context11::createShader(const gl::ShaderState &data)
 
 ProgramImpl *Context11::createProgram(const gl::ProgramState &data)
 {
-    return new ProgramD3D(data, mRenderer);
+    return new Program11(data, mRenderer);
 }
 
 FramebufferImpl *Context11::createFramebuffer(const gl::FramebufferState &data)
@@ -180,6 +169,8 @@ TextureImpl *Context11::createTexture(const gl::TextureState &state)
             return new TextureD3D_External(state, mRenderer);
         case gl::TextureType::_2DMultisample:
             return new TextureD3D_2DMultisample(state, mRenderer);
+        case gl::TextureType::_2DMultisampleArray:
+            return new TextureD3D_2DMultisampleArray(state, mRenderer);
         default:
             UNREACHABLE();
     }
@@ -249,10 +240,10 @@ gl::Error Context11::finish(const gl::Context *context)
     return mRenderer->finish(this);
 }
 
-gl::Error Context11::drawArrays(const gl::Context *context,
-                                gl::PrimitiveMode mode,
-                                GLint first,
-                                GLsizei count)
+angle::Result Context11::drawArrays(const gl::Context *context,
+                                    gl::PrimitiveMode mode,
+                                    GLint first,
+                                    GLsizei count)
 {
     const gl::DrawCallParams &drawCallParams = context->getParams<gl::DrawCallParams>();
     ASSERT(!drawCallParams.isDrawElements() && !drawCallParams.isDrawIndirect());
@@ -418,10 +409,12 @@ void Context11::popDebugGroup()
     popGroupMarker();
 }
 
-gl::Error Context11::syncState(const gl::Context *context, const gl::State::DirtyBits &dirtyBits)
+angle::Result Context11::syncState(const gl::Context *context,
+                                   const gl::State::DirtyBits &dirtyBits,
+                                   const gl::State::DirtyBits &bitMask)
 {
     mRenderer->getStateManager()->syncState(context, dirtyBits);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 GLint Context11::getGPUDisjoint()
@@ -491,8 +484,7 @@ gl::Error Context11::dispatchCompute(const gl::Context *context,
 
 gl::Error Context11::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    return mRenderer->dispatchComputeIndirect(context, indirect);
 }
 
 angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *context,
@@ -517,15 +509,14 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     }
 
     // Load the compiler if necessary and recompile the programs.
-    ANGLE_TRY_HANDLE(context, mRenderer->ensureHLSLCompilerInitialized(context));
+    ANGLE_TRY(mRenderer->ensureHLSLCompilerInitialized(this));
 
     gl::InfoLog infoLog;
 
     if (recompileVS)
     {
         ShaderExecutableD3D *vertexExe = nullptr;
-        ANGLE_TRY_HANDLE(context, programD3D->getVertexExecutableForCachedInputLayout(
-                                      context, &vertexExe, &infoLog));
+        ANGLE_TRY(programD3D->getVertexExecutableForCachedInputLayout(this, &vertexExe, &infoLog));
         if (!programD3D->hasVertexExecutableForCachedInputLayout())
         {
             ASSERT(infoLog.getLength() > 0);
@@ -537,8 +528,8 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     if (recompileGS)
     {
         ShaderExecutableD3D *geometryExe = nullptr;
-        ANGLE_TRY_HANDLE(context, programD3D->getGeometryExecutableForPrimitiveType(
-                                      context, drawMode, &geometryExe, &infoLog));
+        ANGLE_TRY(programD3D->getGeometryExecutableForPrimitiveType(
+            this, mState.getCaps(), drawMode, &geometryExe, &infoLog));
         if (!programD3D->hasGeometryExecutableForPrimitiveType(drawMode))
         {
             ASSERT(infoLog.getLength() > 0);
@@ -550,8 +541,7 @@ angle::Result Context11::triggerDrawCallProgramRecompilation(const gl::Context *
     if (recompilePS)
     {
         ShaderExecutableD3D *pixelExe = nullptr;
-        ANGLE_TRY_HANDLE(context, programD3D->getPixelExecutableForCachedOutputLayout(
-                                      context, &pixelExe, &infoLog));
+        ANGLE_TRY(programD3D->getPixelExecutableForCachedOutputLayout(this, &pixelExe, &infoLog));
         if (!programD3D->hasPixelExecutableForCachedOutputLayout())
         {
             ASSERT(infoLog.getLength() > 0);
@@ -586,11 +576,13 @@ gl::Error Context11::memoryBarrierByRegion(const gl::Context *context, GLbitfiel
     return gl::NoError();
 }
 
-gl::Error Context11::getIncompleteTexture(const gl::Context *context,
-                                          gl::TextureType type,
-                                          gl::Texture **textureOut)
+angle::Result Context11::getIncompleteTexture(const gl::Context *context,
+                                              gl::TextureType type,
+                                              gl::Texture **textureOut)
 {
-    return mIncompleteTextures.getIncompleteTexture(context, type, this, textureOut);
+    ANGLE_TRY_HANDLE(context,
+                     mIncompleteTextures.getIncompleteTexture(context, type, this, textureOut));
+    return angle::Result::Continue();
 }
 
 gl::Error Context11::initializeMultisampleTextureToBlack(const gl::Context *context,

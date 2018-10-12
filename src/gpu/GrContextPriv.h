@@ -177,7 +177,7 @@ public:
                             GrColorType srcColorType, SkColorSpace* srcColorSpace,
                             const void* buffer, size_t rowBytes, uint32_t pixelOpsFlags = 0);
 
-    GrBackend getBackend() const { return fContext->fBackend; }
+    GrBackendApi getBackend() const { return fContext->fBackend; }
 
     SkTaskGroup* getTaskGroup() { return fContext->fTaskGroup.get(); }
 
@@ -188,10 +188,6 @@ public:
     const GrResourceProvider* resourceProvider() const { return fContext->fResourceProvider; }
 
     GrResourceCache* getResourceCache() { return fContext->fResourceCache; }
-
-    GrTextureStripAtlasManager* textureStripAtlasManager() {
-        return fContext->fTextureStripAtlasManager.get();
-    }
 
     GrGpu* getGpu() { return fContext->fGpu.get(); }
     const GrGpu* getGpu() const { return fContext->fGpu.get(); }
@@ -266,10 +262,6 @@ public:
     /** Specify the TextBlob cache limit. If the current cache exceeds this limit it will purge.
         this is for testing only */
     void setTextBlobCacheLimit_ForTesting(size_t bytes);
-
-    /** Specify the sizes of the GrAtlasTextContext atlases.  The configs pointer below should be
-        to an array of 3 entries */
-    void setTextContextAtlasSizes_ForTesting(const GrDrawOpAtlasConfig* configs);
 
     /** Get pointer to atlas texture for given mask format. Note that this wraps an
         actively mutating texture in an SkImage. This could yield unexpected results

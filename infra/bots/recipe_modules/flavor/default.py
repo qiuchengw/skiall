@@ -169,11 +169,7 @@ class DefaultFlavor(object):
     if self.m.vars.is_linux:
       if (self.m.vars.builder_cfg.get('cpu_or_gpu', '') == 'GPU'
           and 'Intel' in self.m.vars.builder_cfg.get('cpu_or_gpu_value', '')):
-        # The vulkan in this asset name simply means that the graphics driver
-        # supports Vulkan. It is also the driver used for GL code.
-        dri_path = slave_dir.join('linux_vulkan_intel_driver_release')
-        if self.m.vars.builder_cfg.get('configuration', '') == 'Debug':
-          dri_path = slave_dir.join('linux_vulkan_intel_driver_debug')
+        dri_path = slave_dir.join('mesa_intel_driver_linux')
         ld_library_path.append(dri_path)
         env['LIBGL_DRIVERS_PATH'] = str(dri_path)
         env['VK_ICD_FILENAMES'] = str(dri_path.join('intel_icd.x86_64.json'))
@@ -206,11 +202,6 @@ class DefaultFlavor(object):
       ld_library_path.append(clang_linux + '/msan')
 
     if any('SAN' in t for t in extra_tokens):
-      if self.m.vars.builder_cfg.get('os', '') == 'Mac':
-        # TODO(dogben): Remove after isolating xSAN libraries in Build tasks.
-        self.m.step('select xcode', [
-            'sudo', 'xcode-select', '-switch', '/Applications/Xcode9.2.app'])
-
       # Sanitized binaries may want to run clang_linux/bin/llvm-symbolizer.
       path.append(clang_linux + '/bin')
       # We find that testing sanitizer builds with libc++ uncovers more issues

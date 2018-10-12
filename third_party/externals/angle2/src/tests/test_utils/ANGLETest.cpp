@@ -91,6 +91,55 @@ std::array<angle::Vector3, 4> GetIndexedQuadVertices()
 
 static constexpr std::array<GLushort, 6> IndexedQuadIndices = {{0, 1, 2, 0, 2, 3}};
 
+const char *GetColorName(GLColor color)
+{
+    if (color == GLColor::red)
+    {
+        return "Red";
+    }
+
+    if (color == GLColor::green)
+    {
+        return "Green";
+    }
+
+    if (color == GLColor::blue)
+    {
+        return "Blue";
+    }
+
+    if (color == GLColor::white)
+    {
+        return "White";
+    }
+
+    if (color == GLColor::black)
+    {
+        return "Black";
+    }
+
+    if (color == GLColor::transparentBlack)
+    {
+        return "Transparent Black";
+    }
+
+    if (color == GLColor::yellow)
+    {
+        return "Yellow";
+    }
+
+    if (color == GLColor::magenta)
+    {
+        return "Magenta";
+    }
+
+    if (color == GLColor::cyan)
+    {
+        return "Cyan";
+    }
+
+    return nullptr;
+}
 }  // anonymous namespace
 
 GLColorRGB::GLColorRGB() : R(0), G(0), B(0)
@@ -177,6 +226,12 @@ bool operator!=(const GLColor &a, const GLColor &b)
 
 std::ostream &operator<<(std::ostream &ostream, const GLColor &color)
 {
+    const char *colorName = GetColorName(color);
+    if (colorName)
+    {
+        return ostream << colorName;
+    }
+
     ostream << "(" << static_cast<unsigned int>(color.R) << ", "
             << static_cast<unsigned int>(color.G) << ", " << static_cast<unsigned int>(color.B)
             << ", " << static_cast<unsigned int>(color.A) << ")";
@@ -838,6 +893,16 @@ bool ANGLETestBase::extensionRequestable(const std::string &extName)
         reinterpret_cast<const char *>(glGetString(GL_REQUESTABLE_EXTENSIONS_ANGLE)), extName);
 }
 
+bool ANGLETestBase::ensureExtensionEnabled(const std::string &extName)
+{
+    if (extensionEnabled("GL_ANGLE_request_extension") && extensionRequestable(extName))
+    {
+        glRequestExtensionANGLE(extName.c_str());
+    }
+
+    return extensionEnabled(extName);
+}
+
 bool ANGLETestBase::eglDisplayExtensionEnabled(EGLDisplay display, const std::string &extName)
 {
     return CheckExtensionExists(eglQueryString(display, EGL_EXTENSIONS), extName);
@@ -1069,7 +1134,8 @@ bool IsAMD()
 {
     std::string rendererString(reinterpret_cast<const char *>(glGetString(GL_RENDERER)));
     return (rendererString.find("AMD") != std::string::npos) ||
-           (rendererString.find("ATI") != std::string::npos);
+           (rendererString.find("ATI") != std::string::npos) ||
+           (rendererString.find("Radeon") != std::string::npos);
 }
 
 bool IsNVIDIA()

@@ -498,12 +498,17 @@ static void intersect_lines(const SkPoint& ptA, const SkVector& normA,
 
     SkScalar wInv = normA.fX * normB.fY - normA.fY * normB.fX;
     wInv = SkScalarInvert(wInv);
+    if (!SkScalarIsFinite(wInv)) {
+        // lines are parallel, pick the point in between
+        *result = (ptA + ptB)*SK_ScalarHalf;
+        *result += normA;
+    } else {
+        result->fX = normA.fY * lineBW - lineAW * normB.fY;
+        result->fX *= wInv;
 
-    result->fX = normA.fY * lineBW - lineAW * normB.fY;
-    result->fX *= wInv;
-
-    result->fY = lineAW * normB.fX - normA.fX * lineBW;
-    result->fY *= wInv;
+        result->fY = lineAW * normB.fX - normA.fX * lineBW;
+        result->fY *= wInv;
+    }
 }
 
 static void set_uv_quad(const SkPoint qpts[3], BezierVertex verts[kQuadNumVertices]) {
@@ -550,19 +555,25 @@ static void bloat_quad(const SkPoint qpts[3], const SkMatrix* toDevice,
     SkVector cb = b;
     cb -= c;
 
+    // After the transform we might have a line, try to do something reasonable
+    if (toDevice && SkPointPriv::LengthSqd(ab) <= SK_ScalarNearlyZero*SK_ScalarNearlyZero) {
+        ab = cb;
+    }
+    if (toDevice && SkPointPriv::LengthSqd(cb) <= SK_ScalarNearlyZero*SK_ScalarNearlyZero) {
+        cb = ab;
+    }
+
     // We should have already handled degenerates
-    SkASSERT(ab.length() > 0 && cb.length() > 0);
+    SkASSERT(toDevice || (ab.length() > 0 && cb.length() > 0));
 
     ab.normalize();
-    SkVector abN;
-    SkPointPriv::SetOrthog(&abN, ab, SkPointPriv::kLeft_Side);
+    SkVector abN = SkPointPriv::MakeOrthog(ab, SkPointPriv::kLeft_Side);
     if (abN.dot(ac) > 0) {
         abN.negate();
     }
 
     cb.normalize();
-    SkVector cbN;
-    SkPointPriv::SetOrthog(&cbN, cb, SkPointPriv::kLeft_Side);
+    SkVector cbN = SkPointPriv::MakeOrthog(cb, SkPointPriv::kLeft_Side);
     if (cbN.dot(ac) < 0) {
         cbN.negate();
     }
@@ -572,6 +583,9 @@ static void bloat_quad(const SkPoint qpts[3], const SkMatrix* toDevice,
     a1.fPos = a;
     a1.fPos -= abN;
 
+    if (toDevice && SkPointPriv::LengthSqd(ac) <= SK_ScalarNearlyZero*SK_ScalarNearlyZero) {
+        c = b;
+    }
     c0.fPos = c;
     c0.fPos += cbN;
     c1.fPos = c;
@@ -835,41 +849,41 @@ private:
     typedef SkTArray<int, true> IntArray;
     typedef SkTArray<float, true> FloatArray;
 
-    bool onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
         AAHairlineOp* that = t->cast<AAHairlineOp>();
 
         if (!fHelper.isCompatible(that->fHelper, caps, this->bounds(), that->bounds())) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (this->viewMatrix().hasPerspective() != that->viewMatrix().hasPerspective()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         // We go to identity if we don't have perspective
         if (this->viewMatrix().hasPerspective() &&
             !this->viewMatrix().cheapEqualTo(that->viewMatrix())) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         // TODO we can actually combine hairlines if they are the same color in a kind of bulk
         // method but we haven't implemented this yet
         // TODO investigate going to vertex color and coverage?
         if (this->coverage() != that->coverage()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (this->color() != that->color()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (fHelper.usesLocalCoords() && !this->viewMatrix().cheapEqualTo(that->viewMatrix())) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         fPaths.push_back_n(that->fPaths.count(), that->fPaths.begin());
         this->joinBounds(*that);
-        return true;
+        return CombineResult::kMerged;
     }
 
     GrColor color() const { return fColor; }
@@ -975,11 +989,11 @@ void AAHairlineOp::onPrepareDraws(Target* target) {
             add_line(&lines[2*i], toSrc, this->coverage(), &verts);
         }
 
-        GrMesh mesh(GrPrimitiveType::kTriangles);
-        mesh.setIndexedPatterned(linesIndexBuffer.get(), kIdxsPerLineSeg, kLineSegNumVertices,
-                                 lineCount, kLineSegsNumInIdxBuffer);
-        mesh.setVertexData(vertexBuffer, firstVertex);
-        target->draw(lineGP.get(), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+        GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
+        mesh->setIndexedPatterned(linesIndexBuffer.get(), kIdxsPerLineSeg, kLineSegNumVertices,
+                                  lineCount, kLineSegsNumInIdxBuffer);
+        mesh->setVertexData(vertexBuffer, firstVertex);
+        target->draw(std::move(lineGP), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
     }
 
     if (quadCount || conicCount) {
@@ -1030,20 +1044,20 @@ void AAHairlineOp::onPrepareDraws(Target* target) {
         }
 
         if (quadCount > 0) {
-            GrMesh mesh(GrPrimitiveType::kTriangles);
-            mesh.setIndexedPatterned(quadsIndexBuffer.get(), kIdxsPerQuad, kQuadNumVertices,
-                                     quadCount, kQuadsNumInIdxBuffer);
-            mesh.setVertexData(vertexBuffer, firstVertex);
-            target->draw(quadGP.get(), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+            GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
+            mesh->setIndexedPatterned(quadsIndexBuffer.get(), kIdxsPerQuad, kQuadNumVertices,
+                                      quadCount, kQuadsNumInIdxBuffer);
+            mesh->setVertexData(vertexBuffer, firstVertex);
+            target->draw(std::move(quadGP), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
             firstVertex += quadCount * kQuadNumVertices;
         }
 
         if (conicCount > 0) {
-            GrMesh mesh(GrPrimitiveType::kTriangles);
-            mesh.setIndexedPatterned(quadsIndexBuffer.get(), kIdxsPerQuad, kQuadNumVertices,
-                                     conicCount, kQuadsNumInIdxBuffer);
-            mesh.setVertexData(vertexBuffer, firstVertex);
-            target->draw(conicGP.get(), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+            GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
+            mesh->setIndexedPatterned(quadsIndexBuffer.get(), kIdxsPerQuad, kQuadNumVertices,
+                                      conicCount, kQuadsNumInIdxBuffer);
+            mesh->setVertexData(vertexBuffer, firstVertex);
+            target->draw(std::move(conicGP), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
         }
     }
 }

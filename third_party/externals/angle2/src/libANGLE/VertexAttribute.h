@@ -41,7 +41,7 @@ class VertexBinding final : angle::NonCopyable
     const BindingPointer<Buffer> &getBuffer() const { return mBuffer; }
     void setBuffer(const gl::Context *context, Buffer *bufferIn, bool containerIsBound);
 
-    void onContainerBindingChanged(const Context *context, bool bound) const;
+    void onContainerBindingChanged(const Context *context, int incr) const;
 
     const AttributesMask &getBoundAttributesMask() const { return mBoundAttributesMask; }
 
@@ -84,6 +84,9 @@ struct VertexAttribute final : private angle::NonCopyable
 
     GLuint vertexAttribArrayStride;  // ONLY for queries of VERTEX_ATTRIB_ARRAY_STRIDE
     GLuint bindingIndex;
+
+    // Special value for the cached element limit on the integer overflow case.
+    static constexpr GLint64 kIntegerOverflow = std::numeric_limits<GLint64>::min();
 
   private:
     // This is kept in sync by the VertexArray. It is used to optimize draw call validation.

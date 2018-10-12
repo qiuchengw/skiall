@@ -274,7 +274,7 @@ SkScalar SkFindQuadMaxCurvature(const SkPoint src[3]) {
         return 1;
     }
     SkScalar t = numer / denom;
-    SkASSERT(0 <= t && t < 1);
+    SkASSERT((0 <= t && t < 1) || SkScalarIsNaN(t));
     return t;
 }
 
@@ -295,10 +295,10 @@ void SkConvertQuadToCubic(const SkPoint src[3], SkPoint dst[4]) {
     Sk2s s1 = from_point(src[1]);
     Sk2s s2 = from_point(src[2]);
 
-    dst[0] = src[0];
+    dst[0] = to_point(s0);
     dst[1] = to_point(s0 + (s1 - s0) * scale);
     dst[2] = to_point(s2 + (s1 - s2) * scale);
-    dst[3] = src[2];
+    dst[3] = to_point(s2);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -391,13 +391,13 @@ void SkChopCubicAt(const SkPoint src[4], SkPoint dst[7], SkScalar t) {
     Sk2s    bcd = interp(bc, cd, tt);
     Sk2s    abcd = interp(abc, bcd, tt);
 
-    dst[0] = src[0];
+    dst[0] = to_point(p0);
     dst[1] = to_point(ab);
     dst[2] = to_point(abc);
     dst[3] = to_point(abcd);
     dst[4] = to_point(bcd);
     dst[5] = to_point(cd);
-    dst[6] = src[3];
+    dst[6] = to_point(p3);
 }
 
 /*  http://code.google.com/p/skia/issues/detail?id=32
@@ -871,6 +871,69 @@ int SkChopCubicAtMaxCurvature(const SkPoint src[4], SkPoint dst[13],
         }
     }
     return count + 1;
+}
+
+// Returns a constant proportional to the dimensions of the cubic.
+// Constant found through experimentation -- maybe there's a better way....
+static SkScalar calc_cubic_precision(const SkPoint src[4]) {
+    return (SkPointPriv::DistanceToSqd(src[1], src[0]) + SkPointPriv::DistanceToSqd(src[2], src[1])
+            + SkPointPriv::DistanceToSqd(src[3], src[2])) * 1e-8f;
+}
+
+// Returns true if both points src[testIndex], src[testIndex+1] are in the same half plane defined
+// by the line segment src[lineIndex], src[lineIndex+1].
+static bool on_same_side(const SkPoint src[4], int testIndex, int lineIndex) {
+    SkPoint origin = src[lineIndex];
+    SkVector line = src[lineIndex + 1] - origin;
+    SkScalar crosses[2];
+    for (int index = 0; index < 2; ++index) {
+        SkVector testLine = src[testIndex + index] - origin;
+        crosses[index] = line.cross(testLine);
+    }
+    return crosses[0] * crosses[1] >= 0;
+}
+
+// Return location (in t) of cubic cusp, if there is one.
+// Note that classify cubic code does not reliably return all cusp'd cubics, so
+// it is not called here.
+SkScalar SkFindCubicCusp(const SkPoint src[4]) {
+    // When the adjacent control point matches the end point, it behaves as if
+    // the cubic has a cusp: there's a point of max curvature where the derivative
+    // goes to zero. Ideally, this would be where t is zero or one, but math
+    // error makes not so. It is not uncommon to create cubics this way; skip them.
+    if (src[0] == src[1]) {
+        return -1;
+    }
+    if (src[2] == src[3]) {
+        return -1;
+    }
+    // Cubics only have a cusp if the line segments formed by the control and end points cross.
+    // Detect crossing if line ends are on opposite sides of plane formed by the other line.
+    if (on_same_side(src, 0, 2) || on_same_side(src, 2, 0)) {
+        return -1;
+    }
+    // Cubics may have multiple points of maximum curvature, although at most only
+    // one is a cusp.
+    SkScalar maxCurvature[3];
+    int roots = SkFindCubicMaxCurvature(src, maxCurvature);
+    for (int index = 0; index < roots; ++index) {
+        SkScalar testT = maxCurvature[index];
+        if (0 >= testT || testT >= 1) {  // no need to consider max curvature on the end
+            continue;
+        }
+        // A cusp is at the max curvature, and also has a derivative close to zero.
+        // Choose the 'close to zero' meaning by comparing the derivative length
+        // with the overall cubic size.
+        SkVector dPt = eval_cubic_derivative(src, testT);
+        SkScalar dPtMagnitude = SkPointPriv::LengthSqd(dPt);
+        SkScalar precision = calc_cubic_precision(src);
+        if (dPtMagnitude < precision) {
+            // All three max curvature t values may be close to the cusp;
+            // return the first one.
+            return testT;
+        }
+    }
+    return -1;
 }
 
 #include "../pathops/SkPathOpsCubic.h"

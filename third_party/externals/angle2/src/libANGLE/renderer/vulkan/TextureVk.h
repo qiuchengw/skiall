@@ -58,7 +58,7 @@ class PixelBuffer final : angle::NonCopyable
                            size_t sizeInBytes,
                            uint8_t **ptrOut,
                            VkBuffer *handleOut,
-                           uint32_t *offsetOut,
+                           VkDeviceSize *offsetOut,
                            bool *newBufferAllocatedOut);
 
     angle::Result flushUpdatesToImage(ContextVk *contextVk,
@@ -83,7 +83,7 @@ class PixelBuffer final : angle::NonCopyable
     std::vector<SubresourceUpdate> mSubresourceUpdates;
 };
 
-class TextureVk : public TextureImpl, public vk::CommandGraphResource
+class TextureVk : public TextureImpl
 {
   public:
     TextureVk(const gl::TextureState &state, RendererVk *renderer);
@@ -104,6 +104,7 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
                           GLenum format,
                           GLenum type,
                           const gl::PixelUnpackState &unpack,
+                          gl::Buffer *unpackBuffer,
                           const uint8_t *pixels) override;
 
     gl::Error setCompressedImage(const gl::Context *context,
@@ -129,7 +130,7 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
     gl::Error copySubImage(const gl::Context *context,
                            const gl::ImageIndex &index,
                            const gl::Offset &destOffset,
-                           const gl::Rectangle &sourceArea,
+                           const gl::Rectangle &sourceRect,
                            gl::Framebuffer *source) override;
 
     gl::Error copyTexture(const gl::Context *context,
@@ -145,7 +146,7 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
                              const gl::ImageIndex &index,
                              const gl::Offset &destOffset,
                              size_t sourceLevel,
-                             const gl::Rectangle &sourceArea,
+                             const gl::Box &sourceBox,
                              bool unpackFlipY,
                              bool unpackPremultiplyAlpha,
                              bool unpackUnmultiplyAlpha,
@@ -173,13 +174,13 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
     gl::Error bindTexImage(const gl::Context *context, egl::Surface *surface) override;
     gl::Error releaseTexImage(const gl::Context *context) override;
 
-    gl::Error getAttachmentRenderTarget(const gl::Context *context,
-                                        GLenum binding,
-                                        const gl::ImageIndex &imageIndex,
-                                        FramebufferAttachmentRenderTarget **rtOut) override;
+    angle::Result getAttachmentRenderTarget(const gl::Context *context,
+                                            GLenum binding,
+                                            const gl::ImageIndex &imageIndex,
+                                            FramebufferAttachmentRenderTarget **rtOut) override;
 
-    gl::Error syncState(const gl::Context *context,
-                        const gl::Texture::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::Texture::DirtyBits &dirtyBits) override;
 
     gl::Error setStorageMultisample(const gl::Context *context,
                                     gl::TextureType type,
@@ -188,10 +189,21 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
                                     const gl::Extents &size,
                                     bool fixedSampleLocations) override;
 
-    gl::Error initializeContents(const gl::Context *context,
-                                 const gl::ImageIndex &imageIndex) override;
+    angle::Result initializeContents(const gl::Context *context,
+                                     const gl::ImageIndex &imageIndex) override;
 
-    const vk::ImageHelper &getImage() const;
+    const vk::ImageHelper &getImage() const
+    {
+        ASSERT(mImage.valid());
+        return mImage;
+    }
+
+    vk::ImageHelper &getImage()
+    {
+        ASSERT(mImage.valid());
+        return mImage;
+    }
+
     const vk::ImageView &getImageView() const;
     const vk::Sampler &getSampler() const;
 
@@ -205,12 +217,11 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
 
     angle::Result copyImageDataToBuffer(ContextVk *contextVk,
                                         size_t sourceLevel,
+                                        uint32_t layerCount,
                                         const gl::Rectangle &sourceArea,
                                         uint8_t **outDataPtr);
 
-    angle::Result generateMipmapWithBlit(ContextVk *contextVk);
-
-    angle::Result generateMipmapWithCPU(const gl::Context *context);
+    angle::Result generateMipmapsWithCPU(const gl::Context *context);
 
     angle::Result generateMipmapLevelsWithCPU(ContextVk *contextVk,
                                               const angle::Format &sourceFormat,
@@ -246,9 +257,8 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
                             const uint32_t levelCount,
                             vk::CommandBuffer *commandBuffer);
     void releaseImage(const gl::Context *context, RendererVk *renderer);
-    angle::Result getCommandBufferForWrite(ContextVk *contextVk,
-                                           vk::CommandBuffer **commandBufferOut);
     uint32_t getLevelCount() const;
+    angle::Result initCubeMapRenderTargets(ContextVk *contextVk);
 
     vk::ImageHelper mImage;
     vk::ImageView mBaseLevelImageView;
@@ -256,6 +266,8 @@ class TextureVk : public TextureImpl, public vk::CommandGraphResource
     vk::Sampler mSampler;
 
     RenderTargetVk mRenderTarget;
+    std::vector<vk::ImageView> mCubeMapFaceImageViews;
+    std::vector<RenderTargetVk> mCubeMapRenderTargets;
 
     PixelBuffer mPixelBuffer;
 };

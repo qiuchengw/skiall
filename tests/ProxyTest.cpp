@@ -127,7 +127,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                             {
                                 sk_sp<GrTexture> tex;
                                 if (SkBackingFit::kApprox == fit) {
-                                    tex = resourceProvider->createApproxTexture(desc, 0);
+                                    tex = resourceProvider->createApproxTexture(
+                                            desc, GrResourceProvider::Flags::kNone);
                                 } else {
                                     tex = resourceProvider->createTexture(desc, budgeted);
                                 }
@@ -160,7 +161,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                             {
                                 sk_sp<GrTexture> tex;
                                 if (SkBackingFit::kApprox == fit) {
-                                    tex = resourceProvider->createApproxTexture(desc, 0);
+                                    tex = resourceProvider->createApproxTexture(
+                                            desc, GrResourceProvider::Flags::kNone);
                                 } else {
                                     tex = resourceProvider->createTexture(desc, budgeted);
                                 }
@@ -209,8 +211,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WrappedProxyTest, reporter, ctxInfo) {
             // sample counts :(.
             if (ctxInfo.grContext()->colorTypeSupportedAsSurface(colorType)) {
                 GrBackendRenderTarget backendRT = gpu->createTestingOnlyBackendRenderTarget(
-                        kWidthHeight, kWidthHeight, SkColorTypeToGrColorType(colorType),
-                        GrSRGBEncoded::kNo);
+                        kWidthHeight, kWidthHeight, SkColorTypeToGrColorType(colorType));
                 sk_sp<GrSurfaceProxy> sProxy(
                         proxyProvider->wrapBackendRenderTarget(backendRT, origin));
                 check_surface(reporter, sProxy.get(), origin, kWidthHeight, kWidthHeight,
@@ -233,7 +234,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WrappedProxyTest, reporter, ctxInfo) {
 
                 // Test wrapping FBO 0 (with made up properties). This tests sample count and the
                 // special case where FBO 0 doesn't support window rectangles.
-                if (kOpenGL_GrBackend == ctxInfo.backend()) {
+                if (GrBackendApi::kOpenGL == ctxInfo.backend()) {
                     GrGLFramebufferInfo fboInfo;
                     fboInfo.fFBOID = 0;
                     static constexpr int kStencilBits = 8;

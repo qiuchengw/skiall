@@ -39,7 +39,6 @@ enum class OpType : int8_t {
     kVoid,
     kBool,
     kChar,
-    kFloat,
     kInt,
     kScalar,
     kSizeT,
@@ -117,7 +116,9 @@ const struct OperatorParser {
                                     {{ BLANK,  OpType::kThis,   OpMod::kMove, }}},
     { DEFOP::kMultiply, "*", "multiply", BLANK, OpType::kThis, OpMod::kNone,         CONST,
                                     {{ BLANK,  OpType::kScalar, OpMod::kNone, }}},
-    { DEFOP::kMultiply, "*", "multiply1", BLANK, OpType::kThis, OpMod::kNone,         BLANK,
+    { DEFOP::kMultiply, "*", "multiply1", BLANK, OpType::kThis, OpMod::kNone,         CONST,
+                                    {{ CONST,  OpType::kThis,   OpMod::kReference, }}},
+    { DEFOP::kMultiply, "*", "multiply2", BLANK, OpType::kThis, OpMod::kNone,         BLANK,
                                     {{ CONST,  OpType::kThis,   OpMod::kReference, },
                                      { CONST,  OpType::kThis,   OpMod::kReference, }}},
     { DEFOP::kMultiplyBy, "*=", "multiplyby", BLANK,  OpType::kThis, OpMod::kReference, BLANK,
@@ -144,7 +145,10 @@ OpType lookup_type(string typeWord, string name) {
                          || (typeWord == "SkVector" && name == "SkPoint")) {
         return OpType::kThis;
     }
-    const char* keyWords[] = { "void", "bool", "char", "float", "int", "SkScalar", "size_t" };
+    if ("float" == typeWord || "double" == typeWord) {
+        return OpType::kScalar;
+    }
+    const char* keyWords[] = { "void", "bool", "char", "int", "SkScalar", "size_t" };
     for (unsigned i = 0; i < SK_ARRAY_COUNT(keyWords); ++i) {
         if (typeWord == keyWords[i]) {
             return (OpType) (i + 1);
@@ -339,7 +343,7 @@ bool Definition::boilerplateIfDef() {
 // for now, just handle paint -- maybe fiddle will loosen naming restrictions
 void Definition::setCanonicalFiddle() {
     fMethodType = Definition::MethodType::kNone;
-    size_t doubleColons = fName.find("::", 0);
+    size_t doubleColons = fName.rfind("::");
     SkASSERT(string::npos != doubleColons);
     string base = fName.substr(0, doubleColons);
     string result = base + "_";
@@ -535,6 +539,7 @@ bool Definition::checkMethod() const {
     const char* descEnd = nullptr;
     const Definition* defEnd = nullptr;
     const Definition* priorDef = nullptr;
+    bool incomplete = false;
     for (auto& child : fChildren) {
         if (MarkType::kAnchor == child->fMarkType) {
             continue;
@@ -551,6 +556,11 @@ bool Definition::checkMethod() const {
         }
         if (MarkType::kFormula == child->fMarkType) {
             continue;
+        }
+        if (MarkType::kLine == child->fMarkType) {
+            SkASSERT(child->fChildren.size() > 0);
+            TextParser childDesc(child->fChildren[0]);
+            incomplete |= childDesc.startsWith("incomplete");
         }
         if (MarkType::kList == child->fMarkType) {
             priorDef = child;
@@ -577,7 +587,7 @@ bool Definition::checkMethod() const {
         priorDef = nullptr;
     }
     if (!descEnd) {
-        return methodParser.reportError<bool>("missing description");
+        return incomplete ? true : methodParser.reportError<bool>("missing description");
     }
     TextParser description(fFileName, descStart, descEnd, fLineCount);
     // expect first word capitalized and pluralized. expect a trailing period
@@ -586,7 +596,9 @@ bool Definition::checkMethod() const {
         description.reportWarning("expected capital");
     } else if ('.' != descEnd[-1]) {
         if (!defEnd || defEnd->fTerminator != descEnd) {
-            description.reportWarning("expected period");
+            if (!incomplete) {
+                description.reportWarning("expected period");
+            }
         }
     } else {
         if (!description.startsWith("For use by Android")) {
@@ -595,7 +607,9 @@ bool Definition::checkMethod() const {
                 --description.fChar;
             }
             if ('s' != description.fChar[-1]) {
-                description.reportWarning("expected plural");
+                if (!incomplete) {
+                    description.reportWarning("expected plural");
+                }
             }
         }
     }
@@ -645,6 +659,9 @@ bool Definition::crossCheckInside(const char* start, const char* end,
     if (inc.startsWith("SK_API")) {
         inc.skipWord("SK_API");
     }
+    if (inc.startsWith("inline")) {
+        inc.skipWord("inline");
+    }
     if (inc.startsWith("friend")) {
         inc.skipWord("friend");
     }
@@ -690,6 +707,9 @@ bool Definition::crossCheckInside(const char* start, const char* end,
         char defCh;
         do {
             defCh = def.next();
+            if (inc.skipExact("SK_WARN_UNUSED_RESULT")) {
+                inc.skipSpace();
+            }
             char incCh = inc.next();
             if (' ' >= defCh && ' ' >= incCh) {
                 break;
@@ -790,8 +810,12 @@ string Definition::formatFunction(Format format) const {
             if (lastStart[0] != ' ') {
                 space_pad(&methodStr);
             }
-            methodStr += string(lastStart, (size_t) (lastEnd - lastStart));
-            written += (size_t) (lastEnd - lastStart);
+            string addon(lastStart, (size_t) (lastEnd - lastStart));
+            if ("_const" == addon) {
+                addon = "const";
+            }
+            methodStr += addon;
+            written += addon.length();
         }
         if (delimiter) {
             if (nextEnd - nextStart >= (ptrdiff_t) (limit - written)) {
@@ -1167,6 +1191,13 @@ bool Definition::paramsMatch(string matchFormatted, string name) const {
     return !def.eof() && ')' == def.peek() && !m.eof() && ')' == m.peek();
 }
 
+
+void Definition::trimEnd() {
+    while (fContentEnd > fContentStart && ' ' >= fContentEnd[-1]) {
+        --fContentEnd;
+    }
+}
+
 void RootDefinition::clearVisited() {
     fVisited = false;
     for (auto& leaf : fLeaves) {
@@ -1206,11 +1237,27 @@ Definition* RootDefinition::find(string ref, AllowParens allowParens) {
     if (leafIter != fLeaves.end()) {
         return &leafIter->second;
     }
-    if (AllowParens::kYes == allowParens && string::npos == ref.find("()")) {
-        string withParens = ref + "()";
-        const auto parensIter = fLeaves.find(withParens);
-        if (parensIter != fLeaves.end()) {
-            return &parensIter->second;
+    if (AllowParens::kYes == allowParens) {
+        size_t leftParen = ref.find('(');
+        if (string::npos == leftParen
+                || (leftParen + 1 < ref.length() && ')' != ref[leftParen + 1])) {
+            string withParens = ref + "()";
+            const auto parensIter = fLeaves.find(withParens);
+            if (parensIter != fLeaves.end()) {
+                return &parensIter->second;
+            }
+        }
+        if (string::npos != leftParen) {
+            string name = ref.substr(0, leftParen);
+            size_t posInDefName = fName.find(name);
+            if (string::npos != posInDefName && posInDefName > 2
+                    && "::" == fName.substr(posInDefName - 2, 2)) {
+                string fullRef = fName + "::" + ref;
+                const auto fullIter = fLeaves.find(fullRef);
+                if (fullIter != fLeaves.end()) {
+                    return &fullIter->second;
+                }
+            }
         }
     }
     const auto branchIter = fBranches.find(ref);

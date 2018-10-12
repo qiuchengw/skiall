@@ -160,10 +160,6 @@ TEST_P(StateChangeTest, FramebufferIncompleteWithTexStorage)
 {
     ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
 
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2651
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -236,10 +232,6 @@ TEST_P(StateChangeTest, FramebufferIncompleteDepthAttachment)
 // Test that Framebuffer completeness caching works when stencil attachments change.
 TEST_P(StateChangeTest, FramebufferIncompleteStencilAttachment)
 {
-    // TODO(lucferron): Figure out why this fails on android and Intel/Windows and fix.
-    // http://anglebug.com/2655
-    ANGLE_SKIP_TEST_IF(IsVulkan() && (IsAndroid() || (IsIntel() && IsWindows())));
-
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -263,9 +255,6 @@ TEST_P(StateChangeTest, FramebufferIncompleteDepthStencilAttachment)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
                        !extensionEnabled("GL_OES_packed_depth_stencil"));
-
-    // TODO(jmadill): Investigate the failure (https://anglebug.com/1388)
-    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsOpenGL());
 
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
@@ -304,10 +293,6 @@ void main()
 // Tests that using a buffered attribute, then disabling it and using current value, works.
 TEST_P(StateChangeTest, DisablingBufferedVertexAttribute)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2650
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     ANGLE_GL_PROGRAM(program, kSimpleAttributeVS, kSimpleAttributeFS);
     glUseProgram(program);
     GLint attribLoc   = glGetAttribLocation(program, "testAttrib");
@@ -530,7 +515,7 @@ class StateChangeRenderTest : public StateChangeTest
     {
         glUseProgram(mProgram);
         const Vector4 &normalizedColor = color.toNormalizedVector();
-        GLint uniformLocation = glGetUniformLocation(mProgram, "uniformColor");
+        GLint uniformLocation          = glGetUniformLocation(mProgram, "uniformColor");
         ASSERT_NE(-1, uniformLocation);
         glUniform4fv(uniformLocation, 1, normalizedColor.data());
     }
@@ -616,10 +601,6 @@ TEST_P(StateChangeRenderTest, RecreateRenderbuffer)
 // Test that recreating a texture with GenerateMipmaps signals the FBO is dirty.
 TEST_P(StateChangeRenderTest, GenerateMipmap)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2652
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
 
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
@@ -650,6 +631,64 @@ TEST_P(StateChangeRenderTest, GenerateMipmap)
     EXPECT_PIXEL_COLOR_EQ(0, 0, blue);
 
     EXPECT_GL_NO_ERROR();
+}
+
+// Tests that gl_DepthRange syncs correctly after a change.
+TEST_P(StateChangeRenderTest, DepthRangeUpdates)
+{
+    // http://anglebug.com/2598: Seems to be an Intel driver bug.
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsOpenGL() && IsWindows());
+
+    constexpr char kFragCoordShader[] = R"(void main()
+{
+    if (gl_DepthRange.near == 0.2)
+    {
+        gl_FragColor = vec4(1, 0, 0, 1);
+    }
+    else if (gl_DepthRange.near == 0.5)
+    {
+        gl_FragColor = vec4(0, 1, 0, 1);
+    }
+    else
+    {
+        gl_FragColor = vec4(0, 0, 1, 1);
+    }
+})";
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFragCoordShader);
+    glUseProgram(program);
+
+    const auto &quadVertices = GetQuadVertices();
+
+    ASSERT_EQ(0, glGetAttribLocation(program, essl1_shaders::PositionAttrib()));
+
+    GLBuffer vertexBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(quadVertices[0]),
+                 quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0u, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0u);
+
+    // First, clear.
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Draw to left half viewport with a first depth range.
+    glDepthRangef(0.2f, 1.0f);
+    glViewport(0, 0, getWindowWidth() / 2, getWindowHeight());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+
+    // Draw to right half viewport with a second depth range.
+    glDepthRangef(0.5f, 1.0f);
+    glViewport(getWindowWidth() / 2, 0, getWindowWidth() / 2, getWindowHeight());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+
+    // Verify left half of the framebuffer is red and right half is green.
+    EXPECT_PIXEL_RECT_EQ(0, 0, getWindowWidth() / 2, getWindowHeight(), GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(getWindowWidth() / 2, 0, getWindowWidth() / 2, getWindowHeight(),
+                         GLColor::green);
 }
 
 // Tests that D3D11 dirty bit updates don't forget about BufferSubData attrib updates.
@@ -1050,6 +1089,10 @@ TEST_P(LineLoopStateChangeTest, DrawElementsThenDrawArrays)
 // Draw line loop using a drawArrays followed by an hourglass with drawElements.
 TEST_P(LineLoopStateChangeTest, DrawArraysThenDrawElements)
 {
+    // http://anglebug.com/2856: Seems to fail on older drivers and pass on newer.
+    // Tested failing on 18.3.3 and passing on 18.9.2.
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsVulkan() && IsWindows());
+
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
     glUseProgram(program);
 
@@ -1089,10 +1132,12 @@ TEST_P(LineLoopStateChangeTest, DrawArraysThenDrawElements)
 class SimpleStateChangeTest : public ANGLETest
 {
   protected:
+    static constexpr int kWindowSize = 64;
+
     SimpleStateChangeTest()
     {
-        setWindowWidth(64);
-        setWindowHeight(64);
+        setWindowWidth(kWindowSize);
+        setWindowHeight(kWindowSize);
         setConfigRedBits(8);
         setConfigGreenBits(8);
         setConfigBlueBits(8);
@@ -1101,6 +1146,10 @@ class SimpleStateChangeTest : public ANGLETest
 
     void simpleDrawWithBuffer(GLBuffer *buffer);
     void simpleDrawWithColor(const GLColor &color);
+};
+
+class SimpleStateChangeTestES3 : public SimpleStateChangeTest
+{
 };
 
 constexpr char kSimpleVertexShader[] = R"(attribute vec2 position;
@@ -2062,6 +2111,802 @@ TEST_P(SimpleStateChangeTest, ReleaseShaderInUseThatReadsFromUniforms)
     EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, 0, GLColor::red);
 }
 
+// Tests that sampler sync isn't masked by program textures.
+TEST_P(SimpleStateChangeTestES3, SamplerSyncNotTiedToProgram)
+{
+    // Create a sampler with NEAREST filtering.
+    GLSampler sampler;
+    glBindSampler(0, sampler);
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    ASSERT_GL_NO_ERROR();
+
+    // Draw with a program that uses no textures.
+    ANGLE_GL_PROGRAM(program1, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
+    drawQuad(program1, essl1_shaders::PositionAttrib(), 0.5f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+
+    // Create a simple texture with four colors and linear filtering.
+    constexpr GLsizei kSize       = 2;
+    std::array<GLColor, 4> pixels = {
+        {GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+    GLTexture redTex;
+    glBindTexture(GL_TEXTURE_2D, redTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 pixels.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Create a program that uses the texture.
+    constexpr char kVS[] = R"(attribute vec4 position;
+varying vec2 texCoord;
+void main()
+{
+    gl_Position = position;
+    texCoord = position.xy * 0.5 + vec2(0.5);
+})";
+
+    constexpr char kFS[] = R"(precision mediump float;
+varying vec2 texCoord;
+uniform sampler2D tex;
+void main()
+{
+    gl_FragColor = texture2D(tex, texCoord);
+})";
+
+    // Draw. The sampler should override the clamp wrap mode with nearest.
+    ANGLE_GL_PROGRAM(program2, kVS, kFS);
+    ASSERT_EQ(0, glGetUniformLocation(program2, "tex"));
+    drawQuad(program2, "position", 0.5f);
+    ASSERT_GL_NO_ERROR();
+
+    constexpr int kHalfSize = kWindowSize / 2;
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, kHalfSize, kHalfSize, GLColor::red);
+    EXPECT_PIXEL_RECT_EQ(kHalfSize, 0, kHalfSize, kHalfSize, GLColor::green);
+    EXPECT_PIXEL_RECT_EQ(0, kHalfSize, kHalfSize, kHalfSize, GLColor::blue);
+    EXPECT_PIXEL_RECT_EQ(kHalfSize, kHalfSize, kHalfSize, kHalfSize, GLColor::yellow);
+}
+
+static constexpr char kColorVS[] = R"(attribute vec2 position;
+attribute vec4 color;
+varying vec4 vColor;
+void main()
+{
+    gl_Position = vec4(position, 0, 1);
+    vColor = color;
+})";
+
+static constexpr char kColorFS[] = R"(precision mediump float;
+varying vec4 vColor;
+void main()
+{
+    gl_FragColor = vColor;
+})";
+
+class ValidationStateChangeTest : public ANGLETest
+{
+  protected:
+    ValidationStateChangeTest()
+    {
+        setWindowWidth(64);
+        setWindowHeight(64);
+        setConfigRedBits(8);
+        setConfigGreenBits(8);
+        setConfigBlueBits(8);
+        setConfigAlphaBits(8);
+    }
+};
+
+class WebGL2ValidationStateChangeTest : public ValidationStateChangeTest
+{
+  protected:
+    WebGL2ValidationStateChangeTest() { setWebGLCompatibilityEnabled(true); }
+};
+
+class ValidationStateChangeTestES31 : public ANGLETest
+{
+};
+
+// Tests that mapping and unmapping an array buffer in various ways causes rendering to fail.
+// This isn't guaranteed to produce an error by GL. But we assume ANGLE always errors.
+TEST_P(ValidationStateChangeTest, MapBufferAndDraw)
+{
+    // Initialize program and set up state.
+    ANGLE_GL_PROGRAM(program, kColorVS, kColorFS);
+
+    glUseProgram(program);
+    GLint positionLoc = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, positionLoc);
+    GLint colorLoc = glGetAttribLocation(program, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    const std::array<Vector3, 6> &quadVertices = GetQuadVertices();
+    const size_t posBufferSize                 = quadVertices.size() * sizeof(Vector3);
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, posBufferSize, quadVertices.data(), GL_STATIC_DRAW);
+
+    // Start with position enabled.
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    std::vector<GLColor> colorVertices(6, GLColor::blue);
+    const size_t colorBufferSize = sizeof(GLColor) * 6;
+
+    GLBuffer colorBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+    glBufferData(GL_ARRAY_BUFFER, colorBufferSize, colorVertices.data(), GL_STATIC_DRAW);
+
+    // Start with color disabled.
+    glVertexAttribPointer(colorLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, nullptr);
+    glDisableVertexAttribArray(colorLoc);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Draw without a mapped buffer. Should succeed.
+    glVertexAttrib4f(colorLoc, 0, 1, 0, 1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Map position buffer and draw. Should fail.
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glMapBufferRange(GL_ARRAY_BUFFER, 0, posBufferSize, GL_MAP_READ_BIT);
+    ASSERT_GL_NO_ERROR();
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Map position buffer and draw should fail.";
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    // Map then enable color buffer. Should fail.
+    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+    glMapBufferRange(GL_ARRAY_BUFFER, 0, colorBufferSize, GL_MAP_READ_BIT);
+    glEnableVertexAttribArray(colorLoc);
+    ASSERT_GL_NO_ERROR();
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Map then enable color buffer should fail.";
+
+    // Unmap then draw. Should succeed.
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    ASSERT_GL_NO_ERROR();
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+}
+
+// Tests that changing a vertex binding with glVertexAttribDivisor updates the mapped buffer check.
+TEST_P(ValidationStateChangeTestES31, MapBufferAndDrawWithDivisor)
+{
+    // Seems to trigger a GL error in some edge cases. http://anglebug.com/2755
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsNVIDIA());
+
+    // Initialize program and set up state.
+    ANGLE_GL_PROGRAM(program, kColorVS, kColorFS);
+
+    glUseProgram(program);
+    GLint positionLoc = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, positionLoc);
+    GLint colorLoc = glGetAttribLocation(program, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    // Create a user vertex array.
+    GLVertexArray vao;
+    glBindVertexArray(vao);
+
+    const std::array<Vector3, 6> &quadVertices = GetQuadVertices();
+    const size_t posBufferSize                 = quadVertices.size() * sizeof(Vector3);
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, posBufferSize, quadVertices.data(), GL_STATIC_DRAW);
+
+    // Start with position enabled.
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    std::vector<GLColor> blueVertices(6, GLColor::blue);
+    const size_t blueBufferSize = sizeof(GLColor) * 6;
+
+    GLBuffer blueBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, blueBuffer);
+    glBufferData(GL_ARRAY_BUFFER, blueBufferSize, blueVertices.data(), GL_STATIC_DRAW);
+
+    // Start with color enabled at an unused binding.
+    constexpr GLint kUnusedBinding = 3;
+    ASSERT_NE(colorLoc, kUnusedBinding);
+    ASSERT_NE(positionLoc, kUnusedBinding);
+    glVertexAttribFormat(colorLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0);
+    glVertexAttribBinding(colorLoc, kUnusedBinding);
+    glBindVertexBuffer(kUnusedBinding, blueBuffer, 0, sizeof(GLColor));
+    glEnableVertexAttribArray(colorLoc);
+
+    // Make binding 'colorLoc' use a mapped buffer.
+    std::vector<GLColor> greenVertices(6, GLColor::green);
+    const size_t greenBufferSize = sizeof(GLColor) * 6;
+    GLBuffer greenBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, greenBuffer);
+    glBufferData(GL_ARRAY_BUFFER, greenBufferSize, greenVertices.data(), GL_STATIC_DRAW);
+    glMapBufferRange(GL_ARRAY_BUFFER, 0, greenBufferSize, GL_MAP_READ_BIT);
+    glBindVertexBuffer(colorLoc, greenBuffer, 0, sizeof(GLColor));
+
+    ASSERT_GL_NO_ERROR();
+
+    // Draw without a mapped buffer. Should succeed.
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+
+    // Change divisor with VertexAttribDivisor. Should fail.
+    glVertexAttribDivisor(colorLoc, 0);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "draw with mapped buffer should fail.";
+
+    // Unmap the buffer. Should succeed.
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Tests that changing a vertex binding with glVertexAttribDivisor updates the buffer size check.
+TEST_P(ValidationStateChangeTestES31, DrawPastEndOfBufferWithDivisor)
+{
+    // Initialize program and set up state.
+    ANGLE_GL_PROGRAM(program, kColorVS, kColorFS);
+
+    glUseProgram(program);
+    GLint positionLoc = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, positionLoc);
+    GLint colorLoc = glGetAttribLocation(program, "color");
+    ASSERT_NE(-1, colorLoc);
+
+    // Create a user vertex array.
+    GLVertexArray vao;
+    glBindVertexArray(vao);
+
+    const std::array<Vector3, 6> &quadVertices = GetQuadVertices();
+    const size_t posBufferSize                 = quadVertices.size() * sizeof(Vector3);
+
+    GLBuffer posBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glBufferData(GL_ARRAY_BUFFER, posBufferSize, quadVertices.data(), GL_STATIC_DRAW);
+
+    // Start with position enabled.
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    std::vector<GLColor> blueVertices(6, GLColor::blue);
+    const size_t blueBufferSize = sizeof(GLColor) * 6;
+
+    GLBuffer blueBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, blueBuffer);
+    glBufferData(GL_ARRAY_BUFFER, blueBufferSize, blueVertices.data(), GL_STATIC_DRAW);
+
+    // Start with color enabled at an unused binding.
+    constexpr GLint kUnusedBinding = 3;
+    ASSERT_NE(colorLoc, kUnusedBinding);
+    ASSERT_NE(positionLoc, kUnusedBinding);
+    glVertexAttribFormat(colorLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0);
+    glVertexAttribBinding(colorLoc, kUnusedBinding);
+    glBindVertexBuffer(kUnusedBinding, blueBuffer, 0, sizeof(GLColor));
+    glEnableVertexAttribArray(colorLoc);
+
+    // Make binding 'colorLoc' use a small buffer.
+    std::vector<GLColor> greenVertices(6, GLColor::green);
+    const size_t greenBufferSize = sizeof(GLColor) * 3;
+    GLBuffer greenBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, greenBuffer);
+    glBufferData(GL_ARRAY_BUFFER, greenBufferSize, greenVertices.data(), GL_STATIC_DRAW);
+    glBindVertexBuffer(colorLoc, greenBuffer, 0, sizeof(GLColor));
+
+    ASSERT_GL_NO_ERROR();
+
+    // Draw without a mapped buffer. Should succeed.
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
+
+    // Change divisor with VertexAttribDivisor. Should fail.
+    glVertexAttribDivisor(colorLoc, 0);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "draw with small buffer should fail.";
+
+    // Do a small draw. Should succeed.
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Tests state changes with uniform block validation.
+TEST_P(ValidationStateChangeTest, UniformBlockNegativeAPI)
+{
+    constexpr char kVS[] = R"(#version 300 es
+in vec2 position;
+void main()
+{
+    gl_Position = vec4(position, 0, 1);
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+uniform uni { vec4 vec; };
+out vec4 color;
+void main()
+{
+    color = vec;
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    GLuint blockIndex = glGetUniformBlockIndex(program, "uni");
+    ASSERT_NE(GL_INVALID_INDEX, blockIndex);
+
+    glUniformBlockBinding(program, blockIndex, 0);
+
+    GLBuffer uniformBuffer;
+    glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(GLColor32F), &kFloatGreen.R, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer);
+
+    const auto &quadVertices = GetQuadVertices();
+
+    GLBuffer positionBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(Vector3), quadVertices.data(),
+                 GL_STATIC_DRAW);
+
+    GLint positionLocation = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, positionLocation);
+
+    glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLocation);
+    ASSERT_GL_NO_ERROR();
+
+    // First draw should succeed.
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Change the uniform block binding. Should fail.
+    glUniformBlockBinding(program, blockIndex, 1);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_ERROR(GL_INVALID_OPERATION) << "Invalid uniform block binding should fail";
+
+    // Reset to a correct state.
+    glUniformBlockBinding(program, blockIndex, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Change the buffer binding. Should fail.
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_ERROR(GL_INVALID_OPERATION) << "Setting invalid uniform buffer should fail";
+
+    // Reset to a correct state.
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Resize the buffer to be too small. Should fail.
+    glBufferData(GL_UNIFORM_BUFFER, 1, nullptr, GL_STATIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Invalid buffer size should fail";
+}
+
+// Tests various state change effects on draw framebuffer validation.
+TEST_P(WebGL2ValidationStateChangeTest, DrawFramebufferNegativeAPI)
+{
+    // Set up a simple draw from a Texture to a user Framebuffer.
+    GLuint program = get2DTexturedQuadProgram();
+    ASSERT_NE(0u, program);
+    glUseProgram(program);
+
+    GLint posLoc = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, posLoc);
+
+    const auto &quadVertices = GetQuadVertices();
+
+    GLBuffer positionBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * quadVertices.size(), quadVertices.data(),
+                 GL_STATIC_DRAW);
+
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posLoc);
+
+    constexpr size_t kSize = 2;
+
+    GLTexture colorBufferTexture;
+    glBindTexture(GL_TEXTURE_2D, colorBufferTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferTexture,
+                           0);
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    std::vector<GLColor> greenColor(kSize * kSize, GLColor::green);
+
+    GLTexture greenTexture;
+    glBindTexture(GL_TEXTURE_2D, greenTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 greenColor.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Second framebuffer with a feedback loop. Initially unbound.
+    GLFramebuffer loopedFramebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, loopedFramebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, greenTexture, 0);
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+    ASSERT_GL_NO_ERROR();
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Create a rendering feedback loop. Should fail.
+    glBindTexture(GL_TEXTURE_2D, colorBufferTexture);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    // Reset to a valid state.
+    glBindTexture(GL_TEXTURE_2D, greenTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Bind a second framebuffer with a feedback loop.
+    glBindFramebuffer(GL_FRAMEBUFFER, loopedFramebuffer);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    // Update the framebuffer texture attachment. Should succeed.
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferTexture,
+                           0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Tests various state change effects on draw framebuffer validation with MRT.
+TEST_P(WebGL2ValidationStateChangeTest, MultiAttachmentDrawFramebufferNegativeAPI)
+{
+    // Set up a program that writes to two outputs: one int and one float.
+    constexpr char kVS[] = R"(#version 300 es
+layout(location = 0) in vec2 position;
+out vec2 texCoord;
+void main()
+{
+    gl_Position = vec4(position, 0, 1);
+    texCoord = position * 0.5 + vec2(0.5);
+})";
+
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+in vec2 texCoord;
+layout(location = 0) out vec4 outFloat;
+layout(location = 1) out uvec4 outInt;
+void main()
+{
+    outFloat = vec4(0, 1, 0, 1);
+    outInt = uvec4(0, 1, 0, 1);
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    constexpr GLint kPosLoc = 0;
+
+    const auto &quadVertices = GetQuadVertices();
+
+    GLBuffer positionBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vector3) * quadVertices.size(), quadVertices.data(),
+                 GL_STATIC_DRAW);
+
+    glVertexAttribPointer(kPosLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(kPosLoc);
+
+    constexpr size_t kSize = 2;
+
+    GLFramebuffer floatFramebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, floatFramebuffer);
+
+    GLTexture floatTextures[2];
+    for (int i = 0; i < 2; ++i)
+    {
+        glBindTexture(GL_TEXTURE_2D, floatTextures[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     nullptr);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
+                               floatTextures[i], 0);
+        ASSERT_GL_NO_ERROR();
+    }
+
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    GLFramebuffer intFramebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, intFramebuffer);
+
+    GLTexture intTextures[2];
+    for (int i = 0; i < 2; ++i)
+    {
+        glBindTexture(GL_TEXTURE_2D, intTextures[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, kSize, kSize, 0, GL_RGBA_INTEGER,
+                     GL_UNSIGNED_BYTE, nullptr);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
+                               intTextures[i], 0);
+        ASSERT_GL_NO_ERROR();
+    }
+
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    ASSERT_GL_NO_ERROR();
+
+    constexpr GLenum kColor0Enabled[]     = {GL_COLOR_ATTACHMENT0, GL_NONE};
+    constexpr GLenum kColor1Enabled[]     = {GL_NONE, GL_COLOR_ATTACHMENT1};
+    constexpr GLenum kColor0And1Enabled[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+
+    // Draw float. Should work.
+    glBindFramebuffer(GL_FRAMEBUFFER, floatFramebuffer);
+    glDrawBuffers(2, kColor0Enabled);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR() << "Draw to float texture with correct mask";
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Set an invalid component write.
+    glDrawBuffers(2, kColor0And1Enabled);
+    ASSERT_GL_NO_ERROR() << "Draw to float texture with invalid mask";
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    // Restore state.
+    glDrawBuffers(2, kColor0Enabled);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR() << "Draw to float texture with correct mask";
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Bind an invalid framebuffer. Validate failure.
+    glBindFramebuffer(GL_FRAMEBUFFER, intFramebuffer);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Draw to int texture with default mask";
+
+    // Set draw mask to a valid mask. Validate success.
+    glDrawBuffers(2, kColor1Enabled);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR() << "Draw to int texture with correct mask";
+}
+
+// Tests negative API state change cases with Transform Feedback bindings.
+TEST_P(WebGL2ValidationStateChangeTest, TransformFeedbackNegativeAPI)
+{
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsOSX());
+
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+uniform block { vec4 color; };
+out vec4 colorOut;
+void main()
+{
+    colorOut = color;
+})";
+
+    std::vector<std::string> tfVaryings = {"gl_Position"};
+    ANGLE_GL_PROGRAM_TRANSFORM_FEEDBACK(program, essl3_shaders::vs::Simple(), kFS, tfVaryings,
+                                        GL_INTERLEAVED_ATTRIBS);
+    glUseProgram(program);
+
+    std::vector<Vector4> positionData;
+    for (const Vector3 &quadVertex : GetQuadVertices())
+    {
+        positionData.emplace_back(quadVertex.x(), quadVertex.y(), quadVertex.z(), 1.0f);
+    }
+
+    GLBuffer arrayBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
+    glBufferData(GL_ARRAY_BUFFER, positionData.size() * sizeof(Vector4), positionData.data(),
+                 GL_STATIC_DRAW);
+
+    GLint positionLoc = glGetAttribLocation(program, essl3_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+
+    glVertexAttribPointer(positionLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    EXPECT_GL_NO_ERROR();
+
+    // Set up transform feedback.
+    GLTransformFeedback transformFeedback;
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transformFeedback);
+
+    constexpr size_t kTransformFeedbackSize = 6 * sizeof(Vector4);
+
+    GLBuffer transformFeedbackBuffer;
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, transformFeedbackBuffer);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, kTransformFeedbackSize * 2, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, transformFeedbackBuffer);
+
+    // Set up uniform buffer.
+    std::vector<GLColor32F> redData(1, kFloatGreen);
+
+    GLBuffer uniformBuffer;
+    glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, 128, &kFloatGreen.R, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Do the draw operation. Should succeed.
+    glBeginTransformFeedback(GL_TRIANGLES);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEndTransformFeedback();
+
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    const GLvoid *mapPointer =
+        glMapBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, 0, kTransformFeedbackSize, GL_MAP_READ_BIT);
+    ASSERT_GL_NO_ERROR();
+    ASSERT_NE(nullptr, mapPointer);
+    const Vector4 *typedMapPointer = reinterpret_cast<const Vector4 *>(mapPointer);
+    std::vector<Vector4> actualData(typedMapPointer, typedMapPointer + 6);
+    EXPECT_EQ(positionData, actualData);
+    glUnmapBuffer(GL_TRANSFORM_FEEDBACK_BUFFER);
+
+    // Draw once to update validation cache.
+    glBeginTransformFeedback(GL_TRIANGLES);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Bind transform feedback buffer to another binding point. Should cause a conflict.
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, transformFeedbackBuffer);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEndTransformFeedback();
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Simultaneous element buffer binding should fail";
+
+    // Reset to valid state.
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBeginTransformFeedback(GL_TRIANGLES);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEndTransformFeedback();
+    ASSERT_GL_NO_ERROR();
+
+    // Simultaneous non-vertex-array binding. Should fail.
+    glBeginTransformFeedback(GL_TRIANGLES);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, transformFeedbackBuffer);
+    ASSERT_GL_NO_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEndTransformFeedback();
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Simultaneous pack buffer binding should fail";
+}
+
+// Tests a valid rendering setup with two textures. Followed by a draw with conflicting samplers.
+TEST_P(ValidationStateChangeTest, TextureConflict)
+{
+    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
+
+    GLint maxTextures = 0;
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextures);
+    ANGLE_SKIP_TEST_IF(maxTextures < 2);
+
+    // Set up state.
+    constexpr GLint kSize = 2;
+
+    std::vector<GLColor> greenData(4, GLColor::green);
+
+    GLTexture textureA;
+    glBindTexture(GL_TEXTURE_2D, textureA);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 greenData.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glActiveTexture(GL_TEXTURE1);
+
+    GLTexture textureB;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureB);
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, kSize, kSize, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, greenData.data());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, kSize, kSize, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, greenData.data());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, kSize, kSize, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, greenData.data());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, kSize, kSize, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, greenData.data());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, kSize, kSize, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, greenData.data());
+    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, kSize, kSize, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, greenData.data());
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    constexpr char kVS[] = R"(attribute vec2 position;
+varying mediump vec2 texCoord;
+void main()
+{
+    gl_Position = vec4(position, 0, 1);
+    texCoord = position * 0.5 + vec2(0.5);
+})";
+
+    constexpr char kFS[] = R"(varying mediump vec2 texCoord;
+uniform sampler2D texA;
+uniform samplerCube texB;
+void main()
+{
+    gl_FragColor = texture2D(texA, texCoord) + textureCube(texB, vec3(1, 0, 0));
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+    glUseProgram(program);
+
+    const auto &quadVertices = GetQuadVertices();
+
+    GLBuffer arrayBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(Vector3), quadVertices.data(),
+                 GL_STATIC_DRAW);
+
+    GLint positionLoc = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, positionLoc);
+
+    GLint texALoc = glGetUniformLocation(program, "texA");
+    ASSERT_NE(-1, texALoc);
+
+    GLint texBLoc = glGetUniformLocation(program, "texB");
+    ASSERT_NE(-1, texBLoc);
+
+    glUniform1i(texALoc, 0);
+    glUniform1i(texBLoc, 1);
+
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    ASSERT_GL_NO_ERROR();
+
+    // First draw. Should succeed.
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Second draw to ensure all state changes are flushed.
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+
+    // Make the uniform use an invalid texture binding.
+    glUniform1i(texBLoc, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+}
 }  // anonymous namespace
 
 ANGLE_INSTANTIATE_TEST(StateChangeTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_VULKAN());
@@ -2078,3 +2923,7 @@ ANGLE_INSTANTIATE_TEST(StateChangeRenderTest,
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(StateChangeTestES3, ES3_D3D11(), ES3_OPENGL());
 ANGLE_INSTANTIATE_TEST(SimpleStateChangeTest, ES2_VULKAN(), ES2_OPENGL());
+ANGLE_INSTANTIATE_TEST(SimpleStateChangeTestES3, ES3_OPENGL(), ES3_D3D11());
+ANGLE_INSTANTIATE_TEST(ValidationStateChangeTest, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(WebGL2ValidationStateChangeTest, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(ValidationStateChangeTestES31, ES31_OPENGL());

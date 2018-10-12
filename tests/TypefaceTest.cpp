@@ -15,6 +15,7 @@
 #include "SkSFNTHeader.h"
 #include "SkStream.h"
 #include "SkRefCnt.h"
+#include "SkTestEmptyTypeface.h"
 #include "SkTypeface.h"
 #include "SkTypefaceCache.h"
 #include "Resources.h"
@@ -50,7 +51,7 @@ static void TypefaceStyle_test(skiatest::Reporter* reporter,
     using WidthType = SkOTTableOS2_V0::WidthClass::Value;
     os2Table->usWidthClass.value = static_cast<WidthType>(SkEndian_SwapBE16(width));
 
-    sk_sp<SkTypeface> newTypeface(SkTypeface::MakeFromStream(new SkMemoryStream(sk_ref_sp(data))));
+    sk_sp<SkTypeface> newTypeface(SkTypeface::MakeFromData(sk_ref_sp(data)));
     if (!newTypeface) {
         // Not all SkFontMgr can MakeFromStream().
         return;
@@ -263,55 +264,6 @@ DEF_TEST(TypefaceAxesParameters, reporter) {
 
 }
 
-namespace {
-
-class EmptyTypeface : public SkTypeface {
-public:
-    static sk_sp<SkTypeface> Create() { return sk_sp<SkTypeface>(new EmptyTypeface()); }
-protected:
-    EmptyTypeface() : SkTypeface(SkFontStyle(), true) { }
-
-    SkStreamAsset* onOpenStream(int* ttcIndex) const override { return nullptr; }
-    sk_sp<SkTypeface> onMakeClone(const SkFontArguments& args) const override {
-        return sk_ref_sp(this);
-    }
-    SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
-                                           const SkDescriptor*) const override {
-        return nullptr;
-    }
-    void onFilterRec(SkScalerContextRec*) const override { }
-    std::unique_ptr<SkAdvancedTypefaceMetrics> onGetAdvancedMetrics() const override {
-        return nullptr;
-    }
-    void onGetFontDescriptor(SkFontDescriptor*, bool*) const override { }
-    virtual int onCharsToGlyphs(const void* chars, Encoding encoding,
-                                uint16_t glyphs[], int glyphCount) const override {
-        SK_ABORT("unimplemented");
-        return 0;
-    }
-    int onCountGlyphs() const override { return 0; }
-    int onGetUPEM() const override { return 0; }
-    void onGetFamilyName(SkString* familyName) const override { familyName->reset(); }
-    SkTypeface::LocalizedStrings* onCreateFamilyNameIterator() const override {
-        SK_ABORT("unimplemented");
-        return nullptr;
-    }
-    int onGetVariationDesignPosition(SkFontArguments::VariationPosition::Coordinate coordinates[],
-                                     int coordinateCount) const override
-    {
-        return 0;
-    }
-    int onGetVariationDesignParameters(SkFontParameters::Variation::Axis parameters[],
-                                       int parameterCount) const override
-    {
-        return 0;
-    }
-    int onGetTableTags(SkFontTableTag tags[]) const override { return 0; }
-    size_t onGetTableData(SkFontTableTag, size_t, size_t, void*) const override { return 0; }
-};
-
-}
-
 static bool count_proc(SkTypeface* face, void* ctx) {
     int* count = static_cast<int*>(ctx);
     *count = *count + 1;
@@ -325,12 +277,12 @@ static int count(skiatest::Reporter* reporter, const SkTypefaceCache& cache) {
 }
 
 DEF_TEST(TypefaceCache, reporter) {
-    sk_sp<SkTypeface> t1(EmptyTypeface::Create());
+    sk_sp<SkTypeface> t1(SkTestEmptyTypeface::Make());
     {
         SkTypefaceCache cache;
         REPORTER_ASSERT(reporter, count(reporter, cache) == 0);
         {
-            sk_sp<SkTypeface> t0(EmptyTypeface::Create());
+            sk_sp<SkTypeface> t0(SkTestEmptyTypeface::Make());
             cache.add(t0.get());
             REPORTER_ASSERT(reporter, count(reporter, cache) == 1);
             cache.add(t1.get());
@@ -344,3 +296,30 @@ DEF_TEST(TypefaceCache, reporter) {
     }
     REPORTER_ASSERT(reporter, t1->unique());
 }
+
+static void check_serialize_behaviors(sk_sp<SkTypeface> tf, bool isLocalData,
+                                      skiatest::Reporter* reporter) {
+    if (!tf) {
+        return;
+    }
+    auto data0 = tf->serialize(SkTypeface::SerializeBehavior::kDoIncludeData);
+    auto data1 = tf->serialize(SkTypeface::SerializeBehavior::kDontIncludeData);
+    auto data2 = tf->serialize(SkTypeface::SerializeBehavior::kIncludeDataIfLocal);
+
+    REPORTER_ASSERT(reporter, data0->size() >= data1->size());
+
+    if (isLocalData) {
+        REPORTER_ASSERT(reporter, data0->equals(data2.get()));
+    } else {
+        REPORTER_ASSERT(reporter, data1->equals(data2.get()));
+    }
+}
+
+DEF_TEST(Typeface_serialize, reporter) {
+    check_serialize_behaviors(SkTypeface::MakeDefault(), false, reporter);
+    check_serialize_behaviors(SkTypeface::MakeFromStream(
+                                         GetResourceAsStream("fonts/Distortable.ttf")),
+                              true, reporter);
+
+}
+

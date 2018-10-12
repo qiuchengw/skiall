@@ -245,7 +245,7 @@ SkBitmapDevice::SkBitmapDevice(const SkBitmap& bitmap)
     : INHERITED(bitmap.info(), SkSurfaceProps(SkSurfaceProps::kLegacyFontHost_InitType))
     , fBitmap(bitmap)
     , fRCStack(bitmap.width(), bitmap.height())
-    , fGlyphDraw(this->surfaceProps(), bitmap.colorType(), scaler_context_flags(bitmap))
+    , fGlyphPainter(this->surfaceProps(), bitmap.colorType(), scaler_context_flags(bitmap))
 {
     SkASSERT(valid_for_bitmap_device(bitmap.info(), nullptr));
 }
@@ -260,7 +260,7 @@ SkBitmapDevice::SkBitmapDevice(const SkBitmap& bitmap, const SkSurfaceProps& sur
     , fBitmap(bitmap)
     , fRasterHandle(hndl)
     , fRCStack(bitmap.width(), bitmap.height())
-    , fGlyphDraw(this->surfaceProps(), bitmap.colorType(), scaler_context_flags(bitmap))
+    , fGlyphPainter(this->surfaceProps(), bitmap.colorType(), scaler_context_flags(bitmap))
 {
     SkASSERT(valid_for_bitmap_device(bitmap.info(), nullptr));
 
@@ -386,7 +386,7 @@ void SkBitmapDevice::drawOval(const SkRect& oval, const SkPaint& paint) {
     path.addOval(oval);
     // call the VIRTUAL version, so any subclasses who do handle drawPath aren't
     // required to override drawOval.
-    this->drawPath(path, paint, nullptr, true);
+    this->drawPath(path, paint, true);
 }
 
 void SkBitmapDevice::drawRRect(const SkRRect& rrect, const SkPaint& paint) {
@@ -396,33 +396,25 @@ void SkBitmapDevice::drawRRect(const SkRRect& rrect, const SkPaint& paint) {
     path.addRRect(rrect);
     // call the VIRTUAL version, so any subclasses who do handle drawPath aren't
     // required to override drawRRect.
-    this->drawPath(path, paint, nullptr, true);
+    this->drawPath(path, paint, true);
 #else
     LOOP_TILER( drawRRect(rrect, paint), Bounder(rrect.getBounds(), paint))
 #endif
 }
 
 void SkBitmapDevice::drawPath(const SkPath& path,
-                              const SkPaint& paint, const SkMatrix* prePathMatrix,
+                              const SkPaint& paint,
                               bool pathIsMutable) {
     const SkRect* bounds = nullptr;
-    SkRect storage;
-    if (SkDrawTiler::NeedsTiling(this)) {
-        if (!path.isInverseFillType()) {
-            if (prePathMatrix) {
-                prePathMatrix->mapRect(&storage, path.getBounds());
-                bounds = &storage;
-            } else {
-                bounds = &path.getBounds();
-            }
-        }
+    if (SkDrawTiler::NeedsTiling(this) && !path.isInverseFillType()) {
+        bounds = &path.getBounds();
     }
     SkDrawTiler tiler(this, bounds ? Bounder(*bounds, paint).bounds() : nullptr);
     if (tiler.needsTiling()) {
         pathIsMutable = false;
     }
     while (const SkDraw* draw = tiler.next()) {
-        draw->drawPath(path, paint, prePathMatrix, pathIsMutable);
+        draw->drawPath(path, paint, nullptr, pathIsMutable);
     }
 }
 
@@ -578,13 +570,6 @@ void SkBitmapDevice::drawSprite(const SkBitmap& bitmap, int x, int y, const SkPa
     BDDraw(this).drawSprite(bitmap, x, y, paint);
 }
 
-void SkBitmapDevice::drawPosText(const void* text, size_t len, const SkScalar xpos[],
-                                 int scalarsPerPos, const SkPoint& offset, const SkPaint& paint) {
-    SkBitmapDeviceFilteredSurfaceProps props(fBitmap, paint, fSurfaceProps);
-    LOOP_TILER( drawPosText((const char*)text, len, xpos, scalarsPerPos, offset, paint, &props()),
-                nullptr)
-}
-
 void SkBitmapDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList) {
 #if defined(SK_SUPPORT_LEGACY_TEXT_BLOB)
     auto blob = glyphRunList.blob();
@@ -597,12 +582,12 @@ void SkBitmapDevice::drawGlyphRunList(const SkGlyphRunList& glyphRunList) {
         this->drawTextBlob(blob, origin.x(), origin.y(), paint);
     }
 #else
-    LOOP_TILER( drawGlyphRunList(glyphRunList, &fGlyphDraw), nullptr )
+    LOOP_TILER( drawGlyphRunList(glyphRunList, &fGlyphPainter), nullptr )
 #endif
 }
 
-void SkBitmapDevice::drawVertices(const SkVertices* vertices, const SkMatrix* bones, int boneCount,
-                                  SkBlendMode bmode, const SkPaint& paint) {
+void SkBitmapDevice::drawVertices(const SkVertices* vertices, const SkVertices::Bone bones[],
+                                  int boneCount, SkBlendMode bmode, const SkPaint& paint) {
     BDDraw(this).drawVertices(vertices->mode(), vertices->vertexCount(), vertices->positions(),
                               vertices->texCoords(), vertices->colors(), vertices->boneIndices(),
                               vertices->boneWeights(), bmode, vertices->indices(),

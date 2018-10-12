@@ -23,6 +23,8 @@
 class GrPipeline;
 
 class GrVkBufferImpl;
+class GrVkGpuRTCommandBuffer;
+class GrVkGpuTextureCommandBuffer;
 class GrVkMemoryAllocator;
 class GrVkPipeline;
 class GrVkPipelineState;
@@ -49,8 +51,10 @@ public:
 
     GrVkMemoryAllocator* memoryAllocator() const { return fMemoryAllocator.get(); }
 
+    VkPhysicalDevice physicalDevice() const { return fPhysicalDevice; }
     VkDevice device() const { return fDevice; }
     VkQueue  queue() const { return fQueue; }
+    uint32_t  queueIndex() const { return fQueueIndex; }
     VkCommandPool cmdPool() const { return fCmdPool; }
     VkPhysicalDeviceProperties physicalDeviceProperties() const {
         return fPhysDevProps;
@@ -72,13 +76,12 @@ public:
 
 #if GR_TEST_UTILS
     GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
-                                                     GrPixelConfig config, bool isRenderTarget,
-                                                     GrMipMapped) override;
+                                                     GrColorType colorType, bool isRenderTarget,
+                                                     GrMipMapped, size_t rowBytes = 0) override;
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
     void deleteTestingOnlyBackendTexture(const GrBackendTexture&) override;
 
-    GrBackendRenderTarget createTestingOnlyBackendRenderTarget(int w, int h, GrColorType,
-                                                               GrSRGBEncoded) override;
+    GrBackendRenderTarget createTestingOnlyBackendRenderTarget(int w, int h, GrColorType) override;
     void deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&) override;
 
     void testingOnly_flushGpuAndSync() override;
@@ -88,14 +91,13 @@ public:
                                                                 int width,
                                                                 int height) override;
 
-    void clearStencil(GrRenderTarget* target, int clearValue) override;
-
-    GrGpuRTCommandBuffer* createCommandBuffer(
+    GrGpuRTCommandBuffer* getCommandBuffer(
             GrRenderTarget*, GrSurfaceOrigin,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) override;
 
-    GrGpuTextureCommandBuffer* createCommandBuffer(GrTexture*, GrSurfaceOrigin) override;
+    GrGpuTextureCommandBuffer* getCommandBuffer(GrTexture*, GrSurfaceOrigin) override;
+
 
     void addMemoryBarrier(VkPipelineStageFlags srcStageMask,
                           VkPipelineStageFlags dstStageMask,
@@ -125,6 +127,8 @@ public:
                                       const VkClearValue* colorClear,
                                       GrVkRenderTarget*, GrSurfaceOrigin,
                                       const SkIRect& bounds);
+
+    void submit(GrGpuCommandBuffer*) override;
 
     GrFence SK_WARN_UNUSED_RESULT insertFence() override;
     bool waitFence(GrFence, uint64_t timeout) override;
@@ -220,7 +224,7 @@ private:
 #if GR_TEST_UTILS
     bool createTestingOnlyVkImage(GrPixelConfig config, int w, int h, bool texturable,
                                   bool renderable, GrMipMapped mipMapped, const void* srcData,
-                                  GrVkImageInfo* info);
+                                  size_t srcRowBytes, GrVkImageInfo* info);
 #endif
 
     sk_sp<const GrVkInterface>             fInterface;
@@ -228,8 +232,10 @@ private:
     sk_sp<GrVkCaps>                        fVkCaps;
 
     VkInstance                             fInstance;
+    VkPhysicalDevice                       fPhysicalDevice;
     VkDevice                               fDevice;
     VkQueue                                fQueue;    // Must be Graphics queue
+    uint32_t                               fQueueIndex;
 
     // Created by GrVkGpu
     GrVkResourceProvider                   fResourceProvider;
@@ -252,6 +258,9 @@ private:
     // We need a bool to track whether or not we've already disconnected all the gpu resources from
     // vulkan context.
     bool                                   fDisconnected;
+
+    std::unique_ptr<GrVkGpuRTCommandBuffer>      fCachedRTCommandBuffer;
+    std::unique_ptr<GrVkGpuTextureCommandBuffer> fCachedTexCommandBuffer;
 
     typedef GrGpu INHERITED;
 };

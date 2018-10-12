@@ -11,7 +11,9 @@
 
 #include "common/PackedEnums.h"
 #include "common/mathutil.h"
+#include "common/utilities.h"
 #include "libANGLE/Context.h"
+#include "libANGLE/ErrorStrings.h"
 #include "libANGLE/Framebuffer.h"
 
 #include <GLES2/gl2.h>
@@ -219,7 +221,19 @@ bool ValidateUniform1ivValue(Context *context,
                              GLenum uniformType,
                              GLsizei count,
                              const GLint *value);
-bool ValidateUniformValue(Context *context, GLenum valueType, GLenum uniformType);
+
+ANGLE_INLINE bool ValidateUniformValue(Context *context, GLenum valueType, GLenum uniformType)
+{
+    // Check that the value type is compatible with uniform type.
+    // Do the cheaper test first, for a little extra speed.
+    if (valueType != uniformType && VariableBoolVectorType(valueType) != uniformType)
+    {
+        context->validationError(GL_INVALID_OPERATION, kErrorUniformSizeMismatch);
+        return false;
+    }
+    return true;
+}
+
 bool ValidateUniformMatrixValue(Context *context, GLenum valueType, GLenum uniformType);
 bool ValidateUniform(Context *context, GLenum uniformType, GLint location, GLsizei count);
 bool ValidateUniformMatrix(Context *context,
@@ -683,6 +697,14 @@ bool ValidateTransformFeedbackPrimitiveMode(const Context *context,
                                             PrimitiveMode transformFeedbackPrimitiveMode,
                                             PrimitiveMode renderPrimitiveMode);
 
+// Common validation for 2D and 3D variants of TexStorage*Multisample.
+bool ValidateTexStorageMultisample(Context *context,
+                                   TextureType target,
+                                   GLsizei samples,
+                                   GLint internalFormat,
+                                   GLsizei width,
+                                   GLsizei height);
+
 // Utility macro for handling implementation methods inside Validation.
 #define ANGLE_HANDLE_VALIDATION_ERR(X) \
     context->handleError(X);           \
@@ -704,6 +726,8 @@ ANGLE_INLINE bool ValidateFramebufferComplete(Context *context, Framebuffer *fra
 
     return true;
 }
+
+const char *ValidateDrawStates(Context *context);
 }  // namespace gl
 
 #endif  // LIBANGLE_VALIDATION_ES_H_

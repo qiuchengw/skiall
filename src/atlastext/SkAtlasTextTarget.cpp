@@ -14,7 +14,7 @@
 #include "SkAtlasTextContext.h"
 #include "SkAtlasTextFont.h"
 #include "SkAtlasTextRenderer.h"
-#include "SkGlyphRun.h"
+#include "SkGlyphRunPainter.h"
 #include "SkGr.h"
 #include "SkInternalAtlasTextContext.h"
 #include "ops/GrAtlasTextOp.h"
@@ -79,14 +79,14 @@ static const SkSurfaceProps kProps(
 
 //////////////////////////////////////////////////////////////////////////////
 
-class SkInternalAtlasTextTarget : public GrTextUtils::Target, public SkAtlasTextTarget {
+class SkInternalAtlasTextTarget : public GrTextTarget, public SkAtlasTextTarget {
 public:
     SkInternalAtlasTextTarget(sk_sp<SkAtlasTextContext> context,
                               int width, int height,
                               void* handle)
-            : GrTextUtils::Target(width, height, kColorSpaceInfo)
+            : GrTextTarget(width, height, kColorSpaceInfo)
             , SkAtlasTextTarget(std::move(context), width, height, handle)
-            , fGlyphDrawer(kProps, kColorSpaceInfo) {
+            , fGlyphPainter(kProps, kColorSpaceInfo) {
         fOpMemoryPool = fContext->internal().grContext()->contextPriv().refOpMemoryPool();
     }
 
@@ -94,26 +94,26 @@ public:
         this->deleteOps();
     }
 
-    /** GrTextUtils::Target overrides */
+    /** GrTextTarget overrides */
 
     void addDrawOp(const GrClip&, std::unique_ptr<GrAtlasTextOp> op) override;
 
-    void drawPath(const GrClip&, const SkPath&, const SkPaint&, const SkMatrix& viewMatrix,
-                  const SkMatrix* pathMatrix, const SkIRect& clipBounds) override {
+    void drawShape(const GrClip&, const SkPaint&, const SkMatrix& viewMatrix,
+                   const GrShape&) override {
         SkDebugf("Path glyph??");
     }
 
     void makeGrPaint(GrMaskFormat, const SkPaint& skPaint, const SkMatrix&,
                      GrPaint* grPaint) override {
-        grPaint->setColor4f(SkColorToPremulGrColor4fLegacy(skPaint.getColor()));
+        grPaint->setColor4f(GrColor4f::FromRGBA4f(skPaint.getColor4f().premul()));
     }
 
     GrContext* getContext() override {
         return this->context()->internal().grContext();
     }
 
-    SkGlyphRunListDrawer* glyphDrawer() override {
-        return &fGlyphDrawer;
+    SkGlyphRunListPainter* glyphPainter() override {
+        return &fGlyphPainter;
     }
 
     /** SkAtlasTextTarget overrides */
@@ -130,7 +130,7 @@ private:
     using SkAtlasTextTarget::fHeight;
     SkTArray<std::unique_ptr<GrAtlasTextOp>, true> fOps;
     sk_sp<GrOpMemoryPool> fOpMemoryPool;
-    SkGlyphRunListDrawer fGlyphDrawer;
+    SkGlyphRunListPainter fGlyphPainter;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -159,14 +159,13 @@ void SkInternalAtlasTextTarget::drawText(const SkGlyphID glyphs[], const SkPoint
 
     SkSurfaceProps props(SkSurfaceProps::kUseDistanceFieldFonts_Flag, kUnknown_SkPixelGeometry);
     auto* grContext = this->context()->internal().grContext();
-    auto bounds = SkIRect::MakeWH(fWidth, fHeight);
     auto atlasTextContext = grContext->contextPriv().drawingManager()->getTextContext();
     SkGlyphRunBuilder builder;
     builder.drawGlyphPos(paint, SkSpan<const SkGlyphID>{glyphs, SkTo<size_t>(glyphCnt)}, positions);
     auto glyphRunList = builder.useGlyphRunList();
     if (!glyphRunList.empty()) {
         atlasTextContext->drawGlyphRunList(grContext, this, GrNoClip(), this->ctm(), props,
-                                           glyphRunList, bounds);
+                                           glyphRunList);
     }
 }
 
@@ -181,7 +180,7 @@ void SkInternalAtlasTextTarget::addDrawOp(const GrClip& clip, std::unique_ptr<Gr
     int n = SkTMin(kMaxBatchLookBack, fOps.count());
     for (int i = 0; i < n; ++i) {
         GrAtlasTextOp* other = fOps.fromBack(i).get();
-        if (other->combineIfPossible(op.get(), caps)) {
+        if (other->combineIfPossible(op.get(), caps) == GrOp::CombineResult::kMerged) {
             fOpMemoryPool->release(std::move(op));
             return;
         }

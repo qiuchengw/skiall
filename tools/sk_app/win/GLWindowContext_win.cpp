@@ -6,12 +6,13 @@
  * found in the LICENSE file.
  */
 
-#include <Windows.h>
-#include <GL/gl.h>
 #include "../GLWindowContext.h"
 #include "gl/GrGLInterface.h"
 #include "WindowContextFactory_win.h"
 #include "win/SkWGL.h"
+
+#include <Windows.h>
+#include <GL/gl.h>
 
 using sk_app::GLWindowContext;
 using sk_app::DisplayParams;
@@ -61,9 +62,9 @@ sk_sp<const GrGLInterface> GLWindowContext_win::onInitializeContext() {
 
     // Look to see if RenderDoc is attached. If so, re-create the context with a core profile
     if (wglMakeCurrent(dc, fHGLRC)) {
-        auto intfa = GrGLMakeNativeInterface();
-        bool renderDocAttached = intfa->hasExtension("GL_EXT_debug_tool");
-        intfa.reset(nullptr);
+        auto interface = GrGLMakeNativeInterface();
+        bool renderDocAttached = interface->hasExtension("GL_EXT_debug_tool");
+        interface.reset(nullptr);
         if (renderDocAttached) {
             wglDeleteContext(fHGLRC);
             fHGLRC = SkCreateWGLContext(dc, fDisplayParams.fMSAASampleCount, false /* deepColor */,

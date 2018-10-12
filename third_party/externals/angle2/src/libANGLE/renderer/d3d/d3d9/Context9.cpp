@@ -28,7 +28,7 @@ namespace rx
 {
 
 Context9::Context9(const gl::ContextState &state, Renderer9 *renderer)
-    : ContextImpl(state), mRenderer(renderer)
+    : ContextD3D(state), mRenderer(renderer)
 {
 }
 
@@ -138,18 +138,18 @@ std::vector<PathImpl *> Context9::createPaths(GLsizei)
 
 gl::Error Context9::flush(const gl::Context *context)
 {
-    return mRenderer->flush();
+    return mRenderer->flush(context);
 }
 
 gl::Error Context9::finish(const gl::Context *context)
 {
-    return mRenderer->finish();
+    return mRenderer->finish(context);
 }
 
-gl::Error Context9::drawArrays(const gl::Context *context,
-                               gl::PrimitiveMode mode,
-                               GLint first,
-                               GLsizei count)
+angle::Result Context9::drawArrays(const gl::Context *context,
+                                   gl::PrimitiveMode mode,
+                                   GLint first,
+                                   GLsizei count)
 {
     return mRenderer->genericDrawArrays(context, mode, first, count, 0);
 }
@@ -260,10 +260,12 @@ void Context9::popDebugGroup()
     popGroupMarker();
 }
 
-gl::Error Context9::syncState(const gl::Context *context, const gl::State::DirtyBits &dirtyBits)
+angle::Result Context9::syncState(const gl::Context *context,
+                                  const gl::State::DirtyBits &dirtyBits,
+                                  const gl::State::DirtyBits &bitMask)
 {
     mRenderer->getStateManager()->syncState(mState.getState(), dirtyBits);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 GLint Context9::getGPUDisjoint()
@@ -328,10 +330,34 @@ gl::Error Context9::memoryBarrierByRegion(const gl::Context *context, GLbitfield
     return gl::InternalError() << "D3D9 doesn't support ES 3.1 memoryBarrierByRegion API";
 }
 
-gl::Error Context9::getIncompleteTexture(const gl::Context *context,
-                                         gl::TextureType type,
-                                         gl::Texture **textureOut)
+angle::Result Context9::getIncompleteTexture(const gl::Context *context,
+                                             gl::TextureType type,
+                                             gl::Texture **textureOut)
 {
-    return mIncompleteTextures.getIncompleteTexture(context, type, nullptr, textureOut);
+    ANGLE_TRY_HANDLE(context,
+                     mIncompleteTextures.getIncompleteTexture(context, type, nullptr, textureOut));
+    return angle::Result::Continue();
+}
+
+void Context9::handleError(HRESULT hr,
+                           const char *message,
+                           const char *file,
+                           const char *function,
+                           unsigned int line)
+{
+    ASSERT(FAILED(hr));
+
+    if (d3d9::isDeviceLostError(hr))
+    {
+        mRenderer->notifyDeviceLost();
+    }
+
+    GLenum glErrorCode = DefaultGLErrorCode(hr);
+
+    std::stringstream errorStream;
+    errorStream << "Internal D3D9 error: " << gl::FmtHR(hr) << ", in " << file << ", " << function
+                << ":" << line << ". " << message;
+
+    mErrors->handleError(gl::Error(glErrorCode, glErrorCode, errorStream.str()));
 }
 }  // namespace rx

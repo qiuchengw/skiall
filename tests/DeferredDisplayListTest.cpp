@@ -51,14 +51,12 @@
 // Try to create a backend format from the provided colorType and config. Return an invalid
 // backend format if the combination is infeasible.
 static GrBackendFormat create_backend_format(GrContext* context,
-                                             SkColorType ct, SkColorSpace* cs,
+                                             SkColorType ct,
                                              GrPixelConfig config) {
     const GrCaps* caps = context->contextPriv().caps();
 
-    // TODO: what should be done if we have a colorspace that doesn't have a gammaCloseToSRGB?
-
     switch (context->contextPriv().getBackend()) {
-    case kOpenGL_GrBackend: {
+    case GrBackendApi::kOpenGL: {
         const GrGLCaps* glCaps = static_cast<const GrGLCaps*>(caps);
         GrGLStandard standard = glCaps->standard();
 
@@ -85,13 +83,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
                 break;
             case kRGBA_8888_SkColorType:
                 if (kRGBA_8888_GrPixelConfig == config) {
-                    if (!cs || (cs->gammaCloseToSRGB() && !caps->srgbSupport())) {
-                        return GrBackendFormat::MakeGL(GR_GL_RGBA8, GR_GL_TEXTURE_2D);
-                    }
-                } else if (kSRGBA_8888_GrPixelConfig == config) {
-                    if (caps->srgbSupport() && cs && cs->gammaCloseToSRGB()) {
-                        return GrBackendFormat::MakeGL(GR_GL_SRGB8_ALPHA8, GR_GL_TEXTURE_2D);
-                    }
+                    return GrBackendFormat::MakeGL(GR_GL_RGBA8, GR_GL_TEXTURE_2D);
                 }
                 break;
             case kRGB_888x_SkColorType:
@@ -105,10 +97,6 @@ static GrBackendFormat create_backend_format(GrContext* context,
                         return GrBackendFormat::MakeGL(GR_GL_RGBA8, GR_GL_TEXTURE_2D);
                     } else if (kGLES_GrGLStandard == standard) {
                         return GrBackendFormat::MakeGL(GR_GL_BGRA8, GR_GL_TEXTURE_2D);
-                    }
-                } else if (kSBGRA_8888_GrPixelConfig == config) {
-                    if (caps->srgbSupport() && cs && cs->gammaCloseToSRGB()) {
-                        return GrBackendFormat::MakeGL(GR_GL_SRGB8_ALPHA8, GR_GL_TEXTURE_2D);
                     }
                 }
                 break;
@@ -138,7 +126,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
     }
     break;
 #ifdef SK_VULKAN
-    case kVulkan_GrBackend:
+    case GrBackendApi::kVulkan:
         switch (ct) {
             case kUnknown_SkColorType:
                 return GrBackendFormat();
@@ -160,13 +148,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
                 break;
             case kRGBA_8888_SkColorType:
                 if (kRGBA_8888_GrPixelConfig == config) {
-                    if (!cs || (cs->gammaCloseToSRGB() && !caps->srgbSupport())) {
-                        return GrBackendFormat::MakeVk(VK_FORMAT_R8G8B8A8_UNORM);
-                    }
-                } else if (kSRGBA_8888_GrPixelConfig == config) {
-                    if (caps->srgbSupport() && cs &&  cs->gammaCloseToSRGB()) {
-                        return GrBackendFormat::MakeVk(VK_FORMAT_R8G8B8A8_SRGB);
-                    }
+                    return GrBackendFormat::MakeVk(VK_FORMAT_R8G8B8A8_UNORM);
                 }
                 break;
             case kRGB_888x_SkColorType:
@@ -177,10 +159,6 @@ static GrBackendFormat create_backend_format(GrContext* context,
             case kBGRA_8888_SkColorType:
                 if (kBGRA_8888_GrPixelConfig == config) {
                     return GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_UNORM);
-                } else if (kSBGRA_8888_GrPixelConfig == config) {
-                    if (caps->srgbSupport() && cs &&  cs->gammaCloseToSRGB()) {
-                        return GrBackendFormat::MakeVk(VK_FORMAT_B8G8R8A8_SRGB);
-                    }
                 }
                 break;
             case kRGBA_1010102_SkColorType:
@@ -206,7 +184,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
         }
         break;
 #endif
-    case kMock_GrBackend:
+    case GrBackendApi::kMock:
         switch (ct) {
             case kUnknown_SkColorType:
                 return GrBackendFormat();
@@ -229,13 +207,7 @@ static GrBackendFormat create_backend_format(GrContext* context,
                 break;
             case kRGBA_8888_SkColorType:
                 if (kRGBA_8888_GrPixelConfig == config) {
-                    if (!cs || (cs->gammaCloseToSRGB() && !caps->srgbSupport())) {
-                        return GrBackendFormat::MakeMock(config);
-                    }
-                } else if (kSRGBA_8888_GrPixelConfig == config) {
-                    if (caps->srgbSupport() && cs && cs->gammaCloseToSRGB()) {
-                        return GrBackendFormat::MakeMock(config);
-                    }
+                    return GrBackendFormat::MakeMock(config);
                 }
                 break;
             case kRGB_888x_SkColorType:
@@ -246,10 +218,6 @@ static GrBackendFormat create_backend_format(GrContext* context,
             case kBGRA_8888_SkColorType:
                 if (kBGRA_8888_GrPixelConfig == config) {
                     return GrBackendFormat::MakeMock(config);
-                } else if (kSBGRA_8888_GrPixelConfig == config) {
-                    if (caps->srgbSupport() && cs &&  cs->gammaCloseToSRGB()) {
-                        return GrBackendFormat::MakeMock(config);
-                    }
                 }
                 break;
             case kRGBA_1010102_SkColorType:
@@ -294,7 +262,7 @@ public:
             , fHeight(64)
             , fOrigin(kTopLeft_GrSurfaceOrigin)
             , fColorType(kRGBA_8888_SkColorType)
-            , fConfig(caps->srgbSupport() ? kSRGBA_8888_GrPixelConfig : kRGBA_8888_GrPixelConfig)
+            , fConfig(kRGBA_8888_GrPixelConfig)
             , fColorSpace(SkColorSpace::MakeSRGB())
             , fSampleCount(1)
             , fSurfaceProps(0x0, kUnknown_SkPixelGeometry)
@@ -321,14 +289,12 @@ public:
             break;
         case 3:
             // The color type and config need to be changed together.
-            // The original SRGB color space no longer makes sense for F16
             fColorType = kRGBA_F16_SkColorType;
             fConfig = kRGBA_half_GrPixelConfig;
-            fColorSpace = SkColorSpace::MakeSRGBLinear();
             break;
         case 4:
-            // This just needs to be a colorSpace different from that returned by MakeSRGB()
-            // but still be considered SRGB. In this case we just change the gamut.
+            // This just needs to be a colorSpace different from that returned by MakeSRGB().
+            // In this case we just change the gamut.
             fColorSpace = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
                                                 SkColorSpace::kAdobeRGB_Gamut);
             break;
@@ -357,8 +323,7 @@ public:
         SkImageInfo ii = SkImageInfo::Make(fWidth, fHeight, fColorType,
                                            kPremul_SkAlphaType, fColorSpace);
 
-        GrBackendFormat backendFormat = create_backend_format(context, fColorType,
-                                                              fColorSpace.get(), fConfig);
+        GrBackendFormat backendFormat = create_backend_format(context, fColorType, fConfig);
         if (!backendFormat.isValid()) {
             return SkSurfaceCharacterization();
         }
@@ -394,7 +359,7 @@ public:
                                         : GrMipMapped(fShouldCreateMipMaps);
 
         *backend = gpu->createTestingOnlyBackendTexture(nullptr, fWidth, fHeight,
-                                                        fConfig, true, mipmapped);
+                                                        fColorType, true, mipmapped);
         if (!backend->isValid() || !gpu->isTestingOnlyBackendTexture(*backend)) {
             return nullptr;
         }
@@ -721,7 +686,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLWrapBackendTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
     GrGpu* gpu = context->contextPriv().getGpu();
     GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
-            nullptr, kSize, kSize, kRGBA_8888_GrPixelConfig, false, GrMipMapped::kNo);
+            nullptr, kSize, kSize, GrColorType::kRGBA_8888, false, GrMipMapped::kNo);
     if (!backendTex.isValid()) {
         return;
     }
@@ -805,7 +770,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DDLInvalidRecorder, reporter, ctxInfo) {
         REPORTER_ASSERT(reporter, !recorder.detach());
 
         GrBackendFormat format = create_backend_format(context, kRGBA_8888_SkColorType,
-                                                       nullptr, kRGBA_8888_GrPixelConfig);
+                                                       kRGBA_8888_GrPixelConfig);
         sk_sp<SkImage> image = recorder.makePromiseTexture(format, 32, 32, GrMipMapped::kNo,
                                                            kTopLeft_GrSurfaceOrigin,
                                                            kRGBA_8888_SkColorType,
@@ -883,25 +848,20 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLTextureFlagsTest, reporter, ctxInfo) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Exhaustively test colorType and pixelConfig compatibility.
+// Test colorType and pixelConfig compatibility.
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(DDLCompatibilityTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
 
     for (int ct = 0; ct <= kLastEnum_SkColorType; ++ct) {
         SkColorType colorType = static_cast<SkColorType>(ct);
 
-        for (int config = 0; config < kGrPixelConfigCnt; ++config) {
+        for (int config = 0; config < kPrivateConfig1_GrPixelConfig; ++config) {
             GrPixelConfig pixelConfig = static_cast<GrPixelConfig>(config);
 
             SurfaceParameters params(context->contextPriv().caps());
             params.setColorType(colorType);
             params.setConfig(pixelConfig);
-
             params.setColorSpace(nullptr);
-            if (kSRGBA_8888_GrPixelConfig == pixelConfig ||
-                kSBGRA_8888_GrPixelConfig == pixelConfig) {
-                params.setColorSpace(SkColorSpace::MakeSRGB());
-            }
 
             SkSurfaceCharacterization c = params.createCharacterization(context);
             GrBackendTexture backend;

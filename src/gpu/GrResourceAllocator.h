@@ -124,6 +124,7 @@ private:
 
         void resetTo(GrSurfaceProxy* proxy, unsigned int start, unsigned int end) {
             SkASSERT(proxy);
+            SkASSERT(!fNext);
 
             fProxy = proxy;
             fProxyID = proxy->uniqueID().asUInt();
@@ -192,7 +193,10 @@ private:
             // Since the arena allocator will clean up for us we don't bother here.
         }
 
-        bool empty() const { return !SkToBool(fHead); }
+        bool empty() const {
+            SkASSERT(SkToBool(fHead) == SkToBool(fTail));
+            return !SkToBool(fHead);
+        }
         const Interval* peekHead() const { return fHead; }
         Interval* popHead();
         void insertByIncreasingStart(Interval*);
@@ -200,11 +204,14 @@ private:
         Interval* detachAll();
 
     private:
+        SkDEBUGCODE(void validate() const;)
+
         Interval* fHead = nullptr;
+        Interval* fTail = nullptr;
     };
 
-    // Gathered statistics indicate that 99% of flushes will be covered by <= 12 Intervals
-    static const int kInitialArenaSize = 12 * sizeof(Interval);
+    // Compositing use cases can create > 80 intervals.
+    static const int kInitialArenaSize = 128 * sizeof(Interval);
 
     GrResourceProvider*    fResourceProvider;
     FreePoolMultiMap       fFreePool;          // Recently created/used GrSurfaces
@@ -221,7 +228,7 @@ private:
     SkDEBUGCODE(bool       fAssigned = false;)
 
     char                   fStorage[kInitialArenaSize];
-    SkArenaAlloc           fIntervalAllocator { fStorage, kInitialArenaSize, 0 };
+    SkArenaAlloc           fIntervalAllocator { fStorage, kInitialArenaSize, kInitialArenaSize };
     Interval*              fFreeIntervalList = nullptr;
 };
 

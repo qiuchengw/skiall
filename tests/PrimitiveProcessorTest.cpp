@@ -53,8 +53,6 @@ private:
         this->setBounds(SkRect::MakeWH(1.f, 1.f), HasAABloat::kNo, IsZeroArea::kNo);
     }
 
-    bool onCombineIfPossible(GrOp*, const GrCaps&) override { return false; }
-
     void onPrepareDraws(Target* target) override {
         class GP : public GrGeometryProcessor {
         public:
@@ -64,7 +62,8 @@ private:
                 fAttributes.reset(new Attribute[numAttribs]);
                 for (auto i = 0; i < numAttribs; ++i) {
                     fAttribNames[i].printf("attr%d", i);
-                    fAttributes[i] = {fAttribNames[i].c_str(), kFloat2_GrVertexAttribType};
+                    fAttributes[i] = {fAttribNames[i].c_str(), kFloat2_GrVertexAttribType,
+                                                               kFloat2_GrSLType};
                 }
                 this->setVertexAttributeCnt(numAttribs);
             }
@@ -105,14 +104,14 @@ private:
             typedef GrGeometryProcessor INHERITED;
         };
         sk_sp<GrGeometryProcessor> gp(new GP(fNumAttribs));
-        QuadHelper helper;
         size_t vertexStride = fNumAttribs * GrVertexAttribTypeSize(kFloat2_GrVertexAttribType);
         SkASSERT(vertexStride == gp->debugOnly_vertexStride());
-        SkPoint* vertices = reinterpret_cast<SkPoint*>(helper.init(target, vertexStride, 1));
+        QuadHelper helper(target, vertexStride, 1);
+        SkPoint* vertices = reinterpret_cast<SkPoint*>(helper.vertices());
         SkPointPriv::SetRectTriStrip(vertices, 0.f, 0.f, 1.f, 1.f, vertexStride);
         auto pipe = target->makePipeline(0, GrProcessorSet::MakeEmptySet(),
                                          target->detachAppliedClip());
-        helper.recordDraw(target, gp.get(), pipe.fPipeline, pipe.fFixedDynamicState);
+        helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
     }
 
     int fNumAttribs;

@@ -14,7 +14,6 @@
 #include "SkEmptyShader.h"
 #include "SkImage_Base.h"
 #include "SkImageShader.h"
-#include "SkPM4fPriv.h"
 #include "SkReadBuffer.h"
 #include "SkWriteBuffer.h"
 #include "../jumper/SkJumper.h"
@@ -242,6 +241,7 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
         inner = GrSimpleTextureEffect::Make(std::move(proxy), lmInverse, samplerState);
     }
     inner = GrColorSpaceXformEffect::Make(std::move(inner), texColorSpace.get(),
+                                          fImage->alphaType(),
                                           args.fDstColorSpaceInfo->colorSpace());
     if (isAlphaOnly) {
         return inner;
@@ -307,12 +307,6 @@ bool SkImageShader::onAppendStages(const StageRec& rec) const {
     }
 
     p->append(SkRasterPipeline::seed_shader);
-
-    struct MiscCtx {
-        SkColor4f paint_color;
-    };
-    auto misc = alloc->make<MiscCtx>();
-    swizzle_rb(Sk4f_fromL32(rec.fPaint.getColor())).store(misc->paint_color.vec());  // sRGBA floats
     p->append_matrix(alloc, matrix);
 
     auto gather = alloc->make<SkJumper_GatherCtx>();
@@ -383,7 +377,7 @@ bool SkImageShader::onAppendStages(const StageRec& rec) const {
         // to do the color space transformation.  Might be possible to streamline.
         if (info.colorType() == kAlpha_8_SkColorType) {
             // The color for A8 images comes from the (sRGB) paint color.
-            p->append(SkRasterPipeline::set_rgb, &misc->paint_color);
+            p->append_set_rgb(alloc, rec.fPaint.getColor4f());
             p->append(SkRasterPipeline::premul);
         } else if (info.alphaType() == kUnpremul_SkAlphaType) {
             // Convert unpremul images to premul before we carry on with the rest of the pipeline.
@@ -405,7 +399,8 @@ bool SkImageShader::onAppendStages(const StageRec& rec) const {
                 // A8 images get their r,g,b from the paint color, so they're also sRGB.
                 srcCS = sk_srgb_singleton();
             }
-            alloc->make<SkColorSpaceXformSteps>(srcCS, kPremul_SkAlphaType, rec.fDstCS)
+            alloc->make<SkColorSpaceXformSteps>(srcCS     , kPremul_SkAlphaType,
+                                                rec.fDstCS, kPremul_SkAlphaType)
                 ->apply(p);
         }
 

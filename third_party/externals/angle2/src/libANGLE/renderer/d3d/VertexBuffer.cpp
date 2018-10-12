@@ -10,9 +10,10 @@
 #include "libANGLE/renderer/d3d/VertexBuffer.h"
 
 #include "common/mathutil.h"
-#include "libANGLE/renderer/d3d/BufferD3D.h"
-#include "libANGLE/renderer/d3d/RendererD3D.h"
+#include "libANGLE/Context.h"
 #include "libANGLE/VertexAttribute.h"
+#include "libANGLE/renderer/d3d/BufferD3D.h"
+#include "libANGLE/renderer/d3d/ContextD3D.h"
 
 namespace rx
 {
@@ -72,16 +73,19 @@ VertexBufferInterface::~VertexBufferInterface()
 
 unsigned int VertexBufferInterface::getSerial() const
 {
+    ASSERT(mVertexBuffer);
     return mVertexBuffer->getSerial();
 }
 
 unsigned int VertexBufferInterface::getBufferSize() const
 {
+    ASSERT(mVertexBuffer);
     return mVertexBuffer->getBufferSize();
 }
 
-gl::Error VertexBufferInterface::setBufferSize(const gl::Context *context, unsigned int size)
+angle::Result VertexBufferInterface::setBufferSize(const gl::Context *context, unsigned int size)
 {
+    ASSERT(mVertexBuffer);
     if (mVertexBuffer->getBufferSize() == 0)
     {
         return mVertexBuffer->initialize(context, size, mDynamic);
@@ -90,12 +94,12 @@ gl::Error VertexBufferInterface::setBufferSize(const gl::Context *context, unsig
     return mVertexBuffer->setBufferSize(context, size);
 }
 
-gl::ErrorOrResult<unsigned int> VertexBufferInterface::getSpaceRequired(
-    const gl::Context *context,
-    const gl::VertexAttribute &attrib,
-    const gl::VertexBinding &binding,
-    size_t count,
-    GLsizei instances) const
+angle::Result VertexBufferInterface::getSpaceRequired(const gl::Context *context,
+                                                      const gl::VertexAttribute &attrib,
+                                                      const gl::VertexBinding &binding,
+                                                      size_t count,
+                                                      GLsizei instances,
+                                                      unsigned int *spaceInBytesOut) const
 {
     unsigned int spaceRequired = 0;
     ANGLE_TRY(mFactory->getVertexSpaceRequired(context, attrib, binding, count, instances,
@@ -103,23 +107,21 @@ gl::ErrorOrResult<unsigned int> VertexBufferInterface::getSpaceRequired(
 
     // Align to 16-byte boundary
     unsigned int alignedSpaceRequired = roundUp(spaceRequired, 16u);
+    ANGLE_CHECK_HR_ALLOC(GetImplAs<ContextD3D>(context), alignedSpaceRequired >= spaceRequired);
 
-    if (alignedSpaceRequired < spaceRequired)
-    {
-        return gl::OutOfMemory()
-               << "Vertex buffer overflow in VertexBufferInterface::getSpaceRequired.";
-    }
-
-    return alignedSpaceRequired;
+    *spaceInBytesOut = alignedSpaceRequired;
+    return angle::Result::Continue();
 }
 
-gl::Error VertexBufferInterface::discard(const gl::Context *context)
+angle::Result VertexBufferInterface::discard(const gl::Context *context)
 {
+    ASSERT(mVertexBuffer);
     return mVertexBuffer->discard(context);
 }
 
 VertexBuffer *VertexBufferInterface::getVertexBuffer() const
 {
+    ASSERT(mVertexBuffer);
     return mVertexBuffer;
 }
 
@@ -129,8 +131,8 @@ StreamingVertexBufferInterface::StreamingVertexBufferInterface(BufferFactoryD3D 
 {
 }
 
-gl::Error StreamingVertexBufferInterface::initialize(const gl::Context *context,
-                                                     std::size_t initialSize)
+angle::Result StreamingVertexBufferInterface::initialize(const gl::Context *context,
+                                                         std::size_t initialSize)
 {
     return setBufferSize(context, static_cast<unsigned int>(initialSize));
 }
@@ -140,7 +142,7 @@ void StreamingVertexBufferInterface::reset()
     if (mVertexBuffer)
     {
         mVertexBuffer->release();
-        mVertexBuffer = nullptr;
+        mVertexBuffer = mFactory->createVertexBuffer();
     }
 }
 
@@ -148,8 +150,8 @@ StreamingVertexBufferInterface::~StreamingVertexBufferInterface()
 {
 }
 
-gl::Error StreamingVertexBufferInterface::reserveSpace(const gl::Context *context,
-                                                       unsigned int size)
+angle::Result StreamingVertexBufferInterface::reserveSpace(const gl::Context *context,
+                                                           unsigned int size)
 {
     unsigned int curBufferSize = getBufferSize();
     if (size > curBufferSize)
@@ -163,30 +165,27 @@ gl::Error StreamingVertexBufferInterface::reserveSpace(const gl::Context *contex
         mWritePosition = 0;
     }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error StreamingVertexBufferInterface::storeDynamicAttribute(const gl::Context *context,
-                                                                const gl::VertexAttribute &attrib,
-                                                                const gl::VertexBinding &binding,
-                                                                GLenum currentValueType,
-                                                                GLint start,
-                                                                size_t count,
-                                                                GLsizei instances,
-                                                                unsigned int *outStreamOffset,
-                                                                const uint8_t *sourceData)
+angle::Result StreamingVertexBufferInterface::storeDynamicAttribute(
+    const gl::Context *context,
+    const gl::VertexAttribute &attrib,
+    const gl::VertexBinding &binding,
+    GLenum currentValueType,
+    GLint start,
+    size_t count,
+    GLsizei instances,
+    unsigned int *outStreamOffset,
+    const uint8_t *sourceData)
 {
     unsigned int spaceRequired = 0;
-    ANGLE_TRY_RESULT(getSpaceRequired(context, attrib, binding, count, instances), spaceRequired);
+    ANGLE_TRY(getSpaceRequired(context, attrib, binding, count, instances, &spaceRequired));
 
     // Protect against integer overflow
     angle::CheckedNumeric<unsigned int> checkedPosition(mWritePosition);
     checkedPosition += spaceRequired;
-    if (!checkedPosition.IsValid())
-    {
-        return gl::OutOfMemory()
-               << "Internal error, new vertex buffer write position would overflow.";
-    }
+    ANGLE_CHECK_HR_ALLOC(GetImplAs<ContextD3D>(context), checkedPosition.IsValid());
 
     ANGLE_TRY(reserveSpace(context, mReservedSpace));
     mReservedSpace = 0;
@@ -202,14 +201,14 @@ gl::Error StreamingVertexBufferInterface::storeDynamicAttribute(const gl::Contex
 
     mWritePosition += spaceRequired;
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error StreamingVertexBufferInterface::reserveVertexSpace(const gl::Context *context,
-                                                             const gl::VertexAttribute &attrib,
-                                                             const gl::VertexBinding &binding,
-                                                             size_t count,
-                                                             GLsizei instances)
+angle::Result StreamingVertexBufferInterface::reserveVertexSpace(const gl::Context *context,
+                                                                 const gl::VertexAttribute &attrib,
+                                                                 const gl::VertexBinding &binding,
+                                                                 size_t count,
+                                                                 GLsizei instances)
 {
     unsigned int requiredSpace = 0;
     ANGLE_TRY(mFactory->getVertexSpaceRequired(context, attrib, binding, count, instances,
@@ -220,16 +219,11 @@ gl::Error StreamingVertexBufferInterface::reserveVertexSpace(const gl::Context *
     alignedRequiredSpace += mReservedSpace;
 
     // Protect against integer overflow
-    if (!alignedRequiredSpace.IsValid())
-    {
-        return gl::OutOfMemory()
-               << "Unable to reserve " << requiredSpace
-               << " extra bytes in internal vertex buffer, it would result in an overflow.";
-    }
+    ANGLE_CHECK_HR_ALLOC(GetImplAs<ContextD3D>(context), alignedRequiredSpace.IsValid());
 
     mReservedSpace = alignedRequiredSpace.ValueOrDie();
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 // StaticVertexBufferInterface Implementation
@@ -288,16 +282,16 @@ void StaticVertexBufferInterface::setAttribute(const gl::VertexAttribute &attrib
     return mSignature.set(attrib, binding);
 }
 
-gl::Error StaticVertexBufferInterface::storeStaticAttribute(const gl::Context *context,
-                                                            const gl::VertexAttribute &attrib,
-                                                            const gl::VertexBinding &binding,
-                                                            GLint start,
-                                                            GLsizei count,
-                                                            GLsizei instances,
-                                                            const uint8_t *sourceData)
+angle::Result StaticVertexBufferInterface::storeStaticAttribute(const gl::Context *context,
+                                                                const gl::VertexAttribute &attrib,
+                                                                const gl::VertexBinding &binding,
+                                                                GLint start,
+                                                                GLsizei count,
+                                                                GLsizei instances,
+                                                                const uint8_t *sourceData)
 {
     unsigned int spaceRequired = 0;
-    ANGLE_TRY_RESULT(getSpaceRequired(context, attrib, binding, count, instances), spaceRequired);
+    ANGLE_TRY(getSpaceRequired(context, attrib, binding, count, instances, &spaceRequired));
     ANGLE_TRY(setBufferSize(context, spaceRequired));
 
     ASSERT(attrib.enabled);
@@ -306,7 +300,7 @@ gl::Error StaticVertexBufferInterface::storeStaticAttribute(const gl::Context *c
 
     mSignature.set(attrib, binding);
     mVertexBuffer->hintUnmapResource();
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 }  // namespace rx

@@ -1065,8 +1065,7 @@ static void check_round_trip(skiatest::Reporter* r, SkCodec* origCodec, const Sk
     REPORTER_ASSERT(r, SkCodec::kSuccess == result);
 
     // Encode the image to png.
-    sk_sp<SkData> data =
-            sk_sp<SkData>(sk_tool_utils::EncodeImageToData(bm1, SkEncodedImageFormat::kPNG, 100));
+    auto data = SkEncodeBitmap(bm1, SkEncodedImageFormat::kPNG, 100);
 
     std::unique_ptr<SkCodec> codec(SkCodec::MakeFromData(data));
     REPORTER_ASSERT(r, color_type_match(info.colorType(), codec->getInfo().colorType()));
@@ -1443,7 +1442,7 @@ DEF_TEST(Codec_InvalidAnimated, r) {
     for (int i = 0; static_cast<size_t>(i) < frameInfos.size(); i++) {
         opts.fFrameIndex = i;
         const auto reqFrame = frameInfos[i].fRequiredFrame;
-        opts.fPriorFrame = reqFrame == i - 1 ? reqFrame : SkCodec::kNone;
+        opts.fPriorFrame = reqFrame == i - 1 ? reqFrame : SkCodec::kNoFrame;
         auto result = codec->startIncrementalDecode(info, bm.getPixels(), bm.rowBytes(), &opts);
         if (result != SkCodec::kSuccess) {
             ERRORF(r, "Failed to start decoding frame %i (out of %i) with error %i\n", i,
@@ -1496,8 +1495,7 @@ static void test_encode_icc(skiatest::Reporter* r, SkEncodedImageFormat format) 
     sk_sp<SkData> p3Data = p3Buf.detachAsData();
     std::unique_ptr<SkCodec> p3Codec(SkCodec::MakeFromData(p3Data));
     REPORTER_ASSERT(r, p3Codec->getInfo().colorSpace()->gammaCloseToSRGB());
-    SkMatrix44 mat0(SkMatrix44::kUninitialized_Constructor);
-    SkMatrix44 mat1(SkMatrix44::kUninitialized_Constructor);
+    SkMatrix44 mat0, mat1;
     bool success = p3->toXYZD50(&mat0);
     REPORTER_ASSERT(r, success);
     success = p3Codec->getInfo().colorSpace()->toXYZD50(&mat1);
@@ -1606,6 +1604,25 @@ DEF_TEST(Codec_78329453, r) {
     if (result != SkCodec::kSuccess) {
         ERRORF(r, "failed to decode with error %s", SkCodec::ResultToString(result));
     }
+}
+
+DEF_TEST(Codec_A8, r) {
+    if (GetResourcePath().isEmpty()) {
+        return;
+    }
+
+    const char* file = "images/mandrill_cmyk.jpg";
+    auto data = GetResourceAsData(file);
+    if (!data) {
+        ERRORF(r, "missing %s", file);
+        return;
+    }
+
+    auto codec = SkCodec::MakeFromData(std::move(data));
+    auto info = codec->getInfo().makeColorType(kAlpha_8_SkColorType);
+    SkBitmap bm;
+    bm.allocPixels(info);
+    REPORTER_ASSERT(r, codec->getPixels(bm.pixmap()) == SkCodec::kInvalidConversion);
 }
 
 DEF_TEST(Codec_crbug807324, r) {

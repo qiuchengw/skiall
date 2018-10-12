@@ -165,7 +165,9 @@ bool SkOpSegment::activeWinding(SkOpSpanBase* start, SkOpSpanBase* end, int* sum
 
 bool SkOpSegment::addCurveTo(const SkOpSpanBase* start, const SkOpSpanBase* end,
         SkPathWriter* path) const {
-    FAIL_IF(start->starter(end)->alreadyAdded());
+    const SkOpSpan* spanStart = start->starter(end);
+    FAIL_IF(spanStart->alreadyAdded());
+    const_cast<SkOpSpan*>(spanStart)->markAdded();
     SkDCurveSweep curvePart;
     start->segment()->subDivide(start, end, &curvePart.fCurve);
     curvePart.setCurveHullSweep(fVerb);
@@ -894,7 +896,11 @@ bool SkOpSegment::markAndChaseWinding(SkOpSpanBase* start, SkOpSpanBase* end, in
     bool success = markWinding(spanStart, winding);
     SkOpSpanBase* last = nullptr;
     SkOpSegment* other = this;
+    int safetyNet = 100000;
     while ((other = other->nextChase(&start, &step, &spanStart, &last))) {
+        if (!--safetyNet) {
+            return false;
+        }
         if (spanStart->windSum() != SK_MinS32) {
 //            SkASSERT(spanStart->windSum() == winding);   // FIXME: is this assert too aggressive?
             SkASSERT(!last);
@@ -951,6 +957,7 @@ bool SkOpSegment::markAngle(int maxWinding, int sumWinding, const SkOpAngle* ang
         return false;
     }
 #if DEBUG_WINDING
+    SkOpSpanBase* last = *result;
     if (last) {
         SkDebugf("%s last seg=%d span=%d", __FUNCTION__,
                 last->segment()->debugID(), last->debugID());
@@ -978,6 +985,7 @@ bool SkOpSegment::markAngle(int maxWinding, int sumWinding, int oppMaxWinding,
         return false;
     }
 #if DEBUG_WINDING
+    SkOpSpanBase* last = *result;
     if (last) {
         SkDebugf("%s last segment=%d span=%d", __FUNCTION__,
                 last->segment()->debugID(), last->debugID());

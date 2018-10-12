@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+if(CMAKE_EXECUTABLE_SUFFIX)
+  set(CMAKE_EXECUTABLE_SUFFIX_TMP ${CMAKE_EXECUTABLE_SUFFIX})
+endif()
+
 project(libjpeg-turbo C)
-set(VERSION 1.5.91)
+set(VERSION 2.0.0)
 string(REPLACE "." ";" VERSION_TRIPLET ${VERSION})
 list(GET VERSION_TRIPLET 0 VERSION_MAJOR)
 list(GET VERSION_TRIPLET 1 VERSION_MINOR)
@@ -498,6 +502,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 # TARGETS
 ###############################################################################
 
+if(CMAKE_EXECUTABLE_SUFFIX_TMP)
+  set(CMAKE_EXECUTABLE_SUFFIX ${CMAKE_EXECUTABLE_SUFFIX_TMP})
+endif()
+message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
+
 set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
   jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
   jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
@@ -568,7 +577,8 @@ if(WITH_TURBOJPEG)
     if(MINGW)
       set_target_properties(turbojpeg PROPERTIES LINK_FLAGS -Wl,--kill-at)
     endif()
-    if(APPLE)
+    if(APPLE AND (NOT CMAKE_OSX_DEPLOYMENT_TARGET OR
+                  CMAKE_OSX_DEPLOYMENT_TARGET VERSION_GREATER 10.4))
       if(NOT CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG)
         set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
       endif()
@@ -1310,9 +1320,7 @@ endif()
 # INSTALLATION
 ###############################################################################
 
-if(WIN32)
-  set(EXE ".exe")
-endif()
+set(EXE ${CMAKE_EXECUTABLE_SUFFIX})
 
 if(WITH_TURBOJPEG)
   if(ENABLE_SHARED)

@@ -9,7 +9,6 @@
 #include "SkBitmap.h"
 #include "SkBitmapProcShader.h"
 #include "SkCanvas.h"
-#include "SkColorSpaceXformPriv.h"
 #include "SkColorTable.h"
 #include "SkConvertPixels.h"
 #include "SkData.h"
@@ -77,12 +76,6 @@ public:
     SkImageInfo onImageInfo() const override {
         return fBitmap.info();
     }
-    SkColorType onColorType() const override {
-        return fBitmap.colorType();
-    }
-    SkAlphaType onAlphaType() const override {
-        return fBitmap.alphaType();
-    }
 
     bool onReadPixels(const SkImageInfo&, void*, size_t, int srcX, int srcY, CachingHint) const override;
     bool onPeekPixels(SkPixmap*) const override;
@@ -110,7 +103,7 @@ public:
         SkASSERT(bitmapMayBeMutable || fBitmap.isImmutable());
     }
 
-    sk_sp<SkImage> onMakeColorSpace(sk_sp<SkColorSpace>, SkColorType) const override;
+    sk_sp<SkImage> onMakeColorSpace(sk_sp<SkColorSpace>) const override;
 
     bool onIsValid(GrContext* context) const override { return true; }
 
@@ -341,25 +334,19 @@ bool SkImage_Raster::onAsLegacyBitmap(SkBitmap* bitmap) const {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-sk_sp<SkImage> SkImage_Raster::onMakeColorSpace(sk_sp<SkColorSpace> target,
-                                                SkColorType targetColorType) const {
+sk_sp<SkImage> SkImage_Raster::onMakeColorSpace(sk_sp<SkColorSpace> target) const {
     SkPixmap src;
     SkAssertResult(fBitmap.peekPixels(&src));
 
     // Treat nullptr srcs as sRGB.
-    if (!src.colorSpace()) {
-        if (target->isSRGB()) {
-            return sk_ref_sp(const_cast<SkImage*>((SkImage*)this));
-        }
-
-        src.setColorSpace(SkColorSpace::MakeSRGB());
+    if (!src.colorSpace() && target->isSRGB()) {
+        return sk_ref_sp(const_cast<SkImage*>((SkImage*)this));
     }
 
-    SkImageInfo dstInfo = fBitmap.info().makeColorType(targetColorType).makeColorSpace(target);
     SkBitmap dst;
-    dst.allocPixels(dstInfo);
+    dst.allocPixels(fBitmap.info().makeColorSpace(target));
 
-    SkAssertResult(dst.writePixels(src, 0, 0));
+    SkAssertResult(dst.writePixels(src));
     dst.setImmutable();
     return SkImage::MakeFromBitmap(dst);
 }

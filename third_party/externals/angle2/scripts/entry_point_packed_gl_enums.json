@@ -60,6 +60,9 @@
     "glCopyTexImage2D": {
         "target": "TextureTarget"
     },
+    "glCopyTexture3DANGLE": {
+        "destTarget": "TextureTarget"
+    },
     "glCopyTextureCHROMIUM": {
         "destTarget": "TextureTarget"
     },
@@ -68,6 +71,9 @@
     },
     "glCopyTexSubImage3D": {
         "target": "TextureType"
+    },
+    "glCopySubTexture3DANGLE": {
+        "destTarget": "TextureTarget"
     },
     "glCopySubTextureCHROMIUM": {
         "destTarget": "TextureTarget"
@@ -244,6 +250,9 @@
     "glLightxv" : {
         "pname" : "LightParameter"
     },
+    "glLogicOp" : {
+        "opcode" : "LogicalOperation"
+    },
     "glMapBuffer": {
         "target": "BufferBinding"
     },
@@ -362,6 +371,9 @@
         "target": "TextureType"
     },
     "glTexStorage2DMultisample": {
+        "target": "TextureType"
+    },
+    "glTexStorage3DMultisampleOES": {
         "target": "TextureType"
     },
     "glTexStorage3D": {

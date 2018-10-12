@@ -35,15 +35,15 @@
 #include "SkTaskGroup.h"
 #include "SkTestFontMgr.h"
 #include "SkTo.h"
+#include "SlideDir.h"
 #include "SvgSlide.h"
 #include "Viewer.h"
 #include "ccpr/GrCoverageCountingPathRenderer.h"
-#include "imgui.h"
 
 #include <stdlib.h>
 #include <map>
 
-#include "SlideDir.h"
+#include "imgui.h"
 
 #if defined(SK_ENABLE_SKOTTIE)
     #include "SkottieSlide.h"
@@ -189,7 +189,7 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     , fColorSpaceTransferFn(g2Dot2_TransferFn)
     , fZoomLevel(0.0f)
     , fRotation(0.0f)
-    , fOffset{0.0f, 0.0f}
+    , fOffset{0.5f, 0.5f}
     , fGestureDevice(GestureDevice::kNone)
     , fPerspectiveMode(kPerspective_Off)
 {
@@ -544,7 +544,7 @@ void Viewer::initSlides() {
 #endif
     };
 
-    SkTArray<sk_sp<Slide>, true> dirSlides;
+    SkTArray<sk_sp<Slide>> dirSlides;
 
     const auto addSlide = [&](const SkString& name,
                               const SkString& path,
@@ -608,13 +608,11 @@ void Viewer::initSlides() {
     }
 
     // samples
-    const SkViewRegister* reg = SkViewRegister::Head();
-    while (reg) {
-        sk_sp<Slide> slide(new SampleSlide(reg->factory()));
+    for (const SampleFactory factory : SampleRegistry::Range()) {
+        sk_sp<Slide> slide(new SampleSlide(factory));
         if (!SkCommandLineFlags::ShouldSkip(FLAGS_match, slide->getName().c_str())) {
             fSlides.push_back(slide);
         }
-        reg = reg->next();
     }
 
     for (const auto& info : gExternalSlidesInfo) {
@@ -913,7 +911,7 @@ SkMatrix Viewer::computePreTouchMatrix() {
     SkMatrix m = fDefaultMatrix;
     SkScalar zoomScale = (fZoomLevel < 0) ? SK_Scalar1 / (SK_Scalar1 - fZoomLevel)
                                           : SK_Scalar1 + fZoomLevel;
-    m.preTranslate(fOffset.x(), fOffset.y());
+    m.preTranslate((fOffset.x() - 0.5f) * 2.0f, (fOffset.y() - 0.5f) * 2.0f);
     m.preScale(zoomScale, zoomScale);
 
     const SkISize slideSize = fSlides[fCurrentSlide]->getDimensions();
@@ -987,6 +985,73 @@ public:
     OveridePaintFilterCanvas(SkCanvas* canvas, SkPaint* paint, Viewer::SkPaintFields* fields)
         : SkPaintFilterCanvas(canvas), fPaint(paint), fPaintOverrides(fields)
     { }
+    const SkTextBlob* filterTextBlob(const SkPaint& paint, const SkTextBlob* blob,
+                                     sk_sp<SkTextBlob>* cache) {
+        bool blobWillChange = false;
+        for (SkTextBlobRunIterator it(blob); !it.done(); it.next()) {
+            SkPaint blobPaint = paint;
+            it.applyFontToPaint(&blobPaint);
+            SkTCopyOnFirstWrite<SkPaint> filteredPaint(blobPaint);
+            bool shouldDraw = this->onFilter(&filteredPaint, kTextBlob_Type);
+            if (blobPaint != *filteredPaint || !shouldDraw) {
+                blobWillChange = true;
+                break;
+            }
+        }
+        if (!blobWillChange) {
+            return blob;
+        }
+
+        SkTextBlobBuilder builder;
+        for (SkTextBlobRunIterator it(blob); !it.done(); it.next()) {
+            SkPaint blobPaint = paint;
+            it.applyFontToPaint(&blobPaint);
+            SkTCopyOnFirstWrite<SkPaint> filteredPaint(blobPaint);
+            bool shouldDraw = this->onFilter(&filteredPaint, kTextBlob_Type);
+            if (!shouldDraw) {
+                continue;
+            }
+
+            const SkTextBlobBuilder::RunBuffer& runBuffer
+                = it.positioning() == SkTextBlobRunIterator::kDefault_Positioning
+                    ? SkTextBlobBuilderPriv::AllocRunText(&builder, *filteredPaint,
+                        it.offset().x(),it.offset().y(), it.glyphCount(), it.textSize(), SkString())
+                : it.positioning() == SkTextBlobRunIterator::kHorizontal_Positioning
+                    ? SkTextBlobBuilderPriv::AllocRunTextPosH(&builder, *filteredPaint,
+                        it.offset().y(), it.glyphCount(), it.textSize(), SkString())
+                : it.positioning() == SkTextBlobRunIterator::kFull_Positioning
+                    ? SkTextBlobBuilderPriv::AllocRunTextPos(&builder, *filteredPaint,
+                        it.glyphCount(), it.textSize(), SkString())
+                : (SkASSERT_RELEASE(false), SkTextBlobBuilder::RunBuffer());
+            uint32_t glyphCount = it.glyphCount();
+            if (it.glyphs()) {
+                size_t glyphSize = sizeof(decltype(*it.glyphs()));
+                memcpy(runBuffer.glyphs, it.glyphs(), glyphCount * glyphSize);
+            }
+            if (it.pos()) {
+                size_t posSize = sizeof(decltype(*it.pos()));
+                uint8_t positioning = it.positioning();
+                memcpy(runBuffer.pos, it.pos(), glyphCount * positioning * posSize);
+            }
+            if (it.text()) {
+                size_t textSize = sizeof(decltype(*it.text()));
+                uint32_t textCount = it.textSize();
+                memcpy(runBuffer.utf8text, it.text(), textCount * textSize);
+            }
+            if (it.clusters()) {
+                size_t clusterSize = sizeof(decltype(*it.clusters()));
+                memcpy(runBuffer.clusters, it.clusters(), glyphCount * clusterSize);
+            }
+        }
+        *cache = builder.make();
+        return cache->get();
+    }
+    void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
+                        const SkPaint& paint) override {
+        sk_sp<SkTextBlob> cache;
+        this->SkPaintFilterCanvas::onDrawTextBlob(
+            this->filterTextBlob(paint, blob, &cache), x, y, paint);
+    }
     bool onFilter(SkTCopyOnFirstWrite<SkPaint>* paint, Type) const override {
         if (*paint == nullptr) {
             return true;
@@ -1044,7 +1109,7 @@ void Viewer::drawSlide(SkCanvas* canvas) {
     if (ColorMode::kLegacy != fColorMode) {
         auto transferFn = (ColorMode::kColorManagedLinearF16 == fColorMode)
             ? SkColorSpace::kLinear_RenderTargetGamma : SkColorSpace::kSRGB_RenderTargetGamma;
-        SkMatrix44 toXYZ(SkMatrix44::kIdentity_Constructor);
+        SkMatrix44 toXYZ;
         SkAssertResult(fColorSpacePrimaries.toXYZD50(&toXYZ));
         if (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) {
             cs = SkColorSpace::MakeRGB(fColorSpaceTransferFn, toXYZ);
@@ -1157,6 +1222,12 @@ void Viewer::onPaint(SkCanvas* canvas) {
     this->drawImGui();
 }
 
+void Viewer::onResize(int width, int height) {
+    if (fCurrentSlide >= 0) {
+        fSlides[fCurrentSlide]->resize(width, height);
+    }
+}
+
 SkPoint Viewer::mapEvent(float x, float y) {
     const auto m = this->computeMatrix();
     SkMatrix inv;
@@ -1181,6 +1252,23 @@ bool Viewer::onTouch(intptr_t owner, Window::InputState state, float x, float y)
     switch (state) {
         case Window::kUp_InputState: {
             fGesture.touchEnd(castedOwner);
+#if defined(SK_BUILD_FOR_IOS)
+            // TODO: move IOS swipe detection higher up into the platform code
+            SkPoint dir;
+            if (fGesture.isFling(&dir)) {
+                // swiping left or right
+                if (SkTAbs(dir.fX) > SkTAbs(dir.fY)) {
+                    if (dir.fX < 0) {
+                        this->setCurrentSlide(fCurrentSlide < fSlides.count() - 1 ?
+                                              fCurrentSlide + 1 : 0);
+                    } else {
+                        this->setCurrentSlide(fCurrentSlide > 0 ?
+                                              fCurrentSlide - 1 : fSlides.count() - 1);
+                    }
+                }
+                fGesture.reset();
+            }
+#endif
             break;
         }
         case Window::kDown_InputState: {
@@ -1506,6 +1594,10 @@ void Viewer::drawImGui() {
                         this->preTouchMatrixChanged();
                         paramsChanged = true;
                     }
+                } else if (fOffset != SkVector{0.5f, 0.5f}) {
+                    this->preTouchMatrixChanged();
+                    paramsChanged = true;
+                    fOffset = {0.5f, 0.5f};
                 }
                 int perspectiveMode = static_cast<int>(fPerspectiveMode);
                 if (ImGui::Combo("Perspective", &perspectiveMode, "Off\0Real\0Fake\0\0")) {
@@ -1670,19 +1762,17 @@ void Viewer::drawImGui() {
                         const char* name;
                         SkMetaData::Type type;
                         int count;
-                        bool found = false;
-                        while ((name = iter.next(&type, &count)) != nullptr && found == false) {
+                        while ((name = iter.next(&type, &count)) != nullptr) {
                             if (type == SkMetaData::kScalar_Type) {
                                 float val[3];
                                 SkASSERT(count == 3);
                                 controls.findScalars(name, &count, val);
                                 if (ImGui::SliderFloat(name, &val[0], val[1], val[2])) {
                                     controls.setScalars(name, 3, val);
-                                    fSlides[fCurrentSlide]->onSetControls(controls);
-                                    found = paramsChanged = true;
                                 }
                             }
                         }
+                        fSlides[fCurrentSlide]->onSetControls(controls);
                     }
                 }
             }
@@ -1840,7 +1930,12 @@ void Viewer::onIdle() {
     fStatsLayer.endTiming(fAnimateTimer);
 
     ImGuiIO& io = ImGui::GetIO();
-    if (animateWantsInval || fStatsLayer.getActive() || fRefresh || io.MetricsActiveWindows) {
+    // ImGui always has at least one "active" window, which is the default "Debug" window. It may
+    // not be visible, though. So we need to redraw if there is at least one visible window, or
+    // more than one active window. Newly created windows are active but not visible for one frame
+    // while they determine their layout and sizing.
+    if (animateWantsInval || fStatsLayer.getActive() || fRefresh ||
+        io.MetricsActiveWindows > 1 || io.MetricsRenderWindows > 0) {
         fWindow->inval();
     }
 }

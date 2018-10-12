@@ -44,8 +44,24 @@ bool GrGpuRTCommandBuffer::draw(const GrPrimitiveProcessor& primProc, const GrPi
 
     auto resourceProvider = this->gpu()->getContext()->contextPriv().resourceProvider();
 
-    if (pipeline.isBad() || !primProc.instantiate(resourceProvider)) {
+    if (pipeline.isBad()) {
         return false;
+    }
+    if (fixedDynamicState && fixedDynamicState->fPrimitiveProcessorTextures) {
+        for (int i = 0; i < primProc.numTextureSamplers(); ++i) {
+            if (!fixedDynamicState->fPrimitiveProcessorTextures[i]->instantiate(resourceProvider)) {
+                return false;
+            }
+        }
+    }
+    if (dynamicStateArrays && dynamicStateArrays->fPrimitiveProcessorTextures) {
+        int n = primProc.numTextureSamplers() * meshCount;
+        const auto* textures = dynamicStateArrays->fPrimitiveProcessorTextures;
+        for (int i = 0; i < n; ++i) {
+            if (!textures[i]->instantiate(resourceProvider)) {
+                return false;
+            }
+        }
     }
 
     if (primProc.numVertexAttributes() > this->gpu()->caps()->maxVertexAttributes()) {

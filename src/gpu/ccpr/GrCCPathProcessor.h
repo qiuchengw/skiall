@@ -69,12 +69,12 @@ public:
     static sk_sp<const GrBuffer> FindVertexBuffer(GrOnFlushResourceProvider*);
     static sk_sp<const GrBuffer> FindIndexBuffer(GrOnFlushResourceProvider*);
 
-    GrCCPathProcessor(GrResourceProvider*, sk_sp<GrTextureProxy> atlas,
+    GrCCPathProcessor(const GrTextureProxy* atlas,
                       const SkMatrix& viewMatrixIfUsingLocalCoords = SkMatrix::I());
 
     const char* name() const override { return "GrCCPathProcessor"; }
-    const GrSurfaceProxy* atlasProxy() const { return fAtlasAccess.proxy(); }
-    const GrTexture* atlas() const { return fAtlasAccess.peekTexture(); }
+    const SkISize& atlasSize() const { return fAtlasSize; }
+    GrSurfaceOrigin atlasOrigin() const { return fAtlasOrigin; }
     const SkMatrix& localMatrix() const { return fLocalMatrix; }
     const Attribute& getInstanceAttrib(InstanceAttribs attribID) const {
         int idx = static_cast<int>(attribID);
@@ -96,14 +96,18 @@ private:
     const TextureSampler& onTextureSampler(int) const override { return fAtlasAccess; }
 
     const TextureSampler fAtlasAccess;
+    SkISize fAtlasSize;
+    GrSurfaceOrigin fAtlasOrigin;
+
     SkMatrix fLocalMatrix;
     static constexpr Attribute kInstanceAttribs[kNumInstanceAttribs] = {
-            {"devbounds", kFloat4_GrVertexAttribType},
-            {"devbounds45", kFloat4_GrVertexAttribType},
-            {"dev_to_atlas_offset", kInt2_GrVertexAttribType},
-            {"color", kUByte4_norm_GrVertexAttribType}
+            {"devbounds", kFloat4_GrVertexAttribType, kFloat4_GrSLType},
+            {"devbounds45", kFloat4_GrVertexAttribType, kFloat4_GrSLType},
+            {"dev_to_atlas_offset", kInt2_GrVertexAttribType, kInt2_GrSLType},
+            {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType}
     };
-    static constexpr Attribute kEdgeNormsAttrib = {"edge_norms", kFloat4_GrVertexAttribType};
+    static constexpr Attribute kEdgeNormsAttrib = {"edge_norms", kFloat4_GrVertexAttribType,
+                                                                 kFloat4_GrSLType};
 
     typedef GrGeometryProcessor INHERITED;
 };

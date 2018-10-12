@@ -22,6 +22,8 @@ when function crosses lines, whole thing isn't seen as a 'word' e.g., search for
 words in external not seen
 
 look for x-bit but allow x bits
+
+don't treat 'pos' or 'glyphs' as spell-checkable as in 'RunBuffer.pos' or 'RunBuffer.glyphs'
  */
 
 struct CheckEntry {
@@ -109,6 +111,8 @@ void BmhParser::spellCheck(const char* match, SkCommandLineFlags::StringArray re
 void BmhParser::spellStatus(const char* statusFile, SkCommandLineFlags::StringArray report) const {
     SpellCheck checker(*this);
     StatusIter iter(statusFile, ".bmh", StatusFilter::kInProgress);
+    string file;
+    iter.next(&file, nullptr);
     string match = iter.baseDir();
     checker.check(match.c_str());
     checker.report(report);
@@ -469,6 +473,11 @@ void SpellCheck::leafCheck(const char* start, const char* end) {
                 allLower = false;
             case '-':  // note that dash doesn't clear allLower
                 break;
+            case '!':
+                if (!inQuotes) {
+                    wordEnd = chPtr;
+                }
+                break;
             case '\n':
                 ++fLocalLine;
                 // fall through
@@ -663,9 +672,6 @@ void SpellCheck::wordCheck(string str) {
         }
         iter->second.fCount += 1;
     } else {
-    if ("e" == str) {
-        SkDebugf("");
-    }
         CheckEntry* entry = &mappy[str];
         entry->fFile = fFileName;
         entry->fLine = fLineCount + fLocalLine;

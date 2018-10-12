@@ -119,7 +119,13 @@ void Parser::InitLayoutMap() {
     TOKEN(INVOCATIONS,                  "invocations");
     TOKEN(WHEN,                         "when");
     TOKEN(KEY,                          "key");
+    TOKEN(TRACKED,                      "tracked");
     TOKEN(CTYPE,                        "ctype");
+    TOKEN(GRCOLOR4F,                    "GrColor4f");
+    TOKEN(SKPMCOLOR4F,                  "SkPMColor4f");
+    TOKEN(SKRECT,                       "SkRect");
+    TOKEN(SKIRECT,                      "SkIRect");
+    TOKEN(SKPMCOLOR,                    "SkPMColor");
     #undef TOKEN
 }
 
@@ -129,12 +135,8 @@ Parser::Parser(const char* text, size_t length, SymbolTable& types, ErrorReporte
 , fTypes(types)
 , fErrors(errors) {
     fLexer.start(text, length);
-#ifdef SKSL_STANDALONE
-    InitLayoutMap();
-#else
-    static SkOnce once;
-    once([] { InitLayoutMap(); });
-#endif
+    static const bool layoutMapInitialized = []{ return (void)InitLayoutMap(), true; }();
+    (void) layoutMapInitialized;
 }
 
 /* (directive | section | declaration)* END_OF_FILE */
@@ -720,6 +722,32 @@ Layout::Key Parser::layoutKey() {
     return Layout::kKey_Key;
 }
 
+Layout::CType Parser::layoutCType() {
+    if (this->expect(Token::EQ, "'='")) {
+        Token t = this->nextToken();
+        String text = this->text(t);
+        auto found = layoutTokens->find(text);
+        if (found != layoutTokens->end()) {
+            switch (found->second) {
+                case LayoutToken::GRCOLOR4F:
+                    return Layout::CType::kGrColor4f;
+                case LayoutToken::SKPMCOLOR4F:
+                    return Layout::CType::kSkPMColor4f;
+                case LayoutToken::SKRECT:
+                    return Layout::CType::kSkRect;
+                case LayoutToken::SKIRECT:
+                    return Layout::CType::kSkIRect;
+                case LayoutToken::SKPMCOLOR:
+                    return Layout::CType::kSkPMColor;
+                default:
+                    break;
+            }
+        }
+        this->error(t, "unsupported ctype");
+    }
+    return Layout::CType::kDefault;
+}
+
 /* LAYOUT LPAREN IDENTIFIER (EQ INT_LITERAL)? (COMMA IDENTIFIER (EQ INT_LITERAL)?)* RPAREN */
 Layout Parser::layout() {
     int flags = 0;
@@ -735,8 +763,8 @@ Layout Parser::layout() {
     int maxVertices = -1;
     int invocations = -1;
     String when;
-    StringFragment ctype;
     Layout::Key key = Layout::kNo_Key;
+    Layout::CType ctype = Layout::CType::kDefault;
     if (this->checkNext(Token::LAYOUT)) {
         if (!this->expect(Token::LPAREN, "'('")) {
             return Layout(flags, location, offset, binding, index, set, builtin,
@@ -827,6 +855,9 @@ Layout Parser::layout() {
                     case LayoutToken::PUSH_CONSTANT:
                         flags |= Layout::kPushConstant_Flag;
                         break;
+                    case LayoutToken::TRACKED:
+                        flags |= Layout::kTracked_Flag;
+                        break;
                     case LayoutToken::POINTS:
                         primitive = Layout::kPoints_Primitive;
                         break;
@@ -861,7 +892,10 @@ Layout Parser::layout() {
                         key = this->layoutKey();
                         break;
                     case LayoutToken::CTYPE:
-                        ctype = this->layoutIdentifier();
+                        ctype = this->layoutCType();
+                        break;
+                    default:
+                        this->error(t, ("'" + text + "' is not a valid layout qualifier").c_str());
                         break;
                 }
             } else if (Layout::ReadFormat(text, &format)) {

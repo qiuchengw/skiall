@@ -109,6 +109,7 @@ struct Extensions
     // GL_ANGLE_depth_texture, GL_OES_depth32
     // GL_EXT_color_buffer_float
     // GL_EXT_texture_norm16
+    // GL_EXT_texture_compression_bptc
     void setTextureExtensionSupport(const TextureCapsMap &textureCaps);
 
     // ES2 Extension support
@@ -181,6 +182,9 @@ struct Extensions
 
     // GL_KHR_texture_compression_astc_ldr
     bool textureCompressionASTCLDR;
+
+    // GL_EXT_texture_compression_bptc
+    bool textureCompressionBPTC;
 
     // GL_OES_compressed_ETC1_RGB8_texture
     // Implies that TextureCaps for GL_ETC1_RGB8_OES exist
@@ -347,6 +351,9 @@ struct Extensions
     // GL_CHROMIUM_copy_compressed_texture
     bool copyCompressedTexture;
 
+    // GL_ANGLE_copy_texture_3d
+    bool copyTexture3d;
+
     // GL_ANGLE_webgl_compatibility
     bool webglCompatibility;
 
@@ -426,6 +433,16 @@ struct Extensions
 
     // GL_KHR_parallel_shader_compile
     bool parallelShaderCompile;
+
+    // GL_OES_texture_storage_multisample_2d_array
+    bool textureStorageMultisample2DArray;
+
+    // GL_ANGLE_multiview_multisample
+    bool multiviewMultisample;
+
+    // GL_EXT_blend_func_extended
+    bool blendFuncExtended;
+    GLuint maxDualSourceDrawBuffers;
 };
 
 struct ExtensionInfo
@@ -634,6 +651,8 @@ struct Caps
     GLuint maxTextureMatrixStackDepth;
     GLfloat minSmoothPointSize;
     GLfloat maxSmoothPointSize;
+    GLfloat minSmoothLineWidth;
+    GLfloat maxSmoothLineWidth;
 };
 
 Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensions);
@@ -773,6 +792,9 @@ struct DisplayExtensions
 
     // EGL_ANDROID_presentation_time
     bool presentationTime;
+
+    // EGL_ANDROID_blob_cache
+    bool blobCache;
 };
 
 struct DeviceExtensions

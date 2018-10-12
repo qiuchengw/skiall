@@ -79,6 +79,8 @@ public:
         kTwoColorDrawShadow_Version        = 61,
         kDontNegateImageSize_Version       = 62,
         kStoreImageBounds_Version          = 63,
+        kRemoveOccluderFromBlurMaskFilter  = 64,
+        kFloat4PaintColor_Version          = 65,
     };
 
     /**

@@ -542,6 +542,9 @@ bool SkBitmap::extractAlpha(SkBitmap* dst, const SkPaint* paint,
     SkMatrix    identity;
     SkMask      srcM, dstM;
 
+    if (this->width() == 0 || this->height() == 0) {
+        return false;
+    }
     srcM.fBounds.set(0, 0, this->width(), this->height());
     srcM.fRowBytes = SkAlign4(this->width());
     srcM.fFormat = SkMask::kA8_Format;
@@ -603,12 +606,6 @@ bool SkBitmap::extractAlpha(SkBitmap* dst, const SkPaint* paint,
 #ifdef SK_DEBUG
 void SkBitmap::validate() const {
     this->info().validate();
-
-    // ImageInfo may not require this, but Bitmap ensures that opaque-only
-    // colorTypes report opaque for their alphatype
-    if (kRGB_565_SkColorType == this->colorType()) {
-        SkASSERT(kOpaque_SkAlphaType == this->alphaType());
-    }
 
     SkASSERT(this->info().validRowBytes(this->rowBytes()));
     uint8_t allFlags = kImageIsVolatile_Flag;

@@ -147,7 +147,7 @@ static bool compute_vectors(SegmentArray* segments,
         for (int p = 0; p < n; ++p) {
             segb.fNorms[p] = segb.fPts[p] - *prevPt;
             segb.fNorms[p].normalize();
-            SkPointPriv::SetOrthog(&segb.fNorms[p], segb.fNorms[p], normSide);
+            segb.fNorms[p] = SkPointPriv::MakeOrthog(segb.fNorms[p], normSide);
             prevPt = &segb.fPts[p];
         }
         if (Segment::kLine == segb.fType) {
@@ -206,7 +206,7 @@ static void update_degenerate_test(DegenerateTestData* data, const SkPoint& pt) 
             if (SkPointPriv::DistanceToSqd(pt, data->fFirstPoint) > kCloseSqd) {
                 data->fLineNormal = pt - data->fFirstPoint;
                 data->fLineNormal.normalize();
-                SkPointPriv::SetOrthog(&data->fLineNormal, data->fLineNormal);
+                data->fLineNormal = SkPointPriv::MakeOrthog(data->fLineNormal);
                 data->fLineC = -data->fLineNormal.dot(data->fFirstPoint);
                 data->fStage = DegenerateTestData::kLine;
             }
@@ -611,7 +611,7 @@ public:
             fragBuilder->codeAppendf("edgeAlpha = (%s.x*%s.x - %s.y);", v.fsIn(), v.fsIn(),
                                      v.fsIn());
             fragBuilder->codeAppendf("edgeAlpha = "
-                                     "clamp(0.5 - edgeAlpha / length(gF), 0.0, 1.0);}");
+                                     "saturate(0.5 - edgeAlpha / length(gF));}");
 
             fragBuilder->codeAppendf("%s = half4(edgeAlpha);", args.fOutputCoverage);
         }
@@ -653,9 +653,12 @@ private:
     const Attribute& onVertexAttribute(int i) const override {
         return IthAttribute(i, kInPosition, kInColor, kInQuadEdge);
     }
-    static constexpr Attribute kInPosition = {"inPosition", kFloat2_GrVertexAttribType};
-    static constexpr Attribute kInColor = {"inColor", kUByte4_norm_GrVertexAttribType};
-    static constexpr Attribute kInQuadEdge = {"inQuadEdge", kHalf4_GrVertexAttribType};
+    static constexpr Attribute kInPosition =
+            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    static constexpr Attribute kInColor =
+            {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
+    static constexpr Attribute kInQuadEdge =
+            {"inQuadEdge", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
     SkMatrix fLocalMatrix;
     bool fUsesLocalCoords;
 
@@ -843,11 +846,11 @@ private:
             extract_lines_only_verts(tess, verts, vertexStride, args.fColor, idxs,
                                      fHelper.compatibleWithAlphaAsCoverage());
 
-            GrMesh mesh(GrPrimitiveType::kTriangles);
-            mesh.setIndexed(indexBuffer, tess.numIndices(), firstIndex, 0, tess.numPts() - 1,
-                            GrPrimitiveRestart::kNo);
-            mesh.setVertexData(vertexBuffer, firstVertex);
-            target->draw(gp.get(), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+            GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
+            mesh->setIndexed(indexBuffer, tess.numIndices(), firstIndex, 0, tess.numPts() - 1,
+                             GrPrimitiveRestart::kNo);
+            mesh->setVertexData(vertexBuffer, firstVertex);
+            target->draw(gp, pipe.fPipeline, pipe.fFixedDynamicState, mesh);
         }
     }
 
@@ -928,37 +931,38 @@ private:
             SkSTArray<kPreallocDrawCnt, Draw, true> draws;
             create_vertices(segments, fanPt, args.fColor, &draws, verts, idxs);
 
-            GrMesh mesh(GrPrimitiveType::kTriangles);
-
+            GrMesh* meshes = target->allocMeshes(draws.count());
             for (int j = 0; j < draws.count(); ++j) {
                 const Draw& draw = draws[j];
-                mesh.setIndexed(indexBuffer, draw.fIndexCnt, firstIndex, 0, draw.fVertexCnt - 1,
-                                GrPrimitiveRestart::kNo);
-                mesh.setVertexData(vertexBuffer, firstVertex);
-                target->draw(quadProcessor.get(), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+                meshes[j].setPrimitiveType(GrPrimitiveType::kTriangles);
+                meshes[j].setIndexed(indexBuffer, draw.fIndexCnt, firstIndex, 0,
+                                     draw.fVertexCnt - 1, GrPrimitiveRestart::kNo);
+                meshes[j].setVertexData(vertexBuffer, firstVertex);
                 firstIndex += draw.fIndexCnt;
                 firstVertex += draw.fVertexCnt;
             }
+            target->draw(quadProcessor, pipe.fPipeline, pipe.fFixedDynamicState, nullptr, meshes,
+                         draws.count());
         }
     }
 
-    bool onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
         AAConvexPathOp* that = t->cast<AAConvexPathOp>();
         if (!fHelper.isCompatible(that->fHelper, caps, this->bounds(), that->bounds())) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
         if (fHelper.usesLocalCoords() &&
             !fPaths[0].fViewMatrix.cheapEqualTo(that->fPaths[0].fViewMatrix)) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (fLinesOnly != that->fLinesOnly) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         fPaths.push_back_n(that->fPaths.count(), that->fPaths.begin());
         this->joinBounds(*that);
-        return true;
+        return CombineResult::kMerged;
     }
 
     struct PathData {

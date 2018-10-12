@@ -278,7 +278,6 @@ private:
     RequiresDstTexture finalize(const GrCaps&, const GrAppliedClip*) override {
         return RequiresDstTexture::kNo;
     }
-    bool onCombineIfPossible(GrOp* other, const GrCaps& caps) override { return false; }
     void onPrepare(GrOpFlushState*) override {}
     void onExecute(GrOpFlushState* state) override {
         DrawMeshHelper helper(state);
@@ -295,16 +294,16 @@ public:
     GrMeshTestProcessor(bool instanced, bool hasVertexBuffer)
             : INHERITED(kGrMeshTestProcessor_ClassID) {
         if (instanced) {
-            fInstanceLocation = {"location", kHalf2_GrVertexAttribType};
-            fColor = {"color", kUByte4_norm_GrVertexAttribType};
+            fInstanceLocation = {"location", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
+            fColor = {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
             this->setInstanceAttributeCnt(2);
             if (hasVertexBuffer) {
-                fVertex = {"vertex", kHalf2_GrVertexAttribType};
+                fVertex = {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
                 this->setVertexAttributeCnt(1);
             }
         } else {
-            fVertex = {"vertex", kHalf2_GrVertexAttribType};
-            fColor = {"color", kUByte4_norm_GrVertexAttribType};
+            fVertex = {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
+            fColor = {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
             this->setVertexAttributeCnt(2);
         }
     }
@@ -379,8 +378,8 @@ sk_sp<const GrBuffer> DrawMeshHelper::makeVertexBuffer(const T* data, int count)
     return sk_sp<const GrBuffer>(
         fState->resourceProvider()->createBuffer(
             count * sizeof(T), kVertex_GrBufferType, kDynamic_GrAccessPattern,
-            GrResourceProvider::kNoPendingIO_Flag |
-            GrResourceProvider::kRequireGpuMemory_Flag, data));
+            GrResourceProvider::Flags::kNoPendingIO |
+            GrResourceProvider::Flags::kRequireGpuMemory, data));
 }
 
 sk_sp<const GrBuffer> DrawMeshHelper::getIndexBuffer() {
@@ -391,7 +390,7 @@ sk_sp<const GrBuffer> DrawMeshHelper::getIndexBuffer() {
 
 void DrawMeshHelper::drawMesh(const GrMesh& mesh) {
     GrRenderTargetProxy* proxy = fState->drawOpArgs().fProxy;
-    GrPipeline pipeline(proxy, GrPipeline::ScissorState::kDisabled, SkBlendMode::kSrc);
+    GrPipeline pipeline(proxy, GrScissorTest::kDisabled, SkBlendMode::kSrc);
     GrMeshTestProcessor mtp(mesh.isInstanced(), mesh.hasVertexData());
     fState->rtCommandBuffer()->draw(mtp, pipeline, nullptr, nullptr, &mesh, 1,
                                     SkRect::MakeIWH(kImageWidth, kImageHeight));

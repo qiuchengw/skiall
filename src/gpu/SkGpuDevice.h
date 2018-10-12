@@ -73,24 +73,19 @@ public:
                     const SkPaint& paint) override;
     void drawRect(const SkRect& r, const SkPaint& paint) override;
     void drawRRect(const SkRRect& r, const SkPaint& paint) override;
-    void drawDRRect(const SkRRect& outer, const SkRRect& inner,
-                    const SkPaint& paint) override;
+    void drawDRRect(const SkRRect& outer, const SkRRect& inner, const SkPaint& paint) override;
     void drawRegion(const SkRegion& r, const SkPaint& paint) override;
     void drawOval(const SkRect& oval, const SkPaint& paint) override;
     void drawArc(const SkRect& oval, SkScalar startAngle, SkScalar sweepAngle,
                  bool useCenter, const SkPaint& paint) override;
-    void drawPath(const SkPath& path, const SkPaint& paint,
-                  const SkMatrix* prePathMatrix, bool pathIsMutable) override;
-    void drawBitmap(const SkBitmap&, SkScalar x, SkScalar y,
-                    const SkPaint&) override;
+    void drawPath(const SkPath& path, const SkPaint& paint, bool pathIsMutable) override;
+    void drawBitmap(const SkBitmap&, SkScalar x, SkScalar y, const SkPaint&) override;
     void drawBitmapRect(const SkBitmap&, const SkRect* srcOrNull, const SkRect& dst,
                         const SkPaint& paint, SkCanvas::SrcRectConstraint) override;
     void drawSprite(const SkBitmap& bitmap, int x, int y,
                     const SkPaint& paint) override;
-    void drawPosText(const void* text, size_t len, const SkScalar pos[],
-                     int scalarsPerPos, const SkPoint& offset, const SkPaint&) override;
     void drawGlyphRunList(const SkGlyphRunList& glyphRunList) override;
-    void drawVertices(const SkVertices*, const SkMatrix bones[], int boneCount, SkBlendMode,
+    void drawVertices(const SkVertices*, const SkVertices::Bone bones[], int boneCount, SkBlendMode,
                       const SkPaint&) override;
     void drawShadow(const SkPath&, const SkDrawShadowRec&) override;
     void drawAtlas(const SkImage* atlas, const SkRSXform[], const SkRect[],
@@ -134,7 +129,6 @@ private:
     sk_sp<GrRenderTargetContext> fRenderTargetContext;
 
     SkISize                      fSize;
-    bool                         fOpaque;
 
     enum Flags {
         kNeedClear_Flag = 1 << 0,  //!< Surface requires an initial clear
@@ -247,7 +241,7 @@ private:
     void drawStrokedLine(const SkPoint pts[2], const SkPaint&);
 
     void wireframeVertices(SkVertices::VertexMode, int vertexCount, const SkPoint verts[],
-                           const SkMatrix bones[], int boneCount, SkBlendMode,
+                           const SkVertices::Bone bones[], int boneCount, SkBlendMode,
                            const uint16_t indices[], int indexCount, const SkPaint&);
 
     static sk_sp<GrRenderTargetContext> MakeRenderTargetContext(GrContext*,

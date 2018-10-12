@@ -35,7 +35,7 @@ class VertexArray;
 class Context;
 struct Caps;
 
-class State : public angle::ObserverInterface, angle::NonCopyable
+class State : angle::NonCopyable
 {
   public:
     State(bool debug,
@@ -43,9 +43,9 @@ class State : public angle::ObserverInterface, angle::NonCopyable
           bool clientArraysEnabled,
           bool robustResourceInit,
           bool programBinaryCacheEnabled);
-    ~State() override;
+    ~State();
 
-    void initialize(const Context *context);
+    void initialize(Context *context);
     void reset(const Context *context);
 
     // State chunk getters
@@ -162,7 +162,7 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     void setFragmentShaderDerivativeHint(GLenum hint);
 
     // GL_CHROMIUM_bind_generates_resource
-    bool isBindGeneratesResourceEnabled() const;
+    bool isBindGeneratesResourceEnabled() const { return mBindGeneratesResource; }
 
     // GL_ANGLE_client_arrays
     bool areClientArraysEnabled() const;
@@ -174,9 +174,15 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     // Texture binding & active texture unit manipulation
     void setActiveSampler(unsigned int active);
     unsigned int getActiveSampler() const;
-    void setSamplerTexture(const Context *context, TextureType type, Texture *texture);
+    Error setSamplerTexture(const Context *context, TextureType type, Texture *texture);
     Texture *getTargetTexture(TextureType type) const;
-    Texture *getSamplerTexture(unsigned int sampler, TextureType type) const;
+
+    Texture *getSamplerTexture(unsigned int sampler, TextureType type) const
+    {
+        ASSERT(sampler < mSamplerTextures[type].size());
+        return mSamplerTextures[type][sampler].get();
+    }
+
     GLuint getSamplerTextureId(unsigned int sampler, TextureType type) const;
     void detachTexture(const Context *context, const TextureMap &zeroTextures, GLuint texture);
     void initializeZeroTextures(const Context *context, const TextureMap &zeroTextures);
@@ -184,7 +190,12 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     // Sampler object binding manipulation
     void setSamplerBinding(const Context *context, GLuint textureUnit, Sampler *sampler);
     GLuint getSamplerId(GLuint textureUnit) const;
-    Sampler *getSampler(GLuint textureUnit) const;
+
+    Sampler *getSampler(GLuint textureUnit) const { return mSamplers[textureUnit].get(); }
+
+    using SamplerBindingVector = std::vector<BindingPointer<Sampler>>;
+    const SamplerBindingVector &getSamplers() const { return mSamplers; }
+
     void detachSampler(const Context *context, GLuint sampler);
 
     // Renderbuffer binding manipulation
@@ -215,14 +226,34 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     bool removeVertexArrayBinding(const Context *context, GLuint vertexArray);
 
     // Program binding manipulation
-    void setProgram(const Context *context, Program *newProgram);
-    Program *getProgram() const { return mProgram; }
+    angle::Result setProgram(const Context *context, Program *newProgram);
+
+    Program *getProgram() const
+    {
+        ASSERT(!mProgram || !mProgram->isLinking());
+        return mProgram;
+    }
+
+    Program *getLinkedProgram(const Context *context) const
+    {
+        if (mProgram)
+        {
+            mProgram->resolveLink(context);
+        }
+        return mProgram;
+    }
 
     // Transform feedback object (not buffer) binding manipulation
     void setTransformFeedbackBinding(const Context *context, TransformFeedback *transformFeedback);
     TransformFeedback *getCurrentTransformFeedback() const { return mTransformFeedback.get(); }
 
-    bool isTransformFeedbackActiveUnpaused() const;
+    ANGLE_INLINE bool isTransformFeedbackActiveUnpaused() const
+    {
+        TransformFeedback *curTransformFeedback = mTransformFeedback.get();
+        return curTransformFeedback && curTransformFeedback->isActive() &&
+               !curTransformFeedback->isPaused();
+    }
+
     bool removeTransformFeedbackBinding(const Context *context, GLuint transformFeedback);
 
     // Query binding manipulation
@@ -352,7 +383,7 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     bool isRobustResourceInitEnabled() const { return mRobustResourceInit; }
 
     // Sets the dirty bit for the program executable.
-    void onProgramExecutableChange(Program *program);
+    angle::Result onProgramExecutableChange(const Context *context, Program *program);
 
     enum DirtyBitType
     {
@@ -405,6 +436,7 @@ class State : public angle::ObserverInterface, angle::NonCopyable
         DIRTY_BIT_DRAW_INDIRECT_BUFFER_BINDING,
         DIRTY_BIT_DISPATCH_INDIRECT_BUFFER_BINDING,
         DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING,
+        DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING,
         // TODO(jmadill): Fine-grained dirty bits for each index.
         DIRTY_BIT_UNIFORM_BUFFER_BINDINGS,
         DIRTY_BIT_PROGRAM_BINDING,
@@ -412,13 +444,12 @@ class State : public angle::ObserverInterface, angle::NonCopyable
         // TODO(jmadill): Fine-grained dirty bits for each texture/sampler.
         DIRTY_BIT_TEXTURE_BINDINGS,
         DIRTY_BIT_SAMPLER_BINDINGS,
+        DIRTY_BIT_IMAGE_BINDINGS,
         DIRTY_BIT_TRANSFORM_FEEDBACK_BINDING,
         DIRTY_BIT_MULTISAMPLING,
         DIRTY_BIT_SAMPLE_ALPHA_TO_ONE,
-        DIRTY_BIT_COVERAGE_MODULATION,         // CHROMIUM_framebuffer_mixed_samples
-        DIRTY_BIT_PATH_RENDERING_MATRIX_MV,    // CHROMIUM_path_rendering path model view matrix
-        DIRTY_BIT_PATH_RENDERING_MATRIX_PROJ,  // CHROMIUM_path_rendering path projection matrix
-        DIRTY_BIT_PATH_RENDERING_STENCIL_STATE,
+        DIRTY_BIT_COVERAGE_MODULATION,  // CHROMIUM_framebuffer_mixed_samples
+        DIRTY_BIT_PATH_RENDERING,
         DIRTY_BIT_FRAMEBUFFER_SRGB,  // GL_EXT_sRGB_write_control
         DIRTY_BIT_CURRENT_VALUES,
         DIRTY_BIT_INVALID,
@@ -433,9 +464,11 @@ class State : public angle::ObserverInterface, angle::NonCopyable
         DIRTY_OBJECT_READ_FRAMEBUFFER,
         DIRTY_OBJECT_DRAW_FRAMEBUFFER,
         DIRTY_OBJECT_VERTEX_ARRAY,
+        DIRTY_OBJECT_SAMPLERS,
         // Use a very coarse bit for any program or texture change.
         // TODO(jmadill): Fine-grained dirty bits for each texture/sampler.
         DIRTY_OBJECT_PROGRAM_TEXTURES,
+        DIRTY_OBJECT_PROGRAM,
         DIRTY_OBJECT_UNKNOWN,
         DIRTY_OBJECT_MAX = DIRTY_OBJECT_UNKNOWN,
     };
@@ -449,16 +482,17 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     using DirtyObjects = angle::BitSet<DIRTY_OBJECT_MAX>;
     void clearDirtyObjects() { mDirtyObjects.reset(); }
     void setAllDirtyObjects() { mDirtyObjects.set(); }
-    Error syncDirtyObjects(const Context *context, const DirtyObjects &bitset);
-    Error syncDirtyObject(const Context *context, GLenum target);
+    angle::Result syncDirtyObjects(const Context *context, const DirtyObjects &bitset);
+    angle::Result syncDirtyObject(const Context *context, GLenum target);
     void setObjectDirty(GLenum target);
+    void setSamplerDirty(size_t samplerIndex);
 
     // This actually clears the current value dirty bits.
     // TODO(jmadill): Pass mutable dirty bits into Impl.
     AttributesMask getAndResetDirtyCurrentValues() const;
 
     void setImageUnit(const Context *context,
-                      GLuint unit,
+                      size_t unit,
                       Texture *texture,
                       GLint level,
                       GLboolean layered,
@@ -466,26 +500,29 @@ class State : public angle::ObserverInterface, angle::NonCopyable
                       GLenum access,
                       GLenum format);
 
-    const ImageUnit &getImageUnit(GLuint unit) const;
-    const ActiveTextureMask &getActiveTexturesMask() const { return mActiveTexturesMask; }
-    const std::vector<Texture *> &getCompleteTextureCache() const { return mCompleteTextureCache; }
+    const ImageUnit &getImageUnit(size_t unit) const;
+    const ActiveTexturePointerArray &getActiveTexturesCache() const { return mActiveTexturesCache; }
     ComponentTypeMask getCurrentValuesTypeMask() const { return mCurrentValuesTypeMask; }
 
-    // Observer implementation.
-    void onSubjectStateChange(const Context *context,
-                              angle::SubjectIndex index,
-                              angle::SubjectMessage message) override;
+    void onActiveTextureStateChange(size_t textureIndex);
+    void onUniformBufferStateChange(size_t uniformBufferIndex);
 
-    Error clearUnclearedActiveTextures(const Context *context);
+    angle::Result clearUnclearedActiveTextures(const Context *context);
 
     bool isCurrentTransformFeedback(const TransformFeedback *tf) const;
-    bool isCurrentVertexArray(const VertexArray *va) const;
+
+    bool isCurrentVertexArray(const VertexArray *va) const { return va == mVertexArray; }
 
     GLES1State &gles1() { return mGLES1State; }
     const GLES1State &gles1() const { return mGLES1State; }
 
   private:
-    Error syncProgramTextures(const Context *context);
+    void syncSamplers(const Context *context);
+    angle::Result syncProgramTextures(const Context *context);
+    void unsetActiveTextures(ActiveTextureMask textureMask);
+    angle::Result updateActiveTexture(const Context *context,
+                                      size_t textureIndex,
+                                      Texture *texture);
 
     // Cached values from Context's caps
     GLuint mMaxDrawBuffers;
@@ -556,12 +593,12 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     // A cache of complete textures. nullptr indicates unbound or incomplete.
     // Don't use BindingPointer because this cache is only valid within a draw call.
     // Also stores a notification channel to the texture itself to handle texture change events.
-    std::vector<Texture *> mCompleteTextureCache;
+    ActiveTexturePointerArray mActiveTexturesCache;
     std::vector<angle::ObserverBinding> mCompleteTextureBindings;
     InitState mCachedTexturesInitState;
-    ActiveTextureMask mActiveTexturesMask;
 
-    using SamplerBindingVector = std::vector<BindingPointer<Sampler>>;
+    InitState mCachedImageTexturesInitState;
+
     SamplerBindingVector mSamplers;
 
     using ImageUnitVector = std::vector<ImageUnit>;
@@ -620,6 +657,7 @@ class State : public angle::ObserverInterface, angle::NonCopyable
     DirtyBits mDirtyBits;
     DirtyObjects mDirtyObjects;
     mutable AttributesMask mDirtyCurrentValues;
+    ActiveTextureMask mDirtySamplers;
 };
 
 }  // namespace gl

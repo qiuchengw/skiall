@@ -74,33 +74,6 @@ size_t GrPrimitiveProcessor::debugOnly_instanceAttributeOffset(int i) const {
 }
 #endif
 
-void GrPrimitiveProcessor::addPendingIOs() const {
-    for (int i = 0; i < fTextureSamplerCnt; ++i) {
-        this->textureSampler(i).proxyRef()->markPendingIO();
-    }
-}
-
-void GrPrimitiveProcessor::removeRefs() const {
-    for (int i = 0; i < fTextureSamplerCnt; ++i) {
-        this->textureSampler(i).proxyRef()->removeRef();
-    }
-}
-
-void GrPrimitiveProcessor::pendingIOComplete() const {
-    for (int i = 0; i < fTextureSamplerCnt; ++i) {
-        this->textureSampler(i).proxyRef()->pendingIOComplete();
-    }
-}
-
-bool GrPrimitiveProcessor::instantiate(GrResourceProvider* resourceProvider) const {
-    for (int i = 0; i < fTextureSamplerCnt; ++i) {
-        if (!this->textureSampler(i).instantiate(resourceProvider)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 uint32_t
 GrPrimitiveProcessor::getTransformKey(const SkTArray<const GrCoordTransform*, true>& coords,
                                       int numCoords) const {
@@ -122,34 +95,44 @@ GrPrimitiveProcessor::getTransformKey(const SkTArray<const GrCoordTransform*, tr
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-GrPrimitiveProcessor::TextureSampler::TextureSampler(sk_sp<GrTextureProxy> proxy,
-                                                     const GrSamplerState& samplerState,
-                                                     GrShaderFlags visibility) {
-    this->reset(std::move(proxy), samplerState, visibility);
+static inline GrSamplerState::Filter clamp_filter(GrTextureType type,
+                                                  GrSamplerState::Filter requestedFilter) {
+    if (GrTextureTypeHasRestrictedSampling(type)) {
+        return SkTMin(requestedFilter, GrSamplerState::Filter::kBilerp);
+    }
+    return requestedFilter;
 }
 
-GrPrimitiveProcessor::TextureSampler::TextureSampler(sk_sp<GrTextureProxy> proxy,
+GrPrimitiveProcessor::TextureSampler::TextureSampler(GrTextureType textureType,
+                                                     GrPixelConfig config,
+                                                     const GrSamplerState& samplerState) {
+    this->reset(textureType, config, samplerState);
+}
+
+GrPrimitiveProcessor::TextureSampler::TextureSampler(GrTextureType textureType,
+                                                     GrPixelConfig config,
                                                      GrSamplerState::Filter filterMode,
-                                                     GrSamplerState::WrapMode wrapXAndY,
-                                                     GrShaderFlags visibility) {
-    this->reset(std::move(proxy), filterMode, wrapXAndY, visibility);
+                                                     GrSamplerState::WrapMode wrapXAndY) {
+    this->reset(textureType, config, filterMode, wrapXAndY);
 }
 
-void GrPrimitiveProcessor::TextureSampler::reset(sk_sp<GrTextureProxy> proxy,
-                                                 const GrSamplerState& samplerState,
-                                                 GrShaderFlags visibility) {
-    fProxyRef.setProxy(std::move(proxy), kRead_GrIOType);
+void GrPrimitiveProcessor::TextureSampler::reset(GrTextureType textureType,
+                                                 GrPixelConfig config,
+                                                 const GrSamplerState& samplerState) {
+    SkASSERT(kUnknown_GrPixelConfig != config);
     fSamplerState = samplerState;
-    fSamplerState.setFilterMode(SkTMin(samplerState.filter(), this->proxy()->highestFilterMode()));
-    fVisibility = visibility;
+    fSamplerState.setFilterMode(clamp_filter(textureType, samplerState.filter()));
+    fTextureType = textureType;
+    fConfig = config;
 }
 
-void GrPrimitiveProcessor::TextureSampler::reset(sk_sp<GrTextureProxy> proxy,
+void GrPrimitiveProcessor::TextureSampler::reset(GrTextureType textureType,
+                                                 GrPixelConfig config,
                                                  GrSamplerState::Filter filterMode,
-                                                 GrSamplerState::WrapMode wrapXAndY,
-                                                 GrShaderFlags visibility) {
-    fProxyRef.setProxy(std::move(proxy), kRead_GrIOType);
-    filterMode = SkTMin(filterMode, this->proxy()->highestFilterMode());
+                                                 GrSamplerState::WrapMode wrapXAndY) {
+    SkASSERT(kUnknown_GrPixelConfig != config);
+    filterMode = clamp_filter(textureType, filterMode);
     fSamplerState = GrSamplerState(wrapXAndY, filterMode);
-    fVisibility = visibility;
+    fTextureType = textureType;
+    fConfig = config;
 }

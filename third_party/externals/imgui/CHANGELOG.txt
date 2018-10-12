@@ -30,6 +30,61 @@ HOW TO UPDATE?
 
 
 -----------------------------------------------------------------------
+ VERSION 1.63 WIP (IN PROGRESS)
+-----------------------------------------------------------------------
+
+Breaking Changes:
+
+ - Style: Renamed ImGuiCol_ModalWindowDarkening to ImGuiCol_ModalWindowDimBg for consistency with other features. Kept redirection enum (will obsolete).
+ - Changed ImGui::GetTime() return value from float to double to avoid accumulating floating point imprecisions over time.
+ - Removed per-window ImGuiWindowFlags_ResizeFromAnySide beta flag in favor `io.ConfigResizeWindowsFromEdges=true` to enable the feature globally. (#1495)
+   The feature is not currently enabled by default because it is not satisfying enough.
+ - Renamed io.OptCursorBlink to io.ConfigCursorBlink, io.OptMacOSXBehaviors to io.ConfigMacOSXBehaviors for consistency. (#1427, #473)
+
+Other Changes:
+
+ - ArrowButton: Fixed to honor PushButtonRepeat() setting (and internals' ImGuiItemFlags_ButtonRepeat).
+ - ArrowButton: Setup current line text baseline so that ArrowButton() + SameLine() + Text() are aligned properly.
+ - Nav: Added a CTRL+TAB window list and changed the highlight system accordingly. This is designed to allow CTRL+TAB between Tabs in the future. (#787)
+ - Window: Allow menu and popups windows from ignoring the style.WindowMinSize values so short menus/popups are not padded. (#1909)
+ - Window: Added global io.OptResizeWindowsFromEdges option to enable resizing windows from their edges and from the lower-left corner. (#1495)
+ - Window: Collapse button shows hovering highlight + clicking and dragging on it allows to drag the window as well. 
+ - Drag and Drop: Fixed an incorrect assert when dropping a source that is submitted after the target (bug introduced with 1.62 changes 
+   related to the addition of IsItemDeactivated()). (#1875, #143)
+ - Drag and Drop: Fixed ImGuiDragDropFlags_SourceNoDisableHover to affect hovering state prior to calling IsItemHovered() + fixed description. (#143)
+ - Drag and Drop: Calling BeginTooltip() between a BeginDragSource()/EndDragSource() or BeginDropTarget()/EndDropTarget() uses adjusted tooltip
+   settings matching the one created when calling BeginDragSource() without the ImGuiDragDropFlags_SourceNoPreviewTooltip flag. (#143)
+ - Drag and Drop: Payload stays available and under the mouse if the source stops being submitted, however the tooltip is replaced by "...". (#1725)
+ - Drag and Drop: Added ImGuiDragDropFlags_SourceAutoExpirePayload flag to force payload to expire if the source stops being submitted. (#1725, #143).
+ - IsItemHovered(): Added ImGuiHoveredFlags_AllowWhenDisabled flag to query hovered status on disabled items. (#1940, #211)
+ - Misc: Added ImGuiMouseCursor_Hand cursor enum + corresponding software cursor. (#1913, 1914) [@aiekick, @ocornut] 
+ - Misc: Tweaked software mouse cursor offset to match the offset of the corresponding Windows 10 cursors.
+ - Made assertion more clear when trying to call Begin() outside of the NewFrame()..EndFrame() scope. (#1987)
+ - Fixed PushID() from keeping alive the new ID Stack top value (if a previously active widget shared the ID it would be erroneously kept alive).  
+ - Fixed horizontal mouse wheel not forwarding the request to the parent window if ImGuiWindowFlags_NoScrollWithMouse is set. (#1463, #1380, #1502)
+ - Fixed a include build issue for Cygwin in non-POSIX (Win32) mode. (#1917, #1319, #276)
+ - OS/Windows: Fixed missing ImmReleaseContext() call in the default Win32 IME handler. (#1932) [@vby]
+ - Metrics: Changed io.MetricsActiveWindows to reflect the number of active windows (!= from visible windows), which is useful
+   for lazy/idle render mechanisms as new windows are typically not visible for one frame.
+ - Metrics: Added io.MetricsRenderWindow to reflect the number of visible windows.
+ - Demo: Added basic Drag and Drop demo. (#143)
+ - Demo: Clarified the use of IsItemHovered()/IsItemActive() right after being in the "Active, Focused, Hovered & Focused Tests" section.
+ - Examples: Tweaked the main.cpp of each example.
+ - Examples: Metal: Added Metal rendering backend. (#1929, #1873) [@warrenm]
+ - Examples: OSX: Added early raw OSX platform backend. (#1873) [@pagghiu, @itamago, @ocornut]
+ - Examples: Added mac OSX & iOS + Metal example in example_apple_metal/. (#1929, #1873) [@warrenm]
+ - Examples: Added mac OSX + OpenGL2 example in example_apple_opengl2/. (#1873)
+ - Examples: OpenGL3: Added shaders more versions of GLSL. (#1938, #1941, #1900, #1513, #1466, etc.) 
+ - Examples: OpenGL3: Tweaked the imgui_impl_opengl3.cpp to work as-is with Emscripten + WebGL 2.0. (#1941). [@o-micron] 
+ - Examples: OpenGL3: Made the example app default to GL 3.0 + GLSL 130 (instead of GL 3.2 + GLSL 150) unless on Mac.
+ - Examples: OpenGL3: Added error output when shaders fail to compile/link.
+ - Examples: OpenGL2: Disabling/restoring GL_LIGHTING and GL_COLOR_MATERIAL to increase compatibility with legacy OpenGL applications. (#1996)
+ - Examples: DirectX10, DirectX11: Fixed unreleased resources in Init and Shutdown functions. (#1944)
+ - Examples: DirectX11: Querying for IDXGIFactory instead of IDXGIFactory1 to increase compatibility. (#1989) [@matt77hias]
+ - Examples: Win32, Glfw, SDL: Added support for the ImGuiMouseCursor_Hand cursor.
+
+
+-----------------------------------------------------------------------
  VERSION 1.62 (Released 2018-06-22)
 -----------------------------------------------------------------------
 
@@ -78,6 +133,7 @@ Other Changes:
  - SliderFloat(): When using keyboard/gamepad and a zero precision format string (e.g. "%.0f"), always step in integer units. (#1866)
  - ImFontConfig: Added GlyphMinAdvanceX/GlyphMaxAdvanceX settings useful to make a font appears monospaced, particularly useful for icon fonts. (#1869)
  - ImFontAtlas: Added GetGlyphRangesChineseSimplifiedCommon() helper that returns a list of ~2500 most common Simplified Chinese characters. (#1859) [@JX-Master, @ocornut]
+ - Examples: OSX: Added imgui_impl_osx.mm binding to be used along with e.g. imgui_impl_opengl2.cpp. (#281, #1870) [@pagghiu, @itamago, @ocornut]
  - Examples: GLFW: Made it possible to Shutdown/Init the backend again (by reseting the time storage properly). (#1827) [@ice1000]
  - Examples: Win32: Fixed handling of mouse wheel messages to support sub-unit scrolling messages (typically sent by track-pads). (#1874) [@zx64]  
  - Examples: SDL+Vulkan: Added SDL+Vulkan example.
@@ -344,7 +400,7 @@ Breaking Changes:
 
 Other Changes:
 
-- Added `io.OptCursorBlink` option to allow disabling cursor blinking. (#1427)
+- Added `io.OptCursorBlink` option to allow disabling cursor blinking. (#1427) [renamed to io.ConfigCursorBlink in 1.63]
 - Added `GetOverlayDrawList()` helper to quickly get access to a ImDrawList that will be rendered in front of every windows.
 - Added `GetFrameHeight()` helper which returns `(FontSize + style.FramePadding.y * 2)`.
 - Drag and Drop: Added Beta API to easily use drag and drop patterns between imgui widgets.
@@ -695,9 +751,9 @@ Other Changes:
 - Clipboard: Added a void* user_data parameter to Clipboard function handlers. (#875) (BREAKING API)
 - Internals: Refactor internal text alignment options to use ImVec2, removed ImGuiAlign. (#842, #222)
 - Internals: Renamed ImLoadFileToMemory to ImFileLoadToMemory to be consistent with ImFileOpen + fix mismatching .h name. (#917)
-- Windows: Fixed Windows default clipboard handler leaving its buffer unfreed on application's exit. (#714)
-- Windows: No default IME handler when compiling for Windows using GCC. (#738)
-- Windows: Now using _wfopen() instead of fopen() to allow passing in paths/filenames with UTF-8 characters. (#917)
+- OS/Windows: Fixed Windows default clipboard handler leaving its buffer unfreed on application's exit. (#714)
+- OS/Windows: No default IME handler when compiling for Windows using GCC. (#738)
+- OS/Windows: Now using _wfopen() instead of fopen() to allow passing in paths/filenames with UTF-8 characters. (#917)
 - Tools: binary_to_compressed_c: Avoid ?? trigraphs sequences in string outputs which break some older compilers. (#839)
 - Demo: Added an extra 3-way columns demo.
 - Demo: ShowStyleEditor: show font character map / grid in more details.

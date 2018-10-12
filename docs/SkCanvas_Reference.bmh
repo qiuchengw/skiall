@@ -3,6 +3,10 @@
 
 #Class SkCanvas
 
+#Code
+#Populate
+##
+
 Canvas provides an interface for drawing, and how the drawing is clipped and transformed.
 Canvas contains a stack of Matrix and Clip values.
 
@@ -24,36 +28,11 @@ destination.
 Canvas can be constructed to draw to Bitmap without first creating Raster_Surface.
 This approach may be deprecated in the future.
 
-#Subtopic Overview
-#Populate
-##
-
-#Subtopic Related_Function
-#Populate
-##
-
-#Subtopic Constant
-#Populate
-##
-
-#Subtopic Struct
-#Populate
-##
-
-#Subtopic Typedef
-#Populate
-##
-
-#Subtopic Constructor
+#Subtopic Constructors
 
 Create the desired type of Surface to obtain its Canvas when possible. Useful
 when no Surface is required, and some helpers implicitly create Raster_Surface.
 
-#Populate
-##
-
-#Subtopic Member_Function
-#Populate
 ##
 
 # ------------------------------------------------------------------------------
@@ -61,7 +40,7 @@ when no Surface is required, and some helpers implicitly create Raster_Surface.
 #Method static std::unique_ptr<SkCanvas> MakeRasterDirect(const SkImageInfo& info, void* pixels,
                                                           size_t rowBytes,
                                                           const SkSurfaceProps* props = nullptr)
-#In Constructor
+#In Constructors
 #Line # creates from SkImageInfo and Pixel_Storage ##
 
 Allocates raster Canvas that will draw directly into pixels.
@@ -136,7 +115,7 @@ void draw(SkCanvas* ) {
 
 #Method static std::unique_ptr<SkCanvas> MakeRasterDirectN32(int width, int height, SkPMColor* pixels,
                                                          size_t rowBytes)
-#In Constructor
+#In Constructors
 #Line # creates from image data and Pixel_Storage ##
 
 Allocates raster Canvas specified by inline image specification. Subsequent Canvas
@@ -373,9 +352,7 @@ Android framework only.
 ##
 
 #Code
-    enum class ColorBehavior {
-        kLegacy,
-    };
+#Populate
 ##
 #Const kLegacy 0
 #Line # placeholder ##
@@ -498,7 +475,6 @@ void draw(SkCanvas* canvas) {
 
 # ------------------------------------------------------------------------------
 #Subtopic Property
-#Populate
 #Line # metrics and attributes ##
 ##
 
@@ -593,7 +569,6 @@ GPU_Surface, and returns true. Otherwise, returns false and leave props unchange
 
 # ------------------------------------------------------------------------------
 #Subtopic Utility
-#Populate
 #Line # rarely called management functions ##
 ##
 
@@ -669,7 +644,7 @@ smaller (due to clipping or saveLayer).
 # ------------------------------------------------------------------------------
 
 #Method sk_sp<SkSurface> makeSurface(const SkImageInfo& info, const SkSurfaceProps* props = nullptr)
-#In Constructor
+#In Constructors
 #Line # creates Surface matching SkImageInfo and SkSurfaceProps ##
 Creates Surface matching info and props, and associates it with Canvas.
 Returns nullptr if no match found.
@@ -872,7 +847,6 @@ the drawing destination.
 
 # ------------------------------------------------------------------------------
 #Subtopic Pixels
-#Populate
 #Line # read and write pixel values ##
 ##
 
@@ -1683,14 +1657,7 @@ Call restoreToCount with returned value to restore this and subsequent saves.
 #Enum SaveLayerFlagsSet
 #Line # sets SaveLayerRec options ##
 #Code
-    enum SaveLayerFlagsSet {
-        kPreserveLCDText_SaveLayerFlag = 1 << 1,
-        kInitWithPrevious_SaveLayerFlag = 1 << 2,
-        kMaskAgainstCoverage_EXPERIMENTAL_DONT_USE_SaveLayerFlag = 1 << 3,
-        kDontClipToLayer_Legacy_SaveLayerFlag = kDontClipToLayer_PrivateSaveLayerFlag,
-    };
-
-    typedef uint32_t SaveLayerFlags;
+#Populate
 ##
 
 
@@ -1756,25 +1723,10 @@ void draw(SkCanvas* canvas) {
 #Line # contains the state used to create the Layer ##
 
 #Code
-    struct SaveLayerRec {
-        SaveLayerRec*(...
-
-        const SkRect*           fBounds;
-        const SkPaint*          fPaint;
-        const SkImageFilter*    fBackdrop;
-        SaveLayerFlags          fSaveLayerFlags;
-    };
+#Populate
 ##
 
 SaveLayerRec contains the state used to create the Layer.
-
-#Subtopic Overview
-#Populate
-##
-
-#Subtopic Member
-#Populate
-##
 
 #Member const SkRect*           fBounds
 #Line # hints at Layer size limit ##
@@ -1841,8 +1793,7 @@ void draw(SkCanvas* canvas) {
 }
 ##
 
-#Subtopic Constructor
-#Populate
+#Subtopic Constructors
 ##
 
 #Method SaveLayerRec()
@@ -3018,7 +2969,6 @@ Unlike getLocalClipBounds, bounds is not outset.
 
 # ------------------------------------------------------------------------------
 #Subtopic Draw
-#Populate
 #Line # draws into Canvas ##
 ##
 
@@ -3130,11 +3080,7 @@ void draw(SkCanvas* canvas) {
 #Line # sets drawPoints options ##
 
 #Code
-    enum PointMode {
-        kPoints_PointMode,
-        kLines_PointMode,
-        kPolygon_PointMode,
-    };
+#Populate
 ##
 
 Selects if an array of points are drawn as discrete points, as lines, or as
@@ -3941,10 +3887,7 @@ void draw(SkCanvas* canvas) {
 #Line # sets drawImageRect options ##
 
 #Code
-    enum SrcRectConstraint {
-        kStrict_SrcRectConstraint,
-        kFast_SrcRectConstraint,
-    };
+#Populate
 ##
 
 SrcRectConstraint controls the behavior at the edge of source Rect,
@@ -4770,17 +4713,7 @@ void draw(SkCanvas* canvas) {
 #Line # divides Bitmap or Image into a rectangular grid ##
 
 #Code
-    struct Lattice {
-        enum RectType ...
-
-        const int*      fXDivs;
-        const int*      fYDivs;
-        const RectType* fRectTypes;
-        int             fXCount;
-        int             fYCount;
-        const SkIRect*  fBounds;
-        const SkColor*  fColors;
-    };
+#Populate
 ##
 
 Lattice divides Bitmap or Image into a rectangular grid.
@@ -4791,22 +4724,10 @@ entries are proportionately scaled down to fit.
 The grid entries not on even columns and rows are scaled to fit the
 remaining space, if any.
 
-#Subtopic Overview
-#Populate
-##
-
-#Subtopic Constant
-#Populate
-##
-
     #Enum RectType
     #Line # optional setting per rectangular grid entry ##
         #Code
-            enum RectType : uint8_t {
-                kDefault = 0,
-                kTransparent,
-                kFixedColor,
-            };
+        #Populate
         ##
 
         Optional setting per rectangular grid entry to make it transparent,
@@ -4825,8 +4746,7 @@ remaining space, if any.
         ##
     ##
 
-#Subtopic Member
-#Populate
+#Subtopic Members
 ##
 
     #Member const int*   fXDivs
@@ -4850,11 +4770,7 @@ remaining space, if any.
     #Member const RectType* fRectTypes
     #Line # array of fill types ##
         Optional array of fill types, one per rectangular grid entry:
-        array length must be
-    #Formula
-        (fXCount + 1) * (fYCount + 1)
-    ##
-        .
+        array length must be #Formula # (fXCount + 1) * (fYCount + 1) ##.
 
         Each RectType is one of: kDefault, kTransparent, kFixedColor.
 
@@ -4883,11 +4799,7 @@ remaining space, if any.
     #Member const SkColor*   fColors
     #Line # array of colors ##
        Optional array of colors, one per rectangular grid entry.
-       Array length must be
-       #Formula
-       (fXCount + 1) * (fYCount + 1)
-       ##
-       .
+       Array length must be #Formula # (fXCount + 1) * (fYCount + 1) ##.
 
        Array entries correspond to the rectangular grid entries, ascending
        left to right, then top to bottom.
@@ -5049,7 +4961,6 @@ void draw(SkCanvas* canvas) {
 
 # ------------------------------------------------------------------------------
 #Subtopic Draw_Text
-#Populate
 #Line # draws text into Canvas ##
 ##
 
@@ -5107,7 +5018,7 @@ void draw(SkCanvas* canvas) {
 }
 ##
 
-#SeeAlso drawString drawPosText drawPosTextH drawTextBlob drawTextOnPath drawTextRSXform
+#SeeAlso drawString drawPosText drawPosTextH drawTextBlob drawTextRSXform
 
 ##
 
@@ -5143,7 +5054,7 @@ filled 12 point black Glyphs.
    canvas->drawString("a small hello", 20, 20, paint);
 ##
 
-#SeeAlso drawText drawPosText drawPosTextH drawTextBlob drawTextOnPath drawTextRSXform
+#SeeAlso drawText drawPosText drawPosTextH drawTextBlob drawTextRSXform
 
 ##
 
@@ -5177,7 +5088,7 @@ filled 12 point black Glyphs.
    canvas->drawString(string, 20, 20, paint);
 ##
 
-#SeeAlso drawText drawPosText drawPosTextH drawTextBlob drawTextOnPath drawTextRSXform
+#SeeAlso drawText drawPosText drawPosTextH drawTextBlob drawTextRSXform
 
 ##
 
@@ -5222,7 +5133,7 @@ void draw(SkCanvas* canvas) {
 }
 ##
 
-#SeeAlso drawText drawPosTextH drawTextBlob drawTextOnPath drawTextRSXform
+#SeeAlso drawText drawPosTextH drawTextBlob drawTextRSXform
 
 ##
 
@@ -5267,118 +5178,7 @@ baseline.
     }
 ##
 
-#SeeAlso drawText drawPosText drawTextBlob drawTextOnPath drawTextRSXform
-
-##
-
-# ------------------------------------------------------------------------------
-
-#Method void drawTextOnPathHV(const void* text, size_t byteLength, const SkPath& path, SkScalar hOffset,
-                          SkScalar vOffset, const SkPaint& paint)
-#In Draw_Text
-#In Draw
-#Line # draws text following Path with offsets ##
-
-Draws text on Path path, using Clip, Matrix, and Paint paint.
-
-Origin of text is at distance hOffset along the path, offset by a perpendicular
-vector of length vOffset. If the path section corresponding the glyph advance is
-curved, the glyph is drawn curved to match; control points in the glyph are
-mapped to projected points parallel to the path. If the text advance is larger
-than the path length, the excess text is clipped.
-
-text meaning depends on Paint_Text_Encoding; by default, text is encoded as
-UTF-8. Origin meaning depends on Paint_Text_Align and Paint_Vertical_Text; by
-default text positions the first glyph left side bearing and baseline relative
-to origin. Text size is affected by Matrix and Paint_Text_Size.
-
-All elements of paint: Path_Effect, Mask_Filter, Shader,
-Color_Filter, Image_Filter, and Draw_Looper; apply to text. By default, draws
-filled 12 point black Glyphs.
-
-#Param  text         character code points or Glyphs drawn ##
-#Param  byteLength   byte length of text array ##
-#Param  path         Path providing text baseline ##
-#Param  hOffset      distance along path to offset origin ##
-#Param  vOffset      offset of text above (if negative) or below (if positive) the path ##
-#Param  paint        text size, blend, color, and so on, used to draw ##
-
-#Example
-    void draw(SkCanvas* canvas) {
-        const char aero[] = "correo a" "\xC3" "\xA9" "reo";
-        const size_t len = sizeof(aero) - 1;
-        SkPath path;
-        path.addOval({43-26, 43-26, 43+26, 43+26}, SkPath::kCW_Direction, 3);
-        SkPaint paint;
-        paint.setTextSize(24);
-        for (auto offset : { 0, 10, 20 } ) {
-            canvas->drawTextOnPathHV(aero, len, path, 0, -offset, paint);
-            canvas->translate(70 + offset, 70 + offset);
-        }
-    }
-##
-
-#SeeAlso drawTextOnPath drawText drawPosTextH drawTextBlob drawTextRSXform
-
-##
-
-# ------------------------------------------------------------------------------
-
-#Method void drawTextOnPath(const void* text, size_t byteLength, const SkPath& path,
-                        const SkMatrix* matrix, const SkPaint& paint)
-#In Draw_Text
-#In Draw
-#Line # draws text following Path contour ##
-
-Draws text on Path path, using Clip, Matrix, and Paint paint.
-
-Origin of text is at beginning of path offset by matrix, if not nullptr.
-matrix transforms text before text is mapped to path. If the path section
-corresponding the glyph advance is curved, the glyph is drawn curved to match;
-control points in the glyph are mapped to projected points parallel to the path.
-If the text advance is larger than the path length, the excess text is clipped.
-
-matrix does not effect paint Shader.
-
-text meaning depends on Paint_Text_Encoding; by default, text is encoded as
-UTF-8. Origin meaning depends on Paint_Text_Align and Paint_Vertical_Text; by
-default text positions the first glyph left side bearing and baseline relative
-to origin. Text size is affected by matrix parameter, Canvas Matrix,
-and Paint_Text_Size.
-
-All elements of paint: Path_Effect, Mask_Filter, Shader,
-Color_Filter, Image_Filter, and Draw_Looper; apply to text. By default, draws
-filled 12 point black Glyphs.
-
-#Param  text         character code points or Glyphs drawn ##
-#Param  byteLength   byte length of text array ##
-#Param  path         Path providing text baseline ##
-#Param  matrix       transform of Glyphs before mapping to path; may be nullptr
-                     to use identity Matrix
-##
-#Param  paint        text size, blend, color, and so on, used to draw ##
-
-#Example
-    void draw(SkCanvas* canvas) {
-        const char roller[] = "rollercoaster";
-        const size_t len = sizeof(roller) - 1;
-        SkPath path;
-        path.cubicTo(40, -80, 120, 80, 160, -40);
-        SkPaint paint;
-        paint.setTextSize(32);
-        paint.setStyle(SkPaint::kStroke_Style);
-        SkMatrix matrix;
-        matrix.setIdentity();
-        for (int i = 0; i < 3; ++i) {
-            canvas->translate(25, 60);
-            canvas->drawPath(path, paint);
-            canvas->drawTextOnPath(roller, len, path, &matrix, paint);
-            matrix.preTranslate(0, 10);
-        }
-    }
-##
-
-#SeeAlso drawTextOnPathHV drawText drawPosTextH drawTextBlob drawTextRSXform
+#SeeAlso drawText drawPosText drawTextBlob drawTextRSXform
 
 ##
 
@@ -5431,7 +5231,7 @@ void draw(SkCanvas* canvas) {
 }
 ##
 
-#SeeAlso drawTextOnPath drawTextOnPathHV drawText drawPosText drawTextBlob
+#SeeAlso drawText drawPosText drawTextBlob
 
 ##
 
@@ -5444,15 +5244,15 @@ void draw(SkCanvas* canvas) {
 Draws Text_Blob blob at (x, y), using Clip, Matrix, and Paint paint.
 
 blob contains Glyphs, their positions, and paint attributes specific to text:
-Typeface, Paint_Text_Size, Paint_Text_Scale_X, Paint_Text_Skew_X,
-Paint_Text_Align, Paint_Hinting, Anti_Alias, Paint_Fake_Bold,
-Font_Embedded_Bitmaps, Full_Hinting_Spacing, LCD_Text, Linear_Text,
-Subpixel_Text, and Paint_Vertical_Text.
+#paint_font_metrics#.
 
 Paint_Text_Encoding must be set to SkPaint::kGlyphID_TextEncoding.
 
-Elements of paint: Path_Effect, Mask_Filter, Shader, Color_Filter,
-Image_Filter, and Draw_Looper; apply to blob.
+Elements of paint: Anti_Alias, Blend_Mode, Color including Color_Alpha,
+Color_Filter, Paint_Dither, Draw_Looper, Mask_Filter, Path_Effect, Shader, and
+Paint_Style; apply to blob. If Paint contains SkPaint::kStroke_Style:
+Paint_Miter_Limit, Paint_Stroke_Cap, Paint_Stroke_Join, and Paint_Stroke_Width;
+apply to Path created from blob.
 
 #Param  blob     Glyphs, positions, and their paints' text size, typeface, and so on ##
 #Param  x        horizontal offset applied to blob ##
@@ -5497,10 +5297,7 @@ void draw(SkCanvas* canvas) {
 Draws Text_Blob blob at (x, y), using Clip, Matrix, and Paint paint.
 
 blob contains Glyphs, their positions, and paint attributes specific to text:
-Typeface, Paint_Text_Size, Paint_Text_Scale_X, Paint_Text_Skew_X,
-Paint_Text_Align, Paint_Hinting, Anti_Alias, Paint_Fake_Bold,
-Font_Embedded_Bitmaps, Full_Hinting_Spacing, LCD_Text, Linear_Text,
-Subpixel_Text, and Paint_Vertical_Text.
+#paint_font_metrics#.
 
 Paint_Text_Encoding must be set to SkPaint::kGlyphID_TextEncoding.
 
@@ -5752,8 +5549,8 @@ void draw(SkCanvas* canvas) {
 
 # ------------------------------------------------------------------------------
 
-#Method void drawVertices(const SkVertices* vertices, const SkMatrix* bones, int boneCount,
-                          SkBlendMode mode, const SkPaint& paint)
+#Method void drawVertices(const SkVertices* vertices, const SkVertices::Bone bones[],
+                          int boneCount, SkBlendMode mode, const SkPaint& paint)
 
 Draws Vertices vertices, a triangle mesh, using Clip and Matrix. Bone data is used to
 deform vertices with bone weights.
@@ -5762,7 +5559,7 @@ contains Shader, Blend_Mode mode combines Vertices_Colors with Shader.
 The first element of bones should be an object to world space transformation matrix that
 will be applied before performing mesh deformations. If no such transformation is needed,
 it should be the identity matrix.
-boneCount must be at most 100, and thus the size of bones should be at most 100.
+boneCount must be at most 80, and thus the size of bones should be at most 80.
 
 #Param  vertices  triangle mesh to draw ##
 #Param  bones     bone matrix data ##
@@ -5770,7 +5567,7 @@ boneCount must be at most 100, and thus the size of bones should be at most 100.
 #Param  mode      combines Vertices_Colors with Shader, if both are present ##
 #Param  paint     specifies the Shader, used as Vertices texture, may be nullptr ##
 
-#Example
+#NoExample
 void draw(SkCanvas* canvas) {
     SkPaint paint;
     SkPoint points[] = { { 0, 0 }, { 250, 0 }, { 100, 100 }, { 0, 250 } };
@@ -5784,10 +5581,10 @@ void draw(SkCanvas* canvas) {
                                               { 1.0f, 0.0f, 0.0f, 0.0f },
                                               { 1.0f, 0.0f, 0.0f, 0.0f },
                                               { 1.0f, 0.0f, 0.0f, 0.0f } };
-    SkMatrix bones[] = { SkMatrix::I(),
-                         SkMatrix::MakeTrans(0, 20),
-                         SkMatrix::MakeTrans(50, 50),
-                         SkMatrix::MakeTrans(20, 0) };
+    SkVertices::Bone bones[] = { {{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f }},
+                                 {{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 20.0f }},
+                                 {{ 1.0f, 0.0f, 0.0f, 1.0f, 50.0f, 50.0f }},
+                                 {{ 1.0f, 0.0f, 0.0f, 1.0f, 20.0f, 0.0f }} };
     paint.setShader(SkGradientShader::MakeLinear(points, colors, nullptr, 4,
             SkShader::kClamp_TileMode));
     auto vertices = SkVertices::MakeCopy(SkVertices::kTriangleFan_VertexMode,
@@ -5802,8 +5599,8 @@ void draw(SkCanvas* canvas) {
 
 # ------------------------------------------------------------------------------
 
-#Method void drawVertices(const sk_sp<SkVertices>& vertices, const SkMatrix* bones, int boneCount,
-                          SkBlendMode mode, const SkPaint& paint)
+#Method void drawVertices(const sk_sp<SkVertices>& vertices, const SkVertices::Bone bones[],
+                          int boneCount, SkBlendMode mode, const SkPaint& paint)
 
 Draws Vertices vertices, a triangle mesh, using Clip and Matrix. Bone data is used to
 deform vertices with bone weights.
@@ -5812,7 +5609,7 @@ contains Shader, Blend_Mode mode combines Vertices_Colors with Shader.
 The first element of bones should be an object to world space transformation matrix that
 will be applied before performing mesh deformations. If no such transformation is needed,
 it should be the identity matrix.
-boneCount must be at most 100, and thus the size of bones should be at most 100.
+boneCount must be at most 80, and thus the size of bones should be at most 80.
 
 #Param  vertices  triangle mesh to draw ##
 #Param  bones     bone matrix data ##
@@ -5820,7 +5617,7 @@ boneCount must be at most 100, and thus the size of bones should be at most 100.
 #Param  mode      combines Vertices_Colors with Shader, if both are present ##
 #Param  paint     specifies the Shader, used as Vertices texture, may be nullptr ##
 
-#Example
+#NoExample
 void draw(SkCanvas* canvas) {
     SkPaint paint;
     SkPoint points[] = { { 0, 0 }, { 250, 0 }, { 100, 100 }, { 0, 250 } };
@@ -5834,10 +5631,10 @@ void draw(SkCanvas* canvas) {
                                               { 1.0f, 0.0f, 0.0f, 0.0f },
                                               { 1.0f, 0.0f, 0.0f, 0.0f },
                                               { 1.0f, 0.0f, 0.0f, 0.0f } };
-    SkMatrix bones[] = { SkMatrix::I(),
-                         SkMatrix::MakeTrans(0, 20),
-                         SkMatrix::MakeTrans(50, 50),
-                         SkMatrix::MakeTrans(20, 0) };
+    SkVertices::Bone bones[] = { {{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f }},
+                                 {{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 20.0f }},
+                                 {{ 1.0f, 0.0f, 0.0f, 1.0f, 50.0f, 50.0f }},
+                                 {{ 1.0f, 0.0f, 0.0f, 1.0f, 20.0f, 0.0f }} };
     paint.setShader(SkGradientShader::MakeLinear(points, colors, nullptr, 4,
             SkShader::kClamp_TileMode));
     auto vertices = SkVertices::MakeCopy(SkVertices::kTriangleFan_VertexMode,

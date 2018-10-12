@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "common/FixedVector.h"
 #include "common/Optional.h"
 #include "common/angleutils.h"
 #include "libANGLE/Constants.h"
@@ -96,7 +97,17 @@ class FramebufferState final : angle::NonCopyable
     bool hasStencil() const;
 
     GLenum getMultiviewLayout() const;
-    GLsizei getNumViews() const;
+
+    ANGLE_INLINE GLsizei getNumViews() const
+    {
+        const FramebufferAttachment *attachment = getFirstNonNullAttachment();
+        if (attachment == nullptr)
+        {
+            return FramebufferAttachment::kDefaultNumViews;
+        }
+        return attachment->getNumViews();
+    }
+
     const std::vector<Offset> *getViewportOffsets() const;
     GLint getBaseViewIndex() const;
 
@@ -231,15 +242,15 @@ class Framebuffer final : public angle::ObserverInterface,
     GLint getDefaultSamples() const;
     bool getDefaultFixedSampleLocations() const;
     GLint getDefaultLayers() const;
-    void setDefaultWidth(GLint defaultWidth);
-    void setDefaultHeight(GLint defaultHeight);
-    void setDefaultSamples(GLint defaultSamples);
-    void setDefaultFixedSampleLocations(bool defaultFixedSampleLocations);
+    void setDefaultWidth(const Context *context, GLint defaultWidth);
+    void setDefaultHeight(const Context *context, GLint defaultHeight);
+    void setDefaultSamples(const Context *context, GLint defaultSamples);
+    void setDefaultFixedSampleLocations(const Context *context, bool defaultFixedSampleLocations);
     void setDefaultLayers(GLint defaultLayers);
 
-    void invalidateCompletenessCache();
+    void invalidateCompletenessCache(const Context *context);
 
-    GLenum checkStatus(const Context *context)
+    ANGLE_INLINE GLenum checkStatus(const Context *context)
     {
         // The default framebuffer is always complete except when it is surfaceless in which
         // case it is always unsupported.
@@ -256,7 +267,7 @@ class Framebuffer final : public angle::ObserverInterface,
     int getCachedSamples(const Context *context);
 
     // Helper for checkStatus == GL_FRAMEBUFFER_COMPLETE.
-    bool isComplete(const Context *context)
+    ANGLE_INLINE bool isComplete(const Context *context)
     {
         return (checkStatus(context) == GL_FRAMEBUFFER_COMPLETE);
     }
@@ -327,7 +338,7 @@ class Framebuffer final : public angle::ObserverInterface,
     using DirtyBits = angle::BitSet<DIRTY_BIT_MAX>;
     bool hasAnyDirtyBit() const { return mDirtyBits.any(); }
 
-    Error syncState(const Context *context);
+    angle::Result syncState(const Context *context);
 
     // Observer implementation
     void onSubjectStateChange(const Context *context,
@@ -343,19 +354,16 @@ class Framebuffer final : public angle::ObserverInterface,
     Error ensureClearBufferAttachmentsInitialized(const Context *context,
                                                   GLenum buffer,
                                                   GLint drawbuffer);
-    Error ensureDrawAttachmentsInitialized(const Context *context);
+    angle::Result ensureDrawAttachmentsInitialized(const Context *context);
     Error ensureReadAttachmentInitialized(const Context *context, GLbitfield blitMask);
     Box getDimensions() const;
-
-    bool hasTextureAttachment(const Texture *texture) const;
 
   private:
     bool detachResourceById(const Context *context, GLenum resourceType, GLuint resourceId);
     bool detachMatchingAttachment(const Context *context,
                                   FramebufferAttachment *attachment,
                                   GLenum matchType,
-                                  GLuint matchId,
-                                  size_t dirtyBit);
+                                  GLuint matchId);
     GLenum checkStatusWithGLFrontEnd(const Context *context);
     GLenum checkStatusImpl(const Context *context);
     void setAttachment(const Context *context,
@@ -420,9 +428,6 @@ class Framebuffer final : public angle::ObserverInterface,
     // The dirty bits guard is checked when we get a dependent state change message. We verify that
     // we don't set a dirty bit that isn't already set, when inside the dirty bits syncState.
     Optional<DirtyBits> mDirtyBitsGuard;
-
-    // A cache of attached textures for quick validation of feedback loops.
-    mutable Optional<std::set<const FramebufferAttachmentObject *>> mAttachedTextures;
 };
 
 }  // namespace gl

@@ -154,7 +154,7 @@ struct GrContextOptions {
 
     /**
      * Enables driver workaround to use draws instead of glClear. This only applies to
-     * kOpenGL_GrBackend.
+     * GrBackendApi::kOpenGL.
      */
     Enable fUseDrawInsteadOfGLClear = Enable::kDefault;
 
@@ -170,6 +170,13 @@ struct GrContextOptions {
      * Eventually this will just be what is done and will not be optional.
      */
     Enable fSortRenderTargets = Enable::kDefault;
+
+    /**
+     * Allow Ganesh to more aggressively reorder operations. This is an optional
+     * behavior that is only relevant when 'fSortRenderTargets' is enabled.
+     * Eventually this will just be what is done and will not be optional.
+     */
+    Enable fReduceOpListSplitting = Enable::kDefault;
 
     /**
      * Some ES3 contexts report the ES2 external image extension, but not the ES3 version.

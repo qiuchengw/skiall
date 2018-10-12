@@ -80,7 +80,7 @@ TransformFeedback::TransformFeedback(rx::GLImplFactory *implFactory, GLuint id, 
     ASSERT(mImplementation != nullptr);
 }
 
-Error TransformFeedback::onDestroy(const Context *context)
+void TransformFeedback::onDestroy(const Context *context)
 {
     ASSERT(!context || !context->isCurrentTransformFeedback(this));
     if (mState.mProgram)
@@ -94,8 +94,6 @@ Error TransformFeedback::onDestroy(const Context *context)
     {
         mState.mIndexedBuffers[i].set(context, nullptr);
     }
-
-    return NoError();
 }
 
 TransformFeedback::~TransformFeedback()
@@ -169,11 +167,6 @@ void TransformFeedback::resume()
     mImplementation->resume();
 }
 
-bool TransformFeedback::isActive() const
-{
-    return mState.mActive;
-}
-
 bool TransformFeedback::isPaused() const
 {
     return mState.mPaused;
@@ -238,8 +231,7 @@ void TransformFeedback::detachBuffer(const Context *context, GLuint bufferName)
         {
             if (isBound)
             {
-                mState.mIndexedBuffers[index]->onBindingChanged(
-                    context, false, BufferBinding::TransformFeedback, true);
+                mState.mIndexedBuffers[index]->onTFBindingChanged(context, false, true);
             }
             mState.mIndexedBuffers[index].set(context, nullptr);
             mImplementation->bindIndexedBuffer(index, mState.mIndexedBuffers[index]);
@@ -257,13 +249,12 @@ void TransformFeedback::bindIndexedBuffer(const Context *context,
     bool isBound = context && context->isCurrentTransformFeedback(this);
     if (isBound && mState.mIndexedBuffers[index].get())
     {
-        mState.mIndexedBuffers[index]->onBindingChanged(context, false,
-                                                        BufferBinding::TransformFeedback, true);
+        mState.mIndexedBuffers[index]->onTFBindingChanged(context, false, true);
     }
     mState.mIndexedBuffers[index].set(context, buffer, offset, size);
     if (isBound && buffer)
     {
-        buffer->onBindingChanged(context, true, BufferBinding::TransformFeedback, true);
+        buffer->onTFBindingChanged(context, true, true);
     }
 
     mImplementation->bindIndexedBuffer(index, mState.mIndexedBuffers[index]);
@@ -308,7 +299,7 @@ void TransformFeedback::onBindingChanged(const Context *context, bool bound)
     {
         if (buffer.get())
         {
-            buffer->onBindingChanged(context, bound, BufferBinding::TransformFeedback, true);
+            buffer->onTFBindingChanged(context, bound, true);
         }
     }
 }

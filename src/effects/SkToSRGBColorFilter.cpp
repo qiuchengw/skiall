@@ -7,7 +7,6 @@
 
 #include "SkColorSpacePriv.h"
 #include "SkColorSpaceXformSteps.h"
-#include "SkPM4fPriv.h"
 #include "SkRasterPipeline.h"
 #include "SkReadBuffer.h"
 #include "SkString.h"
@@ -23,7 +22,7 @@ void SkToSRGBColorFilter::onAppendStages(SkRasterPipeline* p,
                                          SkArenaAlloc* alloc,
                                          bool shaderIsOpaque) const {
     alloc->make<SkColorSpaceXformSteps>(fSrcColorSpace.get(), kPremul_SkAlphaType,
-                                        sk_srgb_singleton())
+                                        sk_srgb_singleton() , kPremul_SkAlphaType)
         ->apply(p);
 }
 
@@ -52,6 +51,7 @@ void SkToSRGBColorFilter::flatten(SkWriteBuffer& buffer) const {
 #if SK_SUPPORT_GPU
 std::unique_ptr<GrFragmentProcessor> SkToSRGBColorFilter::asFragmentProcessor(
         GrContext*, const GrColorSpaceInfo&) const {
-    return GrColorSpaceXformEffect::Make(fSrcColorSpace.get(), sk_srgb_singleton());
+    return GrColorSpaceXformEffect::Make(fSrcColorSpace.get(), kPremul_SkAlphaType,
+                                         sk_srgb_singleton(),  kPremul_SkAlphaType);
 }
 #endif

@@ -23,9 +23,19 @@ GrMtlCaps::GrMtlCaps(const GrContextOptions& contextOptions, const id<MTLDevice>
     this->initGrCaps(device);
     this->initShaderCaps();
     this->initConfigTable();
+    this->initStencilFormat(device);
 
     this->applyOptionsOverrides(contextOptions);
     fShaderCaps->applyOptionsOverrides(contextOptions);
+
+    // The following are disabled due to the unfinished Metal backend, not because Metal itself
+    // doesn't support it.
+    fBlacklistCoverageCounting = true;   // CCPR shaders have some incompatabilities with SkSLC
+    fFenceSyncSupport = false;           // Fences are not implemented yet
+    fMipMapSupport = false;              // GrMtlGpu::onRegenerateMipMapLevels() not implemented
+    fMultisampleDisableSupport = true;   // MSAA and resolving not implemented yet
+    fDiscardRenderTargetSupport = false; // GrMtlGpuCommandBuffer::discard() not implemented
+    fCrossContextTextureSupport = false; // GrMtlGpu::prepareTextureForCrossContextUsage() not impl
 }
 
 void GrMtlCaps::initFeatureSet(MTLFeatureSet featureSet) {
@@ -204,10 +214,10 @@ void GrMtlCaps::initGrCaps(const id<MTLDevice> device) {
     fMaxTextureSize = fMaxRenderTargetSize;
 
     // Init sample counts. All devices support 1 (i.e. 0 in skia).
-    fSampleCounts.push(1);
+    fSampleCounts.push_back(1);
     for (auto sampleCnt : {2, 4, 8}) {
         if ([device supportsTextureSampleCount:sampleCnt]) {
-            fSampleCounts.push(sampleCnt);
+            fSampleCounts.push_back(sampleCnt);
         }
     }
 
@@ -245,6 +255,7 @@ void GrMtlCaps::initGrCaps(const id<MTLDevice> device) {
 
     fFenceSyncSupport = true;   // always available in Metal
     fCrossContextTextureSupport = false;
+    fHalfFloatVertexAttributeSupport = true;
 }
 
 
@@ -307,11 +318,15 @@ void GrMtlCaps::initShaderCaps() {
         shaderCaps->fDualSourceBlendingSupport = true;
     }
 
+    // TODO: Re-enable this once skbug:8720 is fixed. Will also need to remove asserts in
+    // GrMtlPipelineStateBuilder which assert we aren't using this feature.
+#if 0
     if (this->isIOS()) {
         shaderCaps->fFBFetchSupport = true;
         shaderCaps->fFBFetchNeedsCustomOutput = true; // ??
         shaderCaps->fFBFetchColorName = ""; // Somehow add [[color(0)]] to arguments to frag shader
     }
+#endif
     shaderCaps->fDstReadInShaderSupport = shaderCaps->fFBFetchSupport;
 
     shaderCaps->fIntegerSupport = true;
@@ -325,10 +340,7 @@ void GrMtlCaps::initShaderCaps() {
     // Metal supports unsigned integers.
     shaderCaps->fUnsignedSupport = true;
 
-    shaderCaps->fMaxVertexSamplers =
     shaderCaps->fMaxFragmentSamplers = 16;
-    // For now just cap at the per stage max. If we hit this limit we can come back to adjust this
-    shaderCaps->fMaxCombinedSamplers = shaderCaps->fMaxVertexSamplers;
 }
 
 void GrMtlCaps::initConfigTable() {
@@ -396,6 +408,10 @@ void GrMtlCaps::initConfigTable() {
     // RGBA_half uses RGBA16Float
     info = &fConfigTable[kRGBA_half_GrPixelConfig];
     info->fFlags = ConfigInfo::kAllFlags;
+}
+
+void GrMtlCaps::initStencilFormat(id<MTLDevice> physDev) {
+    fPreferredStencilFormat = StencilFormat{ MTLPixelFormatStencil8, 8, 8, true };
 }
 
 #ifdef GR_TEST_UTILS

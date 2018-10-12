@@ -69,12 +69,12 @@ class Buffer final : public RefCountObject, public LabeledObject
   public:
     Buffer(rx::GLImplFactory *factory, GLuint id);
     ~Buffer() override;
-    Error onDestroy(const Context *context) override;
+    void onDestroy(const Context *context) override;
 
     void setLabel(const std::string &label) override;
     const std::string &getLabel() const override;
 
-    Error bufferData(const Context *context,
+    Error bufferData(Context *context,
                      BufferBinding target,
                      const void *data,
                      GLsizeiptr size,
@@ -117,7 +117,8 @@ class Buffer final : public RefCountObject, public LabeledObject
 
     bool isBound() const;
     bool isBoundForTransformFeedbackAndOtherUse() const;
-    void onBindingChanged(const Context *context, bool bound, BufferBinding target, bool indexed);
+    void onTFBindingChanged(const Context *context, bool bound, bool indexed);
+    void onNonTFBindingChanged(const Context *context, int incr) { mState.mBindingCount += incr; }
 
   private:
     BufferState mState;

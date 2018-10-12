@@ -67,13 +67,27 @@ const char* kDebugLayerNames[] = {
     //"VK_LAYER_LUNARG_screenshot",
 };
 
-static bool should_include_debug_layer(const VkLayerProperties& layerProps) {
-    for (size_t i = 0; i < SK_ARRAY_COUNT(kDebugLayerNames); ++i) {
-        if (!strcmp(layerProps.layerName, kDebugLayerNames[i])) {
-            return true;
+static uint32_t remove_patch_version(uint32_t specVersion) {
+    return (specVersion >> 12) << 12;
+}
+
+// Returns the index into layers array for the layer we want. Returns -1 if not supported.
+static int should_include_debug_layer(const char* layerName,
+                                       uint32_t layerCount, VkLayerProperties* layers,
+                                       uint32_t version) {
+    for (uint32_t i = 0; i < layerCount; ++i) {
+        if (!strcmp(layerName, layers[i].layerName)) {
+            // Since the layers intercept the vulkan calls and forward them on, we need to make sure
+            // layer was written against a version that isn't older than the version of Vulkan we're
+            // using so that it has all the api entry points.
+            if (version <= remove_patch_version(layers[i].specVersion)) {
+                return i;
+            }
+            return -1;
         }
+
     }
-    return false;
+    return -1;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
@@ -89,7 +103,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
         SkDebugf("Vulkan error [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
         return VK_TRUE; // skip further layers
     } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
-        SkDebugf("Vulkan warning [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
+        // There is currently a bug in the spec which doesn't have
+        // VK_STRUCTURE_TYPE_BLEND_OPERATION_ADVANCED_FEATURES_EXT as an allowable pNext struct in
+        // VkDeviceCreateInfo. So we ignore that warning since it is wrong.
+        if (!strstr(pMessage,
+                    "pCreateInfo->pNext chain includes a structure with unexpected VkStructureType "
+                    "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT")) {
+            SkDebugf("Vulkan warning [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
+        }
     } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
         SkDebugf("Vulkan perf warning [%s]: code: %d: %s\n", pLayerPrefix, messageCode, pMessage);
     } else {
@@ -100,12 +121,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
 #endif
 
 #define GET_PROC_LOCAL(F, inst, device) PFN_vk ## F F = (PFN_vk ## F) getProc("vk" #F, inst, device)
-
-#ifdef SK_ENABLE_VK_LAYERS
-static uint32_t remove_patch_version(uint32_t specVersion) {
-    return (specVersion >> 12) << 12;
-}
-#endif
 
 static bool init_instance_extensions_and_layers(GrVkGetProc getProc,
                                                 uint32_t specVersion,
@@ -139,10 +154,11 @@ static bool init_instance_extensions_and_layers(GrVkGetProc getProc,
     }
 
     uint32_t nonPatchVersion = remove_patch_version(specVersion);
-    for (uint32_t i = 0; i < layerCount; ++i) {
-        if (nonPatchVersion <= remove_patch_version(layers[i].specVersion) &&
-            should_include_debug_layer(layers[i])) {
-            instanceLayers->push_back() = layers[i];
+    for (size_t i = 0; i < SK_ARRAY_COUNT(kDebugLayerNames); ++i) {
+        int idx = should_include_debug_layer(kDebugLayerNames[i], layerCount, layers,
+                                             nonPatchVersion);
+        if (idx != -1) {
+            instanceLayers->push_back() = layers[idx];
         }
     }
     delete[] layers;
@@ -223,10 +239,11 @@ static bool init_device_extensions_and_layers(GrVkGetProc getProc, uint32_t spec
     }
 
     uint32_t nonPatchVersion = remove_patch_version(specVersion);
-    for (uint32_t i = 0; i < layerCount; ++i) {
-        if (nonPatchVersion <= remove_patch_version(layers[i].specVersion) &&
-            should_include_debug_layer(layers[i])) {
-            deviceLayers->push_back() = layers[i];
+    for (size_t i = 0; i < SK_ARRAY_COUNT(kDebugLayerNames); ++i) {
+        int idx = should_include_debug_layer(kDebugLayerNames[i], layerCount, layers,
+                                             nonPatchVersion);
+        if (idx != -1) {
+            deviceLayers->push_back() = layers[idx];
         }
     }
     delete[] layers;
@@ -313,9 +330,43 @@ static void destroy_instance(GrVkGetProc getProc, VkInstance inst,
     grVkDestroyInstance(inst, nullptr);
 }
 
+static void setup_extension_features(GrVkGetProc getProc, VkInstance inst, VkPhysicalDevice physDev,
+                                     uint32_t physDeviceVersion, GrVkExtensions* extensions,
+                                     VkPhysicalDeviceFeatures2* features) {
+    SkASSERT(physDeviceVersion >= VK_MAKE_VERSION(1, 1, 0) ||
+             extensions->hasExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 1));
+
+    // Setup all extension feature structs we may want to use.
+
+    void** tailPNext = &features->pNext;
+
+    VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT* blend = nullptr;
+    if (extensions->hasExtension(VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME, 2)) {
+        blend = (VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT*) sk_malloc_throw(
+                sizeof(VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT));
+        blend->sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT;
+        blend->pNext = nullptr;
+        *tailPNext = blend;
+        tailPNext = &blend->pNext;
+    }
+
+    if (physDeviceVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+        ACQUIRE_VK_PROC_LOCAL(GetPhysicalDeviceFeatures2, inst, VK_NULL_HANDLE);
+        grVkGetPhysicalDeviceFeatures2(physDev, features);
+    } else {
+        SkASSERT(extensions->hasExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+                                          1));
+        ACQUIRE_VK_PROC_LOCAL(GetPhysicalDeviceFeatures2KHR, inst, VK_NULL_HANDLE);
+        grVkGetPhysicalDeviceFeatures2KHR(physDev, features);
+    }
+
+    // If we want to disable any extension features do so here.
+}
+
 bool CreateVkBackendContext(GrVkGetProc getProc,
                             GrVkBackendContext* ctx,
                             GrVkExtensions* extensions,
+                            VkPhysicalDeviceFeatures2* features,
                             VkDebugReportCallbackEXT* debugCallback,
                             uint32_t* presentQueueIndexPtr,
                             CanPresentFn canPresent) {
@@ -525,12 +576,31 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
         }
     }
 
-    // query to get the physical device properties
-    VkPhysicalDeviceFeatures deviceFeatures;
-    grVkGetPhysicalDeviceFeatures(physDev, &deviceFeatures);
+    extensions->init(getProc, inst, physDev,
+                     (uint32_t) instanceExtensionNames.count(),
+                     instanceExtensionNames.begin(),
+                     (uint32_t) deviceExtensionNames.count(),
+                     deviceExtensionNames.begin());
+
+    memset(features, 0, sizeof(VkPhysicalDeviceFeatures2));
+    features->sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features->pNext = nullptr;
+
+    VkPhysicalDeviceFeatures* deviceFeatures = &features->features;
+    void* pointerToFeatures = nullptr;
+    if (physDeviceVersion >= VK_MAKE_VERSION(1, 1, 0) ||
+        extensions->hasExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, 1)) {
+        setup_extension_features(getProc, inst, physDev, physDeviceVersion, extensions, features);
+        // If we set the pNext of the VkDeviceCreateInfo to our VkPhysicalDeviceFeatures2 struct,
+        // the device creation will use that instead of the ppEnabledFeatures.
+        pointerToFeatures = features;
+    } else {
+        grVkGetPhysicalDeviceFeatures(physDev, deviceFeatures);
+    }
+
     // this looks like it would slow things down,
     // and we can't depend on it on all platforms
-    deviceFeatures.robustBufferAccess = VK_FALSE;
+    deviceFeatures->robustBufferAccess = VK_FALSE;
 
     float queuePriorities[1] = { 0.0 };
     // Here we assume no need for swapchain queue
@@ -556,16 +626,16 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
     uint32_t queueInfoCount = (presentQueueIndex != graphicsQueueIndex) ? 2 : 1;
 
     const VkDeviceCreateInfo deviceInfo = {
-        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,    // sType
-        nullptr,                                 // pNext
-        0,                                       // VkDeviceCreateFlags
-        queueInfoCount,                          // queueCreateInfoCount
-        queueInfo,                               // pQueueCreateInfos
-        (uint32_t) deviceLayerNames.count(),     // layerCount
-        deviceLayerNames.begin(),                // ppEnabledLayerNames
-        (uint32_t) deviceExtensionNames.count(), // extensionCount
-        deviceExtensionNames.begin(),            // ppEnabledExtensionNames
-        &deviceFeatures                          // ppEnabledFeatures
+        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,        // sType
+        pointerToFeatures,                           // pNext
+        0,                                           // VkDeviceCreateFlags
+        queueInfoCount,                              // queueCreateInfoCount
+        queueInfo,                                   // pQueueCreateInfos
+        (uint32_t) deviceLayerNames.count(),         // layerCount
+        deviceLayerNames.begin(),                    // ppEnabledLayerNames
+        (uint32_t) deviceExtensionNames.count(),     // extensionCount
+        deviceExtensionNames.begin(),                // ppEnabledExtensionNames
+        pointerToFeatures ? nullptr : deviceFeatures // ppEnabledFeatures
     };
 
     err = grVkCreateDevice(physDev, &deviceInfo, nullptr, &device);
@@ -578,12 +648,6 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
     VkQueue queue;
     grVkGetDeviceQueue(device, graphicsQueueIndex, 0, &queue);
 
-    extensions->init(getProc, inst, physDev,
-                     (uint32_t) instanceExtensionNames.count(),
-                     instanceExtensionNames.begin(),
-                     (uint32_t) deviceExtensionNames.count(),
-                     deviceExtensionNames.begin());
-
     ctx->fInstance = inst;
     ctx->fPhysicalDevice = physDev;
     ctx->fDevice = device;
@@ -591,11 +655,28 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
     ctx->fGraphicsQueueIndex = graphicsQueueIndex;
     ctx->fInstanceVersion = instanceVersion;
     ctx->fVkExtensions = extensions;
-    ctx->fDeviceFeatures = deviceFeatures;
+    ctx->fDeviceFeatures2 = features;
     ctx->fGetProc = getProc;
     ctx->fOwnsInstanceAndDevice = false;
 
     return true;
+}
+
+void FreeVulkanFeaturesStructs(const VkPhysicalDeviceFeatures2* features) {
+    // All Vulkan structs that could be part of the features chain will start with the
+    // structure type followed by the pNext pointer. We cast to the CommonVulkanHeader
+    // so we can get access to the pNext for the next struct.
+    struct CommonVulkanHeader {
+        VkStructureType sType;
+        void*           pNext;
+    };
+
+    void* pNext = features->pNext;
+    while (pNext) {
+        void* current = pNext;
+        pNext = static_cast<CommonVulkanHeader*>(current)->pNext;
+        sk_free(current);
+    }
 }
 
 }

@@ -363,8 +363,7 @@ static void serialize_and_compare_typeface(sk_sp<SkTypeface> typeface, const cha
 static void TestPictureTypefaceSerialization(skiatest::Reporter* reporter) {
     {
         // Load typeface from file to test CreateFromFile with index.
-        auto data = GetResourceAsData("fonts/test.ttc");
-        auto typeface = SkTypeface::MakeFromStream(new SkMemoryStream(std::move(data)), 1);
+        auto typeface = MakeResourceAsTypeface("fonts/test.ttc", 1);
         if (!typeface) {
             INFOF(reporter, "Could not run fontstream test because test.ttc not found.");
         } else {
@@ -575,7 +574,7 @@ DEF_TEST(Serialization, reporter) {
 
         SkBitmap diffuse = sk_tool_utils::create_checkerboard_bitmap(
                 kTexSize, kTexSize,
-                sk_tool_utils::color_to_565(0x0),
+                0x00000000,
                 sk_tool_utils::color_to_565(0xFF804020),
                 8);
 

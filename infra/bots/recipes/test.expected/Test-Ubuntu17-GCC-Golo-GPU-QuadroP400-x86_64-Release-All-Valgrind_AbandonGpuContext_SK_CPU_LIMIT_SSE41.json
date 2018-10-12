@@ -205,6 +205,10 @@
       "gm",
       "_",
       "dftext",
+      "gltestpersistentcache",
+      "gm",
+      "_",
+      "glyph_pos_h_b",
       "_",
       "svg",
       "_",
@@ -312,6 +316,7 @@
       "--match",
       "~Threaded",
       "--nonativeFonts",
+      "--reduceOpListSplitting",
       "--verbose",
       "--abandonGpuContext"
     ],

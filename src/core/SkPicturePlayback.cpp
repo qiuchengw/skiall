@@ -583,17 +583,14 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
                 canvas->drawText(text.text(), text.length(), ptr[0], ptr[1], *paint);
             }
         } break;
-        case DRAW_TEXT_ON_PATH: {
+        case DRAW_TEXT_ON_PATH_RETIRED_08_2018_REMOVED_10_2018: {
             const SkPaint* paint = fPictureData->getPaint(reader);
             TextContainer text(reader, paint);
-            const SkPath& path = fPictureData->getPath(reader);
+            /* ignored */ fPictureData->getPath(reader);
             SkMatrix matrix;
             reader->readMatrix(&matrix);
             BREAK_ON_READ_ERROR(reader);
-
-            if (paint && text.text()) {
-                canvas->drawTextOnPath(text.text(), text.length(), path, &matrix, *paint);
-            }
+            // no longer supported, so we draw nothing
         } break;
         case DRAW_TEXT_RSXFORM: {
             const SkPaint* paint = fPictureData->getPaint(reader);
@@ -616,9 +613,9 @@ void SkPicturePlayback::handleOp(SkReadBuffer* reader,
             const SkPaint* paint = fPictureData->getPaint(reader);
             const SkVertices* vertices = fPictureData->getVertices(reader);
             const int boneCount = reader->readInt();
-            const SkMatrix* bones = boneCount ?
-                                    (const SkMatrix*) reader->skip(boneCount, sizeof(SkMatrix)) :
-                                    nullptr;
+            const SkVertices::Bone* bones = boneCount ?
+                    (const SkVertices::Bone*) reader->skip(boneCount, sizeof(SkVertices::Bone)) :
+                    nullptr;
             SkBlendMode bmode = reader->read32LE(SkBlendMode::kLastMode);
             BREAK_ON_READ_ERROR(reader);
 

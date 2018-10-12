@@ -46,17 +46,20 @@ VertexBinding &VertexBinding::operator=(VertexBinding &&binding)
 
 void VertexBinding::setBuffer(const gl::Context *context, Buffer *bufferIn, bool containerIsBound)
 {
-    if (mBuffer.get() && containerIsBound)
-        mBuffer->onBindingChanged(context, false, BufferBinding::Array, true);
+    if (containerIsBound)
+    {
+        if (mBuffer.get())
+            mBuffer->onNonTFBindingChanged(context, -1);
+        if (bufferIn)
+            bufferIn->onNonTFBindingChanged(context, 1);
+    }
     mBuffer.set(context, bufferIn);
-    if (mBuffer.get() && containerIsBound)
-        mBuffer->onBindingChanged(context, true, BufferBinding::Array, true);
 }
 
-void VertexBinding::onContainerBindingChanged(const Context *context, bool bound) const
+void VertexBinding::onContainerBindingChanged(const Context *context, int incr) const
 {
     if (mBuffer.get())
-        mBuffer->onBindingChanged(context, bound, BufferBinding::Array, true);
+        mBuffer->onNonTFBindingChanged(context, incr);
 }
 
 VertexAttribute::VertexAttribute(GLuint bindingIndex)
@@ -123,21 +126,29 @@ void VertexAttribute::updateCachedElementLimit(const VertexBinding &binding)
     angle::CheckedNumeric<GLint64> elementLimit =
         (bufferSize - bufferOffset - attribOffset - attribSize);
 
-    if (binding.getStride() > 0)
+    // Use the special integer overflow value if there was a math error.
+    if (!elementLimit.IsValid())
     {
-        angle::CheckedNumeric<GLint64> bindingStride(binding.getStride());
-        elementLimit /= bindingStride;
-    }
-    else
-    {
-        // Special case for a zero stride. If we can fit one vertex we can fit infinite vertices.
-        mCachedElementLimit = elementLimit.ValueOrDefault(-1);
-        if (mCachedElementLimit >= 0)
-        {
-            mCachedElementLimit = std::numeric_limits<GLint64>::max();
-        }
+        static_assert(kIntegerOverflow < 0, "Unexpected value");
+        mCachedElementLimit = kIntegerOverflow;
         return;
     }
+
+    mCachedElementLimit = elementLimit.ValueOrDie();
+    if (mCachedElementLimit < 0)
+    {
+        return;
+    }
+
+    if (binding.getStride() == 0)
+    {
+        // Special case for a zero stride. If we can fit one vertex we can fit infinite vertices.
+        mCachedElementLimit = std::numeric_limits<GLint64>::max();
+        return;
+    }
+
+    angle::CheckedNumeric<GLint64> bindingStride(binding.getStride());
+    elementLimit /= bindingStride;
 
     if (binding.getDivisor() > 0)
     {
@@ -149,7 +160,7 @@ void VertexAttribute::updateCachedElementLimit(const VertexBinding &binding)
         elementLimit += bindingDivisor - 1;
     }
 
-    mCachedElementLimit = elementLimit.ValueOrDefault(-1);
+    mCachedElementLimit = elementLimit.ValueOrDefault(kIntegerOverflow);
 }
 
 size_t ComputeVertexAttributeTypeSize(const VertexAttribute& attrib)

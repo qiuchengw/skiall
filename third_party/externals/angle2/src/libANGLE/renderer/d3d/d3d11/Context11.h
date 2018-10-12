@@ -12,13 +12,13 @@
 
 #include "libANGLE/renderer/ContextImpl.h"
 
-#include "libANGLE/renderer/d3d/RendererD3D.h"
+#include "libANGLE/renderer/d3d/ContextD3D.h"
 
 namespace rx
 {
 class Renderer11;
 
-class Context11 : public ContextImpl, public MultisampleTextureInitializer, public d3d::Context
+class Context11 : public ContextD3D, public MultisampleTextureInitializer
 {
   public:
     Context11(const gl::ContextState &state, Renderer11 *renderer);
@@ -70,10 +70,10 @@ class Context11 : public ContextImpl, public MultisampleTextureInitializer, publ
     gl::Error finish(const gl::Context *context) override;
 
     // Drawing methods.
-    gl::Error drawArrays(const gl::Context *context,
-                         gl::PrimitiveMode mode,
-                         GLint first,
-                         GLsizei count) override;
+    angle::Result drawArrays(const gl::Context *context,
+                             gl::PrimitiveMode mode,
+                             GLint first,
+                             GLsizei count) override;
     gl::Error drawArraysInstanced(const gl::Context *context,
                                   gl::PrimitiveMode mode,
                                   GLint first,
@@ -123,7 +123,9 @@ class Context11 : public ContextImpl, public MultisampleTextureInitializer, publ
     void popDebugGroup() override;
 
     // State sync with dirty bits.
-    gl::Error syncState(const gl::Context *context, const gl::State::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::State::DirtyBits &dirtyBits,
+                            const gl::State::DirtyBits &bitMask) override;
 
     // Disjoint timer queries
     GLint getGPUDisjoint() override;
@@ -152,9 +154,9 @@ class Context11 : public ContextImpl, public MultisampleTextureInitializer, publ
     angle::Result triggerDrawCallProgramRecompilation(const gl::Context *context,
                                                       gl::PrimitiveMode drawMode);
 
-    gl::Error getIncompleteTexture(const gl::Context *context,
-                                   gl::TextureType type,
-                                   gl::Texture **textureOut);
+    angle::Result getIncompleteTexture(const gl::Context *context,
+                                       gl::TextureType type,
+                                       gl::Texture **textureOut);
 
     gl::Error initializeMultisampleTextureToBlack(const gl::Context *context,
                                                   gl::Texture *glTexture) override;

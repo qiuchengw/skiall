@@ -22,7 +22,8 @@
 
 namespace skiagm {
 
-static constexpr GrGeometryProcessor::Attribute gVertex{"vertex", kFloat2_GrVertexAttribType};
+static constexpr GrGeometryProcessor::Attribute gVertex =
+        {"vertex", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
 
 /**
  * This is a GPU-backend specific test. It ensures that SkSL properly identifies clockwise-winding
@@ -108,7 +109,6 @@ private:
     RequiresDstTexture finalize(const GrCaps&, const GrAppliedClip*) override {
         return RequiresDstTexture::kNo;
     }
-    bool onCombineIfPossible(GrOp* other, const GrCaps& caps) override { return false; }
     void onPrepare(GrOpFlushState*) override {}
     void onExecute(GrOpFlushState* flushState) override {
         SkPoint vertices[4] = {
@@ -119,11 +119,11 @@ private:
         };
         sk_sp<GrBuffer> vertexBuffer(flushState->resourceProvider()->createBuffer(
                 sizeof(vertices), kVertex_GrBufferType, kStatic_GrAccessPattern,
-                GrResourceProvider::kNone_Flag, vertices));
+                GrResourceProvider::Flags::kNone, vertices));
         if (!vertexBuffer) {
             return;
         }
-        GrPipeline pipeline(flushState->drawOpArgs().fProxy, GrPipeline::ScissorState::kDisabled,
+        GrPipeline pipeline(flushState->drawOpArgs().fProxy, GrScissorTest::kDisabled,
                             SkBlendMode::kPlus);
         GrMesh mesh(GrPrimitiveType::kTriangleStrip);
         mesh.setNonIndexedNonInstanced(4);
@@ -165,8 +165,8 @@ void ClockwiseGM::onDraw(SkCanvas* canvas) {
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, false, 0));
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, true, 100));
         rtc->drawTexture(GrNoClip(), sk_ref_sp(topLeftRTC->asTextureProxy()),
-                         GrSamplerState::Filter::kNearest, 0xffffffff, {0,0,100,200},
-                         {100,0,200,200}, GrAA::kNo,
+                         GrSamplerState::Filter::kNearest, 0xffffffff, {0, 0, 100, 200},
+                         {100, 0, 200, 200}, GrQuadAAFlags::kNone,
                          SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint, SkMatrix::I(),
                          nullptr, nullptr);
     }
@@ -180,8 +180,8 @@ void ClockwiseGM::onDraw(SkCanvas* canvas) {
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, false, 0));
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, true, 100));
         rtc->drawTexture(GrNoClip(), sk_ref_sp(topLeftRTC->asTextureProxy()),
-                         GrSamplerState::Filter::kNearest, 0xffffffff, {0,0,100,200},
-                         {200,0,300,200}, GrAA::kNo,
+                         GrSamplerState::Filter::kNearest, 0xffffffff, {0, 0, 100, 200},
+                         {200, 0, 300, 200}, GrQuadAAFlags::kNone,
                          SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint, SkMatrix::I(),
                          nullptr, nullptr);
     }

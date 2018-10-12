@@ -89,12 +89,6 @@ void SkOverdrawCanvas::onDrawPosTextH(const void* text, size_t byteLength, const
     this->drawPosTextCommon(text, byteLength, (SkScalar*) xs, 1, SkPoint::Make(0, y), paint);
 }
 
-void SkOverdrawCanvas::onDrawTextOnPath(const void* text, size_t byteLength, const SkPath& path,
-                                        const SkMatrix* matrix, const SkPaint& paint) {
-    SkASSERT(false);
-    return;
-}
-
 typedef int (*CountTextProc)(const char* text, const char* stop);
 static int count_utf16(const char* text, const char* stop) {
     const uint16_t* prev = (const uint16_t*)text;
@@ -216,9 +210,9 @@ void SkOverdrawCanvas::onDrawPoints(PointMode mode, size_t count, const SkPoint 
     fList[0]->onDrawPoints(mode, count, points, this->overdrawPaint(paint));
 }
 
-void SkOverdrawCanvas::onDrawVerticesObject(const SkVertices* vertices, const SkMatrix* bones,
-                                            int boneCount, SkBlendMode blendMode,
-                                            const SkPaint& paint) {
+void SkOverdrawCanvas::onDrawVerticesObject(const SkVertices* vertices,
+                                            const SkVertices::Bone bones[], int boneCount,
+                                            SkBlendMode blendMode, const SkPaint& paint) {
     fList[0]->onDrawVerticesObject(vertices,
                                    bones,
                                    boneCount,

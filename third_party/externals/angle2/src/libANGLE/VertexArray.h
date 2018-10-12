@@ -86,6 +86,10 @@ class VertexArrayState final : angle::NonCopyable
     // attribs.
     gl::AttributesMask mClientMemoryAttribsMask;
     gl::AttributesMask mNullPointerClientMemoryAttribsMask;
+
+    // Used for validation cache. Indexed by attribute.
+    AttributesMask mCachedMappedArrayBuffers;
+    AttributesMask mCachedEnabledMappedArrayBuffers;
 };
 
 class VertexArray final : public angle::ObserverInterface,
@@ -178,7 +182,10 @@ class VertexArray final : public angle::ObserverInterface,
         return mState.hasEnabledNullPointerClientArray();
     }
 
-    bool hasMappedEnabledArrayBuffer() const;
+    bool hasMappedEnabledArrayBuffer() const
+    {
+        return mState.mCachedEnabledMappedArrayBuffers.any();
+    }
 
     // Observer implementation
     void onSubjectStateChange(const gl::Context *context,
@@ -241,13 +248,13 @@ class VertexArray final : public angle::ObserverInterface,
 
     static size_t GetVertexIndexFromDirtyBit(size_t dirtyBit);
 
-    gl::Error syncState(const Context *context);
+    angle::Result syncState(const Context *context);
     bool hasAnyDirtyBit() const { return mDirtyBits.any(); }
 
     ComponentTypeMask getAttributesTypeMask() const { return mState.mVertexAttributesTypeMask; }
     AttributesMask getAttributesMask() const { return mState.mEnabledAttributesMask; }
 
-    void onBindingChanged(const Context *context, bool bound);
+    void onBindingChanged(const Context *context, int incr);
     bool hasTransformFeedbackBindingConflict(const gl::Context *context) const;
 
   private:
@@ -265,6 +272,7 @@ class VertexArray final : public angle::ObserverInterface,
     // These are used to optimize draw call validation.
     void updateCachedBufferBindingSize(VertexBinding *binding);
     void updateCachedTransformFeedbackBindingValidation(size_t bindingIndex, const Buffer *buffer);
+    void updateCachedMappedArrayBuffers(VertexBinding *binding);
 
     GLuint mId;
 

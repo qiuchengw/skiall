@@ -10,9 +10,13 @@
 #include "SkMatrix.h"
 #include "SkPath.h"
 #include "SkRRect.h"
+#include "SkSGColor.h"
+#include "SkSGDraw.h"
 #include "SkSGGradient.h"
+#include "SkSGGroup.h"
 #include "SkSGPath.h"
 #include "SkSGRect.h"
+#include "SkSGText.h"
 #include "SkSGTransform.h"
 #include "SkSGTrimEffect.h"
 #include "SkTo.h"
@@ -39,7 +43,7 @@ void RRectAdapter::apply() {
 TransformAdapter::TransformAdapter(sk_sp<sksg::Matrix> matrix)
     : fMatrixNode(std::move(matrix)) {}
 
-void TransformAdapter::apply() {
+SkMatrix TransformAdapter::totalMatrix() const {
     SkMatrix t = SkMatrix::MakeTrans(-fAnchorPoint.x(), -fAnchorPoint.y());
 
     t.postScale(fScale.x() / 100, fScale.y() / 100); // 100% based
@@ -47,7 +51,11 @@ void TransformAdapter::apply() {
     t.postTranslate(fPosition.x(), fPosition.y());
     // TODO: skew
 
-    fMatrixNode->setMatrix(t);
+    return t;
+}
+
+void TransformAdapter::apply() {
+    fMatrixNode->setMatrix(this->totalMatrix());
 }
 
 PolyStarAdapter::PolyStarAdapter(sk_sp<sksg::Path> wrapped_node, Type t)
@@ -167,6 +175,77 @@ void TrimEffectAdapter::apply() {
     fTrimEffect->setStart(startT);
     fTrimEffect->setStop(stopT);
     fTrimEffect->setMode(mode);
+}
+
+TextAdapter::TextAdapter(sk_sp<sksg::Group> root)
+    : fRoot(std::move(root))
+    , fTextNode(sksg::Text::Make(nullptr, SkString()))
+    , fFillColor(sksg::Color::Make(SK_ColorTRANSPARENT))
+    , fStrokeColor(sksg::Color::Make(SK_ColorTRANSPARENT))
+    , fFillNode(sksg::Draw::Make(fTextNode, fFillColor))
+    , fStrokeNode(sksg::Draw::Make(fTextNode, fStrokeColor))
+    , fHadFill(false)
+    , fHadStroke(false) {
+    // Build a SG fragment with the following general format:
+    //
+    // [Group]
+    //   [Draw]
+    //     [FillPaint]
+    //     [Text]*
+    //   [Draw]
+    //     [StrokePaint]
+    //     [Text]*
+    //
+    // * where the text node is shared
+
+    fTextNode->setFlags(fTextNode->getFlags() |
+                        SkPaint::kAntiAlias_Flag |
+                        SkPaint::kSubpixelText_Flag);
+    fTextNode->setHinting(SkPaint::kNo_Hinting);
+
+    fStrokeColor->setStyle(SkPaint::kStroke_Style);
+}
+
+void TextAdapter::apply() {
+    // Push text props to the scene graph.
+    fTextNode->setTypeface(fText.fTypeface);
+    fTextNode->setText(fText.fText);
+    fTextNode->setSize(fText.fTextSize);
+    fTextNode->setAlign(fText.fAlign);
+
+    fFillColor->setColor(fText.fFillColor);
+    fStrokeColor->setColor(fText.fStrokeColor);
+    fStrokeColor->setStrokeWidth(fText.fStrokeWidth);
+
+    // Turn the state transition into a tri-state value:
+    //   -1: detach node
+    //    0: no change
+    //    1: attach node
+    const auto   fill_change = SkToInt(fText.fHasFill) - SkToInt(fHadFill);
+    const auto stroke_change = SkToInt(fText.fHasStroke) - SkToInt(fHadStroke);
+
+    // Sync SG topology.
+    if (fill_change || stroke_change) {
+        // This is trickier than it should be because sksg::Group only allows adding children
+        // in paint-order.
+        if (stroke_change < 0 || (fHadStroke && fill_change > 0)) {
+            fRoot->removeChild(fStrokeNode);
+        }
+
+        if (fill_change < 0) {
+            fRoot->removeChild(fFillNode);
+        } else if (fill_change > 0) {
+            fRoot->addChild(fFillNode);
+        }
+
+        if (stroke_change > 0 || (fHadStroke && fill_change > 0)) {
+            fRoot->addChild(fStrokeNode);
+        }
+    }
+
+    // Track current state.
+    fHadFill   = fText.fHasFill;
+    fHadStroke = fText.fHasStroke;
 }
 
 } // namespace skottie

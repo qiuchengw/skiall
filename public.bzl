@@ -66,7 +66,6 @@ def skia_public_hdrs():
         ["include/**/*.h"],
         exclude = [
             "include/private/**/*",
-            "include/views/**/*",  # Not used.
         ],
     )
 
@@ -239,14 +238,12 @@ BASE_SRCS_ALL = struct(
         "src/utils/android/**/*",
         "src/utils/mac/**/*",
         "src/utils/win/**/*",
-        "src/views/sdl/*",
-        "src/views/win/*",
-        "src/views/unix/*",
 
         # Exclude multiple definitions.
         # TODO(mtklein): Move to opts?
         "src/pdf/SkDocument_PDF_None.cpp",  # We use src/pdf/SkPDFDocument.cpp.
         "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+        "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp",
 
         # Exclude files that don't compile everywhere.
         "src/svg/**/*",  # Depends on xml, SkJpegCodec, and SkPngCodec.
@@ -254,9 +251,6 @@ BASE_SRCS_ALL = struct(
 
         # Conflicting dependencies among Lua versions. See cl/107087297.
         "src/utils/SkLua*",
-
-        # Not used.
-        "src/views/**/*",
 
         # Currently exclude all vulkan specific files
         "src/gpu/vk/*",
@@ -269,9 +263,6 @@ BASE_SRCS_ALL = struct(
 
         # Atlas text
         "src/atlastext/*",
-
-        # Not time for skcms in Google3 yet.
-        "src/core/SkColorSpaceXform_skcms.cpp",
 
         # Compute backend not yet even hooked into Skia.
         "src/compute/**/*",
@@ -322,8 +313,7 @@ BASE_SRCS_UNIX = struct(
 # Platform-dependent SRCS for google3-default Android.
 BASE_SRCS_ANDROID = struct(
     include = [
-        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
-        # TODO(benjaminwagner): Figure out how to compile with EGL.
+        "src/gpu/gl/android/*.cpp",
         "src/ports/**/*.cpp",
         "src/ports/**/*.h",
     ],
@@ -407,6 +397,7 @@ INCLUDES = [
     "include/codec",
     "include/config",
     "include/core",
+    "include/docs",
     "include/effects",
     "include/encode",
     "include/gpu",
@@ -426,6 +417,7 @@ INCLUDES = [
     "src/ports",
     "src/sfnt",
     "src/shaders",
+    "src/shaders/gradients",
     "src/sksl",
     "src/utils",
     "third_party/gif",
@@ -439,6 +431,8 @@ DM_SRCS_ALL = struct(
     include = [
         "dm/*.cpp",
         "dm/*.h",
+        "experimental/pipe/*.cpp",
+        "experimental/pipe/*.h",
         "experimental/svg/model/*.cpp",
         "experimental/svg/model/*.h",
         "gm/*.cpp",
@@ -483,8 +477,6 @@ DM_SRCS_ALL = struct(
         "tools/fonts/test_font_index.inc",
         "tools/gpu/**/*.cpp",
         "tools/gpu/**/*.h",
-        "tools/picture_utils.cpp",
-        "tools/picture_utils.h",
         "tools/random_parse_path.cpp",
         "tools/random_parse_path.h",
         "tools/sk_pixel_iter.h",
@@ -534,6 +526,7 @@ def dm_srcs(os_conditions):
 DM_INCLUDES = [
     "dm",
     "gm",
+    "experimental/pipe",
     "experimental/svg/model",
     "src/codec",
     "src/core",
@@ -587,6 +580,7 @@ def base_copts(os_conditions):
             ],
             # ANDROID
             [
+                "-Wno-implicit-fallthrough",  # Some intentional fallthrough.
                 # 'GrResourceCache' declared with greater visibility than the
                 # type of its field 'GrResourceCache::fPurgeableQueue'... bogus.
                 "-Wno-error=attributes",
@@ -661,6 +655,7 @@ def base_linkopts(os_conditions):
             # ANDROID
             [
                 "-lEGL",
+                "-lGLESv2",
             ],
             # IOS
             [

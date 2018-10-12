@@ -17,10 +17,10 @@
 #include "compiler/translator/BuiltInFunctionEmulatorHLSL.h"
 #include "compiler/translator/ImageFunctionHLSL.h"
 #include "compiler/translator/InfoSink.h"
+#include "compiler/translator/ResourcesHLSL.h"
 #include "compiler/translator/StructureHLSL.h"
 #include "compiler/translator/TextureFunctionHLSL.h"
 #include "compiler/translator/TranslatorHLSL.h"
-#include "compiler/translator/UniformHLSL.h"
 #include "compiler/translator/UtilsHLSL.h"
 #include "compiler/translator/blocklayout.h"
 #include "compiler/translator/tree_ops/RemoveSwitchFallThrough.h"
@@ -59,22 +59,25 @@ bool IsDeclarationWrittenOut(TIntermDeclaration *node)
             variable->getQualifier() == EvqConst || variable->getQualifier() == EvqShared);
 }
 
-bool IsInStd140InterfaceBlock(TIntermTyped *node)
+bool IsInStd140UniformBlock(TIntermTyped *node)
 {
     TIntermBinary *binaryNode = node->getAsBinaryNode();
 
     if (binaryNode)
     {
-        return IsInStd140InterfaceBlock(binaryNode->getLeft());
+        return IsInStd140UniformBlock(binaryNode->getLeft());
     }
 
     const TType &type = node->getType();
 
-    // determine if we are in the standard layout
-    const TInterfaceBlock *interfaceBlock = type.getInterfaceBlock();
-    if (interfaceBlock)
+    if (type.getQualifier() == EvqUniform)
     {
-        return (interfaceBlock->blockStorage() == EbsStd140);
+        // determine if we are in the standard layout
+        const TInterfaceBlock *interfaceBlock = type.getInterfaceBlock();
+        if (interfaceBlock)
+        {
+            return (interfaceBlock->blockStorage() == EbsStd140);
+        }
     }
 
     return false;
@@ -236,7 +239,7 @@ OutputHLSL::OutputHLSL(sh::GLenum shaderType,
 
     unsigned int firstUniformRegister =
         ((compileOptions & SH_SKIP_D3D_CONSTANT_REGISTER_ZERO) != 0) ? 1u : 0u;
-    mUniformHLSL = new UniformHLSL(mStructureHLSL, outputType, uniforms, firstUniformRegister);
+    mResourcesHLSL = new ResourcesHLSL(mStructureHLSL, outputType, uniforms, firstUniformRegister);
 
     if (mOutputType == SH_HLSL_3_0_OUTPUT)
     {
@@ -244,17 +247,20 @@ OutputHLSL::OutputHLSL(sh::GLenum shaderType,
         // Vertex shaders need a slightly different set: dx_DepthRange, dx_ViewCoords and
         // dx_ViewAdjust.
         // In both cases total 3 uniform registers need to be reserved.
-        mUniformHLSL->reserveUniformRegisters(3);
+        mResourcesHLSL->reserveUniformRegisters(3);
     }
 
     // Reserve registers for the default uniform block and driver constants
-    mUniformHLSL->reserveUniformBlockRegisters(2);
+    mResourcesHLSL->reserveUniformBlockRegisters(2);
+
+    mSSBOOutputHLSL = new ShaderStorageBlockOutputHLSL(this, symbolTable, mResourcesHLSL);
 }
 
 OutputHLSL::~OutputHLSL()
 {
+    SafeDelete(mSSBOOutputHLSL);
     SafeDelete(mStructureHLSL);
-    SafeDelete(mUniformHLSL);
+    SafeDelete(mResourcesHLSL);
     SafeDelete(mTextureFunctionHLSL);
     SafeDelete(mImageFunctionHLSL);
     for (auto &eqFunction : mStructEqualityFunctions)
@@ -308,14 +314,19 @@ void OutputHLSL::output(TIntermNode *treeRoot, TInfoSinkBase &objSink)
     builtInFunctionEmulator.cleanup();
 }
 
+const std::map<std::string, unsigned int> &OutputHLSL::getShaderStorageBlockRegisterMap() const
+{
+    return mResourcesHLSL->getShaderStorageBlockRegisterMap();
+}
+
 const std::map<std::string, unsigned int> &OutputHLSL::getUniformBlockRegisterMap() const
 {
-    return mUniformHLSL->getUniformBlockRegisterMap();
+    return mResourcesHLSL->getUniformBlockRegisterMap();
 }
 
 const std::map<std::string, unsigned int> &OutputHLSL::getUniformRegisterMap() const
 {
-    return mUniformHLSL->getUniformRegisterMap();
+    return mResourcesHLSL->getUniformRegisterMap();
 }
 
 TString OutputHLSL::structInitializerString(int indent,
@@ -384,9 +395,20 @@ TString OutputHLSL::generateStructMapping(const std::vector<MappedStruct> &std14
     {
         const TInterfaceBlock *interfaceBlock =
             mappedStruct.blockDeclarator->getType().getInterfaceBlock();
-        if (mReferencedUniformBlocks.count(interfaceBlock->uniqueId().get()) == 0)
+        TQualifier qualifier = mappedStruct.blockDeclarator->getType().getQualifier();
+        switch (qualifier)
         {
-            continue;
+            case EvqUniform:
+                if (mReferencedUniformBlocks.count(interfaceBlock->uniqueId().get()) == 0)
+                {
+                    continue;
+                }
+                break;
+            case EvqBuffer:
+                continue;
+            default:
+                UNREACHABLE();
+                return mappedStructs;
         }
 
         unsigned int instanceCount = 1u;
@@ -409,7 +431,7 @@ TString OutputHLSL::generateStructMapping(const std::vector<MappedStruct> &std14
                 unsigned int instanceStringArrayIndex = GL_INVALID_INDEX;
                 if (isInstanceArray)
                     instanceStringArrayIndex = instanceArrayIndex;
-                TString instanceString = mUniformHLSL->UniformBlockInstanceString(
+                TString instanceString = mResourcesHLSL->InterfaceBlockInstanceString(
                     instanceName, instanceStringArrayIndex);
                 originalName += instanceString;
                 mappedName += instanceString;
@@ -471,8 +493,9 @@ void OutputHLSL::header(TInfoSinkBase &out,
 
     out << mStructureHLSL->structsHeader();
 
-    mUniformHLSL->uniformsHeader(out, mOutputType, mReferencedUniforms, mSymbolTable);
-    out << mUniformHLSL->uniformBlocksHeader(mReferencedUniformBlocks);
+    mResourcesHLSL->uniformsHeader(out, mOutputType, mReferencedUniforms, mSymbolTable);
+    out << mResourcesHLSL->uniformBlocksHeader(mReferencedUniformBlocks);
+    mSSBOOutputHLSL->writeShaderStorageBlocksHeader(out);
 
     if (!mEqualityFunctions.empty())
     {
@@ -631,7 +654,7 @@ void OutputHLSL::header(TInfoSinkBase &out,
 
             if (mOutputType == SH_HLSL_4_1_OUTPUT)
             {
-                mUniformHLSL->samplerMetadataUniforms(out, "c4");
+                mResourcesHLSL->samplerMetadataUniforms(out, "c4");
             }
 
             out << "};\n";
@@ -743,7 +766,7 @@ void OutputHLSL::header(TInfoSinkBase &out,
 
             if (mOutputType == SH_HLSL_4_1_OUTPUT)
             {
-                mUniformHLSL->samplerMetadataUniforms(out, "c4");
+                mResourcesHLSL->samplerMetadataUniforms(out, "c4");
             }
 
             out << "};\n"
@@ -779,7 +802,7 @@ void OutputHLSL::header(TInfoSinkBase &out,
             out << "    uint3 gl_NumWorkGroups : packoffset(c0);\n";
         }
         ASSERT(mOutputType == SH_HLSL_4_1_OUTPUT);
-        mUniformHLSL->samplerMetadataUniforms(out, "c1");
+        mResourcesHLSL->samplerMetadataUniforms(out, "c1");
         out << "};\n";
 
         std::ostringstream systemValueDeclaration;
@@ -905,7 +928,7 @@ void OutputHLSL::visitSymbol(TIntermSymbol *node)
     TInfoSinkBase &out = getInfoSink();
 
     // Handle accessing std140 structs by value
-    if (IsInStd140InterfaceBlock(node) && node->getBasicType() == EbtStruct)
+    if (IsInStd140UniformBlock(node) && node->getBasicType() == EbtStruct)
     {
         out << "map";
     }
@@ -948,6 +971,10 @@ void OutputHLSL::visitSymbol(TIntermSymbol *node)
             }
 
             out << DecorateVariableIfNeeded(variable);
+        }
+        else if (qualifier == EvqBuffer)
+        {
+            UNREACHABLE();
         }
         else if (qualifier == EvqAttribute || qualifier == EvqVertexIn)
         {
@@ -1193,6 +1220,29 @@ bool OutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
                 out << ")";
                 return false;
             }
+            else if (IsInShaderStorageBlock(node->getLeft()))
+            {
+                mSSBOOutputHLSL->outputStoreFunctionCallPrefix(node->getLeft());
+                out << ", ";
+                if (IsInShaderStorageBlock(node->getRight()))
+                {
+                    mSSBOOutputHLSL->outputLoadFunctionCall(node->getRight());
+                }
+                else
+                {
+                    node->getRight()->traverse(this);
+                }
+
+                out << ")";
+                return false;
+            }
+            else if (IsInShaderStorageBlock(node->getRight()))
+            {
+                node->getLeft()->traverse(this);
+                out << " = ";
+                mSSBOOutputHLSL->outputLoadFunctionCall(node->getRight());
+                return false;
+            }
 
             outputAssign(visit, node->getType(), out);
             break;
@@ -1224,6 +1274,11 @@ bool OutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
             else if (visit == InVisit)
             {
                 out << " = ";
+                if (IsInShaderStorageBlock(node->getRight()))
+                {
+                    mSSBOOutputHLSL->outputLoadFunctionCall(node->getRight());
+                    return false;
+                }
             }
             break;
         case EOpAddAssign:
@@ -1303,14 +1358,16 @@ bool OutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
                 {
                     TIntermSymbol *instanceArraySymbol    = node->getLeft()->getAsSymbolNode();
                     const TInterfaceBlock *interfaceBlock = leftType.getInterfaceBlock();
+
+                    ASSERT(leftType.getQualifier() == EvqUniform);
                     if (mReferencedUniformBlocks.count(interfaceBlock->uniqueId().get()) == 0)
                     {
                         mReferencedUniformBlocks[interfaceBlock->uniqueId().get()] =
                             new TReferencedBlock(interfaceBlock, &instanceArraySymbol->variable());
                     }
                     const int arrayIndex = node->getRight()->getAsConstantUnion()->getIConst(0);
-                    out << mUniformHLSL->UniformBlockInstanceString(instanceArraySymbol->getName(),
-                                                                    arrayIndex);
+                    out << mResourcesHLSL->InterfaceBlockInstanceString(
+                        instanceArraySymbol->getName(), arrayIndex);
                     return false;
                 }
             }
@@ -1370,9 +1427,10 @@ bool OutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
         break;
         case EOpIndexDirectInterfaceBlock:
         {
-            bool structInStd140Block =
-                node->getBasicType() == EbtStruct && IsInStd140InterfaceBlock(node->getLeft());
-            if (visit == PreVisit && structInStd140Block)
+            ASSERT(!IsInShaderStorageBlock(node->getLeft()));
+            bool structInStd140UniformBlock =
+                node->getBasicType() == EbtStruct && IsInStd140UniformBlock(node->getLeft());
+            if (visit == PreVisit && structInStd140UniformBlock)
             {
                 out << "map";
             }
@@ -1382,7 +1440,7 @@ bool OutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
                     node->getLeft()->getType().getInterfaceBlock();
                 const TIntermConstantUnion *index = node->getRight()->getAsConstantUnion();
                 const TField *field               = interfaceBlock->fields()[index->getIConst(0)];
-                if (structInStd140Block)
+                if (structInStd140UniformBlock)
                 {
                     out << "_";
                 }

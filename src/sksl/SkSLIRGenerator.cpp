@@ -135,6 +135,8 @@ static void fill_caps(const SKSL_CAPS_CLASS& caps,
     CAP(mustEnableAdvBlendEqs);
     CAP(mustEnableSpecificAdvBlendEqs);
     CAP(mustDeclareFragmentShaderOutput);
+    CAP(mustDoOpBetweenFloorAndAbs);
+    CAP(atan2ImplementedAsAtanYOverX);
     CAP(canUseAnyFunctionInShader);
     CAP(floatIs32Bits);
     CAP(integerSupport);
@@ -1025,16 +1027,25 @@ std::unique_ptr<Expression> IRGenerator::convertIdentifier(const ASTIdentifier& 
         }
         case Symbol::kVariable_Kind: {
             const Variable* var = (const Variable*) result;
-#ifndef SKSL_STANDALONE
-            if (var->fModifiers.fLayout.fBuiltin == SK_FRAGCOORD_BUILTIN) {
-                fInputs.fFlipY = true;
-                if (fSettings->fFlipY &&
-                    (!fSettings->fCaps ||
-                     !fSettings->fCaps->fragCoordConventionsExtensionString())) {
+            switch (var->fModifiers.fLayout.fBuiltin) {
+                case SK_WIDTH_BUILTIN:
+                    fInputs.fRTWidth = true;
+                    break;
+                case SK_HEIGHT_BUILTIN:
                     fInputs.fRTHeight = true;
-                }
-            }
+                    break;
+#ifndef SKSL_STANDALONE
+                case SK_FRAGCOORD_BUILTIN:
+                    if (var->fModifiers.fLayout.fBuiltin == SK_FRAGCOORD_BUILTIN) {
+                        fInputs.fFlipY = true;
+                        if (fSettings->fFlipY &&
+                            (!fSettings->fCaps ||
+                             !fSettings->fCaps->fragCoordConventionsExtensionString())) {
+                            fInputs.fRTHeight = true;
+                        }
+                    }
 #endif
+            }
             // default to kRead_RefKind; this will be corrected later if the variable is written to
             return std::unique_ptr<VariableReference>(new VariableReference(
                                                                  identifier.fOffset,
@@ -1277,9 +1288,40 @@ static bool determine_binary_type(const Context& context,
     return false;
 }
 
+static std::unique_ptr<Expression> short_circuit_boolean(const Context& context,
+                                                         const Expression& left,
+                                                         Token::Kind op,
+                                                         const Expression& right) {
+    SkASSERT(left.fKind == Expression::kBoolLiteral_Kind);
+    bool leftVal = ((BoolLiteral&) left).fValue;
+    if (op == Token::LOGICALAND) {
+        // (true && expr) -> (expr) and (false && expr) -> (false)
+        return leftVal ? right.clone()
+                       : std::unique_ptr<Expression>(new BoolLiteral(context, left.fOffset, false));
+    } else if (op == Token::LOGICALOR) {
+        // (true || expr) -> (true) and (false || expr) -> (expr)
+        return leftVal ? std::unique_ptr<Expression>(new BoolLiteral(context, left.fOffset, true))
+                       : right.clone();
+    } else {
+        // Can't short circuit XOR
+        return nullptr;
+    }
+}
+
 std::unique_ptr<Expression> IRGenerator::constantFold(const Expression& left,
                                                       Token::Kind op,
                                                       const Expression& right) const {
+    // If the left side is a constant boolean literal, the right side does not need to be constant
+    // for short circuit optimizations to allow the constant to be folded.
+    if (left.fKind == Expression::kBoolLiteral_Kind && !right.isConstant()) {
+        return short_circuit_boolean(fContext, left, op, right);
+    } else if (right.fKind == Expression::kBoolLiteral_Kind && !left.isConstant()) {
+        // There aren't side effects in SKSL within expressions, so (left OP right) is equivalent to
+        // (right OP left) for short-circuit optimizations
+        return short_circuit_boolean(fContext, right, op, left);
+    }
+
+    // Other than the short-circuit cases above, constant folding requires both sides to be constant
     if (!left.isConstant() || !right.isConstant()) {
         return nullptr;
     }
@@ -1978,7 +2020,6 @@ std::unique_ptr<Expression> IRGenerator::getCap(int offset, String name) {
 std::unique_ptr<Expression> IRGenerator::getArg(int offset, String name) const {
     auto found = fSettings->fArgs.find(name);
     if (found == fSettings->fArgs.end()) {
-        fErrors.error(offset, "unknown argument '" + name + "'");
         return nullptr;
     }
     String fullName = "sk_Args." + name;
@@ -2145,6 +2186,7 @@ std::unique_ptr<Expression> IRGenerator::convertSuffixExpression(
             switch (base->fType.kind()) {
                 case Type::kVector_Kind:
                     return this->convertSwizzle(std::move(base), field);
+                case Type::kOther_Kind:
                 case Type::kStruct_Kind:
                     return this->convertField(std::move(base), field);
                 default:

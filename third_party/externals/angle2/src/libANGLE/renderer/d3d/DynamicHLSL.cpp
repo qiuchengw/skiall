@@ -439,8 +439,9 @@ void DynamicHLSL::generateVaryingLinkHLSL(const VaryingPacking &varyingPacking,
         hlslStream << " v" << registerIndex << " : " << varyingSemantic << registerIndex << ";\n";
     }
 
-    // Note that the following outputs need to be declared after the others to make multiview
-    // shaders with a flat varying to work correctly. This is a workaround for a D3D bug.
+    // Note that the following outputs need to be declared after the others. They are not included
+    // in pixel shader inputs even when they are in vertex/geometry shader outputs, and the pixel
+    // shader input struct must be a prefix of the vertex/geometry shader output struct.
 
     if (builtins.glViewportIndex.enabled)
     {
@@ -456,7 +457,7 @@ void DynamicHLSL::generateVaryingLinkHLSL(const VaryingPacking &varyingPacking,
     hlslStream << "};\n";
 }
 
-void DynamicHLSL::generateShaderLinkHLSL(const gl::Context *context,
+void DynamicHLSL::generateShaderLinkHLSL(const gl::Caps &caps,
                                          const gl::ProgramState &programData,
                                          const ProgramD3DMetadata &programMetadata,
                                          const VaryingPacking &varyingPacking,
@@ -467,7 +468,6 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Context *context,
     ASSERT((*shaderHLSL)[gl::ShaderType::Vertex].empty() &&
            (*shaderHLSL)[gl::ShaderType::Fragment].empty());
 
-    const auto &data                   = context->getContextState();
     gl::Shader *vertexShaderGL         = programData.getAttachedShader(ShaderType::Vertex);
     gl::Shader *fragmentShaderGL       = programData.getAttachedShader(ShaderType::Fragment);
     const ShaderD3D *fragmentShader    = GetImplAs<ShaderD3D>(fragmentShaderGL);
@@ -493,10 +493,10 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Context *context,
     // GeometryShader HLSL. These include pointsize clamp values.
     if (useInstancedPointSpriteEmulation)
     {
-        vertexStream << "static float minPointSize = "
-                     << static_cast<int>(data.getCaps().minAliasedPointSize) << ".0f;\n"
-                     << "static float maxPointSize = "
-                     << static_cast<int>(data.getCaps().maxAliasedPointSize) << ".0f;\n";
+        vertexStream << "static float minPointSize = " << static_cast<int>(caps.minAliasedPointSize)
+                     << ".0f;\n"
+                     << "static float maxPointSize = " << static_cast<int>(caps.maxAliasedPointSize)
+                     << ".0f;\n";
     }
 
     std::ostringstream vertexGenerateOutput;
@@ -663,7 +663,7 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Context *context,
                          << "    return output;\n"
                          << "}";
 
-    std::string vertexSource = vertexShaderGL->getTranslatedSource(context);
+    std::string vertexSource = vertexShaderGL->getTranslatedSource();
     angle::ReplaceSubstring(&vertexSource, std::string(MAIN_PROLOGUE_STUB_STRING),
                             "    initAttributes(input);\n");
     angle::ReplaceSubstring(&vertexSource, std::string(VERTEX_OUTPUT_STUB_STRING),
@@ -832,7 +832,7 @@ void DynamicHLSL::generateShaderLinkHLSL(const gl::Context *context,
         pixelPrologue << ";\n";
     }
 
-    std::string pixelSource = fragmentShaderGL->getTranslatedSource(context);
+    std::string pixelSource = fragmentShaderGL->getTranslatedSource();
 
     if (fragmentShader->usesFrontFacing())
     {
@@ -954,7 +954,7 @@ std::string DynamicHLSL::generateGeometryShaderPreamble(const VaryingPacking &va
     return preambleStream.str();
 }
 
-std::string DynamicHLSL::generateGeometryShaderHLSL(const gl::Context *context,
+std::string DynamicHLSL::generateGeometryShaderHLSL(const gl::Caps &caps,
                                                     gl::PrimitiveMode primitiveType,
                                                     const gl::ProgramState &programData,
                                                     const bool useViewScale,
@@ -1062,10 +1062,10 @@ std::string DynamicHLSL::generateGeometryShaderHLSL(const gl::Context *context,
                         "};\n"
                         "\n"
                         "static float minPointSize = "
-                     << static_cast<int>(context->getCaps().minAliasedPointSize)
+                     << static_cast<int>(caps.minAliasedPointSize)
                      << ".0f;\n"
                         "static float maxPointSize = "
-                     << static_cast<int>(context->getCaps().maxAliasedPointSize) << ".0f;\n"
+                     << static_cast<int>(caps.maxAliasedPointSize) << ".0f;\n"
                      << "\n";
     }
 
@@ -1272,10 +1272,23 @@ BuiltinVaryingsD3D::BuiltinVaryingsD3D(const ProgramD3DMetadata &metadata,
 {
     updateBuiltins(gl::ShaderType::Vertex, metadata, packing);
     updateBuiltins(gl::ShaderType::Fragment, metadata, packing);
-    if (metadata.getRendererMajorShaderModel() >= 4)
+    int shaderModel = metadata.getRendererMajorShaderModel();
+    if (shaderModel >= 4)
     {
         updateBuiltins(gl::ShaderType::Geometry, metadata, packing);
     }
+    // In shader model >= 4, some builtins need to be the same in vertex and pixel shaders - input
+    // struct needs to be a prefix of output struct.
+    ASSERT(shaderModel < 4 || mBuiltinInfo[gl::ShaderType::Vertex].glPosition.enabled ==
+                                  mBuiltinInfo[gl::ShaderType::Fragment].glPosition.enabled);
+    ASSERT(shaderModel < 4 || mBuiltinInfo[gl::ShaderType::Vertex].glFragCoord.enabled ==
+                                  mBuiltinInfo[gl::ShaderType::Fragment].glFragCoord.enabled);
+    ASSERT(shaderModel < 4 || mBuiltinInfo[gl::ShaderType::Vertex].glPointCoord.enabled ==
+                                  mBuiltinInfo[gl::ShaderType::Fragment].glPointCoord.enabled);
+    ASSERT(shaderModel < 4 || mBuiltinInfo[gl::ShaderType::Vertex].glPointSize.enabled ==
+                                  mBuiltinInfo[gl::ShaderType::Fragment].glPointSize.enabled);
+    ASSERT(shaderModel < 4 || mBuiltinInfo[gl::ShaderType::Vertex].glViewIDOVR.enabled ==
+                                  mBuiltinInfo[gl::ShaderType::Fragment].glViewIDOVR.enabled);
 }
 
 BuiltinVaryingsD3D::~BuiltinVaryingsD3D() = default;
@@ -1286,6 +1299,10 @@ void BuiltinVaryingsD3D::updateBuiltins(gl::ShaderType shaderType,
 {
     const std::string &userSemantic = GetVaryingSemantic(metadata.getRendererMajorShaderModel(),
                                                          metadata.usesSystemValuePointSize());
+
+    // Note that when enabling builtins only for specific shader stages in shader model >= 4, the
+    // code needs to ensure that the input struct of the shader stage is a prefix of the output
+    // struct of the previous stage.
 
     unsigned int reservedSemanticIndex = packing.getMaxSemanticIndex();
 
@@ -1329,32 +1346,29 @@ void BuiltinVaryingsD3D::updateBuiltins(gl::ShaderType shaderType,
         }
     }
 
-    if (shaderType == gl::ShaderType::Vertex && metadata.hasANGLEMultiviewEnabled())
+    if (metadata.hasANGLEMultiviewEnabled())
     {
+        // Although it is possible to compute gl_ViewID_OVR from the value of
+        // SV_ViewportArrayIndex or SV_RenderTargetArrayIndex and the multi-view state in the
+        // driver constant buffer, it is easier and cleaner to always pass it as a varying.
         builtins->glViewIDOVR.enable(userSemantic, reservedSemanticIndex++);
-        if (metadata.canSelectViewInVertexShader())
+
+        if (shaderType == gl::ShaderType::Vertex)
         {
+            if (metadata.canSelectViewInVertexShader())
+            {
+                builtins->glViewportIndex.enableSystem("SV_ViewportArrayIndex");
+                builtins->glLayer.enableSystem("SV_RenderTargetArrayIndex");
+            }
+        }
+
+        if (shaderType == gl::ShaderType::Geometry)
+        {
+            // gl_Layer and gl_ViewportIndex are necessary so that we can write to either based on
+            // the multiview state in the driver constant buffer.
             builtins->glViewportIndex.enableSystem("SV_ViewportArrayIndex");
             builtins->glLayer.enableSystem("SV_RenderTargetArrayIndex");
         }
-    }
-
-    if (shaderType == gl::ShaderType::Fragment && metadata.hasANGLEMultiviewEnabled())
-    {
-        builtins->glViewIDOVR.enable(userSemantic, reservedSemanticIndex++);
-    }
-
-    if (shaderType == gl::ShaderType::Geometry && metadata.hasANGLEMultiviewEnabled())
-    {
-        // Although it is possible to retrieve gl_ViewID_OVR from the value of
-        // SV_ViewportArrayIndex or SV_RenderTargetArrayIndex based on the multi-view state in the
-        // driver constant buffer, it is easier and cleaner to pass it as a varying.
-        builtins->glViewIDOVR.enable(userSemantic, reservedSemanticIndex++);
-
-        // gl_Layer and gl_ViewportIndex are necessary so that we can write to either based on the
-        // multiview state in the driver constant buffer.
-        builtins->glViewportIndex.enableSystem("SV_ViewportArrayIndex");
-        builtins->glLayer.enableSystem("SV_RenderTargetArrayIndex");
     }
 
     // Special case: do not include PSIZE semantic in HLSL 3 pixel shaders

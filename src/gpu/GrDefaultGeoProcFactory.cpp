@@ -31,8 +31,9 @@ enum GPFlag {
     kBonesAttribute_GPFlag          = 0x10,
 };
 
-static constexpr int kMaxBones = 80; // Due to GPU memory limitations, only up to 80 bone
-                                     // matrices are accepted.
+static constexpr int kNumVec2sPerBone = 3; // Our bone matrices are 3x2 matrices passed in as
+                                           // vec2s in column major order, and thus there are 3
+                                           // vec2s per bone.
 
 class DefaultGeoProc : public GrGeometryProcessor {
 public:
@@ -111,21 +112,36 @@ public:
             }
 
             // Setup bone transforms
+            // NOTE: This code path is currently unused. Benchmarks have found that for all
+            // reasonable cases of skinned vertices, the overhead involved in copying and uploading
+            // bone data makes performing the transformations on the CPU faster than doing so on
+            // the GPU. This is being kept here in case that changes.
             const char* transformedPositionName = gp.fInPosition.name();
             if (gp.hasBones()) {
+                // Set up the uniform for the bones.
                 const char* vertBonesUniformName;
                 fBonesUniform = uniformHandler->addUniformArray(kVertex_GrShaderFlag,
-                                                                kFloat3x3_GrSLType,
+                                                                kFloat2_GrSLType,
                                                                 "Bones",
-                                                                kMaxBones,
+                                                                kMaxBones * kNumVec2sPerBone,
                                                                 &vertBonesUniformName);
+
+                // Set up the bone application function.
+                SkString applyBoneFunctionName;
+                this->emitApplyBoneFunction(vertBuilder,
+                                            vertBonesUniformName,
+                                            &applyBoneFunctionName);
+
+                // Apply the world transform to the position first.
                 vertBuilder->codeAppendf(
-                        "float3 originalPosition = %s[0] * float3(%s, 1);"
-                        "float2 transformedPosition = float2(0);"
+                        "float2 worldPosition = %s(0, %s);"
+                        "float2 transformedPosition = float2(0, 0);"
                         "for (int i = 0; i < 4; i++) {",
-                        vertBonesUniformName,
+                        applyBoneFunctionName.c_str(),
                         gp.fInPosition.name());
 
+                // If the GPU supports unsigned integers, then we can read the index. Otherwise,
+                // we have to estimate it given the float representation.
                 if (args.fShaderCaps->unsignedSupport()) {
                     vertBuilder->codeAppendf(
                         "    byte index = %s[i];",
@@ -136,12 +152,13 @@ public:
                         gp.fInBoneIndices.name());
                 }
 
+                // Get the weight and apply the transformation.
                 vertBuilder->codeAppendf(
                         "    float weight = %s[i];"
-                        "    transformedPosition += (%s[index] * originalPosition * weight).xy;"
+                        "    transformedPosition += %s(index, worldPosition) * weight;"
                         "}",
                         gp.fInBoneWeights.name(),
-                        vertBonesUniformName);
+                        applyBoneFunctionName.c_str());
                 transformedPositionName = "transformedPosition";
             }
 
@@ -228,8 +245,38 @@ public:
             fColorSpaceHelper.setData(pdman, dgp.fColorSpaceXform.get());
 
             if (dgp.hasBones()) {
-                pdman.setMatrix3fv(fBonesUniform, dgp.boneCount(), dgp.bones());
+                pdman.set2fv(fBonesUniform, dgp.boneCount() * kNumVec2sPerBone, dgp.bones());
             }
+        }
+
+    private:
+        void emitApplyBoneFunction(GrGLSLVertexBuilder* vertBuilder,
+                                   const char* vertBonesUniformName,
+                                   SkString* funcName) {
+                // The bone matrices are passed in as 3x2 matrices in column-major order as groups
+                // of 3 float2s. This code takes those float2s and performs the matrix operation on
+                // a given matrix and float2.
+                const GrShaderVar gApplyBoneArgs[] = {
+                    GrShaderVar("index", kByte_GrSLType),
+                    GrShaderVar("vec", kFloat2_GrSLType),
+                };
+                SkString body;
+                body.appendf(
+                    "    float2 c0 = %s[index * 3];"
+                    "    float2 c1 = %s[index * 3 + 1];"
+                    "    float2 c2 = %s[index * 3 + 2];"
+                    "    float x = c0.x * vec.x + c1.x * vec.y + c2.x;"
+                    "    float y = c0.y * vec.x + c1.y * vec.y + c2.y;"
+                    "    return float2(x, y);",
+                    vertBonesUniformName,
+                    vertBonesUniformName,
+                    vertBonesUniformName);
+                vertBuilder->emitFunction(kFloat2_GrSLType,
+                                          "applyBone",
+                                          SK_ARRAY_COUNT(gApplyBoneArgs),
+                                          gApplyBoneArgs,
+                                          body.c_str(),
+                                          funcName);
         }
 
     private:
@@ -274,29 +321,34 @@ private:
             , fColorSpaceXform(std::move(colorSpaceXform))
             , fBones(bones)
             , fBoneCount(boneCount) {
-        fInPosition = {"inPosition", kFloat2_GrVertexAttribType};
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
         int cnt = 1;
         if (fFlags & kColorAttribute_GPFlag) {
-            fInColor = {"inColor", kUByte4_norm_GrVertexAttribType};
+            fInColor = {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
             ++cnt;
         }
         if (fFlags & kLocalCoordAttribute_GPFlag) {
-            fInLocalCoords = {"inLocalCoord", kFloat2_GrVertexAttribType};
+            fInLocalCoords = {"inLocalCoord", kFloat2_GrVertexAttribType,
+                                              kFloat2_GrSLType};
             ++cnt;
         }
         if (fFlags & kCoverageAttribute_GPFlag) {
-            fInCoverage = {"inCoverage", kHalf_GrVertexAttribType};
+            fInCoverage = {"inCoverage", kFloat_GrVertexAttribType, kHalf_GrSLType};
             ++cnt;
         }
         if (fFlags & kBonesAttribute_GPFlag) {
             SkASSERT(bones && (boneCount > 0));
             // GLSL 1.10 and 1.20 don't support integer attributes.
-            GrVertexAttribType indicesAttribType =
-                    shaderCaps->unsignedSupport() ? kByte4_GrVertexAttribType :
-                                                    kUByte4_norm_GrVertexAttribType;
-            fInBoneIndices = {"inBoneIndices", indicesAttribType};
+            GrVertexAttribType indicesCPUType = kByte4_GrVertexAttribType;
+            GrSLType indicesGPUType = kByte4_GrSLType;
+            if (!shaderCaps->unsignedSupport()) {
+                indicesCPUType = kUByte4_norm_GrVertexAttribType;
+                indicesGPUType = kHalf4_GrSLType;
+            }
+            fInBoneIndices = {"inBoneIndices", indicesCPUType, indicesGPUType};
             ++cnt;
-            fInBoneWeights = {"inBoneWeights", kUByte4_norm_GrVertexAttribType};
+            fInBoneWeights = {"inBoneWeights", kUByte4_norm_GrVertexAttribType,
+                                               kHalf4_GrSLType};
             ++cnt;
         }
         this->setVertexAttributeCnt(cnt);
@@ -336,13 +388,13 @@ private:
 GR_DEFINE_GEOMETRY_PROCESSOR_TEST(DefaultGeoProc);
 
 #if GR_TEST_UTILS
-static constexpr int kNumFloatsPerSkMatrix = 9;
+static constexpr int kNumFloatsPerBone = 6;
 static constexpr int kTestBoneCount = 4;
-static constexpr float kTestBones[kTestBoneCount * kNumFloatsPerSkMatrix] = {
-    1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+static constexpr float kTestBones[kTestBoneCount * kNumFloatsPerBone] = {
+    1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 };
 
 sk_sp<GrGeometryProcessor> DefaultGeoProc::TestCreate(GrProcessorTestData* d) {

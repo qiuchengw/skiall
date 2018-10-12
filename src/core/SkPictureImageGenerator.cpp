@@ -23,10 +23,6 @@ SkPictureImageGenerator::Make(const SkISize& size, sk_sp<SkPicture> picture, con
         return nullptr;
     }
 
-    if (colorSpace && (!colorSpace->gammaCloseToSRGB() && !colorSpace->gammaIsLinear())) {
-        return nullptr;
-    }
-
     SkColorType colorType = kN32_SkColorType;
     if (SkImage::BitDepth::kF16 == bitDepth) {
         colorType = kRGBA_F16_SkColorType;
@@ -57,7 +53,11 @@ SkPictureImageGenerator::SkPictureImageGenerator(const SkImageInfo& info, sk_sp<
 bool SkPictureImageGenerator::onGetPixels(const SkImageInfo& info, void* pixels, size_t rowBytes,
                                           const Options& opts) {
     // TODO: Stop using xform canvas and simplify this code once rasterization works the same way
+#ifdef SK_LEGACY_XFORM_CANVAS_IN_PICTURE_IMAGES
     bool useXformCanvas = /* kIgnore == behavior && */ info.colorSpace();
+#else
+    bool useXformCanvas = false;
+#endif
 
     SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
     SkImageInfo canvasInfo = useXformCanvas ? info.makeColorSpace(nullptr) : info;
@@ -102,7 +102,11 @@ sk_sp<GrTextureProxy> SkPictureImageGenerator::onGenerateTexture(
         GrContext* ctx, const SkImageInfo& info, const SkIPoint& origin, bool willNeedMipMaps) {
     SkASSERT(ctx);
     // TODO: Stop using xform canvas and simplify this code once rasterization works the same way
+#ifdef SK_LEGACY_XFORM_CANVAS_IN_PICTURE_IMAGES
     bool useXformCanvas = /* behavior == kIgnore && */ info.colorSpace();
+#else
+    bool useXformCanvas = false;
+#endif
 
     //
     // TODO: respect the usage, by possibly creating a different (pow2) surface

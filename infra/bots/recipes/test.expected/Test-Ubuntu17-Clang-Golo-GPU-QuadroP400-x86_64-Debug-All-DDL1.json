@@ -279,6 +279,10 @@
       "gm",
       "_",
       "dftext",
+      "gltestpersistentcache",
+      "gm",
+      "_",
+      "glyph_pos_h_b",
       "_",
       "svg",
       "_",
@@ -376,6 +380,7 @@
       "_",
       ".SRW",
       "--nonativeFonts",
+      "--reduceOpListSplitting",
       "--verbose"
     ],
     "cwd": "[START_DIR]/skia",

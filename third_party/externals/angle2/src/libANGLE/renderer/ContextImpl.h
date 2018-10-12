@@ -41,10 +41,10 @@ class ContextImpl : public GLImplFactory
     virtual gl::Error finish(const gl::Context *context) = 0;
 
     // Drawing methods.
-    virtual gl::Error drawArrays(const gl::Context *context,
-                                 gl::PrimitiveMode mode,
-                                 GLint first,
-                                 GLsizei count)                  = 0;
+    virtual angle::Result drawArrays(const gl::Context *context,
+                                     gl::PrimitiveMode mode,
+                                     GLint first,
+                                     GLsizei count)              = 0;
     virtual gl::Error drawArraysInstanced(const gl::Context *context,
                                           gl::PrimitiveMode mode,
                                           GLint first,
@@ -141,8 +141,9 @@ class ContextImpl : public GLImplFactory
     virtual void popDebugGroup()                                                               = 0;
 
     // State sync with dirty bits.
-    virtual gl::Error syncState(const gl::Context *context,
-                                const gl::State::DirtyBits &dirtyBits) = 0;
+    virtual angle::Result syncState(const gl::Context *context,
+                                    const gl::State::DirtyBits &dirtyBits,
+                                    const gl::State::DirtyBits &bitMask) = 0;
 
     // Disjoint timer queries
     virtual GLint getGPUDisjoint() = 0;
@@ -184,8 +185,6 @@ class ContextImpl : public GLImplFactory
 
     // TODO(jmadill): Move init into the constructor. http://anglebug.com/2491
     void setErrorSet(gl::ErrorSet *errorSet);
-
-    void handleError(const gl::Error &error);
 
   protected:
     const gl::ContextState &mState;

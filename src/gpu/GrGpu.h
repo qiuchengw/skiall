@@ -239,22 +239,24 @@ public:
                      const SkIPoint& dstPoint,
                      bool canDiscardOutsideDstRect = false);
 
-    // Creates a GrGpuRTCommandBuffer which GrOpLists send draw commands to instead of directly
+    // Returns a GrGpuRTCommandBuffer which GrOpLists send draw commands to instead of directly
     // to the Gpu object.
-    virtual GrGpuRTCommandBuffer* createCommandBuffer(
+    virtual GrGpuRTCommandBuffer* getCommandBuffer(
             GrRenderTarget*, GrSurfaceOrigin,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) = 0;
 
-    // Creates a GrGpuTextureCommandBuffer which GrOpLists send texture commands to instead of
+    // Returns a GrGpuTextureCommandBuffer which GrOpLists send texture commands to instead of
     // directly to the Gpu object.
-    virtual GrGpuTextureCommandBuffer* createCommandBuffer(GrTexture*, GrSurfaceOrigin) = 0;
+    virtual GrGpuTextureCommandBuffer* getCommandBuffer(GrTexture*, GrSurfaceOrigin) = 0;
 
     // Called by GrDrawingManager when flushing.
     // Provides a hook for post-flush actions (e.g. Vulkan command buffer submits). This will also
     // insert any numSemaphore semaphores on the gpu and set the backendSemaphores to match the
     // inserted semaphores.
     GrSemaphoresSubmitted finishFlush(int numSemaphores, GrBackendSemaphore backendSemaphores[]);
+
+    virtual void submit(GrGpuCommandBuffer*) = 0;
 
     virtual GrFence SK_WARN_UNUSED_RESULT insertFence() = 0;
     virtual bool waitFence(GrFence, uint64_t timeout = 1000) = 0;
@@ -337,16 +339,17 @@ public:
     void dumpJSON(SkJSONWriter*) const;
 
 #if GR_TEST_UTILS
+    GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
+                                                     SkColorType, bool isRenderTarget,
+                                                     GrMipMapped, size_t rowBytes = 0);
+
     /** Creates a texture directly in the backend API without wrapping it in a GrTexture. This is
         only to be used for testing (particularly for testing the methods that import an externally
         created texture into Skia. Must be matched with a call to deleteTestingOnlyTexture(). */
-    GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h, SkColorType,
-                                                     bool isRenderTarget, GrMipMapped);
-    /** Older version based on GrPixelConfig. Currently the preferred one above devolves to this. */
     virtual GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
-                                                             GrPixelConfig config,
-                                                             bool isRenderTarget,
-                                                             GrMipMapped mipMapped) = 0;
+                                                             GrColorType, bool isRenderTarget,
+                                                             GrMipMapped, size_t rowBytes = 0) = 0;
+
     /** Check a handle represents an actual texture in the backend API that has not been freed. */
     virtual bool isTestingOnlyBackendTexture(const GrBackendTexture&) const = 0;
     /**
@@ -355,8 +358,8 @@ public:
      */
     virtual void deleteTestingOnlyBackendTexture(const GrBackendTexture&) = 0;
 
-    virtual GrBackendRenderTarget createTestingOnlyBackendRenderTarget(int w, int h, GrColorType,
-                                                                       GrSRGBEncoded) = 0;
+    virtual GrBackendRenderTarget createTestingOnlyBackendRenderTarget(int w, int h,
+                                                                       GrColorType) = 0;
 
     virtual void deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&) = 0;
 
@@ -379,8 +382,6 @@ public:
     virtual GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
                                                                         int width,
                                                                         int height) = 0;
-    // clears target's entire stencil buffer to 0
-    virtual void clearStencil(GrRenderTarget* target, int clearValue) = 0;
 
     // Determines whether a texture will need to be rescaled in order to be used with the
     // GrSamplerState.
@@ -467,7 +468,9 @@ private:
 
     virtual void onFinishFlush(bool insertedSemaphores) = 0;
 
+#ifdef SK_ENABLE_DUMP_GPU
     virtual void onDumpJSON(SkJSONWriter*) const {}
+#endif
 
     void resetContext() {
         this->onResetContext(fResetBits);

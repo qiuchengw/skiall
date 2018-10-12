@@ -10,7 +10,7 @@ ANGLE uses git for version control. If you are not familiar with git, helpful do
 ### Required Tools
 On all platforms:
 
- * GN is the supported build system.  GYP is deprecated and support will be removed in the future but [instructions are available](gyp.md).
+ * GN is the build system.  GYP support has been removed.
  * Clang will be set up by the build system and used by default.  See below for platform-specific compiler choices.
  * [depot_tools](http://dev.chromium.org/developers/how-tos/install-depot-tools)
    * Required to generate projects and build files, contribute patches, run the unit tests or build the shader compiler on non-Windows systems.
@@ -26,7 +26,7 @@ On Windows:
  * [Cygwin's Bison, flex, and patch](https://cygwin.com/setup-x86_64.exe) (optional)
    * This is only required if you need to modify GLSL ES grammar files (`glslang.l` and `glslang.y` under `src/compiler/translator`, or `ExpressionParser.y` and `Tokenizer.l` in `src/compiler/preprocessor`).
      Use the latest versions of bison, flex and patch from the 64-bit cygwin distribution.
- * Non-googlers need to set DEPOT_TOOLS_WIN_TOOLCHAIN environment variable to 0.
+ * **IMPORTANT**: Non-googlers need to set `DEPOT_TOOLS_WIN_TOOLCHAIN` environment variable to 0.
 
 On Linux:
 

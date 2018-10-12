@@ -6,8 +6,6 @@
  */
 
 #include "DMSrcSink.h"
-#include <cmath>
-#include <functional>
 #include "../src/jumper/SkJumper.h"
 #include "DDLPromiseImageHelper.h"
 #include "DDLTileHelper.h"
@@ -19,13 +17,10 @@
 #include "SkAndroidCodec.h"
 #include "SkAutoMalloc.h"
 #include "SkAutoPixmapStorage.h"
-#include "SkBase64.h"
 #include "SkCodec.h"
 #include "SkCodecImageGenerator.h"
 #include "SkColorSpace.h"
-#include "SkColorSpaceXform.h"
 #include "SkColorSpaceXformCanvas.h"
-#include "SkColorSpace_XYZ.h"
 #include "SkCommonFlags.h"
 #include "SkCommonFlagsGpu.h"
 #include "SkData.h"
@@ -51,7 +46,7 @@
 #include "SkPictureData.h"
 #include "SkPictureRecorder.h"
 #include "SkPipe.h"
-#include "SkPngEncoder.h"
+#include "SkPDFDocument.h"
 #include "SkRandom.h"
 #include "SkRecordDraw.h"
 #include "SkRecorder.h"
@@ -65,6 +60,7 @@
     #include "SkAutoCoInitialize.h"
     #include "SkHRESULT.h"
     #include "SkTScopedComPtr.h"
+    #include "SkXPSDocument.h"
     #include <XpsObjectModel.h>
 #endif
 
@@ -77,6 +73,10 @@
     #include "SkSVGDOM.h"
     #include "SkXMLWriter.h"
 #endif
+#include "TestUtils.h"
+
+#include <cmath>
+#include <functional>
 
 #include "../third_party/skcms/skcms.h"
 
@@ -145,14 +145,6 @@ static inline void alpha8_to_gray8(SkBitmap* bitmap) {
 }
 
 Error BRDSrc::draw(SkCanvas* canvas) const {
-    if (canvas->imageInfo().colorSpace() &&
-            kRGBA_F16_SkColorType != canvas->imageInfo().colorType()) {
-        // SkAndroidCodec uses legacy premultiplication and blending.  Therefore, we only
-        // run these tests on legacy canvases.
-        // We allow an exception for F16, since Android uses F16.
-        return Error::Nonfatal("Skip testing to color correct canvas.");
-    }
-
     SkColorType colorType = canvas->imageInfo().colorType();
     if (kRGB_565_SkColorType == colorType &&
             CodecSrc::kGetFromCanvas_DstColorType != fDstColorType) {
@@ -342,39 +334,6 @@ static void swap_rb_if_necessary(SkBitmap& bitmap, CodecSrc::DstColorType dstCol
     }
 }
 
-// FIXME: Currently we cannot draw unpremultiplied sources. skbug.com/3338 and skbug.com/3339.
-// This allows us to still test unpremultiplied decodes.
-static void premultiply_if_necessary(SkBitmap& bitmap) {
-    if (kUnpremul_SkAlphaType != bitmap.alphaType()) {
-        return;
-    }
-
-    switch (bitmap.colorType()) {
-        case kRGBA_F16_SkColorType: {
-            SkJumper_MemoryCtx ctx = { bitmap.getAddr(0,0), bitmap.rowBytesAsPixels() };
-            SkRasterPipeline_<256> p;
-            p.append(SkRasterPipeline::load_f16, &ctx);
-            p.append(SkRasterPipeline::premul);
-            p.append(SkRasterPipeline::store_f16, &ctx);
-            p.run(0,0, bitmap.width(), bitmap.height());
-        }
-            break;
-        case kN32_SkColorType:
-            for (int y = 0; y < bitmap.height(); y++) {
-                uint32_t* row = (uint32_t*) bitmap.getAddr(0, y);
-                SkOpts::RGBA_to_rgbA(row, row, bitmap.width());
-            }
-            break;
-        default:
-            // No need to premultiply kGray or k565 outputs.
-            break;
-    }
-
-    // In the kIndex_8 case, the canvas won't even try to draw unless we mark the
-    // bitmap as kPremul.
-    bitmap.setAlphaType(kPremul_SkAlphaType);
-}
-
 static bool get_decode_info(SkImageInfo* decodeInfo, SkColorType canvasColorType,
                             CodecSrc::DstColorType dstColorType, SkAlphaType dstAlphaType) {
     switch (dstColorType) {
@@ -401,11 +360,6 @@ static bool get_decode_info(SkImageInfo* decodeInfo, SkColorType canvasColorType
                 return false;
             }
 
-            if (kRGBA_F16_SkColorType == canvasColorType) {
-                sk_sp<SkColorSpace> linearSpace = decodeInfo->colorSpace()->makeLinearGamma();
-                *decodeInfo = decodeInfo->makeColorSpace(std::move(linearSpace));
-            }
-
             *decodeInfo = decodeInfo->makeColorType(canvasColorType);
             break;
     }
@@ -419,7 +373,6 @@ static void draw_to_canvas(SkCanvas* canvas, const SkImageInfo& info, void* pixe
                            SkScalar left = 0, SkScalar top = 0) {
     SkBitmap bitmap;
     bitmap.installPixels(info, pixels, rowBytes);
-    premultiply_if_necessary(bitmap);
     swap_rb_if_necessary(bitmap, dstColorType);
     canvas->drawBitmap(bitmap, left, top);
     canvas->flush();
@@ -431,11 +384,7 @@ static void draw_to_canvas(SkCanvas* canvas, const SkImageInfo& info, void* pixe
 // "pretend" that the color space is standard sRGB to avoid triggering color conversion
 // at draw time.
 static void set_bitmap_color_space(SkImageInfo* info) {
-    if (kRGBA_F16_SkColorType == info->colorType()) {
-        *info = info->makeColorSpace(SkColorSpace::MakeSRGBLinear());
-    } else {
-        *info = info->makeColorSpace(SkColorSpace::MakeSRGB());
-    }
+    *info = info->makeColorSpace(SkColorSpace::MakeSRGB());
 }
 
 Error CodecSrc::draw(SkCanvas* canvas) const {
@@ -501,18 +450,18 @@ Error CodecSrc::draw(SkCanvas* canvas) const {
 
             // Used to cache a frame that future frames will depend on.
             SkAutoMalloc priorFramePixels;
-            int cachedFrame = SkCodec::kNone;
+            int cachedFrame = SkCodec::kNoFrame;
             for (int i = 0; static_cast<size_t>(i) < frameInfos.size(); i++) {
                 options.fFrameIndex = i;
                 // Check for a prior frame
                 const int reqFrame = frameInfos[i].fRequiredFrame;
-                if (reqFrame != SkCodec::kNone && reqFrame == cachedFrame
+                if (reqFrame != SkCodec::kNoFrame && reqFrame == cachedFrame
                         && priorFramePixels.get()) {
                     // Copy into pixels
                     memcpy(pixels.get(), priorFramePixels.get(), safeSize);
                     options.fPriorFrame = reqFrame;
                 } else {
-                    options.fPriorFrame = SkCodec::kNone;
+                    options.fPriorFrame = SkCodec::kNoFrame;
                 }
                 SkCodec::Result result = codec->getPixels(decodeInfo, pixels.get(),
                                                           rowBytes, &options);
@@ -824,14 +773,6 @@ bool AndroidCodecSrc::veto(SinkFlags flags) const {
 }
 
 Error AndroidCodecSrc::draw(SkCanvas* canvas) const {
-    if (canvas->imageInfo().colorSpace() &&
-            kRGBA_F16_SkColorType != canvas->imageInfo().colorType()) {
-        // SkAndroidCodec uses legacy premultiplication and blending.  Therefore, we only
-        // run these tests on legacy canvases.
-        // We allow an exception for F16, since Android uses F16.
-        return Error::Nonfatal("Skip testing to color correct canvas.");
-    }
-
     sk_sp<SkData> encoded(SkData::MakeFromFileName(fPath.c_str()));
     if (!encoded) {
         return SkStringPrintf("Couldn't read %s.", fPath.c_str());
@@ -1090,9 +1031,6 @@ Error ColorCodecSrc::draw(SkCanvas* canvas) const {
     if (kUnpremul_SkAlphaType == decodeInfo.alphaType()) {
         decodeInfo = decodeInfo.makeAlphaType(kPremul_SkAlphaType);
     }
-    if (kRGBA_F16_SkColorType == fColorType) {
-        decodeInfo = decodeInfo.makeColorSpace(decodeInfo.colorSpace()->makeLinearGamma());
-    }
 
     SkImageInfo bitmapInfo = decodeInfo;
     set_bitmap_color_space(&bitmapInfo);
@@ -1201,6 +1139,58 @@ Name SKPSrc::name() const { return SkOSPath::Basename(fPath.c_str()); }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+BisectSrc::BisectSrc(Path path, const char* trail) : INHERITED(path), fTrail(trail) {}
+
+Error BisectSrc::draw(SkCanvas* canvas) const {
+    struct FoundPath {
+        SkPath fPath;
+        SkPaint fPaint;
+        SkMatrix fViewMatrix;
+    };
+
+    // This subclass of SkCanvas just extracts all the SkPaths (drawn via drawPath) from an SKP.
+    class PathFindingCanvas : public SkCanvas {
+    public:
+        PathFindingCanvas(int width, int height) : SkCanvas(width, height, nullptr) {}
+        const SkTArray<FoundPath>& foundPaths() const { return fFoundPaths; }
+
+    private:
+        void onDrawPath(const SkPath& path, const SkPaint& paint) override {
+            fFoundPaths.push_back() = {path, paint, this->getTotalMatrix()};
+        }
+
+        SkTArray<FoundPath> fFoundPaths;
+    };
+
+    PathFindingCanvas pathFinder(canvas->getBaseLayerSize().width(),
+                                 canvas->getBaseLayerSize().height());
+    Error err = this->INHERITED::draw(&pathFinder);
+    if (!err.isEmpty()) {
+        return err;
+    }
+
+    int start = 0, end = pathFinder.foundPaths().count();
+    for (const char* ch = fTrail.c_str(); *ch; ++ch) {
+        int midpt = (start + end) / 2;
+        if ('l' == *ch) {
+            start = midpt;
+        } else if ('r' == *ch) {
+            end = midpt;
+        }
+    }
+
+    for (int i = start; i < end; ++i) {
+        const FoundPath& path = pathFinder.foundPaths()[i];
+        SkAutoCanvasRestore acr(canvas, true);
+        canvas->concat(path.fViewMatrix);
+        canvas->drawPath(path.fPath, path.fPaint);
+    }
+
+    return "";
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 #if defined(SK_ENABLE_SKOTTIE)
 SkottieSrc::SkottieSrc(Path path) : fPath(std::move(path)) {}
 
@@ -1214,25 +1204,26 @@ Error SkottieSrc::draw(SkCanvas* canvas) const {
 
     const auto t_rate = 1.0f / (kTileCount * kTileCount - 1);
 
-    // Shuffled order to exercise non-linear frame progression.
-    static constexpr int frames[] = { 4, 0, 3, 1, 2 };
-    static_assert(SK_ARRAY_COUNT(frames) == kTileCount, "");
+    // Draw the frames in a shuffled order to exercise non-linear
+    // frame progression. The film strip will still be in order left-to-right,
+    // top-down, just not drawn in that order.
+    static constexpr int frameOrder[] = { 4, 0, 3, 1, 2 };
+    static_assert(SK_ARRAY_COUNT(frameOrder) == kTileCount, "");
 
     for (int i = 0; i < kTileCount; ++i) {
-        const SkScalar y = frames[i] * kTileSize;
+        const SkScalar y = frameOrder[i] * kTileSize;
 
         for (int j = 0; j < kTileCount; ++j) {
-            const SkScalar x = frames[j] * kTileSize;
+            const SkScalar x = frameOrder[j] * kTileSize;
             SkRect dest = SkRect::MakeXYWH(x, y, kTileSize, kTileSize);
 
-            const auto t = t_rate * (frames[i] * kTileCount + frames[j]);
+            const auto t = t_rate * (frameOrder[i] * kTileCount + frameOrder[j]);
             {
                 SkAutoCanvasRestore acr(canvas, true);
                 canvas->clipRect(dest, true);
                 canvas->concat(SkMatrix::MakeRectToRect(SkRect::MakeSize(animation->size()),
                                                         dest,
                                                         SkMatrix::kCenter_ScaleToFit));
-
                 animation->seek(t);
                 animation->render(canvas);
             }
@@ -1270,23 +1261,25 @@ SVGSrc::SVGSrc(Path path)
     : fName(SkOSPath::Basename(path.c_str()))
     , fScale(1) {
 
-  SkFILEStream stream(path.c_str());
-  if (!stream.isValid()) {
-      return;
-  }
-  fDom = SkSVGDOM::MakeFromStream(stream);
-  if (!fDom) {
-      return;
-  }
+    sk_sp<SkData> data(SkData::MakeFromFileName(path.c_str()));
+    if (!data) {
+        return;
+    }
 
-  const SkSize& sz = fDom->containerSize();
-  if (sz.isEmpty()) {
-      // no intrinsic size
-      fDom->setContainerSize(kDefaultSVGSize);
-  } else {
-      fScale = SkTMax(1.f, SkTMax(kMinimumSVGSize.width()  / sz.width(),
-                                  kMinimumSVGSize.height() / sz.height()));
-  }
+    SkMemoryStream stream(std::move(data));
+    fDom = SkSVGDOM::MakeFromStream(stream);
+    if (!fDom) {
+        return;
+    }
+
+    const SkSize& sz = fDom->containerSize();
+    if (sz.isEmpty()) {
+        // no intrinsic size
+        fDom->setContainerSize(kDefaultSVGSize);
+    } else {
+        fScale = SkTMax(1.f, SkTMax(kMinimumSVGSize.width()  / sz.width(),
+                                    kMinimumSVGSize.height() / sz.height()));
+    }
 }
 
 Error SVGSrc::draw(SkCanvas* canvas) const {
@@ -1374,40 +1367,6 @@ Error NullSink::draw(const Src& src, SkBitmap*, SkWStream*, SkString*) const {
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-static bool encode_png_base64(const SkBitmap& bitmap, SkString* dst) {
-    SkPixmap pm;
-    if (!bitmap.peekPixels(&pm)) {
-        dst->set("peekPixels failed");
-        return false;
-    }
-
-    // We're going to embed this PNG in a data URI, so make it as small as possible
-    SkPngEncoder::Options options;
-    options.fFilterFlags = SkPngEncoder::FilterFlag::kAll;
-    options.fZLibLevel = 9;
-
-    SkDynamicMemoryWStream wStream;
-    if (!SkPngEncoder::Encode(&wStream, pm, options)) {
-        dst->set("SkPngEncoder::Encode failed");
-        return false;
-    }
-
-    sk_sp<SkData> pngData = wStream.detachAsData();
-    size_t len = SkBase64::Encode(pngData->data(), pngData->size(), nullptr);
-
-    // The PNG can be almost arbitrarily large. We don't want to fill our logs with enormous URLs.
-    // Infra says these can be pretty big, as long as we're only outputting them on failure.
-    static const size_t kMaxBase64Length = 1024 * 1024;
-    if (len > kMaxBase64Length) {
-        dst->printf("Encoded image too large (%u bytes)", static_cast<uint32_t>(len));
-        return false;
-    }
-
-    dst->resize(len);
-    SkBase64::Encode(pngData->data(), pngData->size(), dst->writable_str());
-    return true;
-}
-
 static Error compare_bitmaps(const SkBitmap& reference, const SkBitmap& bitmap) {
     // The dimensions are a property of the Src only, and so should be identical.
     SkASSERT(reference.computeByteSize() == bitmap.computeByteSize());
@@ -1418,15 +1377,15 @@ static Error compare_bitmaps(const SkBitmap& reference, const SkBitmap& bitmap) 
     if (0 != memcmp(reference.getPixels(), bitmap.getPixels(), reference.computeByteSize())) {
         SkString encoded;
         SkString errString("Pixels don't match reference");
-        if (encode_png_base64(reference, &encoded)) {
-            errString.append("\nExpected: data:image/png;base64,");
+        if (bitmap_to_base64_data_uri(reference, &encoded)) {
+            errString.append("\nExpected: ");
             errString.append(encoded);
         } else {
             errString.append("\nExpected image failed to encode: ");
             errString.append(encoded);
         }
-        if (encode_png_base64(bitmap, &encoded)) {
-            errString.append("\nActual: data:image/png;base64,");
+        if (bitmap_to_base64_data_uri(bitmap, &encoded)) {
+            errString.append("\nActual: ");
             errString.append(encoded);
         } else {
             errString.append("\nActual image failed to encode: ");
@@ -1507,12 +1466,9 @@ Error GPUSink::onDraw(const Src& src, SkBitmap* dst, SkWStream*, SkString* log,
             break;
         case SkCommandLineConfigGpu::SurfType::kBackendRenderTarget:
             if (1 == fSampleCount) {
-                auto srgbEncoded = info.colorSpace() && info.colorSpace()->gammaCloseToSRGB()
-                                           ? GrSRGBEncoded::kYes
-                                           : GrSRGBEncoded::kNo;
                 auto colorType = SkColorTypeToGrColorType(info.colorType());
                 backendRT = context->contextPriv().getGpu()->createTestingOnlyBackendRenderTarget(
-                        info.width(), info.height(), colorType, srgbEncoded);
+                        info.width(), info.height(), colorType);
                 surface = SkSurface::MakeFromBackendRenderTarget(
                         context, backendRT, kBottomLeft_GrSurfaceOrigin, info.colorType(),
                         info.refColorSpace(), &props);
@@ -1674,15 +1630,15 @@ static Error draw_skdocument(const Src& src, SkDocument* doc, SkWStream* dst) {
 }
 
 Error PDFSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const {
-    SkDocument::PDFMetadata metadata;
+    SkPDF::Metadata metadata;
     metadata.fTitle = src.name();
     metadata.fSubject = "rendering correctness test";
     metadata.fCreator = "Skia/DM";
     metadata.fRasterDPI = fRasterDpi;
     metadata.fPDFA = fPDFA;
-    sk_sp<SkDocument> doc = SkDocument::MakePDF(dst, metadata);
+    sk_sp<SkDocument> doc = SkPDF::MakeDocument(dst, metadata);
     if (!doc) {
-        return "SkDocument::MakePDF() returned nullptr";
+        return "SkPDF::MakeDocument() returned nullptr";
     }
     return draw_skdocument(src, doc.get(), dst);
 }
@@ -1710,9 +1666,9 @@ Error XPSSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const 
     if (!factory) {
         return "Failed to create XPS Factory.";
     }
-    sk_sp<SkDocument> doc(SkDocument::MakeXPS(dst, factory.get()));
+    sk_sp<SkDocument> doc(SkXPS::MakeDocument(dst, factory.get()));
     if (!doc) {
-        return "SkDocument::MakeXPS() returned nullptr";
+        return "SkXPS::MAkeDocument() returned nullptr";
     }
     return draw_skdocument(src, doc.get(), dst);
 }

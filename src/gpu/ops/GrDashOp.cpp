@@ -625,7 +625,6 @@ private:
             return;
         }
 
-        QuadHelper helper;
         size_t vertexStride;
         if (fullDash) {
             vertexStride =
@@ -634,7 +633,8 @@ private:
             vertexStride = sizeof(SkPoint);
         }
         SkASSERT(vertexStride == gp->debugOnly_vertexStride());
-        void* vertices = helper.init(target, vertexStride, totalRectCount);
+        QuadHelper helper(target, vertexStride, totalRectCount);
+        void* vertices = helper.vertices();
         if (!vertices) {
             return;
         }
@@ -696,43 +696,43 @@ private:
         }
         auto pipe = target->makePipeline(pipelineFlags, std::move(fProcessorSet),
                                          target->detachAppliedClip());
-        helper.recordDraw(target, gp.get(), pipe.fPipeline, pipe.fFixedDynamicState);
+        helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
     }
 
-    bool onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
+    CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
         DashOp* that = t->cast<DashOp>();
         if (fProcessorSet != that->fProcessorSet) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
         if (fDisallowCombineOnTouchOrOverlap &&
             GrRectsTouchOrOverlap(this->bounds(), that->bounds())) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (this->aaMode() != that->aaMode()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (this->fullDash() != that->fullDash()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (this->cap() != that->cap()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         // TODO vertex color
         if (this->color() != that->color()) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         if (fUsesLocalCoords && !this->viewMatrix().cheapEqualTo(that->viewMatrix())) {
-            return false;
+            return CombineResult::kCannotCombine;
         }
 
         fLines.push_back_n(that->fLines.count(), that->fLines.begin());
         this->joinBounds(*that);
-        return true;
+        return CombineResult::kMerged;
     }
 
     GrColor color() const { return fColor; }
@@ -793,6 +793,10 @@ std::unique_ptr<GrDrawOp> GrDashOp::MakeDashLineOp(GrContext* context,
     // Scale corrections of intervals and stroke from view matrix
     calc_dash_scaling(&lineData.fParallelScale, &lineData.fPerpendicularScale, viewMatrix,
                       lineData.fPtsRot);
+    if (SkScalarNearlyZero(lineData.fParallelScale) ||
+        SkScalarNearlyZero(lineData.fPerpendicularScale)) {
+        return nullptr;
+    }
 
     SkScalar offInterval = intervals[1] * lineData.fParallelScale;
     SkScalar strokeWidth = lineData.fSrcStrokeWidth * lineData.fPerpendicularScale;
@@ -863,9 +867,12 @@ private:
     bool                fUsesLocalCoords;
     AAMode              fAAMode;
 
-    static constexpr Attribute kInPosition = {"inPosition", kFloat2_GrVertexAttribType};
-    static constexpr Attribute kInDashParams = {"inDashParams", kHalf3_GrVertexAttribType};
-    static constexpr Attribute kInCircleParams = {"inCircleParams", kHalf2_GrVertexAttribType};
+    static constexpr Attribute kInPosition =
+            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    static constexpr Attribute kInDashParams =
+            {"inDashParams", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
+    static constexpr Attribute kInCircleParams =
+            {"inCircleParams", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
 
     GR_DECLARE_GEOMETRY_PROCESSOR_TEST
 
@@ -951,7 +958,7 @@ void GLDashingCircleEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
     if (dce.aaMode() != AAMode::kNone) {
         fragBuilder->codeAppendf("half diff = dist - %s.x;", circleParams.fsIn());
         fragBuilder->codeAppend("diff = 1.0 - diff;");
-        fragBuilder->codeAppend("half alpha = clamp(diff, 0.0, 1.0);");
+        fragBuilder->codeAppend("half alpha = saturate(diff);");
     } else {
         fragBuilder->codeAppendf("half alpha = 1.0;");
         fragBuilder->codeAppendf("alpha *=  dist < %s.x + 0.5 ? 1.0 : 0.0;", circleParams.fsIn());
@@ -1073,9 +1080,12 @@ private:
     bool                fUsesLocalCoords;
     AAMode              fAAMode;
 
-    static constexpr Attribute kInPosition = {"inPosition", kFloat2_GrVertexAttribType};
-    static constexpr Attribute kInDashParams = {"inDashParams", kHalf3_GrVertexAttribType};
-    static constexpr Attribute kInRectParams = {"inRect", kHalf4_GrVertexAttribType};
+    static constexpr Attribute kInPosition =
+            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    static constexpr Attribute kInDashParams =
+            {"inDashParams", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
+    static constexpr Attribute kInRectParams =
+            {"inRect", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
 
     GR_DECLARE_GEOMETRY_PROCESSOR_TEST
 

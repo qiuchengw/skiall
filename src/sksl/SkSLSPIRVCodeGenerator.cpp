@@ -69,6 +69,7 @@ void SPIRVCodeGenerator::setupIntrinsics() {
     fIntrinsicMap[String("min")]           = SPECIAL(Min);
     fIntrinsicMap[String("max")]           = SPECIAL(Max);
     fIntrinsicMap[String("clamp")]         = SPECIAL(Clamp);
+    fIntrinsicMap[String("saturate")]      = SPECIAL(Saturate);
     fIntrinsicMap[String("dot")]           = std::make_tuple(kSPIRV_IntrinsicKind, SpvOpDot,
                                                              SpvOpUndef, SpvOpUndef, SpvOpUndef);
     fIntrinsicMap[String("mix")]           = SPECIAL(Mix);
@@ -942,6 +943,17 @@ SpvId SPIRVCodeGenerator::writeSpecialIntrinsic(const FunctionCall& c, SpecialIn
                                                SpvOpUndef, args, out);
             break;
         }
+        case kSaturate_SpecialIntrinsic: {
+            SkASSERT(c.fArguments.size() == 1);
+            std::vector<std::unique_ptr<Expression>> finalArgs;
+            finalArgs.push_back(c.fArguments[0]->clone());
+            finalArgs.emplace_back(new FloatLiteral(fContext, -1, 0));
+            finalArgs.emplace_back(new FloatLiteral(fContext, -1, 1));
+            std::vector<SpvId> spvArgs = this->vectorize(finalArgs, out);
+            this->writeGLSLExtendedInstruction(c.fType, result, GLSLstd450FClamp, GLSLstd450SClamp,
+                                               GLSLstd450UClamp, spvArgs, out);
+            break;
+        }
     }
     return result;
 }
@@ -1717,7 +1729,7 @@ SpvId SPIRVCodeGenerator::writeVariableReference(const VariableReference& ref, O
             Type intfStruct(-1, name, fields);
             Layout layout(0, -1, -1, 1, -1, -1, -1, -1, Layout::Format::kUnspecified,
                           Layout::kUnspecified_Primitive, -1, -1, "", Layout::kNo_Key,
-                          StringFragment());
+                          Layout::CType::kDefault);
             Variable* intfVar = new Variable(-1,
                                              Modifiers(layout, Modifiers::kUniform_Flag),
                                              name,
@@ -3125,12 +3137,9 @@ void SPIRVCodeGenerator::writeInstructions(const Program& program, OutputStream&
     SkASSERT(main);
     for (auto entry : fVariableMap) {
         const Variable* var = entry.first;
-        int builtin = var->fModifiers.fLayout.fBuiltin;
         if (var->fStorage == Variable::kGlobal_Storage &&
             ((var->fModifiers.fFlags & Modifiers::kIn_Flag) ||
-             (var->fModifiers.fFlags & Modifiers::kOut_Flag)) &&
-             builtin != SK_OUT_BUILTIN &&
-             builtin != SK_INVOCATIONID_BUILTIN) {
+             (var->fModifiers.fFlags & Modifiers::kOut_Flag))) {
             interfaceVars.insert(entry.second);
         }
     }
