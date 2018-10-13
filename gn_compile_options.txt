@@ -1,8 +1,0 @@
--- static | debug
-gn gen out/Debug --args="is_debug=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_jsoncpp=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_lua=false skia_use_system_zlib=false extra_cflags_cc=[\"/wd4251\",\"/wd4275\",\"/WX-\",\"/utf-8\", \"/W3\", \"/wd4244\", \"/wd4267\", \"/wd4800\", \"/wd4291\", \"/MDd\", \"/NODEFAULTLIB:library\"]"
-
-gn gen out/Shared --args="is_debug=true is_component_build=true is_official_build=false skia_use_system_expat=false skia_use_system_icu=false skia_use_system_jsoncpp=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_lua=false skia_use_system_zlib=false extra_cflags_cc=[\"/wd4251\",\"/wd4275\",\"/WX-\",\"/utf-8\", \"/W3\", \"/wd4244\", \"/wd4267\", \"/wd4800\", \"/wd4291\", \"/MD\", \"/NODEFAULTLIB:library\"]"
-
-ninja -C out/Release
-
-gn gen out/x642017  --ide="vs" --args="is_debug=true target_cpu=\"x64\" win_vc=\"ddddd\"" --sln="skia"
