@@ -13,36 +13,79 @@
 #include "Test.h"
 #include "ops/GrOp.h"
 
-// The number of configurations is 2^Permutations(kNumOps, 2) * kNumOps!. To make this any larger
-// we'd have to probabilistically sample the space. At four this finishes in a very reasonable
-// amount of time but at five it takes nearly 2 minutes in a Release build on a Z840. Four seems
-// like it generates sufficiently complex test cases.
-static constexpr int kNumOps = 4;
+// We create Ops that write a value into a range of a buffer. We create ranges from
+// kNumOpPositions starting positions x kRanges canonical ranges. We repeat each range kNumRepeats
+// times (with a different value written by each of the repeats).
+namespace {
+struct Range {
+    unsigned fOffset;
+    unsigned fLength;
+};
 
-static constexpr int fact(int n) {
+static constexpr int kNumOpPositions = 4;
+static constexpr Range kRanges[] = {{0, 4,}, {1, 2}};
+static constexpr int kNumRanges = (int)SK_ARRAY_COUNT(kRanges);
+static constexpr int kNumRepeats = 2;
+static constexpr int kNumOps = kNumRepeats * kNumOpPositions * kNumRanges;
+
+static constexpr uint64_t fact(int n) {
     assert(n > 0);
     return n > 1 ? n * fact(n - 1) : 1;
 }
 
-// Number of possible allowable binary chainings among the kNumOps ops.
-static constexpr int kNumChainabilityBits = fact(kNumOps) / fact(kNumOps - 2);
-
-// We store the chainability booleans as a 32 bit bitfield.
-GR_STATIC_ASSERT(kNumChainabilityBits <= 32);
-
-static constexpr uint64_t kNumChainabilityPermutations = 1 << kNumChainabilityBits;
-
-/** Is op a chainable to op b as indicated by the bitfield? */
-static bool is_chainable(int a, int b, uint32_t chainabilityBits) {
-    SkASSERT(b != a);
-    // Each index gets kNumOps - 1 contiguous bits
-    int aOffset = a * (kNumOps - 1);
-    // Within a's range we give one bit each other op, but not one for itself.
-    int bIdxInA = b < a ? b : b - 1;
-    return chainabilityBits & (1 << (aOffset + bIdxInA));
+// How wide should our result buffer be to hold values written by the ranges of the ops.
+static constexpr unsigned result_width() {
+    unsigned maxLength = 0;
+    for (size_t i = 0; i < kNumRanges; ++i) {
+        maxLength = maxLength > kRanges[i].fLength ? maxLength : kRanges[i].fLength;
+    }
+    return kNumOpPositions + maxLength - 1;
 }
 
-namespace {
+// Number of possible allowable binary chainings among the kNumOps ops.
+static constexpr int kNumCombinableValues = fact(kNumOps) / fact(kNumOps - 2);
+using Combinable = std::array<GrOp::CombineResult, kNumCombinableValues>;
+
+/**
+ * The index in Combinable for the result for combining op 'b' into op 'a', i.e. the result of
+ * op[a]->combineIfPossible(op[b]).
+ */
+int64_t combinable_index(int a, int b) {
+    SkASSERT(b != a);
+    // Each index gets kNumOps - 1 contiguous bools
+    int64_t aOffset = a * (kNumOps - 1);
+    // Within a's range we have one value each other op, but not one for a itself.
+    int64_t bIdxInA = b < a ? b : b - 1;
+    return aOffset + bIdxInA;
+}
+
+/**
+ * Creates a legal set of combinability results for the ops. The likelihood that any two ops
+ * in a group can merge is randomly chosen.
+ */
+static void init_combinable(int numGroups, Combinable* combinable, SkRandom* random) {
+    SkScalar mergeProbability = random->nextUScalar1();
+    std::fill_n(combinable->begin(), kNumCombinableValues, GrOp::CombineResult::kCannotCombine);
+    SkTDArray<int> groups[kNumOps];
+    for (int i = 0; i < kNumOps; ++i) {
+        auto& group = groups[random->nextULessThan(numGroups)];
+        for (int g = 0; g < group.count(); ++g) {
+            int j = group[g];
+            if (random->nextUScalar1() < mergeProbability) {
+                (*combinable)[combinable_index(i, j)] = GrOp::CombineResult::kMerged;
+            } else {
+                (*combinable)[combinable_index(i, j)] = GrOp::CombineResult::kMayChain;
+            }
+            if (random->nextUScalar1() < mergeProbability) {
+                (*combinable)[combinable_index(j, i)] = GrOp::CombineResult::kMerged;
+            } else {
+                (*combinable)[combinable_index(j, i)] = GrOp::CombineResult::kMayChain;
+            }
+        }
+        group.push_back(i);
+    }
+}
+
 /**
  * A simple test op. It has an integer position, p. When it executes it writes p into an array
  * of ints at index p and p+1. It takes a bitfield that indicates allowed pair-wise chainings.
@@ -51,42 +94,61 @@ class TestOp : public GrOp {
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<TestOp> Make(GrContext* context, int pos, int result[],
-                                        uint32_t chainability) {
+    static std::unique_ptr<TestOp> Make(GrContext* context, int value, const Range& range,
+                                        int result[], const Combinable* combinable) {
         GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
-        return pool->allocate<TestOp>(pos, result, chainability);
+        return pool->allocate<TestOp>(value, range, result, combinable);
     }
 
     const char* name() const override { return "TestOp"; }
 
-    void writeResult(int result[]) const { result[fPos + 1] = result[fPos] = fPos; }
+    void writeResult(int result[]) const {
+        for (const auto& op : ChainRange<TestOp>(this)) {
+            for (const auto& vr : op.fValueRanges) {
+                for (unsigned i = 0; i < vr.fRange.fLength; ++i) {
+                    result[vr.fRange.fOffset + i] = vr.fValue;
+                }
+            }
+        }
+    }
 
 private:
     friend class ::GrOpMemoryPool;  // for ctor
 
-    TestOp(int pos, int result[], uint32_t chainability)
-            : INHERITED(ClassID()), fPos(pos), fResult(result), fChainability(chainability) {
-        // Each op writes 2 values (at pos and pos+1) in a (kNumOps + 1) x 1 buffer.
-        this->setBounds(SkRect::MakeXYWH(pos, 0, 2, 1), HasAABloat::kNo, IsZeroArea::kNo);
+    TestOp(int value, const Range& range, int result[], const Combinable* combinable)
+            : INHERITED(ClassID()), fResult(result), fCombinable(combinable) {
+        fValueRanges.push_back({value, range});
+        this->setBounds(SkRect::MakeXYWH(range.fOffset, 0, range.fOffset + range.fLength, 1),
+                        HasAABloat::kNo, IsZeroArea::kNo);
     }
 
     void onPrepare(GrOpFlushState*) override {}
 
-    void onExecute(GrOpFlushState*) override {
+    void onExecute(GrOpFlushState*, const SkRect& chainBounds) override {
         for (auto& op : ChainRange<TestOp>(this)) {
             op.writeResult(fResult);
         }
     }
 
-    CombineResult onCombineIfPossible(GrOp* that, const GrCaps&) override {
-        return is_chainable(fPos, that->cast<TestOp>()->fPos, fChainability)
-                       ? CombineResult::kMayChain
-                       : CombineResult::kCannotCombine;
+    CombineResult onCombineIfPossible(GrOp* t, const GrCaps&) override {
+        auto that = t->cast<TestOp>();
+        int v0 = fValueRanges[0].fValue;
+        int v1 = that->fValueRanges[0].fValue;
+        auto result = (*fCombinable)[combinable_index(v0, v1)];
+        if (result == GrOp::CombineResult::kMerged) {
+            std::move(that->fValueRanges.begin(), that->fValueRanges.end(),
+                      std::back_inserter(fValueRanges));
+        }
+        return result;
     }
 
-    int fPos;
+    struct ValueRange {
+        int fValue;
+        Range fRange;
+    };
+    std::vector<ValueRange> fValueRanges;
     int* fResult;
-    uint32_t fChainability;
+    const Combinable* fCombinable;
 
     typedef GrOp INHERITED;
 };
@@ -111,35 +173,66 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
             GrInternalSurfaceFlags::kNone);
     SkASSERT(proxy);
     proxy->instantiate(context->contextPriv().resourceProvider());
-    int result[kNumOps + 1];
-    int validResult[kNumOps + 1];
+    int result[result_width()];
+    int validResult[result_width()];
 
     int permutation[kNumOps];
     for (int i = 0; i < kNumOps; ++i) {
         permutation[i] = i;
     }
-    do {
-        for (uint32_t chainabilityBits = 0; chainabilityBits < kNumChainabilityPermutations;
-             ++chainabilityBits) {
-            GrTokenTracker tracker;
-            GrOpFlushState flushState(context->contextPriv().getGpu(),
-                                      context->contextPriv().resourceProvider(), &tracker);
-            GrRenderTargetOpList opList(context->contextPriv().resourceProvider(),
-                                        sk_ref_sp(context->contextPriv().opMemoryPool()),
-                                        proxy->asRenderTargetProxy(),
-                                        context->contextPriv().getAuditTrail());
-            std::fill(result, result + kNumOps + 1, -1);
-            std::fill(validResult, validResult + kNumOps + 1, -1);
-            for (int i = 0; i < kNumOps; ++i) {
-                auto op = TestOp::Make(context.get(), permutation[i], result, chainabilityBits);
-                op->writeResult(validResult);
-                opList.addOp(std::move(op), *context->contextPriv().caps());
-            }
-            opList.makeClosed(*context->contextPriv().caps());
-            opList.prepare(&flushState);
-            opList.execute(&flushState);
-            opList.endFlush();
-            REPORTER_ASSERT(reporter, std::equal(result, result + kNumOps + 1, validResult));
+    // Op order permutations.
+    static constexpr int kNumPermutations = 100;
+    // For a given number of chainability groups, this is the number of random combinability reuslts
+    // we will test.
+    static constexpr int kNumCombinabilitiesPerGrouping = 20;
+    SkRandom random;
+    bool repeat = false;
+    Combinable combinable;
+    for (int p = 0; p < kNumPermutations; ++p) {
+        for (int i = 0; i < kNumOps - 2 && !repeat; ++i) {
+            // The current implementation of nextULessThan() is biased. :(
+            unsigned j = i + random.nextULessThan(kNumOps - i);
+            std::swap(permutation[i], permutation[j]);
         }
-    } while (std::next_permutation(permutation, permutation + kNumOps));
+        // g is the number of chainable groups that we partition the ops into.
+        for (int g = 1; g < kNumOps; ++g) {
+            for (int c = 0; c < kNumCombinabilitiesPerGrouping; ++c) {
+                init_combinable(g, &combinable, &random);
+                GrTokenTracker tracker;
+                GrOpFlushState flushState(context->contextPriv().getGpu(),
+                                          context->contextPriv().resourceProvider(), &tracker,
+                                          nullptr, nullptr);
+                GrRenderTargetOpList opList(context->contextPriv().resourceProvider(),
+                                            sk_ref_sp(context->contextPriv().opMemoryPool()),
+                                            proxy->asRenderTargetProxy(),
+                                            context->contextPriv().getAuditTrail());
+                // This assumes the particular values of kRanges.
+                std::fill_n(result, result_width(), -1);
+                std::fill_n(validResult, result_width(), -1);
+                for (int i = 0; i < kNumOps; ++i) {
+                    int value = permutation[i];
+                    // factor out the repeats and then use the canonical starting position and range
+                    // to determine an actual range.
+                    int j = value % (kNumRanges * kNumOpPositions);
+                    int pos = j % kNumOpPositions;
+                    Range range = kRanges[j / kNumOpPositions];
+                    range.fOffset += pos;
+                    auto op = TestOp::Make(context.get(), value, range, result, &combinable);
+                    op->writeResult(validResult);
+                    opList.addOp(std::move(op), *context->contextPriv().caps());
+                }
+                opList.makeClosed(*context->contextPriv().caps());
+                opList.prepare(&flushState);
+                opList.execute(&flushState);
+                opList.endFlush();
+#if 0  // Useful to repeat a random configuration that fails the test while debugger attached.
+                if (!std::equal(result, result + result_width(), validResult)) {
+                    repeat = true;
+                }
+#endif
+                (void)repeat;
+                REPORTER_ASSERT(reporter, std::equal(result, result + result_width(), validResult));
+            }
+        }
+    }
 }

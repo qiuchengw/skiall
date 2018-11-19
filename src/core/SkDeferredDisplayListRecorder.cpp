@@ -62,7 +62,9 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
 
 #include "SkGr.h"
 #include "SkImage_Gpu.h"
+#include "SkImage_GpuYUVA.h"
 #include "SkSurface_Gpu.h"
+#include "SkYUVASizeInfo.h"
 
 SkDeferredDisplayListRecorder::SkDeferredDisplayListRecorder(const SkSurfaceCharacterization& c)
         : fCharacterization(c) {
@@ -229,6 +231,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
 sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
         SkYUVColorSpace yuvColorSpace,
         const GrBackendFormat yuvaFormats[],
+        const SkISize yuvaSizes[],
         const SkYUVAIndex yuvaIndices[4],
         int imageWidth,
         int imageHeight,
@@ -238,6 +241,37 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
         TextureReleaseProc textureReleaseProc,
         PromiseDoneProc promiseDoneProc,
         TextureContext textureContexts[]) {
+    if (!fContext) {
+        return nullptr;
+    }
+
+    return SkImage_GpuYUVA::MakePromiseYUVATexture(fContext.get(),
+                                                   yuvColorSpace,
+                                                   yuvaFormats,
+                                                   yuvaSizes,
+                                                   yuvaIndices,
+                                                   imageWidth,
+                                                   imageHeight,
+                                                   imageOrigin,
+                                                   std::move(imageColorSpace),
+                                                   textureFulfillProc,
+                                                   textureReleaseProc,
+                                                   promiseDoneProc,
+                                                   textureContexts);
+}
+
+sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
+    SkYUVColorSpace yuvColorSpace,
+    const GrBackendFormat yuvaFormats[],
+    const SkYUVAIndex yuvaIndices[4],
+    int imageWidth,
+    int imageHeight,
+    GrSurfaceOrigin imageOrigin,
+    sk_sp<SkColorSpace> imageColorSpace,
+    TextureFulfillProc textureFulfillProc,
+    TextureReleaseProc textureReleaseProc,
+    PromiseDoneProc promiseDoneProc,
+    TextureContext textureContexts[]) {
     if (!fContext) {
         return nullptr;
     }

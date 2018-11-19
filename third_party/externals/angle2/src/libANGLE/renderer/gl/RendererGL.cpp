@@ -247,137 +247,6 @@ angle::Result RendererGL::finish()
     return angle::Result::Continue();
 }
 
-angle::Result RendererGL::drawArrays(const gl::Context *context,
-                                     gl::PrimitiveMode mode,
-                                     GLint first,
-                                     GLsizei count)
-{
-    const gl::Program *program  = context->getGLState().getProgram();
-    const bool usesMultiview    = program->usesMultiview();
-    const GLsizei instanceCount = usesMultiview ? program->getNumViews() : 0;
-
-    ANGLE_TRY(mStateManager->setDrawArraysState(context, first, count, instanceCount));
-    if (!usesMultiview)
-    {
-        mFunctions->drawArrays(ToGLenum(mode), first, count);
-    }
-    else
-    {
-        mFunctions->drawArraysInstanced(ToGLenum(mode), first, count, instanceCount);
-    }
-    return angle::Result::Continue();
-}
-
-angle::Result RendererGL::drawArraysInstanced(const gl::Context *context,
-                                              gl::PrimitiveMode mode,
-                                              GLint first,
-                                              GLsizei count,
-                                              GLsizei instanceCount)
-{
-    GLsizei adjustedInstanceCount = instanceCount;
-    const gl::Program *program    = context->getGLState().getProgram();
-    if (program->usesMultiview())
-    {
-        adjustedInstanceCount *= program->getNumViews();
-    }
-
-    ANGLE_TRY(mStateManager->setDrawArraysState(context, first, count, adjustedInstanceCount));
-    mFunctions->drawArraysInstanced(ToGLenum(mode), first, count, adjustedInstanceCount);
-    return angle::Result::Continue();
-}
-
-angle::Result RendererGL::drawElements(const gl::Context *context,
-                                       gl::PrimitiveMode mode,
-                                       GLsizei count,
-                                       GLenum type,
-                                       const void *indices)
-{
-    const gl::Program *program  = context->getGLState().getProgram();
-    const bool usesMultiview    = program->usesMultiview();
-    const GLsizei instanceCount = usesMultiview ? program->getNumViews() : 0;
-    const void *drawIndexPtr    = nullptr;
-
-    ANGLE_TRY(mStateManager->setDrawElementsState(context, count, type, indices, instanceCount,
-                                                  &drawIndexPtr));
-    if (!usesMultiview)
-    {
-        mFunctions->drawElements(ToGLenum(mode), count, type, drawIndexPtr);
-    }
-    else
-    {
-        mFunctions->drawElementsInstanced(ToGLenum(mode), count, type, drawIndexPtr, instanceCount);
-    }
-    return angle::Result::Continue();
-}
-
-angle::Result RendererGL::drawElementsInstanced(const gl::Context *context,
-                                                gl::PrimitiveMode mode,
-                                                GLsizei count,
-                                                GLenum type,
-                                                const void *indices,
-                                                GLsizei instances)
-{
-    GLsizei adjustedInstanceCount = instances;
-    const gl::Program *program    = context->getGLState().getProgram();
-    if (program->usesMultiview())
-    {
-        adjustedInstanceCount *= program->getNumViews();
-    }
-    const void *drawIndexPointer = nullptr;
-
-    ANGLE_TRY(mStateManager->setDrawElementsState(context, count, type, indices,
-                                                  adjustedInstanceCount, &drawIndexPointer));
-    mFunctions->drawElementsInstanced(ToGLenum(mode), count, type, drawIndexPointer,
-                                      adjustedInstanceCount);
-    return angle::Result::Continue();
-}
-
-angle::Result RendererGL::drawRangeElements(const gl::Context *context,
-                                            gl::PrimitiveMode mode,
-                                            GLuint start,
-                                            GLuint end,
-                                            GLsizei count,
-                                            GLenum type,
-                                            const void *indices)
-{
-    const gl::Program *program   = context->getGLState().getProgram();
-    const bool usesMultiview     = program->usesMultiview();
-    const GLsizei instanceCount  = usesMultiview ? program->getNumViews() : 0;
-    const void *drawIndexPointer = nullptr;
-
-    ANGLE_TRY(mStateManager->setDrawElementsState(context, count, type, indices, instanceCount,
-                                                  &drawIndexPointer));
-    if (!usesMultiview)
-    {
-        mFunctions->drawRangeElements(ToGLenum(mode), start, end, count, type, drawIndexPointer);
-    }
-    else
-    {
-        mFunctions->drawElementsInstanced(ToGLenum(mode), count, type, drawIndexPointer,
-                                          instanceCount);
-    }
-    return angle::Result::Continue();
-}
-
-angle::Result RendererGL::drawArraysIndirect(const gl::Context *context,
-                                             gl::PrimitiveMode mode,
-                                             const void *indirect)
-{
-    ANGLE_TRY(mStateManager->setDrawIndirectState(context));
-    mFunctions->drawArraysIndirect(ToGLenum(mode), indirect);
-    return angle::Result::Continue();
-}
-
-angle::Result RendererGL::drawElementsIndirect(const gl::Context *context,
-                                               gl::PrimitiveMode mode,
-                                               GLenum type,
-                                               const void *indirect)
-{
-    ANGLE_TRY(mStateManager->setDrawIndirectState(context));
-    mFunctions->drawElementsIndirect(ToGLenum(mode), type, indirect);
-    return angle::Result::Continue();
-}
-
 void RendererGL::stencilFillPath(const gl::ContextState &state,
                                  const gl::Path *path,
                                  GLenum fillMode,
@@ -579,7 +448,7 @@ std::string RendererGL::getRendererDescription() const
         reinterpret_cast<const char *>(mFunctions->getString(GL_RENDERER)));
 
     std::ostringstream rendererString;
-    rendererString << nativeVendorString << " " << nativeRendererString << " OpenGL";
+    rendererString << nativeVendorString << ", " << nativeRendererString << ", OpenGL";
     if (mFunctions->standard == STANDARD_GL_ES)
     {
         rendererString << " ES";
@@ -683,14 +552,12 @@ angle::Result RendererGL::dispatchCompute(const gl::Context *context,
                                           GLuint numGroupsY,
                                           GLuint numGroupsZ)
 {
-    ANGLE_TRY(mStateManager->setDispatchComputeState(context));
     mFunctions->dispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
     return angle::Result::Continue();
 }
 
 angle::Result RendererGL::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
-    ANGLE_TRY(mStateManager->setDispatchComputeState(context));
     mFunctions->dispatchComputeIndirect(indirect);
     return angle::Result::Continue();
 }

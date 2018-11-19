@@ -6,7 +6,7 @@
 
 // validationES2.cpp: Validation functions for OpenGL ES 2.0 entry point parameters
 
-#include "libANGLE/validationES2.h"
+#include "libANGLE/validationES2_autogen.h"
 
 #include <cstdint>
 
@@ -25,7 +25,8 @@
 #include "libANGLE/VertexArray.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/validationES.h"
-#include "libANGLE/validationES3.h"
+#include "libANGLE/validationES2.h"
+#include "libANGLE/validationES3_autogen.h"
 
 namespace gl
 {
@@ -1133,8 +1134,9 @@ void RecordBindTextureTypeError(Context *context, TextureType target)
             break;
 
         case TextureType::_2DMultisample:
-            ASSERT(context->getClientVersion() < Version(3, 1));
-            ANGLE_VALIDATION_ERR(context, InvalidEnum(), ES31Required);
+            ASSERT(context->getClientVersion() < Version(3, 1) &&
+                   !context->getExtensions().textureMultisample);
+            ANGLE_VALIDATION_ERR(context, InvalidEnum(), MultisampleTextureExtensionOrES31Required);
             break;
 
         case TextureType::_2DMultisampleArray:
@@ -3580,16 +3582,6 @@ bool ValidateStencilStrokePathCHROMIUM(Context *context, GLuint path, GLint refe
     return true;
 }
 
-bool ValidateCoverFillPathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
-{
-    return ValidateCoverPathCHROMIUM(context, path, coverMode);
-}
-
-bool ValidateCoverStrokePathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
-{
-    return ValidateCoverPathCHROMIUM(context, path, coverMode);
-}
-
 bool ValidateCoverPathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
 {
     if (!context->getExtensions().pathRendering)
@@ -3613,6 +3605,16 @@ bool ValidateCoverPathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
             return false;
     }
     return true;
+}
+
+bool ValidateCoverFillPathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
+{
+    return ValidateCoverPathCHROMIUM(context, path, coverMode);
+}
+
+bool ValidateCoverStrokePathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
+{
+    return ValidateCoverPathCHROMIUM(context, path, coverMode);
 }
 
 bool ValidateStencilThenCoverFillPathCHROMIUM(Context *context,
@@ -4411,7 +4413,7 @@ bool ValidateBufferSubData(Context *context,
     checkedSize += offset;
     if (!checkedSize.IsValid())
     {
-        context->handleError(OutOfMemory());
+        context->handleError(InvalidValue());
         return false;
     }
 
@@ -6035,9 +6037,11 @@ bool ValidateFramebufferTexture2D(Context *context,
 
             case TextureTarget::_2DMultisample:
             {
-                if (context->getClientVersion() < ES_3_1)
+                if (context->getClientVersion() < ES_3_1 &&
+                    !context->getExtensions().textureMultisample)
                 {
-                    ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES31Required);
+                    ANGLE_VALIDATION_ERR(context, InvalidOperation(),
+                                         MultisampleTextureExtensionOrES31Required);
                     return false;
                 }
 
@@ -6200,6 +6204,32 @@ bool ValidateGetTexParameteriv(Context *context, TextureType target, GLenum pnam
     return ValidateGetTexParameterBase(context, target, pname, nullptr);
 }
 
+bool ValidateGetTexParameterIivOES(Context *context,
+                                   TextureType target,
+                                   GLenum pname,
+                                   GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateGetTexParameterBase(context, target, pname, nullptr);
+}
+
+bool ValidateGetTexParameterIuivOES(Context *context,
+                                    TextureType target,
+                                    GLenum pname,
+                                    GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateGetTexParameterBase(context, target, pname, nullptr);
+}
+
 bool ValidateGetUniformfv(Context *context, GLuint program, GLint location, GLfloat *params)
 {
     return ValidateGetUniformBase(context, program, location);
@@ -6271,7 +6301,7 @@ bool ValidateReadPixels(Context *context,
 
 bool ValidateTexParameterf(Context *context, TextureType target, GLenum pname, GLfloat param)
 {
-    return ValidateTexParameterBase(context, target, pname, 1, &param);
+    return ValidateTexParameterBase(context, target, pname, -1, false, &param);
 }
 
 bool ValidateTexParameterfv(Context *context,
@@ -6279,17 +6309,43 @@ bool ValidateTexParameterfv(Context *context,
                             GLenum pname,
                             const GLfloat *params)
 {
-    return ValidateTexParameterBase(context, target, pname, -1, params);
+    return ValidateTexParameterBase(context, target, pname, -1, true, params);
 }
 
 bool ValidateTexParameteri(Context *context, TextureType target, GLenum pname, GLint param)
 {
-    return ValidateTexParameterBase(context, target, pname, 1, &param);
+    return ValidateTexParameterBase(context, target, pname, -1, false, &param);
 }
 
 bool ValidateTexParameteriv(Context *context, TextureType target, GLenum pname, const GLint *params)
 {
-    return ValidateTexParameterBase(context, target, pname, -1, params);
+    return ValidateTexParameterBase(context, target, pname, -1, true, params);
+}
+
+bool ValidateTexParameterIivOES(Context *context,
+                                TextureType target,
+                                GLenum pname,
+                                const GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateTexParameterBase(context, target, pname, -1, true, params);
+}
+
+bool ValidateTexParameterIuivOES(Context *context,
+                                 TextureType target,
+                                 GLenum pname,
+                                 const GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateTexParameterBase(context, target, pname, -1, true, params);
 }
 
 bool ValidateUseProgram(Context *context, GLuint program)
@@ -6654,6 +6710,50 @@ bool ValidateMaxShaderCompilerThreadsKHR(Context *context, GLuint count)
     {
         ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
         return false;
+    }
+    return true;
+}
+
+bool ValidateMultiDrawArraysANGLE(Context *context,
+                                  PrimitiveMode mode,
+                                  const GLint *firsts,
+                                  const GLsizei *counts,
+                                  GLsizei drawcount)
+{
+    if (!context->getExtensions().multiDraw)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
+        return false;
+    }
+    for (GLsizei drawID = 0; drawID < drawcount; ++drawID)
+    {
+        if (!ValidateDrawArrays(context, mode, firsts[drawID], counts[drawID]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ValidateMultiDrawElementsANGLE(Context *context,
+                                    PrimitiveMode mode,
+                                    const GLsizei *counts,
+                                    GLenum type,
+                                    const GLsizei *offsets,
+                                    GLsizei drawcount)
+{
+    if (!context->getExtensions().multiDraw)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
+        return false;
+    }
+    for (GLsizei drawID = 0; drawID < drawcount; ++drawID)
+    {
+        const void *indices = reinterpret_cast<void *>(static_cast<long>(offsets[drawID]));
+        if (!ValidateDrawElements(context, mode, counts[drawID], type, indices))
+        {
+            return false;
+        }
     }
     return true;
 }

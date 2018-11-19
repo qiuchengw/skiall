@@ -107,10 +107,10 @@ GrMtlGpu::GrMtlGpu(GrContext* context, const GrContextOptions& options,
 }
 
 GrGpuRTCommandBuffer* GrMtlGpu::getCommandBuffer(
-            GrRenderTarget* renderTarget, GrSurfaceOrigin origin,
+            GrRenderTarget* renderTarget, GrSurfaceOrigin origin, const SkRect& bounds,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo& colorInfo,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo& stencilInfo) {
-    return new GrMtlGpuRTCommandBuffer(this, renderTarget, origin, colorInfo, stencilInfo);
+    return new GrMtlGpuRTCommandBuffer(this, renderTarget, origin, bounds, colorInfo, stencilInfo);
 }
 
 GrGpuTextureCommandBuffer* GrMtlGpu::getCommandBuffer(GrTexture* texture,
@@ -338,7 +338,7 @@ static inline void init_surface_desc(GrSurfaceDesc* surfaceDesc, id<MTLTexture> 
 }
 
 sk_sp<GrTexture> GrMtlGpu::onWrapBackendTexture(const GrBackendTexture& backendTex,
-                                                GrWrapOwnership ownership) {
+                                                GrWrapOwnership ownership, bool purgeImmediately) {
     id<MTLTexture> mtlTexture = get_texture_from_backend(backendTex, ownership);
     if (!mtlTexture) {
         return nullptr;
@@ -347,7 +347,7 @@ sk_sp<GrTexture> GrMtlGpu::onWrapBackendTexture(const GrBackendTexture& backendT
     GrSurfaceDesc surfDesc;
     init_surface_desc(&surfDesc, mtlTexture, false, backendTex.config());
 
-    return GrMtlTexture::MakeWrappedTexture(this, surfDesc, mtlTexture);
+    return GrMtlTexture::MakeWrappedTexture(this, surfDesc, mtlTexture, purgeImmediately);
 }
 
 sk_sp<GrTexture> GrMtlGpu::onWrapRenderableBackendTexture(const GrBackendTexture& backendTex,

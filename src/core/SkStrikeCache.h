@@ -12,6 +12,7 @@
 #include <unordered_set>
 
 #include "SkDescriptor.h"
+#include "SkGlyphCache.h"
 #include "SkSpinlock.h"
 #include "SkTemplates.h"
 
@@ -39,7 +40,7 @@ public:
 };
 
 class SkStrikeCache {
-    struct Node;
+    class Node;
 
 public:
     SkStrikeCache() = default;
@@ -47,7 +48,7 @@ public:
 
     class ExclusiveStrikePtr {
     public:
-        explicit ExclusiveStrikePtr(Node*, SkStrikeCache*);
+        explicit ExclusiveStrikePtr(Node*);
         ExclusiveStrikePtr();
         ExclusiveStrikePtr(const ExclusiveStrikePtr&) = delete;
         ExclusiveStrikePtr& operator = (const ExclusiveStrikePtr&) = delete;
@@ -65,24 +66,30 @@ public:
 
     private:
         Node* fNode;
-        SkStrikeCache* fStrikeCache;
     };
 
     static SkStrikeCache* GlobalStrikeCache();
 
     static ExclusiveStrikePtr FindStrikeExclusive(const SkDescriptor&);
     ExclusiveStrikePtr findStrikeExclusive(const SkDescriptor&);
+    Node* findAndDetachStrike(const SkDescriptor&);
 
     static ExclusiveStrikePtr CreateStrikeExclusive(
             const SkDescriptor& desc,
             std::unique_ptr<SkScalerContext> scaler,
-            SkPaint::FontMetrics* maybeMetrics = nullptr,
+            SkFontMetrics* maybeMetrics = nullptr,
             std::unique_ptr<SkStrikePinner> = nullptr);
 
     ExclusiveStrikePtr createStrikeExclusive(
             const SkDescriptor& desc,
             std::unique_ptr<SkScalerContext> scaler,
-            SkPaint::FontMetrics* maybeMetrics = nullptr,
+            SkFontMetrics* maybeMetrics = nullptr,
+            std::unique_ptr<SkStrikePinner> = nullptr);
+
+    Node* createStrike(
+            const SkDescriptor& desc,
+            std::unique_ptr<SkScalerContext> scaler,
+            SkFontMetrics* maybeMetrics = nullptr,
             std::unique_ptr<SkStrikePinner> = nullptr);
 
     static ExclusiveStrikePtr FindOrCreateStrikeExclusive(
@@ -91,6 +98,11 @@ public:
             const SkTypeface& typeface);
 
     ExclusiveStrikePtr findOrCreateStrikeExclusive(
+            const SkDescriptor& desc,
+            const SkScalerContextEffects& effects,
+            const SkTypeface& typeface);
+
+    Node* findOrCreateStrike(
             const SkDescriptor& desc,
             const SkScalerContextEffects& effects,
             const SkTypeface& typeface);
@@ -104,11 +116,25 @@ public:
 
     static ExclusiveStrikePtr FindOrCreateStrikeExclusive(
             const SkPaint& paint,
-            const SkSurfaceProps* surfaceProps,
+            const SkSurfaceProps& surfaceProps,
             SkScalerContextFlags scalerContextFlags,
-            const SkMatrix* deviceMatrix);
+            const SkMatrix& deviceMatrix);
 
-    static ExclusiveStrikePtr FindOrCreateStrikeExclusive(const SkPaint& paint);
+    SkGlyphCacheInterface* findOrCreateGlyphCache(
+            const SkPaint& paint,
+            const SkSurfaceProps& surfaceProps,
+            SkScalerContextFlags scalerContextFlags,
+            const SkMatrix& deviceMatrix);
+
+    Node* findOrCreateStrike(
+            const SkPaint& paint,
+            const SkSurfaceProps& surfaceProps,
+            SkScalerContextFlags scalerContextFlags,
+            const SkMatrix& deviceMatrix);
+
+    static ExclusiveStrikePtr FindOrCreateStrikeWithNoDeviceExclusive(const SkPaint& paint);
+
+    static ExclusiveStrikePtr FindOrCreateStrikeWithNoDeviceExclusive(const SkFont&);
 
     static std::unique_ptr<SkScalerContext> CreateScalerContext(
             const SkDescriptor&, const SkScalerContextEffects&, const SkTypeface&);

@@ -10,6 +10,7 @@
 #define LIBANGLE_ANGLETYPES_H_
 
 #include "common/Color.h"
+#include "common/FixedVector.h"
 #include "common/PackedEnums.h"
 #include "common/bitset_utils.h"
 #include "common/vector_utils.h"
@@ -17,6 +18,7 @@
 #include "libANGLE/Error.h"
 #include "libANGLE/RefCountObject.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 
 #include <bitset>
@@ -273,6 +275,10 @@ class SamplerState final
 
     void setSRGBDecode(GLenum sRGBDecode);
 
+    void setBorderColor(const ColorGeneric &color);
+
+    const ColorGeneric &getBorderColor() const { return mBorderColor; }
+
     bool sameCompleteness(const SamplerState &samplerState) const
     {
         return mCompleteness.packed == samplerState.mCompleteness.packed;
@@ -298,6 +304,8 @@ class SamplerState final
     GLenum mCompareFunc;
 
     GLenum mSRGBDecode;
+
+    ColorGeneric mBorderColor;
 
     union Completeness {
         uint32_t packed;
@@ -408,6 +416,9 @@ using AttachmentArray = std::array<T, IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS
 
 template <typename T>
 using DrawBuffersArray = std::array<T, IMPLEMENTATION_MAX_DRAW_BUFFERS>;
+
+template <typename T>
+using DrawBuffersVector = angle::FixedVector<T, IMPLEMENTATION_MAX_DRAW_BUFFERS>;
 
 template <typename T>
 using AttribArray = std::array<T, MAX_VERTEX_ATTRIBS>;

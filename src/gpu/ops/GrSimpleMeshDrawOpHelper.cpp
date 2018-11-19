@@ -76,7 +76,7 @@ GrDrawOp::RequiresDstTexture GrSimpleMeshDrawOpHelper::xpRequiresDstTexture(
                                : GrProcessorAnalysisCoverage::kNone;
         }
         bool isMixedSamples = this->aaType() == GrAAType::kMixedSamples;
-        GrColor overrideColor;
+        SkPMColor4f overrideColor;
         analysis = fProcessors->finalize(*geometryColor, coverage, clip, isMixedSamples, caps,
                                          &overrideColor);
         if (analysis.inputColorIsOverridden()) {
@@ -94,13 +94,14 @@ GrDrawOp::RequiresDstTexture GrSimpleMeshDrawOpHelper::xpRequiresDstTexture(
 
 GrDrawOp::RequiresDstTexture GrSimpleMeshDrawOpHelper::xpRequiresDstTexture(
         const GrCaps& caps, const GrAppliedClip* clip, GrProcessorAnalysisCoverage geometryCoverage,
-        GrColor* geometryColor) {
+        SkPMColor4f* geometryColor) {
     GrProcessorAnalysisColor color = *geometryColor;
     auto result = this->xpRequiresDstTexture(caps, clip, geometryCoverage, &color);
     color.isConstant(geometryColor);
     return result;
 }
 
+#ifdef SK_DEBUG
 SkString GrSimpleMeshDrawOpHelper::dumpInfo() const {
     const GrProcessorSet& processors = fProcessors ? *fProcessors : GrProcessorSet::EmptySet();
     SkString result = processors.dumpProcessors();
@@ -122,6 +123,7 @@ SkString GrSimpleMeshDrawOpHelper::dumpInfo() const {
     result.append(GrPipeline::DumpFlags(fPipelineFlags));
     return result;
 }
+#endif
 
 GrPipeline::InitArgs GrSimpleMeshDrawOpHelper::pipelineInitArgs(
         GrMeshDrawOp::Target* target) const {
@@ -189,8 +191,10 @@ auto GrSimpleMeshDrawOpHelperWithStencil::makePipeline(GrMeshDrawOp::Target* tar
     return this->internalMakePipeline(target, args, numPrimitiveProcessorTextures);
 }
 
+#ifdef SK_DEBUG
 SkString GrSimpleMeshDrawOpHelperWithStencil::dumpInfo() const {
     SkString result = INHERITED::dumpInfo();
     result.appendf("Stencil settings: %s\n", (fStencilSettings ? "yes" : "no"));
     return result;
 }
+#endif

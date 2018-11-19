@@ -9,44 +9,86 @@ MAINTAINERCLEANFILES =
 # Convenience targets:
 lib:
 	@$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir)/src lib
+libs:
+	@$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir)/src libs
+
+EXTRA_DIST += CMakeLists.txt
+
+EXTRA_DIST += fonts
+
+LINK = $(CXXLINK)
 
 if HAVE_GLIB
 AM_CPPFLAGS = -DSRCDIR="\"$(srcdir)\"" -I$(top_srcdir)/src/ -I$(top_builddir)/src/ $(GLIB_CFLAGS)
 LDADD = $(top_builddir)/src/libharfbuzz.la $(GLIB_LIBS)
 
-EXTRA_DIST += hb-test.h
+EXTRA_DIST += hb-test.h hb-subset-test.h
 
 check_PROGRAMS = $(TEST_PROGS)
 noinst_PROGRAMS = $(TEST_PROGS)
 
 TEST_PROGS = \
+	test-baseline \
 	test-blob \
 	test-buffer \
+	test-collect-unicodes \
 	test-common \
 	test-font \
+	test-map \
 	test-object \
+	test-ot-face \
 	test-set \
 	test-shape \
+	test-subset \
+	test-subset-cmap \
+	test-subset-glyf \
+	test-subset-hdmx \
+	test-subset-hmtx \
+	test-subset-os2 \
+	test-subset-post \
+	test-subset-vmtx \
 	test-unicode \
 	test-version \
 	$(NULL)
 
-test_unicode_CPPFLAGS = $(AM_CPPFLAGS)
+test_subset_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_codepoints_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_cmap_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_glyf_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_hdmx_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_hmtx_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_os2_LDADD  = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_post_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_vmtx_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+
+test_unicode_CPPFLAGS = \
+	$(AM_CPPFLAGS) \
+	$(GLIB_CFLAGS) \
+	$(NULL)
 test_unicode_LDADD = $(LDADD)
-if HAVE_GLIB
-test_unicode_CPPFLAGS += $(GLIB_CFLAGS)
-endif
 if HAVE_ICU
 test_unicode_CPPFLAGS += $(ICU_CFLAGS)
 test_unicode_LDADD += $(top_builddir)/src/libharfbuzz-icu.la $(ICU_LIBS)
 endif
 
 
-if HAVE_OT
-
 TEST_PROGS += \
+	test-ot-color \
+	test-ot-name \
 	test-ot-tag \
 	$(NULL)
+
+
+if HAVE_PTHREAD
+if HAVE_FREETYPE
+TEST_PROGS += test-multithread
+test_multithread_CFLAGS = $(CFLAGS) $(PTHREAD_CFLAGS) $(FREETYPE_CFLAGS)
+test_multithread_LDADD = $(LDADD) $(PTHREAD_LIBS) $(FREETYPE_LIBS)
+# The auto-generated link rule somehow includes CFLAGS as well.  Without
+# it, pthread link fails, because, who knows why, $PTHREAD_LIBS is empty.
+test_multithread_LINK = $(LINK) $(PTHREAD_CFLAGS)
+endif
+endif
 
 if HAVE_FREETYPE
 TEST_PROGS += \
@@ -54,18 +96,8 @@ TEST_PROGS += \
 	$(NULL)
 test_ot_math_LDADD = $(LDADD) $(FREETYPE_LIBS)
 test_ot_math_CPPFLAGS = $(AM_CPPFLAGS) $(FREETYPE_CFLAGS)
-EXTRA_DIST += \
-	fonts/MathTestFontEmpty.otf \
-	fonts/MathTestFontFull.otf \
-	fonts/MathTestFontNone.otf \
-	fonts/MathTestFontPartial1.otf \
-	fonts/MathTestFontPartial2.otf \
-	fonts/MathTestFontPartial3.otf \
-	fonts/MathTestFontPartial4.otf \
-	$(NULL)
 endif # HAVE_FREETYPE
 
-endif # HAVE_OT
 
 # Tests for header compilation
 TEST_PROGS += \
@@ -137,24 +169,29 @@ symbols-tested.txt: $(TEST_PROGS)
 	$(AM_V_GEN)$(top_builddir)/libtool --mode=execute nm $^ \
 	| grep ' U hb_' | sed 's/.* U hb_/hb_/' \
 	| sort | uniq > $@.tmp && mv $@.tmp $@
+symbols-tested-or-deprecated.txt: symbols-tested.txt $(top_builddir)/src/harfbuzz-deprecated-symbols.txt
+	$(AM_V_GEN)cat $^ | sort | uniq > $@.tmp; mv $@.tmp $@
 symbols-exported.txt: $(top_builddir)/src/.libs/libharfbuzz.so
 	$(AM_V_GEN)$(top_builddir)/libtool --mode=execute nm $^ \
 	| grep ' T ' | sed 's/.* T //' | grep -v '^\(_init\|_fini\)$$' \
 	| sort | uniq > $@.tmp && mv $@.tmp $@
-symbols-untested.txt: symbols-tested.txt symbols-exported.txt
+symbols-untested.txt: symbols-tested-or-deprecated.txt symbols-exported.txt
 	$(AM_V_GEN)diff $^ > $@.tmp; mv $@.tmp $@
-CLEANFILES += symbols-tested.txt symbols-exported.txt symbols-untested.txt
+CLEANFILES += symbols-tested.txt \
+	symbols-exported.txt \
+	symbols-untested.txt \
+	symbols-tested-or-deprecated.txt
 check-symbols: symbols-untested.txt
 	@! cat $^ | grep .
 
 
 
-else
+else # !HAVE_GLIB
 check-am: err-glib
 err-glib:
 	@echo "You need to have glib support enabled to run the tests"
 	@exit 77
-endif
+endif # HAVE_GLIB
 
 .PHONY: check-symbols check-tool check-valgrind
 

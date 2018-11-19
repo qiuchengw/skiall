@@ -26,8 +26,9 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-ot-shape-complex-use-private.hh"
-#include "hb-ot-shape-complex-arabic-private.hh"
+#include "hb-ot-shape-complex-use.hh"
+#include "hb-ot-shape-complex-arabic.hh"
+#include "hb-ot-shape-complex-vowel-constraints.hh"
 
 /* buffer var allocations */
 #define use_category() complex_var_u8_0()
@@ -35,7 +36,7 @@
 
 /*
  * Universal Shaping Engine.
- * https://www.microsoft.com/typography/OpenTypeDev/USE/intro.htm
+ * https://docs.microsoft.com/en-us/typography/script-development/use
  */
 
 static const hb_tag_t
@@ -79,14 +80,22 @@ other_features[] =
 {
   /*
    * Other features.
-   * These features are applied all at once, after reordering.
+   * These features are applied all at once, after reordering and
+   * clearing syllables.
    */
   HB_TAG('a','b','v','s'),
   HB_TAG('b','l','w','s'),
   HB_TAG('h','a','l','n'),
   HB_TAG('p','r','e','s'),
   HB_TAG('p','s','t','s'),
-  /* Positioning features, though we don't care about the types. */
+};
+static const hb_tag_t
+positioning_features[] =
+{
+  /*
+   * Positioning features.
+   * We don't care about the types.
+   */
   HB_TAG('d','i','s','t'),
   HB_TAG('a','b','v','m'),
   HB_TAG('b','l','w','m'),
@@ -112,6 +121,10 @@ static void
 reorder (const hb_ot_shape_plan_t *plan,
 	 hb_font_t *font,
 	 hb_buffer_t *buffer);
+static void
+clear_syllables (const hb_ot_shape_plan_t *plan,
+		 hb_font_t *font,
+		 hb_buffer_t *buffer);
 
 static void
 collect_features_use (hb_ot_shape_planner_t *plan)
@@ -122,39 +135,42 @@ collect_features_use (hb_ot_shape_planner_t *plan)
   map->add_gsub_pause (setup_syllables);
 
   /* "Default glyph pre-processing group" */
-  map->add_global_bool_feature (HB_TAG('l','o','c','l'));
-  map->add_global_bool_feature (HB_TAG('c','c','m','p'));
-  map->add_global_bool_feature (HB_TAG('n','u','k','t'));
-  map->add_global_bool_feature (HB_TAG('a','k','h','n'));
+  map->enable_feature (HB_TAG('l','o','c','l'));
+  map->enable_feature (HB_TAG('c','c','m','p'));
+  map->enable_feature (HB_TAG('n','u','k','t'));
+  map->enable_feature (HB_TAG('a','k','h','n'), F_MANUAL_ZWJ);
 
   /* "Reordering group" */
   map->add_gsub_pause (clear_substitution_flags);
-  map->add_feature (HB_TAG('r','p','h','f'), 1, F_MANUAL_ZWJ);
+  map->add_feature (HB_TAG('r','p','h','f'), F_MANUAL_ZWJ);
   map->add_gsub_pause (record_rphf);
   map->add_gsub_pause (clear_substitution_flags);
-  map->add_feature (HB_TAG('p','r','e','f'), 1, F_GLOBAL | F_MANUAL_ZWJ);
+  map->enable_feature (HB_TAG('p','r','e','f'), F_MANUAL_ZWJ);
   map->add_gsub_pause (record_pref);
 
   /* "Orthographic unit shaping group" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (basic_features); i++)
-    map->add_feature (basic_features[i], 1, F_GLOBAL | F_MANUAL_ZWJ);
+    map->enable_feature (basic_features[i], F_MANUAL_ZWJ);
 
   map->add_gsub_pause (reorder);
+  map->add_gsub_pause (clear_syllables);
 
   /* "Topographical features" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (arabic_features); i++)
-    map->add_feature (arabic_features[i], 1, F_NONE);
-  map->add_gsub_pause (NULL);
+    map->add_feature (arabic_features[i]);
+  map->add_gsub_pause (nullptr);
 
-  /* "Standard typographic presentation" and "Positional feature application" */
+  /* "Standard typographic presentation" */
   for (unsigned int i = 0; i < ARRAY_LENGTH (other_features); i++)
-    map->add_feature (other_features[i], 1, F_GLOBAL | F_MANUAL_ZWJ);
+    map->enable_feature (other_features[i], F_MANUAL_ZWJ);
+
+  /* "Positional feature application" */
+  for (unsigned int i = 0; i < ARRAY_LENGTH (positioning_features); i++)
+    map->enable_feature (positioning_features[i]);
 }
 
 struct use_shape_plan_t
 {
-  ASSERT_POD ();
-
   hb_mask_t rphf_mask;
 
   arabic_shape_plan_t *arabic_plan;
@@ -199,7 +215,7 @@ data_create_use (const hb_ot_shape_plan_t *plan)
 {
   use_shape_plan_t *use_plan = (use_shape_plan_t *) calloc (1, sizeof (use_shape_plan_t));
   if (unlikely (!use_plan))
-    return NULL;
+    return nullptr;
 
   use_plan->rphf_mask = plan->map.get_1_mask (HB_TAG('r','p','h','f'));
 
@@ -209,7 +225,7 @@ data_create_use (const hb_ot_shape_plan_t *plan)
     if (unlikely (!use_plan->arabic_plan))
     {
       free (use_plan);
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -262,7 +278,7 @@ setup_masks_use (const hb_ot_shape_plan_t *plan,
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
-    info[i].use_category() = hb_use_get_categories (info[i].codepoint);
+    info[i].use_category() = hb_use_get_category (info[i].codepoint);
 }
 
 static void
@@ -292,7 +308,7 @@ setup_topographical_masks (const hb_ot_shape_plan_t *plan,
   if (use_plan->arabic_plan)
     return;
 
-  ASSERT_STATIC (INIT < 4 && ISOL < 4 && MEDI < 4 && FINA < 4);
+  static_assert ((INIT < 4 && ISOL < 4 && MEDI < 4 && FINA < 4), "");
   hb_mask_t masks[4], all_masks = 0;
   for (unsigned int i = 0; i < 4; i++)
   {
@@ -354,12 +370,14 @@ setup_syllables (const hb_ot_shape_plan_t *plan,
 		 hb_buffer_t *buffer)
 {
   find_syllables (buffer);
+  foreach_syllable (buffer, start, end)
+    buffer->unsafe_to_break (start, end);
   setup_rphf_mask (plan, buffer);
   setup_topographical_masks (plan, buffer);
 }
 
 static void
-clear_substitution_flags (const hb_ot_shape_plan_t *plan,
+clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			  hb_font_t *font HB_UNUSED,
 			  hb_buffer_t *buffer)
 {
@@ -371,7 +389,7 @@ clear_substitution_flags (const hb_ot_shape_plan_t *plan,
 
 static void
 record_rphf (const hb_ot_shape_plan_t *plan,
-	     hb_font_t *font,
+	     hb_font_t *font HB_UNUSED,
 	     hb_buffer_t *buffer)
 {
   const use_shape_plan_t *use_plan = (const use_shape_plan_t *) plan->data;
@@ -393,8 +411,8 @@ record_rphf (const hb_ot_shape_plan_t *plan,
 }
 
 static void
-record_pref (const hb_ot_shape_plan_t *plan,
-	     hb_font_t *font,
+record_pref (const hb_ot_shape_plan_t *plan HB_UNUSED,
+	     hb_font_t *font HB_UNUSED,
 	     hb_buffer_t *buffer)
 {
   hb_glyph_info_t *info = buffer->info;
@@ -422,7 +440,7 @@ reorder_syllable (hb_buffer_t *buffer, unsigned int start, unsigned int end)
 {
   syllable_type_t syllable_type = (syllable_type_t) (buffer->info[start].syllable() & 0x0F);
   /* Only a few syllable types need reordering. */
-  if (unlikely (!(FLAG_SAFE (syllable_type) &
+  if (unlikely (!(FLAG_UNSAFE (syllable_type) &
 		  (FLAG (virama_terminated_cluster) |
 		   FLAG (standard_cluster) |
 		   FLAG (broken_cluster) |
@@ -503,13 +521,13 @@ insert_dotted_circles (const hb_ot_shape_plan_t *plan HB_UNUSED,
   hb_glyph_info_t dottedcircle = {0};
   if (!font->get_nominal_glyph (0x25CCu, &dottedcircle.codepoint))
     return;
-  dottedcircle.use_category() = hb_use_get_categories (0x25CC);
+  dottedcircle.use_category() = hb_use_get_category (0x25CC);
 
   buffer->clear_output ();
 
   buffer->idx = 0;
   unsigned int last_syllable = 0;
-  while (buffer->idx < buffer->len && !buffer->in_error)
+  while (buffer->idx < buffer->len && buffer->successful)
   {
     unsigned int syllable = buffer->cur().syllable();
     syllable_type_t syllable_type = (syllable_type_t) (syllable & 0x0F);
@@ -524,7 +542,7 @@ insert_dotted_circles (const hb_ot_shape_plan_t *plan HB_UNUSED,
       /* TODO Set glyph_props? */
 
       /* Insert dottedcircle after possible Repha. */
-      while (buffer->idx < buffer->len && !buffer->in_error &&
+      while (buffer->idx < buffer->len && buffer->successful &&
 	     last_syllable == buffer->cur().syllable() &&
 	     buffer->cur().use_category() == USE_R)
         buffer->next_glyph ();
@@ -534,7 +552,6 @@ insert_dotted_circles (const hb_ot_shape_plan_t *plan HB_UNUSED,
     else
       buffer->next_glyph ();
   }
-
   buffer->swap_buffers ();
 }
 
@@ -545,36 +562,30 @@ reorder (const hb_ot_shape_plan_t *plan,
 {
   insert_dotted_circles (plan, font, buffer);
 
-  hb_glyph_info_t *info = buffer->info;
-
   foreach_syllable (buffer, start, end)
     reorder_syllable (buffer, start, end);
-
-  /* Zero syllables now... */
-  unsigned int count = buffer->len;
-  for (unsigned int i = 0; i < count; i++)
-    info[i].syllable() = 0;
 
   HB_BUFFER_DEALLOCATE_VAR (buffer, use_category);
 }
 
-static bool
-decompose_use (const hb_ot_shape_normalize_context_t *c,
-                hb_codepoint_t  ab,
-                hb_codepoint_t *a,
-                hb_codepoint_t *b)
+static void
+clear_syllables (const hb_ot_shape_plan_t *plan HB_UNUSED,
+		 hb_font_t *font HB_UNUSED,
+		 hb_buffer_t *buffer)
 {
-  switch (ab)
-  {
-    /* Chakma:
-     * Special case where the Unicode decomp gives matras in the wrong order
-     * for cluster validation.
-     */
-    case 0x1112Eu : *a = 0x11127u; *b= 0x11131u; return true;
-    case 0x1112Fu : *a = 0x11127u; *b= 0x11132u; return true;
-  }
+  hb_glyph_info_t *info = buffer->info;
+  unsigned int count = buffer->len;
+  for (unsigned int i = 0; i < count; i++)
+    info[i].syllable() = 0;
+}
 
-  return (bool) c->unicode->decompose (ab, a, b);
+
+static void
+preprocess_text_use (const hb_ot_shape_plan_t *plan,
+		     hb_buffer_t              *buffer,
+		     hb_font_t                *font)
+{
+  _hb_preprocess_text_vowel_constraints (plan, buffer, font);
 }
 
 static bool
@@ -593,18 +604,18 @@ compose_use (const hb_ot_shape_normalize_context_t *c,
 
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_use =
 {
-  "use",
   collect_features_use,
-  NULL, /* override_features */
+  nullptr, /* override_features */
   data_create_use,
   data_destroy_use,
-  NULL, /* preprocess_text */
-  NULL, /* postprocess_glyphs */
+  preprocess_text_use,
+  nullptr, /* postprocess_glyphs */
   HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
-  decompose_use,
+  nullptr, /* decompose */
   compose_use,
   setup_masks_use,
-  NULL, /* disable_otl */
+  HB_TAG_NONE, /* gpos_tag */
+  nullptr, /* reorder_marks */
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
   false, /* fallback_position */
 };

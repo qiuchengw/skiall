@@ -174,7 +174,7 @@ class State : angle::NonCopyable
     // Texture binding & active texture unit manipulation
     void setActiveSampler(unsigned int active);
     unsigned int getActiveSampler() const;
-    Error setSamplerTexture(const Context *context, TextureType type, Texture *texture);
+    angle::Result setSamplerTexture(const Context *context, TextureType type, Texture *texture);
     Texture *getTargetTexture(TextureType type) const;
 
     Texture *getSamplerTexture(unsigned int sampler, TextureType type) const
@@ -268,7 +268,11 @@ class State : angle::NonCopyable
     void detachProgramPipeline(const Context *context, GLuint pipeline);
 
     //// Typed buffer binding point manipulation ////
-    void setBufferBinding(const Context *context, BufferBinding target, Buffer *buffer);
+    ANGLE_INLINE void setBufferBinding(const Context *context, BufferBinding target, Buffer *buffer)
+    {
+        (this->*(kBufferSetters[target]))(context, buffer);
+    }
+
     Buffer *getTargetBuffer(BufferBinding target) const;
     void setIndexedBufferBinding(const Context *context,
                                  BufferBinding target,
@@ -374,7 +378,7 @@ class State : angle::NonCopyable
     // State query functions
     void getBooleanv(GLenum pname, GLboolean *params);
     void getFloatv(GLenum pname, GLfloat *params);
-    Error getIntegerv(const Context *context, GLenum pname, GLint *params);
+    angle::Result getIntegerv(const Context *context, GLenum pname, GLint *params);
     void getPointerv(const Context *context, GLenum pname, void **params) const;
     void getIntegeri_v(GLenum target, GLuint index, GLint *data);
     void getInteger64i_v(GLenum target, GLuint index, GLint64 *data);
@@ -435,10 +439,7 @@ class State : angle::NonCopyable
         DIRTY_BIT_VERTEX_ARRAY_BINDING,
         DIRTY_BIT_DRAW_INDIRECT_BUFFER_BINDING,
         DIRTY_BIT_DISPATCH_INDIRECT_BUFFER_BINDING,
-        DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING,
-        DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING,
         // TODO(jmadill): Fine-grained dirty bits for each index.
-        DIRTY_BIT_UNIFORM_BUFFER_BINDINGS,
         DIRTY_BIT_PROGRAM_BINDING,
         DIRTY_BIT_PROGRAM_EXECUTABLE,
         // TODO(jmadill): Fine-grained dirty bits for each texture/sampler.
@@ -446,6 +447,9 @@ class State : angle::NonCopyable
         DIRTY_BIT_SAMPLER_BINDINGS,
         DIRTY_BIT_IMAGE_BINDINGS,
         DIRTY_BIT_TRANSFORM_FEEDBACK_BINDING,
+        DIRTY_BIT_UNIFORM_BUFFER_BINDINGS,
+        DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING,
+        DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING,
         DIRTY_BIT_MULTISAMPLING,
         DIRTY_BIT_SAMPLE_ALPHA_TO_ONE,
         DIRTY_BIT_COVERAGE_MODULATION,  // CHROMIUM_framebuffer_mixed_samples
@@ -516,6 +520,16 @@ class State : angle::NonCopyable
     GLES1State &gles1() { return mGLES1State; }
     const GLES1State &gles1() const { return mGLES1State; }
 
+    // Helpers for setting bound buffers. They should all have the same signature.
+    // Not meant to be called externally. Used for local helpers in State.cpp.
+    template <BufferBinding Target>
+    void setGenericBufferBindingWithBit(const Context *context, Buffer *buffer);
+
+    template <BufferBinding Target>
+    void setGenericBufferBinding(const Context *context, Buffer *buffer);
+
+    using BufferBindingSetter = void (State::*)(const Context *, Buffer *);
+
   private:
     void syncSamplers(const Context *context);
     angle::Result syncProgramTextures(const Context *context);
@@ -523,6 +537,9 @@ class State : angle::NonCopyable
     angle::Result updateActiveTexture(const Context *context,
                                       size_t textureIndex,
                                       Texture *texture);
+
+    // Dispatch table for buffer update functions.
+    static const angle::PackedEnumMap<BufferBinding, BufferBindingSetter> kBufferSetters;
 
     // Cached values from Context's caps
     GLuint mMaxDrawBuffers;

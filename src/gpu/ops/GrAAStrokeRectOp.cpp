@@ -133,8 +133,8 @@ public:
                                                      devOutside, devInside);
     }
 
-    AAStrokeRectOp(const Helper::MakeArgs& helperArgs, GrColor color, const SkMatrix& viewMatrix,
-                   const SkRect& devOutside, const SkRect& devInside)
+    AAStrokeRectOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+                   const SkMatrix& viewMatrix, const SkRect& devOutside, const SkRect& devInside)
             : INHERITED(ClassID())
             , fHelper(helperArgs, GrAAType::kCoverage)
             , fViewMatrix(viewMatrix) {
@@ -159,8 +159,9 @@ public:
                                                      stroke, isMiter);
     }
 
-    AAStrokeRectOp(const Helper::MakeArgs& helperArgs, GrColor color, const SkMatrix& viewMatrix,
-                   const SkRect& rect, const SkStrokeRec& stroke, bool isMiter)
+    AAStrokeRectOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+                   const SkMatrix& viewMatrix, const SkRect& rect, const SkStrokeRec& stroke,
+                   bool isMiter)
             : INHERITED(ClassID())
             , fHelper(helperArgs, GrAAType::kCoverage)
             , fViewMatrix(viewMatrix) {
@@ -182,10 +183,11 @@ public:
 
     const char* name() const override { return "AAStrokeRect"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (const auto& info : fRects) {
@@ -193,7 +195,7 @@ public:
                     "Color: 0x%08x, ORect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], "
                     "AssistORect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], "
                     "IRect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], Degen: %d",
-                    info.fColor, info.fDevOutside.fLeft, info.fDevOutside.fTop,
+                    info.fColor.toBytes_RGBA(), info.fDevOutside.fLeft, info.fDevOutside.fTop,
                     info.fDevOutside.fRight, info.fDevOutside.fBottom, info.fDevOutsideAssist.fLeft,
                     info.fDevOutsideAssist.fTop, info.fDevOutsideAssist.fRight,
                     info.fDevOutsideAssist.fBottom, info.fDevInside.fLeft, info.fDevInside.fTop,
@@ -203,6 +205,7 @@ public:
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
@@ -244,7 +247,7 @@ private:
 
     // TODO support AA rotated stroke rects by copying around view matrices
     struct RectInfo {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkRect fDevOutside;
         SkRect fDevOutsideAssist;
         SkRect fDevInside;
@@ -271,11 +274,7 @@ void AAStrokeRectOp::onPrepareDraws(Target* target) {
         return;
     }
 
-    size_t vertexStride = fHelper.compatibleWithAlphaAsCoverage()
-                                  ? sizeof(GrDefaultGeoProcFactory::PositionColorAttr)
-                                  : sizeof(GrDefaultGeoProcFactory::PositionColorCoverageAttr);
-
-    SkASSERT(vertexStride == gp->debugOnly_vertexStride());
+    size_t vertexStride = gp->vertexStride();
     int innerVertexNum = 4;
     int outerVertexNum = this->miterStroke() ? 4 : 8;
     int verticesPerInstance = (outerVertexNum + innerVertexNum) * 2;
@@ -299,7 +298,7 @@ void AAStrokeRectOp::onPrepareDraws(Target* target) {
                                            vertexStride,
                                            outerVertexNum,
                                            innerVertexNum,
-                                           info.fColor,
+                                           info.fColor.toBytes_RGBA(), // TODO4F
                                            info.fDevOutside,
                                            info.fDevOutsideAssist,
                                            info.fDevInside,
@@ -424,7 +423,6 @@ GrOp::CombineResult AAStrokeRectOp::onCombineIfPossible(GrOp* t, const GrCaps& c
     }
 
     fRects.push_back_n(that->fRects.count(), that->fRects.begin());
-    this->joinBounds(*that);
     return CombineResult::kMerged;
 }
 
@@ -460,7 +458,6 @@ void AAStrokeRectOp::generateAAStrokeRectGeometry(void* vertices,
     SkPoint* fan3Pos = reinterpret_cast<SkPoint*>(
             verts + (2 * outerVertexNum + innerVertexNum) * vertexStride);
 
-#ifndef SK_IGNORE_THIN_STROKED_RECT_FIX
     // TODO: this only really works if the X & Y margins are the same all around
     // the rect (or if they are all >= 1.0).
     SkScalar inset;
@@ -481,17 +478,6 @@ void AAStrokeRectOp::generateAAStrokeRectGeometry(void* vertices,
         inset = SK_ScalarHalf *
                 SkMinScalar(inset, SkTMax(devOutside.height(), devOutsideAssist.height()));
     }
-#else
-    SkScalar inset;
-    if (!degenerate) {
-        inset = SK_ScalarHalf;
-    } else {
-        // TODO use real devRect here
-        inset = SkMinScalar(devOutside.width(), SK_Scalar1);
-        inset = SK_ScalarHalf *
-                SkMinScalar(inset, SkTMax(devOutside.height(), devOutsideAssist.height()));
-    }
-#endif
 
     if (miterStroke) {
         // outermost

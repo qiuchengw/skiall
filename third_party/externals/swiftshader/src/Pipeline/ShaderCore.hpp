@@ -17,10 +17,12 @@
 
 #include "Shader.hpp"
 #include "Reactor/Reactor.hpp"
-#include "Common/Debug.hpp"
+#include "System/Debug.hpp"
 
 namespace sw
 {
+	using namespace rr;
+
 	class Vector4s
 	{
 	public:

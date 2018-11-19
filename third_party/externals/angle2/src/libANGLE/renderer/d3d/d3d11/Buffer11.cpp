@@ -130,7 +130,7 @@ class Buffer11::BufferStorage : angle::NonCopyable
                               size_t length,
                               GLbitfield access,
                               uint8_t **mapPointerOut) = 0;
-    virtual void unmap()                           = 0;
+    virtual void unmap()                               = 0;
 
     angle::Result setData(const gl::Context *context,
                           const uint8_t *data,
@@ -337,15 +337,14 @@ Buffer11::~Buffer11()
     mRenderer->onBufferDelete(this);
 }
 
-gl::Error Buffer11::setData(const gl::Context *context,
-                            gl::BufferBinding target,
-                            const void *data,
-                            size_t size,
-                            gl::BufferUsage usage)
+angle::Result Buffer11::setData(const gl::Context *context,
+                                gl::BufferBinding target,
+                                const void *data,
+                                size_t size,
+                                gl::BufferUsage usage)
 {
     updateD3DBufferUsage(context, usage);
-    ANGLE_TRY(setSubData(context, target, data, size, 0));
-    return gl::NoError();
+    return setSubData(context, target, data, size, 0);
 }
 
 angle::Result Buffer11::getData(const gl::Context *context, const uint8_t **outData)
@@ -367,11 +366,11 @@ angle::Result Buffer11::getData(const gl::Context *context, const uint8_t **outD
     return angle::Result::Continue();
 }
 
-gl::Error Buffer11::setSubData(const gl::Context *context,
-                               gl::BufferBinding target,
-                               const void *data,
-                               size_t size,
-                               size_t offset)
+angle::Result Buffer11::setSubData(const gl::Context *context,
+                                   gl::BufferBinding target,
+                                   const void *data,
+                                   size_t size,
+                                   size_t offset)
 {
     size_t requiredSize = size + offset;
 
@@ -424,14 +423,14 @@ gl::Error Buffer11::setSubData(const gl::Context *context,
     mSize = std::max(mSize, requiredSize);
     invalidateStaticData(context);
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error Buffer11::copySubData(const gl::Context *context,
-                                BufferImpl *source,
-                                GLintptr sourceOffset,
-                                GLintptr destOffset,
-                                GLsizeiptr size)
+angle::Result Buffer11::copySubData(const gl::Context *context,
+                                    BufferImpl *source,
+                                    GLintptr sourceOffset,
+                                    GLintptr destOffset,
+                                    GLsizeiptr size)
 {
     Buffer11 *sourceBuffer = GetAs<Buffer11>(source);
     ASSERT(sourceBuffer != nullptr);
@@ -488,10 +487,10 @@ gl::Error Buffer11::copySubData(const gl::Context *context,
     mSize = std::max<size_t>(mSize, destOffset + size);
     invalidateStaticData(context);
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error Buffer11::map(const gl::Context *context, GLenum access, void **mapPtr)
+angle::Result Buffer11::map(const gl::Context *context, GLenum access, void **mapPtr)
 {
     // GL_OES_mapbuffer uses an enum instead of a bitfield for it's access, convert to a bitfield
     // and call mapRange.
@@ -499,11 +498,11 @@ gl::Error Buffer11::map(const gl::Context *context, GLenum access, void **mapPtr
     return mapRange(context, 0, mSize, GL_MAP_WRITE_BIT, mapPtr);
 }
 
-gl::Error Buffer11::mapRange(const gl::Context *context,
-                             size_t offset,
-                             size_t length,
-                             GLbitfield access,
-                             void **mapPtr)
+angle::Result Buffer11::mapRange(const gl::Context *context,
+                                 size_t offset,
+                                 size_t length,
+                                 GLbitfield access,
+                                 void **mapPtr)
 {
     ASSERT(!mMappedStorage);
 
@@ -524,7 +523,7 @@ gl::Error Buffer11::mapRange(const gl::Context *context,
     }
 
     Context11 *context11 = GetImplAs<Context11>(context);
-    ANGLE_CHECK_HR_ALLOC(context11, mMappedStorage);
+    ANGLE_CHECK_GL_ALLOC(context11, mMappedStorage);
 
     if ((access & GL_MAP_WRITE_BIT) > 0)
     {
@@ -538,10 +537,10 @@ gl::Error Buffer11::mapRange(const gl::Context *context,
     ASSERT(mappedBuffer);
 
     *mapPtr = static_cast<void *>(mappedBuffer);
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error Buffer11::unmap(const gl::Context *context, GLboolean *result)
+angle::Result Buffer11::unmap(const gl::Context *context, GLboolean *result)
 {
     ASSERT(mMappedStorage);
     mMappedStorage->unmap();
@@ -550,7 +549,7 @@ gl::Error Buffer11::unmap(const gl::Context *context, GLboolean *result)
     // TODO: detect if we had corruption. if so, return false.
     *result = GL_TRUE;
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 angle::Result Buffer11::markTransformFeedbackUsage(const gl::Context *context)
@@ -1211,7 +1210,7 @@ angle::Result Buffer11::NativeStorage::map(const gl::Context *context,
     ASSERT(isCPUAccessible(access));
 
     D3D11_MAPPED_SUBRESOURCE mappedResource;
-    D3D11_MAP d3dMapType         = gl_d3d11::GetD3DMapTypeFromBits(mUsage, access);
+    D3D11_MAP d3dMapType = gl_d3d11::GetD3DMapTypeFromBits(mUsage, access);
     UINT d3dMapFlag = ((access & GL_MAP_UNSYNCHRONIZED_BIT) != 0 ? D3D11_MAP_FLAG_DO_NOT_WAIT : 0);
 
     ANGLE_TRY(
@@ -1329,7 +1328,7 @@ angle::Result Buffer11::EmulatedIndexedStorage::getBuffer(const gl::Context *con
                 break;
         }
 
-        ANGLE_CHECK_HR_ALLOC(context11, mIndicesMemoryBuffer.resize(indicesDataSize));
+        ANGLE_CHECK_GL_ALLOC(context11, mIndicesMemoryBuffer.resize(indicesDataSize));
 
         memcpy(mIndicesMemoryBuffer.data(), indexInfo->srcIndices, indicesDataSize);
 
@@ -1345,7 +1344,7 @@ angle::Result Buffer11::EmulatedIndexedStorage::getBuffer(const gl::Context *con
         unsigned int expandedDataSize =
             static_cast<unsigned int>((indexInfo->srcCount * attribute.stride) + offset);
         angle::MemoryBuffer expandedData;
-        ANGLE_CHECK_HR_ALLOC(context11, expandedData.resize(expandedDataSize));
+        ANGLE_CHECK_GL_ALLOC(context11, expandedData.resize(expandedDataSize));
 
         // Clear the contents of the allocated buffer
         ZeroMemory(expandedData.data(), expandedDataSize);
@@ -1425,7 +1424,7 @@ angle::Result Buffer11::EmulatedIndexedStorage::resize(const gl::Context *contex
     if (mMemoryBuffer.size() < size)
     {
         Context11 *context11 = GetImplAs<Context11>(context);
-        ANGLE_CHECK_HR_ALLOC(context11, mMemoryBuffer.resize(size));
+        ANGLE_CHECK_GL_ALLOC(context11, mMemoryBuffer.resize(size));
         mBufferSize = size;
     }
 
@@ -1486,7 +1485,7 @@ angle::Result Buffer11::PackStorage::resize(const gl::Context *context,
     if (size != mBufferSize)
     {
         Context11 *context11 = GetImplAs<Context11>(context);
-        ANGLE_CHECK_HR_ALLOC(context11, mMemoryBuffer.resize(size));
+        ANGLE_CHECK_GL_ALLOC(context11, mMemoryBuffer.resize(size));
         mBufferSize = size;
     }
 
@@ -1525,7 +1524,7 @@ angle::Result Buffer11::PackStorage::packPixels(const gl::Context *context,
     ANGLE_TRY(flushQueuedPackCommand(context));
 
     RenderTarget11 *renderTarget = nullptr;
-    ANGLE_TRY_HANDLE(context, readAttachment.getRenderTarget(context, &renderTarget));
+    ANGLE_TRY(readAttachment.getRenderTarget(context, &renderTarget));
 
     const TextureHelper11 &srcTexture = renderTarget->getTexture();
     ASSERT(srcTexture.valid());
@@ -1612,7 +1611,7 @@ angle::Result Buffer11::SystemMemoryStorage::resize(const gl::Context *context,
     if (mSystemCopy.size() < size)
     {
         Context11 *context11 = GetImplAs<Context11>(context);
-        ANGLE_CHECK_HR_ALLOC(context11, mSystemCopy.resize(size));
+        ANGLE_CHECK_GL_ALLOC(context11, mSystemCopy.resize(size));
         mBufferSize = size;
     }
 

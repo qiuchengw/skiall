@@ -23,7 +23,7 @@ class ProgramVk : public ProgramImpl
   public:
     ProgramVk(const gl::ProgramState &state);
     ~ProgramVk() override;
-    gl::Error destroy(const gl::Context *context) override;
+    void destroy(const gl::Context *context) override;
 
     angle::Result load(const gl::Context *context,
                        gl::InfoLog &infoLog,
@@ -97,7 +97,7 @@ class ProgramVk : public ProgramImpl
 
     // Also initializes the pipeline layout, descriptor set layouts, and used descriptor ranges.
     angle::Result initShaders(ContextVk *contextVk,
-                              const gl::DrawCallParams &drawCallParams,
+                              gl::PrimitiveMode mode,
                               const vk::ShaderAndSerial **vertexShaderAndSerialOut,
                               const vk::ShaderAndSerial **fragmentShaderAndSerialOut,
                               const vk::PipelineLayout **pipelineLayoutOut);
@@ -105,9 +105,7 @@ class ProgramVk : public ProgramImpl
     angle::Result updateUniforms(ContextVk *contextVk);
     angle::Result updateTexturesDescriptorSet(ContextVk *contextVk);
 
-    angle::Result updateDescriptorSets(ContextVk *contextVk,
-                                       const gl::DrawCallParams &drawCallParams,
-                                       vk::CommandBuffer *commandBuffer);
+    angle::Result updateDescriptorSets(ContextVk *contextVk, vk::CommandBuffer *commandBuffer);
 
     // For testing only.
     void setDefaultUniformBlocksMinSizeForTesting(size_t minSize);
@@ -173,6 +171,10 @@ class ProgramVk : public ProgramImpl
     // deleted while this program is in use.
     vk::BindingPointer<vk::PipelineLayout> mPipelineLayout;
     vk::DescriptorSetLayoutPointerArray mDescriptorSetLayouts;
+
+    // Keep bindings to the descriptor pools. This ensures the pools stay valid while the Program
+    // is in use.
+    vk::DescriptorSetLayoutArray<vk::SharedDescriptorPoolBinding> mDescriptorPoolBindings;
 
     class ShaderInfo final : angle::NonCopyable
     {

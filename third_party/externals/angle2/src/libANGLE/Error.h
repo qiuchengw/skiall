@@ -62,7 +62,6 @@ class ANGLE_NO_DISCARD Error final
     inline ~Error() = default;
 
     // automatic error type conversion
-    inline Error(egl::Error &&eglErr);
     inline Error(egl::Error eglErr);
 
     inline Error &operator=(const Error &other);
@@ -98,8 +97,6 @@ template <GLenum EnumT>
 using ErrorStream = angle::ErrorStreamBase<Error, GLenum, GL_NO_ERROR, GLenum, EnumT>;
 
 }  // namespace priv
-
-using InternalError = priv::ErrorStream<GL_INVALID_OPERATION>;
 
 using InvalidEnum                 = priv::ErrorStream<GL_INVALID_ENUM>;
 using InvalidValue                = priv::ErrorStream<GL_INVALID_VALUE>;
@@ -191,40 +188,28 @@ inline Error NoError()
 #define ANGLE_LOCAL_VAR ANGLE_CONCAT2(_localVar, __LINE__)
 
 #define ANGLE_TRY_TEMPLATE(EXPR, FUNC)                 \
+    do                                                 \
     {                                                  \
         auto ANGLE_LOCAL_VAR = EXPR;                   \
         if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
         {                                              \
             FUNC(ANGLE_LOCAL_VAR);                     \
         }                                              \
-    }                                                  \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 
 #define ANGLE_RETURN(X) return X;
 #define ANGLE_TRY(EXPR) ANGLE_TRY_TEMPLATE(EXPR, ANGLE_RETURN);
 
-// TODO(jmadill): Remove this once refactor is complete. http://anglebug.com/2491
-#define ANGLE_TRY_HANDLE(CONTEXT, EXPR)                \
-    {                                                  \
-        auto ANGLE_LOCAL_VAR = (EXPR);                 \
-        if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
-        {                                              \
-            CONTEXT->handleError(ANGLE_LOCAL_VAR);     \
-            return angle::Result::Stop();              \
-        }                                              \
-    }                                                  \
-    ANGLE_EMPTY_STATEMENT
-
 // TODO(jmadill): Introduce way to store errors to a const Context. http://anglebug.com/2491
 #define ANGLE_SWALLOW_ERR(EXPR)                                       \
+    do                                                                \
     {                                                                 \
         auto ANGLE_LOCAL_VAR = EXPR;                                  \
         if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError()))                \
         {                                                             \
             ERR() << "Unhandled internal error: " << ANGLE_LOCAL_VAR; \
         }                                                             \
-    }                                                                 \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 
 #undef ANGLE_LOCAL_VAR
 #undef ANGLE_CONCAT2
@@ -277,4 +262,4 @@ class ANGLE_NO_DISCARD Result
 
 #include "Error.inl"
 
-#endif // LIBANGLE_ERROR_H_
+#endif  // LIBANGLE_ERROR_H_

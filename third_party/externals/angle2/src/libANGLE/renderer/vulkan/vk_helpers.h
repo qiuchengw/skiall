@@ -92,8 +92,37 @@ class DynamicBuffer : angle::NonCopyable
 // using the maximum number of descriptor sets and buffers with each allocation. Currently: 2
 // (Vertex/Fragment) uniform buffers and 64 (MAX_ACTIVE_TEXTURES) image/samplers.
 
-// This is an arbitrary max. We can change this later if necessary.
-constexpr uint32_t kDefaultDescriptorPoolMaxSets = 2048;
+// Shared handle to a descriptor pool. Each helper is allocated from the dynamic descriptor pool.
+// Can be used to share descriptor pools between multiple ProgramVks and the ContextVk.
+class DescriptorPoolHelper
+{
+  public:
+    DescriptorPoolHelper();
+    ~DescriptorPoolHelper();
+
+    bool valid() { return mDescriptorPool.valid(); }
+
+    bool hasCapacity(uint32_t descriptorSetCount) const;
+    angle::Result init(Context *context, const VkDescriptorPoolSize &poolSize, uint32_t maxSets);
+    void destroy(VkDevice device);
+
+    angle::Result allocateSets(Context *context,
+                               const VkDescriptorSetLayout *descriptorSetLayout,
+                               uint32_t descriptorSetCount,
+                               VkDescriptorSet *descriptorSetsOut);
+
+    void updateSerial(Serial serial) { mMostRecentSerial = serial; }
+
+    Serial getSerial() const { return mMostRecentSerial; }
+
+  private:
+    uint32_t mFreeDescriptorSets;
+    DescriptorPool mDescriptorPool;
+    Serial mMostRecentSerial;
+};
+
+using SharedDescriptorPoolHelper  = RefCounted<DescriptorPoolHelper>;
+using SharedDescriptorPoolBinding = BindingPointer<DescriptorPoolHelper>;
 
 class DynamicDescriptorPool final : angle::NonCopyable
 {
@@ -102,38 +131,89 @@ class DynamicDescriptorPool final : angle::NonCopyable
     ~DynamicDescriptorPool();
 
     // The DynamicDescriptorPool only handles one pool size at this time.
-    angle::Result init(Context *context, const VkDescriptorPoolSize &poolSize);
+    angle::Result init(ContextVk *contextVk,
+                       VkDescriptorType descriptorType,
+                       uint32_t descriptorsPerSet);
     void destroy(VkDevice device);
 
     // We use the descriptor type to help count the number of free sets.
     // By convention, sets are indexed according to the constants in vk_cache_utils.h.
-    angle::Result allocateSets(Context *context,
+    angle::Result allocateSets(ContextVk *contextVk,
                                const VkDescriptorSetLayout *descriptorSetLayout,
                                uint32_t descriptorSetCount,
+                               SharedDescriptorPoolBinding *bindingOut,
                                VkDescriptorSet *descriptorSetsOut);
 
     // For testing only!
     void setMaxSetsPerPoolForTesting(uint32_t maxSetsPerPool);
 
   private:
-    angle::Result allocateNewPool(Context *context);
+    angle::Result allocateNewPool(ContextVk *contextVk);
 
     uint32_t mMaxSetsPerPool;
-    uint32_t mCurrentSetsCount;
-    DescriptorPool mCurrentDescriptorPool;
+    size_t mCurrentPoolIndex;
+    std::vector<SharedDescriptorPoolHelper *> mDescriptorPools;
     VkDescriptorPoolSize mPoolSize;
-    uint32_t mFreeDescriptorSets;
+};
+
+template <typename Pool>
+class DynamicallyGrowingPool : angle::NonCopyable
+{
+  public:
+    DynamicallyGrowingPool();
+    virtual ~DynamicallyGrowingPool();
+
+    bool isValid() { return mPoolSize > 0; }
+
+  protected:
+    angle::Result initEntryPool(Context *context, uint32_t poolSize);
+    void destroyEntryPool();
+
+    // Checks to see if any pool is already free, in which case it sets it as current pool and
+    // returns true.
+    bool findFreeEntryPool(Context *context);
+
+    // Allocates a new entry and initializes it with the given pool.
+    angle::Result allocateNewEntryPool(Context *context, Pool &&pool);
+
+    // Called by the implementation whenever an entry is freed.
+    void onEntryFreed(Context *context, size_t poolIndex);
+
+    // The pool size, to know when a pool is completely freed.
+    uint32_t mPoolSize;
+
+    std::vector<Pool> mPools;
+
+    struct PoolStats
+    {
+        // A count corresponding to each pool indicating how many of its allocated entries
+        // have been freed. Once that value reaches mPoolSize for each pool, that pool is considered
+        // free and reusable.  While keeping a bitset would allow allocation of each index, the
+        // slight runtime overhead of finding free indices is not worth the slight memory overhead
+        // of creating new pools when unnecessary.
+        uint32_t freedCount;
+        // The serial of the renderer is stored on each object free to make sure no
+        // new allocations are made from the pool until it's not in use.
+        Serial serial;
+    };
+    std::vector<PoolStats> mPoolStats;
+
+    // Index into mPools indicating pool we are currently allocating from.
+    size_t mCurrentPool;
+    // Index inside mPools[mCurrentPool] indicating which index can be allocated next.
+    uint32_t mCurrentFreeEntry;
 };
 
 // DynamicQueryPool allocates indices out of QueryPool as needed.  Once a QueryPool is exhausted,
 // another is created.  The query pools live permanently, but are recycled as indices get freed.
 
-// This is an arbitrary default size for occlusion query pools.
+// These are arbitrary default sizes for query pools.
 constexpr uint32_t kDefaultOcclusionQueryPoolSize = 64;
+constexpr uint32_t kDefaultTimestampQueryPoolSize = 64;
 
 class QueryHelper;
 
-class DynamicQueryPool final : angle::NonCopyable
+class DynamicQueryPool final : public DynamicallyGrowingPool<QueryPool>
 {
   public:
     DynamicQueryPool();
@@ -142,41 +222,21 @@ class DynamicQueryPool final : angle::NonCopyable
     angle::Result init(Context *context, VkQueryType type, uint32_t poolSize);
     void destroy(VkDevice device);
 
-    bool isValid() { return mPoolSize > 0; }
-
     angle::Result allocateQuery(Context *context, QueryHelper *queryOut);
     void freeQuery(Context *context, QueryHelper *query);
 
-    const QueryPool *getQueryPool(size_t index) const { return &mQueryPools[index]; }
+    // Special allocator that doesn't work with QueryHelper, which is a CommandGraphResource.
+    // Currently only used with RendererVk::GpuEventQuery.
+    angle::Result allocateQuery(Context *context, size_t *poolIndex, uint32_t *queryIndex);
+    void freeQuery(Context *context, size_t poolIndex, uint32_t queryIndex);
+
+    const QueryPool *getQueryPool(size_t index) const { return &mPools[index]; }
 
   private:
     angle::Result allocateNewPool(Context *context);
 
     // Information required to create new query pools
-    uint32_t mPoolSize;
     VkQueryType mQueryType;
-
-    // A list of query pools to allocate from
-    std::vector<QueryPool> mQueryPools;
-
-    struct QueryPoolStats
-    {
-        // A count corresponding to each query pool indicating how many of its allocated indices
-        // have been freed. Once that value reaches mPoolSize for each pool, that pool is considered
-        // free and reusable.  While keeping a bitset would allow allocation of each index, the
-        // slight runtime overhead of finding free indices is not worth the slight memory overhead
-        // of creating new pools when unnecessary.
-        uint32_t freedCount;
-        // When the pool is completely emptied, the serial of the renderer is stored to make sure no
-        // new allocations are made from the pool until it's not in use.
-        Serial serial;
-    };
-    std::vector<QueryPoolStats> mQueryPoolStats;
-
-    // Index into mQueryPools indicating query pool we are currently allocating from
-    size_t mCurrentQueryPool;
-    // Bit index inside mQueryPools[mCurrentQueryPool] indicating which index can be allocated next
-    uint32_t mCurrentFreeQuery;
 };
 
 // Queries in vulkan are identified by the query pool and an index for a query within that pool.
@@ -188,7 +248,7 @@ class DynamicQueryPool final : angle::NonCopyable
 // of a fixed size as needed and allocates indices within those pools.
 //
 // The QueryHelper class below keeps the pool and index pair together.
-class QueryHelper final : public CommandGraphResource
+class QueryHelper final : public QueryGraphResource
 {
   public:
     QueryHelper();
@@ -214,6 +274,59 @@ class QueryHelper final : public CommandGraphResource
     uint32_t mQuery;
 };
 
+// DynamicSemaphorePool allocates semaphores as needed.  It uses a std::vector
+// as a pool to allocate many semaphores at once.  The pools live permanently,
+// but are recycled as semaphores get freed.
+
+// These are arbitrary default sizes for semaphore pools.
+constexpr uint32_t kDefaultSemaphorePoolSize = 64;
+
+class SemaphoreHelper;
+
+class DynamicSemaphorePool final : public DynamicallyGrowingPool<std::vector<Semaphore>>
+{
+  public:
+    DynamicSemaphorePool();
+    ~DynamicSemaphorePool();
+
+    angle::Result init(Context *context, uint32_t poolSize);
+    void destroy(VkDevice device);
+
+    bool isValid() { return mPoolSize > 0; }
+
+    // autoFree can be used to allocate a semaphore that's expected to be freed at the end of the
+    // frame.  This renders freeSemaphore unnecessary and saves an eventual search.
+    angle::Result allocateSemaphore(Context *context, SemaphoreHelper *semaphoreOut);
+    void freeSemaphore(Context *context, SemaphoreHelper *semaphore);
+
+  private:
+    angle::Result allocateNewPool(Context *context);
+};
+
+// Semaphores that are allocated from the semaphore pool are encapsulated in a helper object,
+// keeping track of where in the pool they are allocated from.
+class SemaphoreHelper final : angle::NonCopyable
+{
+  public:
+    SemaphoreHelper();
+    ~SemaphoreHelper();
+
+    SemaphoreHelper(SemaphoreHelper &&other);
+    SemaphoreHelper &operator=(SemaphoreHelper &&other);
+
+    void init(const size_t semaphorePoolIndex, const Semaphore *semaphore);
+    void deinit();
+
+    const Semaphore *getSemaphore() const { return mSemaphore; }
+
+    // Used only by DynamicSemaphorePool.
+    size_t getSemaphorePoolIndex() const { return mSemaphorePoolIndex; }
+
+  private:
+    size_t mSemaphorePoolIndex;
+    const Semaphore *mSemaphore;
+};
+
 // This class' responsibility is to create index buffers needed to support line loops in Vulkan.
 // In the setup phase of drawing, the createIndexBuffer method should be called with the
 // current draw call parameters. If an element array buffer is bound for an indexed draw, use
@@ -228,7 +341,8 @@ class LineLoopHelper final : angle::NonCopyable
     ~LineLoopHelper();
 
     angle::Result getIndexBufferForDrawArrays(ContextVk *contextVk,
-                                              const gl::DrawCallParams &drawCallParams,
+                                              uint32_t clampedVertexCount,
+                                              GLint firstVertex,
                                               VkBuffer *bufferHandleOut,
                                               VkDeviceSize *offsetOut);
 
@@ -247,6 +361,7 @@ class LineLoopHelper final : angle::NonCopyable
                                 VkBuffer *bufferHandleOut,
                                 VkDeviceSize *bufferOffsetOut);
 
+    void release(RendererVk *renderer);
     void destroy(VkDevice device);
 
     static void Draw(uint32_t count, CommandBuffer *commandBuffer);
@@ -255,7 +370,9 @@ class LineLoopHelper final : angle::NonCopyable
     DynamicBuffer mDynamicIndexBuffer;
 };
 
-class BufferHelper final : public CommandGraphResource
+class FramebufferHelper;
+
+class BufferHelper final : public RecordableGraphResource
 {
   public:
     BufferHelper();
@@ -270,6 +387,14 @@ class BufferHelper final : public CommandGraphResource
     const Buffer &getBuffer() const { return mBuffer; }
     const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
 
+    // Helper for setting the graph dependencies *and* setting the appropriate barrier.
+    void onFramebufferRead(FramebufferHelper *framebuffer, VkAccessFlagBits accessType);
+
+    // Also implicitly sets up the correct barriers.
+    angle::Result copyFromBuffer(ContextVk *contextVk,
+                                 const Buffer &buffer,
+                                 const VkBufferCopy &copyRegion);
+
   private:
     // Vulkan objects.
     Buffer mBuffer;
@@ -277,9 +402,13 @@ class BufferHelper final : public CommandGraphResource
 
     // Cached properties.
     VkMemoryPropertyFlags mMemoryPropertyFlags;
+
+    // For memory barriers.
+    VkFlags mCurrentWriteAccess;
+    VkFlags mCurrentReadAccess;
 };
 
-class ImageHelper final : public CommandGraphResource
+class ImageHelper final : public RecordableGraphResource
 {
   public:
     ImageHelper();
@@ -357,7 +486,8 @@ class ImageHelper final : public CommandGraphResource
                          uint32_t layerCount,
                          CommandBuffer *commandBuffer);
 
-    void clearDepthStencil(VkImageAspectFlags aspectFlags,
+    void clearDepthStencil(VkImageAspectFlags imageAspectFlags,
+                           VkImageAspectFlags clearAspectFlags,
                            const VkClearDepthStencilValue &depthStencil,
                            CommandBuffer *commandBuffer);
     gl::Extents getSize(const gl::ImageIndex &index) const;
@@ -389,7 +519,7 @@ class ImageHelper final : public CommandGraphResource
     uint32_t mLayerCount;
 };
 
-class FramebufferHelper : public CommandGraphResource
+class FramebufferHelper : public RecordableGraphResource
 {
   public:
     FramebufferHelper();

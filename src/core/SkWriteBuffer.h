@@ -9,13 +9,12 @@
 #define SkWriteBuffer_DEFINED
 
 #include "SkData.h"
+#include "SkFlattenable.h"
 #include "SkSerialProcs.h"
 #include "SkWriter32.h"
 #include "../private/SkTHash.h"
 
-class SkDeduper;
 class SkFactorySet;
-class SkFlattenable;
 class SkImage;
 class SkPath;
 class SkRefCntSet;
@@ -59,12 +58,9 @@ public:
     virtual void writeTypeface(SkTypeface* typeface) = 0;
     virtual void writePaint(const SkPaint& paint) = 0;
 
-    void setDeduper(SkDeduper* deduper) { fDeduper = deduper; }
-
     void setSerialProcs(const SkSerialProcs& procs) { fProcs = procs; }
 
 protected:
-    SkDeduper*      fDeduper = nullptr;
     SkSerialProcs   fProcs;
 
     friend class SkPicturePriv; // fProcs
@@ -135,7 +131,7 @@ private:
     SkWriter32 fWriter;
 
     // Only used if we do not have an fFactorySet
-    SkTHashMap<SkString, uint32_t> fFlattenableDict;
+    SkTHashMap<SkFlattenable::Factory, uint32_t> fFlattenableDict;
 };
 
 #endif // SkWriteBuffer_DEFINED

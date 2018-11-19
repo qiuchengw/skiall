@@ -71,8 +71,18 @@ HBBlob stream_to_blob(std::unique_ptr<SkStreamAsset> asset) {
 }
 
 HBFont create_hb_font(SkTypeface* tf) {
+    if (!tf) {
+        return nullptr;
+    }
     int index;
-    HBBlob blob(stream_to_blob(std::unique_ptr<SkStreamAsset>(tf->openStream(&index))));
+    std::unique_ptr<SkStreamAsset> typefaceAsset(tf->openStream(&index));
+    if (!typefaceAsset) {
+        SkString name;
+        tf->getFamilyName(&name);
+        SkDebugf("Typeface '%s' has no data :(\n", name.c_str());
+        return nullptr;
+    }
+    HBBlob blob(stream_to_blob(std::move(typefaceAsset)));
     HBFace face(hb_face_create(blob.get(), (unsigned)index));
     SkASSERT(face);
     if (!face) {
@@ -601,6 +611,9 @@ SkPoint SkShaper::shape(SkTextBlobBuilder* builder,
         // TODO: language
         hb_buffer_guess_segment_properties(buffer);
         // TODO: features
+        if (!font->currentHBFont()) {
+            continue;
+        }
         hb_shape(font->currentHBFont(), buffer, nullptr, 0);
         unsigned len = hb_buffer_get_length(buffer);
         if (len == 0) {
@@ -717,7 +730,7 @@ SkPoint SkShaper::shape(SkTextBlobBuilder* builder,
         ShapedGlyph* nextGlyph = glyphIterator.next();
 
         if (previousRunIndex != runIndex) {
-            SkPaint::FontMetrics metrics;
+            SkFontMetrics metrics;
             runs[runIndex].fPaint.getFontMetrics(&metrics);
             maxAscent = SkTMin(maxAscent, metrics.fAscent);
             maxDescent = SkTMax(maxDescent, metrics.fDescent);

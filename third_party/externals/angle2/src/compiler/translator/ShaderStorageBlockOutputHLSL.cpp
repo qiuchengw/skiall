@@ -26,7 +26,6 @@
 #include "compiler/translator/ShaderStorageBlockOutputHLSL.h"
 
 #include "compiler/translator/ResourcesHLSL.h"
-#include "compiler/translator/blocklayout.h"
 #include "compiler/translator/blocklayoutHLSL.h"
 #include "compiler/translator/util.h"
 
@@ -35,6 +34,85 @@ namespace sh
 
 namespace
 {
+
+void GetBlockLayoutInfo(TIntermTyped *node,
+                        bool rowMajorAlreadyAssigned,
+                        TLayoutBlockStorage *storage,
+                        bool *rowMajor)
+{
+    TIntermSwizzle *swizzleNode = node->getAsSwizzleNode();
+    if (swizzleNode)
+    {
+        return GetBlockLayoutInfo(swizzleNode->getOperand(), rowMajorAlreadyAssigned, storage,
+                                  rowMajor);
+    }
+
+    TIntermBinary *binaryNode = node->getAsBinaryNode();
+    if (binaryNode)
+    {
+        switch (binaryNode->getOp())
+        {
+            case EOpIndexDirectInterfaceBlock:
+            {
+                // The column_major/row_major qualifier of a field member overrides the interface
+                // block's row_major/column_major. So we can assign rowMajor here and don't need to
+                // assign it again. But we still need to call recursively to get the storage's
+                // value.
+                const TType &type = node->getType();
+                *rowMajor         = type.getLayoutQualifier().matrixPacking == EmpRowMajor;
+                return GetBlockLayoutInfo(binaryNode->getLeft(), true, storage, rowMajor);
+            }
+            case EOpIndexIndirect:
+            case EOpIndexDirect:
+            case EOpIndexDirectStruct:
+                return GetBlockLayoutInfo(binaryNode->getLeft(), rowMajorAlreadyAssigned, storage,
+                                          rowMajor);
+            default:
+                UNREACHABLE();
+                return;
+        }
+    }
+
+    const TType &type = node->getType();
+    ASSERT(type.getQualifier() == EvqBuffer);
+    const TInterfaceBlock *interfaceBlock = type.getInterfaceBlock();
+    ASSERT(interfaceBlock);
+    *storage = interfaceBlock->blockStorage();
+    // If the block doesn't have an instance name, rowMajorAlreadyAssigned will be false. In
+    // this situation, we still need to set rowMajor's value.
+    if (!rowMajorAlreadyAssigned)
+    {
+        *rowMajor = type.getLayoutQualifier().matrixPacking == EmpRowMajor;
+    }
+}
+
+// It's possible that the current type has lost the original layout information. So we should pass
+// the right layout information to GetMatrixStride.
+unsigned int GetMatrixStride(const TType &type, TLayoutBlockStorage storage, bool rowMajor)
+{
+    sh::Std140BlockEncoder std140Encoder;
+    sh::HLSLBlockEncoder hlslEncoder(sh::HLSLBlockEncoder::ENCODE_PACKED, false);
+    sh::BlockLayoutEncoder *encoder = nullptr;
+
+    if (storage == EbsStd140)
+    {
+        encoder = &std140Encoder;
+    }
+    else
+    {
+        encoder = &hlslEncoder;
+    }
+
+    std::vector<unsigned int> arraySizes;
+    auto *typeArraySizes = type.getArraySizes();
+    if (typeArraySizes != nullptr)
+    {
+        arraySizes.assign(typeArraySizes->begin(), typeArraySizes->end());
+    }
+    const BlockMemberInfo &memberInfo =
+        encoder->encodeType(GLVariableType(type), arraySizes, rowMajor);
+    return memberInfo.matrixStride;
+}
 
 const TField *GetFieldMemberInShaderStorageBlock(const TInterfaceBlock *interfaceBlock,
                                                  const ImmutableString &variableName)
@@ -49,18 +127,95 @@ const TField *GetFieldMemberInShaderStorageBlock(const TInterfaceBlock *interfac
     return nullptr;
 }
 
-void SetShaderStorageBlockFieldMemberInfo(const TFieldList &fields, sh::BlockLayoutEncoder *encoder)
+void GetShaderStorageBlockFieldMemberInfo(const TFieldList &fields,
+                                          sh::BlockLayoutEncoder *encoder,
+                                          TLayoutBlockStorage storage,
+                                          bool rowMajor,
+                                          bool isSSBOFieldMember,
+                                          BlockMemberInfoMap *blockInfoOut);
+
+size_t GetBlockFieldMemberInfoAndReturnBlockSize(const TFieldList &fields,
+                                                 TLayoutBlockStorage storage,
+                                                 bool rowMajor,
+                                                 BlockMemberInfoMap *blockInfoOut)
 {
-    for (TField *field : fields)
+    sh::Std140BlockEncoder std140Encoder;
+    sh::HLSLBlockEncoder hlslEncoder(sh::HLSLBlockEncoder::ENCODE_PACKED, false);
+    sh::BlockLayoutEncoder *structureEncoder = nullptr;
+
+    if (storage == EbsStd140)
+    {
+        structureEncoder = &std140Encoder;
+    }
+    else
+    {
+        // TODO(jiajia.qin@intel.com): add std430 support.
+        structureEncoder = &hlslEncoder;
+    }
+
+    GetShaderStorageBlockFieldMemberInfo(fields, structureEncoder, storage, rowMajor, false,
+                                         blockInfoOut);
+    structureEncoder->exitAggregateType();
+    return structureEncoder->getBlockSize();
+}
+
+void GetShaderStorageBlockFieldMemberInfo(const TFieldList &fields,
+                                          sh::BlockLayoutEncoder *encoder,
+                                          TLayoutBlockStorage storage,
+                                          bool rowMajor,
+                                          bool isSSBOFieldMember,
+                                          BlockMemberInfoMap *blockInfoOut)
+{
+    for (const TField *field : fields)
     {
         const TType &fieldType = *field->type();
+        bool isRowMajorLayout  = rowMajor;
+        if (isSSBOFieldMember)
+        {
+            isRowMajorLayout = (fieldType.getLayoutQualifier().matrixPacking == EmpRowMajor);
+        }
         if (fieldType.getStruct())
         {
-            // TODO(jiajia.qin@intel.com): Add structure field member support.
+            encoder->enterAggregateType();
+            // This is to set structure member offset and array stride using a new encoder to ensure
+            // that the first field member offset in structure is always zero.
+            size_t structureStride = GetBlockFieldMemberInfoAndReturnBlockSize(
+                fieldType.getStruct()->fields(), storage, isRowMajorLayout, blockInfoOut);
+            const BlockMemberInfo memberInfo(static_cast<int>(encoder->getBlockSize()),
+                                             static_cast<int>(structureStride), 0, false);
+            (*blockInfoOut)[field] = memberInfo;
+
+            // Below if-else is in order to get correct offset for the field members after structure
+            // field.
+            if (fieldType.isArray())
+            {
+                size_t size = fieldType.getArraySizeProduct() * structureStride;
+                encoder->increaseCurrentOffset(size);
+            }
+            else
+            {
+                encoder->increaseCurrentOffset(structureStride);
+            }
         }
         else if (fieldType.isArrayOfArrays())
         {
-            // TODO(jiajia.qin@intel.com): Add array of array field member support.
+            size_t beginSize                        = encoder->getBlockSize();
+            const TVector<unsigned int> &arraySizes = *fieldType.getArraySizes();
+            // arraySizes[0] stores the innermost array's size.
+            std::vector<unsigned int> innermostArraySize(1u, arraySizes[0]);
+            const BlockMemberInfo &memberInfo =
+                encoder->encodeType(GLVariableType(fieldType), innermostArraySize,
+                                    isRowMajorLayout && fieldType.isMatrix());
+            (*blockInfoOut)[field] = memberInfo;
+            size_t endSize         = encoder->getBlockSize();
+
+            // The total size of array of arrays is memberInfo.arrayStride *
+            // fieldType.getArraySizeProduct(). However, encoder->encodeType will change the current
+            // offset of encoder. So the final increase size will be total size of arrays of arrays
+            // minus the increased sized by encoder->encodeType.
+            size_t arrayOfArraysSize = memberInfo.arrayStride * fieldType.getArraySizeProduct();
+            size_t increaseSize      = arrayOfArraysSize - (endSize - beginSize);
+            encoder->increaseCurrentOffset(increaseSize);
         }
         else
         {
@@ -69,18 +224,16 @@ void SetShaderStorageBlockFieldMemberInfo(const TFieldList &fields, sh::BlockLay
             {
                 fieldArraySizes.assign(arraySizes->begin(), arraySizes->end());
             }
-            const bool isRowMajorLayout =
-                (fieldType.getLayoutQualifier().matrixPacking == EmpRowMajor);
             const BlockMemberInfo &memberInfo =
                 encoder->encodeType(GLVariableType(fieldType), fieldArraySizes,
                                     isRowMajorLayout && fieldType.isMatrix());
-            field->setOffset(memberInfo.offset);
-            field->setArrayStride(memberInfo.arrayStride);
+            (*blockInfoOut)[field] = memberInfo;
         }
     }
 }
 
-void SetShaderStorageBlockMembersOffset(const TInterfaceBlock *interfaceBlock)
+void GetShaderStorageBlockMembersInfo(const TInterfaceBlock *interfaceBlock,
+                                      BlockMemberInfoMap *blockInfoOut)
 {
     sh::Std140BlockEncoder std140Encoder;
     sh::HLSLBlockEncoder hlslEncoder(sh::HLSLBlockEncoder::ENCODE_PACKED, false);
@@ -96,7 +249,22 @@ void SetShaderStorageBlockMembersOffset(const TInterfaceBlock *interfaceBlock)
         encoder = &hlslEncoder;
     }
 
-    SetShaderStorageBlockFieldMemberInfo(interfaceBlock->fields(), encoder);
+    GetShaderStorageBlockFieldMemberInfo(interfaceBlock->fields(), encoder,
+                                         interfaceBlock->blockStorage(), false, true, blockInfoOut);
+}
+
+bool IsInArrayOfArraysChain(TIntermTyped *node)
+{
+    if (node->getType().isArrayOfArrays())
+        return true;
+    TIntermBinary *binaryNode = node->getAsBinaryNode();
+    if (binaryNode)
+    {
+        if (binaryNode->getLeft()->getType().isArrayOfArrays())
+            return true;
+    }
+
+    return false;
 }
 
 }  // anonymous namespace
@@ -105,6 +273,8 @@ ShaderStorageBlockOutputHLSL::ShaderStorageBlockOutputHLSL(OutputHLSL *outputHLS
                                                            TSymbolTable *symbolTable,
                                                            ResourcesHLSL *resourcesHLSL)
     : TIntermTraverser(true, true, true, symbolTable),
+      mMatrixStride(0),
+      mRowMajor(false),
       mIsLoadFunctionCall(false),
       mOutputHLSL(outputHLSL),
       mResourcesHLSL(resourcesHLSL)
@@ -131,8 +301,40 @@ void ShaderStorageBlockOutputHLSL::outputLoadFunctionCall(TIntermTyped *node)
 
 void ShaderStorageBlockOutputHLSL::traverseSSBOAccess(TIntermTyped *node, SSBOMethod method)
 {
-    const TString &functionName =
-        mSSBOFunctionHLSL->registerShaderStorageBlockFunction(node->getType(), method);
+    mMatrixStride = 0;
+    mRowMajor     = false;
+
+    // Note that we don't have correct BlockMemberInfo from mBlockMemberInfoMap at the current
+    // point. But we must use those information to generate the right function name. So here we have
+    // to calculate them again.
+    TLayoutBlockStorage storage;
+    bool rowMajor;
+    GetBlockLayoutInfo(node, false, &storage, &rowMajor);
+
+    // Note that we must calculate the matrix stride here instead of ShaderStorageBlockFunctionHLSL.
+    // It's because that if the current node's type is a vector which comes from a matrix, we will
+    // lost the matrix type info once we enter ShaderStorageBlockFunctionHLSL.
+    if (node->getType().isVector())
+    {
+        TIntermBinary *binaryNode = node->getAsBinaryNode();
+        if (binaryNode)
+        {
+            const TType &leftType = binaryNode->getLeft()->getType();
+            if (leftType.isMatrix())
+            {
+                mMatrixStride = GetMatrixStride(leftType, storage, rowMajor);
+                mRowMajor     = rowMajor;
+            }
+        }
+    }
+    else if (node->getType().isMatrix())
+    {
+        mMatrixStride = GetMatrixStride(node->getType(), storage, rowMajor);
+        mRowMajor     = rowMajor;
+    }
+
+    const TString &functionName = mSSBOFunctionHLSL->registerShaderStorageBlockFunction(
+        node->getType(), method, storage, mRowMajor, mMatrixStride);
     TInfoSinkBase &out = mOutputHLSL->getInfoSink();
     out << functionName;
     out << "(";
@@ -197,7 +399,7 @@ void ShaderStorageBlockOutputHLSL::visitSymbol(TIntermSymbol *node)
             }
             mReferencedShaderStorageBlocks[interfaceBlock->uniqueId().get()] =
                 new TReferencedBlock(interfaceBlock, instanceVariable);
-            SetShaderStorageBlockMembersOffset(interfaceBlock);
+            GetShaderStorageBlockMembersInfo(interfaceBlock, &mBlockMemberInfoMap);
         }
         if (variableType.isInterfaceBlock())
         {
@@ -221,8 +423,22 @@ void ShaderStorageBlockOutputHLSL::visitSymbol(TIntermSymbol *node)
 
 void ShaderStorageBlockOutputHLSL::visitConstantUnion(TIntermConstantUnion *node)
 {
-    TInfoSinkBase &out = mOutputHLSL->getInfoSink();
-    mOutputHLSL->writeConstantUnion(out, node->getType(), node->getConstantValue());
+    mOutputHLSL->visitConstantUnion(node);
+}
+
+bool ShaderStorageBlockOutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
+{
+    return mOutputHLSL->visitAggregate(visit, node);
+}
+
+bool ShaderStorageBlockOutputHLSL::visitTernary(Visit visit, TIntermTernary *node)
+{
+    return mOutputHLSL->visitTernary(visit, node);
+}
+
+bool ShaderStorageBlockOutputHLSL::visitUnary(Visit visit, TIntermUnary *node)
+{
+    return mOutputHLSL->visitUnary(visit, node);
 }
 
 bool ShaderStorageBlockOutputHLSL::visitSwizzle(Visit visit, TIntermSwizzle *node)
@@ -270,7 +486,7 @@ bool ShaderStorageBlockOutputHLSL::visitBinary(Visit visit, TIntermBinary *node)
                     {
                         mReferencedShaderStorageBlocks[interfaceBlock->uniqueId().get()] =
                             new TReferencedBlock(interfaceBlock, &instanceArraySymbol->variable());
-                        SetShaderStorageBlockMembersOffset(interfaceBlock);
+                        GetShaderStorageBlockMembersInfo(interfaceBlock, &mBlockMemberInfoMap);
                     }
 
                     const int arrayIndex = node->getRight()->getAsConstantUnion()->getIConst(0);
@@ -346,35 +562,90 @@ void ShaderStorageBlockOutputHLSL::writeEOpIndexDirectOrIndirectOutput(TInfoSink
     if (visit == InVisit)
     {
         const TType &type = node->getLeft()->getType();
-        if (node->getType().isVector() && type.isMatrix())
+        // For array of arrays, we calculate the offset using the formula below:
+        // elementStride * (a3 * a2 * a1 * i0 + a3 * a2 * i1 + a3 * i2 + i3)
+        // Note: assume that there are 4 dimensions.
+        //       a0, a1, a2, a3 is the size of the array in each dimension. (S s[a0][a1][a2][a3])
+        //       i0, i1, i2, i3 is the index of the array in each dimension. (s[i0][i1][i2][i3])
+        if (IsInArrayOfArraysChain(node->getLeft()))
         {
-            int matrixStride =
-                BlockLayoutEncoder::ComponentsPerRegister * BlockLayoutEncoder::BytesPerComponent;
-            out << " + " << str(matrixStride);
+            if (type.isArrayOfArrays())
+            {
+                const TVector<unsigned int> &arraySizes = *type.getArraySizes();
+                // Don't need to concern the tail comma which will be used to multiply the index.
+                for (unsigned int i = 0; i < (arraySizes.size() - 1); i++)
+                {
+                    out << arraySizes[i];
+                    out << " * ";
+                }
+            }
         }
-        else if (node->getType().isScalar() && !type.isArray())
+        else
         {
-            int scalarStride = BlockLayoutEncoder::BytesPerComponent;
-            out << " + " << str(scalarStride);
-        }
+            if (node->getType().isVector() && type.isMatrix())
+            {
+                if (mRowMajor)
+                {
+                    out << " + " << str(BlockLayoutEncoder::BytesPerComponent);
+                }
+                else
+                {
+                    out << " + " << str(mMatrixStride);
+                }
+            }
+            else if (node->getType().isScalar() && !type.isArray())
+            {
+                if (mRowMajor)
+                {
+                    out << " + " << str(mMatrixStride);
+                }
+                else
+                {
+                    out << " + " << str(BlockLayoutEncoder::BytesPerComponent);
+                }
+            }
 
-        out << " * ";
+            out << " * ";
+        }
     }
-    else if (visit == PostVisit && mIsLoadFunctionCall && isEndOfSSBOAccessChain())
+    else if (visit == PostVisit)
     {
-        out << ")";
+        // This is used to output the '+' in the array of arrays formula in above.
+        if (node->getType().isArray() && !isEndOfSSBOAccessChain())
+        {
+            out << " + ";
+        }
+        // This corresponds to '(' in writeDotOperatorOutput when fieldType.isArrayOfArrays() is
+        // true.
+        if (IsInArrayOfArraysChain(node->getLeft()) && !node->getType().isArray())
+        {
+            out << ")";
+        }
+        if (mIsLoadFunctionCall && isEndOfSSBOAccessChain())
+        {
+            out << ")";
+        }
     }
 }
 
 void ShaderStorageBlockOutputHLSL::writeDotOperatorOutput(TInfoSinkBase &out, const TField *field)
 {
-    out << str(field->getOffset());
+    auto fieldInfoIter = mBlockMemberInfoMap.find(field);
+    ASSERT(fieldInfoIter != mBlockMemberInfoMap.end());
+    const BlockMemberInfo &memberInfo = fieldInfoIter->second;
+    mMatrixStride                     = memberInfo.matrixStride;
+    mRowMajor                         = memberInfo.isRowMajorMatrix;
+    out << memberInfo.offset;
 
     const TType &fieldType = *field->type();
     if (fieldType.isArray() && !isEndOfSSBOAccessChain())
     {
         out << " + ";
-        out << field->getArrayStride();
+        out << memberInfo.arrayStride;
+        if (fieldType.isArrayOfArrays())
+        {
+            out << " * (";
+        }
     }
     if (mIsLoadFunctionCall && isEndOfSSBOAccessChain())
     {

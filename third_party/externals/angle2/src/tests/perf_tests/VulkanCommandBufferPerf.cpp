@@ -72,13 +72,18 @@ class VulkanCommandBufferPerfTest : public ANGLEPerfTest,
 };
 
 VulkanCommandBufferPerfTest::VulkanCommandBufferPerfTest()
-    : ANGLEPerfTest("VulkanCommandBufferPerfTest", GetParam().suffix)
+    : ANGLEPerfTest("VulkanCommandBufferPerfTest", GetParam().suffix, GetParam().frames)
 {
     mInfo             = {};
     mSampleTitle      = "Draw Textured Cube";
     mCBImplementation = GetParam().CBImplementation;
     mFrames           = GetParam().frames;
     mBuffers          = GetParam().buffers;
+
+// This test appears to be flaky on multiple platforms.
+#if !defined(ANGLE_PLATFORM_ANDROID)
+    mSkipTest = true;
+#endif  // !defined(ANGLE_PLATFORM_ANDROID)
 }
 
 void VulkanCommandBufferPerfTest::SetUp()

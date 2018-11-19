@@ -101,7 +101,6 @@ public:
         kGrConicEffect_ClassID,
         kGrConstColorProcessor_ClassID,
         kGrConvexPolyEffect_ClassID,
-        kGrCubicEffect_ClassID,
         kGrDeviceSpaceTextureDecalFragmentProcessor_ClassID,
         kGrDiffuseLightingEffect_ClassID,
         kGrDisplacementMapEffect_ClassID,
@@ -159,6 +158,7 @@ public:
         kRRectsGaussianEdgeFP_ClassID,
         kSeriesFragmentProcessor_ClassID,
         kShaderPDXferProcessor_ClassID,
+        kFwidthSquircleTestProcessor_ClassID,
         kSwizzleFragmentProcessor_ClassID,
         kTestFP_ClassID,
         kTextureGeometryProcessor_ClassID,
@@ -175,11 +175,15 @@ public:
     virtual const char* name() const = 0;
 
     /** Human-readable dump of all information */
+#ifdef SK_DEBUG
     virtual SkString dumpInfo() const {
         SkString str;
         str.appendf("Missing data");
         return str;
     }
+#else
+    SkString dumpInfo() const { return SkString("<Processor information unavailable>"); }
+#endif
 
     void* operator new(size_t size);
     void operator delete(void* target);

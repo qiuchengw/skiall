@@ -11,6 +11,7 @@
 #define COMPILER_TRANSLATOR_SHADERSTORAGEBLOCKOUTPUTHLSL_H_
 
 #include "compiler/translator/ShaderStorageBlockFunctionHLSL.h"
+#include "compiler/translator/blocklayout.h"
 #include "compiler/translator/tree_util/IntermTraverse.h"
 
 namespace sh
@@ -29,6 +30,9 @@ struct TReferencedBlock : angle::NonCopyable
 
 // Maps from uniqueId to a variable.
 using ReferencedInterfaceBlocks = std::map<int, const TReferencedBlock *>;
+
+// Used to save shader storage block field member information.
+using BlockMemberInfoMap = std::map<const TField *, BlockMemberInfo>;
 
 class ShaderStorageBlockOutputHLSL : public TIntermTraverser
 {
@@ -53,6 +57,9 @@ class ShaderStorageBlockOutputHLSL : public TIntermTraverser
     void visitConstantUnion(TIntermConstantUnion *) override;
     bool visitSwizzle(Visit visit, TIntermSwizzle *node) override;
     bool visitBinary(Visit visit, TIntermBinary *) override;
+    bool visitAggregate(Visit visit, TIntermAggregate *node) override;
+    bool visitTernary(Visit visit, TIntermTernary *) override;
+    bool visitUnary(Visit visit, TIntermUnary *) override;
 
   private:
     void traverseSSBOAccess(TIntermTyped *node, SSBOMethod method);
@@ -61,11 +68,15 @@ class ShaderStorageBlockOutputHLSL : public TIntermTraverser
     // Common part in dot operations.
     void writeDotOperatorOutput(TInfoSinkBase &out, const TField *field);
 
+    int mMatrixStride;
+    bool mRowMajor;
     bool mIsLoadFunctionCall;
     OutputHLSL *mOutputHLSL;
     ShaderStorageBlockFunctionHLSL *mSSBOFunctionHLSL;
     ResourcesHLSL *mResourcesHLSL;
     ReferencedInterfaceBlocks mReferencedShaderStorageBlocks;
+
+    BlockMemberInfoMap mBlockMemberInfoMap;
 };
 }
 

@@ -425,9 +425,9 @@ public:
     bool initDescForDstCopy(const GrRenderTargetProxy* src, GrSurfaceDesc* desc, GrSurfaceOrigin*,
                             bool* rectsMustMatch, bool* disallowSubrect) const override;
 
-    bool programBinarySupport() const {
-        return fProgramBinarySupport;
-    }
+    bool programBinarySupport() const { return fProgramBinarySupport; }
+
+    bool samplerObjectSupport() const { return fSamplerObjectSupport; }
 
     bool validateBackendTexture(const GrBackendTexture&, SkColorType,
                                 GrPixelConfig*) const override;
@@ -436,6 +436,10 @@ public:
 
     bool getConfigFromBackendFormat(const GrBackendFormat&, SkColorType,
                                     GrPixelConfig*) const override;
+    bool getYUVAConfigFromBackendTexture(const GrBackendTexture&,
+                                         GrPixelConfig*) const override;
+    bool getYUVAConfigFromBackendFormat(const GrBackendFormat&,
+                                        GrPixelConfig*) const override;
 
 #if GR_TEST_UTILS
     GrGLStandard standard() const { return fStandard; }
@@ -515,6 +519,7 @@ private:
     bool fUseBufferDataNullHint                : 1;
     bool fClearTextureSupport : 1;
     bool fProgramBinarySupport : 1;
+    bool fSamplerObjectSupport : 1;
 
     // Driver workarounds
     bool fDoManualMipmapping : 1;

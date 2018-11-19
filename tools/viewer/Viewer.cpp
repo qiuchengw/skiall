@@ -359,20 +359,20 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     fCommands.addCommand('H', "Paint", "Hinting mode", [this]() {
         if (!fPaintOverrides.fHinting) {
             fPaintOverrides.fHinting = true;
-            fPaint.setHinting(SkPaint::kNo_Hinting);
+            fPaint.setHinting(kNo_SkFontHinting);
         } else {
-            switch (fPaint.getHinting()) {
-                case SkPaint::kNo_Hinting:
-                    fPaint.setHinting(SkPaint::kSlight_Hinting);
+            switch ((SkFontHinting)fPaint.getHinting()) {
+                case kNo_SkFontHinting:
+                    fPaint.setHinting(kSlight_SkFontHinting);
                     break;
-                case SkPaint::kSlight_Hinting:
-                    fPaint.setHinting(SkPaint::kNormal_Hinting);
+                case kSlight_SkFontHinting:
+                    fPaint.setHinting(kNormal_SkFontHinting);
                     break;
-                case SkPaint::kNormal_Hinting:
-                    fPaint.setHinting(SkPaint::kFull_Hinting);
+                case kNormal_SkFontHinting:
+                    fPaint.setHinting(kFull_SkFontHinting);
                     break;
-                case SkPaint::kFull_Hinting:
-                    fPaint.setHinting(SkPaint::kNo_Hinting);
+                case kFull_SkFontHinting:
+                    fPaint.setHinting(kNo_SkFontHinting);
                     fPaintOverrides.fHinting = false;
                     break;
             }
@@ -708,21 +708,19 @@ void Viewer::updateTitle() {
               "Bitmap Text", "No Bitmap Text");
     paintFlag(SkPaint::kAutoHinting_Flag, &SkPaint::isAutohinted,
               "Force Autohint", "No Force Autohint");
-    paintFlag(SkPaint::kVerticalText_Flag, &SkPaint::isVerticalText,
-              "Vertical Text", "No Vertical Text");
 
     if (fPaintOverrides.fHinting) {
-        switch (fPaint.getHinting()) {
-            case SkPaint::kNo_Hinting:
+        switch ((SkFontHinting)fPaint.getHinting()) {
+            case kNo_SkFontHinting:
                 paintTitle.append("No Hinting");
                 break;
-            case SkPaint::kSlight_Hinting:
+            case kSlight_SkFontHinting:
                 paintTitle.append("Slight Hinting");
                 break;
-            case SkPaint::kNormal_Hinting:
+            case kNormal_SkFontHinting:
                 paintTitle.append("Normal Hinting");
                 break;
-            case SkPaint::kFull_Hinting:
+            case kFull_SkFontHinting:
                 paintTitle.append("Full Hinting");
                 break;
         }
@@ -1087,9 +1085,6 @@ public:
         if (fPaintOverrides->fFlags & SkPaint::kAutoHinting_Flag) {
             paint->writable()->setAutohinted(fPaint->isAutohinted());
         }
-        if (fPaintOverrides->fFlags & SkPaint::kVerticalText_Flag) {
-            paint->writable()->setVerticalText(fPaint->isVerticalText());
-        }
 
         return true;
     }
@@ -1220,6 +1215,11 @@ void Viewer::onPaint(SkCanvas* canvas) {
     fCommands.drawHelp(canvas);
 
     this->drawImGui();
+
+    if (GrContext* ctx = fWindow->getGrContext()) {
+        // Clean out cache items that haven't been used in more than 10 seconds.
+        ctx->performDeferredCleanup(std::chrono::seconds(10));
+    }
 }
 
 void Viewer::onResize(int width, int height) {
@@ -1614,17 +1614,17 @@ void Viewer::drawImGui() {
             if (ImGui::CollapsingHeader("Paint")) {
                 int hintingIdx = 0;
                 if (fPaintOverrides.fHinting) {
-                    hintingIdx = fPaint.getHinting() + 1;
+                    hintingIdx = static_cast<unsigned>(fPaint.getHinting()) + 1;
                 }
                 if (ImGui::Combo("Hinting", &hintingIdx,
                                  "Default\0None\0Slight\0Normal\0Full\0\0"))
                 {
                     if (hintingIdx == 0) {
                         fPaintOverrides.fHinting = false;
-                        fPaint.setHinting(SkPaint::kNo_Hinting);
+                        fPaint.setHinting(kNo_SkFontHinting);
                     } else {
                         fPaintOverrides.fHinting = true;
-                        SkPaint::Hinting hinting = SkTo<SkPaint::Hinting>(hintingIdx - 1);
+                        SkFontHinting hinting = SkTo<SkFontHinting>(hintingIdx - 1);
                         fPaint.setHinting(hinting);
                     }
                     paramsChanged = true;
@@ -1731,11 +1731,6 @@ void Viewer::drawImGui() {
                           "Default\0No Force Auto-Hinting\0Force Auto-Hinting\0\0",
                           SkPaint::kAutoHinting_Flag,
                           &SkPaint::isAutohinted, &SkPaint::setAutohinted);
-
-                paintFlag("Vertical Text",
-                          "Default\0No Vertical Text\0Vertical Text\0\0",
-                          SkPaint::kVerticalText_Flag,
-                          &SkPaint::isVerticalText, &SkPaint::setVerticalText);
 
                 ImGui::Checkbox("Override TextSize", &fPaintOverrides.fTextSize);
                 if (fPaintOverrides.fTextSize) {

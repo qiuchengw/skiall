@@ -47,7 +47,8 @@ class ShaderConstants11 : angle::NonCopyable
                           bool presentPathFast);
     void onSamplerChange(gl::ShaderType shaderType,
                          unsigned int samplerIndex,
-                         const gl::Texture &texture);
+                         const gl::Texture &texture,
+                         const gl::SamplerState &samplerState);
 
     angle::Result updateBuffer(const gl::Context *context,
                                Renderer11 *renderer,
@@ -115,21 +116,27 @@ class ShaderConstants11 : angle::NonCopyable
 
     struct SamplerMetadata
     {
-        SamplerMetadata() : baseLevel(0), internalFormatBits(0), wrapModes(0), padding(0) {}
+        SamplerMetadata()
+            : baseLevel(0), internalFormatBits(0), wrapModes(0), padding(0), intBorderColor{0}
+        {
+        }
 
         int baseLevel;
         int internalFormatBits;
         int wrapModes;
-        int padding;  // This just pads the struct to 16 bytes
+        int padding;  // This just pads the struct to 32 bytes
+        int intBorderColor[4];
     };
 
-    static_assert(sizeof(SamplerMetadata) == 16u,
-                  "Sampler metadata struct must be one 4-vec / 16 bytes.");
+    static_assert(sizeof(SamplerMetadata) == 32u,
+                  "Sampler metadata struct must be two 4-vec --> 32 bytes.");
 
     static size_t GetShaderConstantsStructSize(gl::ShaderType shaderType);
 
     // Return true if dirty.
-    bool updateSamplerMetadata(SamplerMetadata *data, const gl::Texture &texture);
+    bool updateSamplerMetadata(SamplerMetadata *data,
+                               const gl::Texture &texture,
+                               const gl::SamplerState &samplerState);
 
     Vertex mVertex;
     Pixel mPixel;
@@ -204,7 +211,14 @@ class StateManager11 final : angle::NonCopyable
 
     void setSingleVertexBuffer(const d3d11::Buffer *buffer, UINT stride, UINT offset);
 
-    angle::Result updateState(const gl::Context *context, const gl::DrawCallParams &drawCallParams);
+    angle::Result updateState(const gl::Context *context,
+                              gl::PrimitiveMode mode,
+                              GLint firstVertex,
+                              GLsizei vertexOrIndexCount,
+                              GLenum indexTypeOrNone,
+                              const void *indices,
+                              GLsizei instanceCount,
+                              GLint baseVertex);
 
     void setShaderResourceShared(gl::ShaderType shaderType,
                                  UINT resourceSlot,
@@ -276,8 +290,7 @@ class StateManager11 final : angle::NonCopyable
 
     angle::Result syncDepthStencilState(const gl::Context *context);
 
-    angle::Result syncRasterizerState(const gl::Context *context,
-                                      const gl::DrawCallParams &drawCallParams);
+    angle::Result syncRasterizerState(const gl::Context *context, gl::PrimitiveMode mode);
 
     void syncScissorRectangle(const gl::Rectangle &scissor, bool enabled);
 
@@ -352,12 +365,18 @@ class StateManager11 final : angle::NonCopyable
 
     bool syncIndexBuffer(ID3D11Buffer *buffer, DXGI_FORMAT indexFormat, unsigned int offset);
     angle::Result syncVertexBuffersAndInputLayout(const gl::Context *context,
-                                                  const gl::DrawCallParams &vertexParams);
+                                                  gl::PrimitiveMode mode,
+                                                  GLint firstVertex,
+                                                  GLsizei vertexOrIndexCount,
+                                                  GLenum indexTypeOrNone,
+                                                  GLsizei instanceCount);
 
     bool setInputLayoutInternal(const d3d11::InputLayout *inputLayout);
 
     angle::Result applyVertexBuffers(const gl::Context *context,
-                                     const gl::DrawCallParams &drawCallParams);
+                                     gl::PrimitiveMode mode,
+                                     GLenum indexTypeOrNone,
+                                     GLint firstVertex);
     // TODO(jmadill): Migrate to d3d11::Buffer.
     bool queueVertexBufferChange(size_t bufferIndex,
                                  ID3D11Buffer *buffer,
@@ -369,7 +388,9 @@ class StateManager11 final : angle::NonCopyable
 
     // Not handled by an internal dirty bit because it isn't synced on drawArrays calls.
     angle::Result applyIndexBuffer(const gl::Context *context,
-                                   const gl::DrawCallParams &drawCallParams);
+                                   GLsizei indexCount,
+                                   GLenum indexType,
+                                   const void *indices);
 
     enum DirtyBitType
     {

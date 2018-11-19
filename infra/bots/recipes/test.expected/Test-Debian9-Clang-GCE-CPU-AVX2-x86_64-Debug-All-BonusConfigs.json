@@ -302,6 +302,10 @@
       "colorImage",
       "_",
       "_",
+      "_",
+      "image",
+      "gen_platf",
+      "error",
       "serialize-8888",
       "gm",
       "_",
@@ -441,6 +445,10 @@
       "serialize-8888",
       "gm",
       "_",
+      "draw_image_set_rect_to_rect",
+      "serialize-8888",
+      "gm",
+      "_",
       "analytic_antialias_convex",
       "serialize-8888",
       "gm",
@@ -549,8 +557,7 @@
     "name": "symbolized dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

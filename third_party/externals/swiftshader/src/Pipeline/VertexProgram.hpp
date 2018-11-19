@@ -19,8 +19,8 @@
 #include "ShaderCore.hpp"
 
 #include "SamplerCore.hpp"
-#include "Renderer/Stream.hpp"
-#include "Common/Types.hpp"
+#include "Device/Stream.hpp"
+#include "System/Types.hpp"
 
 namespace sw
 {
@@ -63,9 +63,7 @@ namespace sw
 		typedef Shader::Control Control;
 		typedef Shader::Usage Usage;
 
-		void pipeline(UInt &index) override;
-		void program(UInt &index);
-		void passThrough();
+		void program(UInt &index) override;
 
 		Vector4f fetchRegister(const Src &src, unsigned int offset = 0);
 		Vector4f readConstant(const Src &src, unsigned int offset = 0);

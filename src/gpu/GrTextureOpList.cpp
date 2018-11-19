@@ -116,7 +116,7 @@ bool GrTextureOpList::onExecute(GrOpFlushState* flushState) {
             GrXferProcessor::DstProxy()
         };
         flushState->setOpArgs(&opArgs);
-        fRecordedOps[i]->execute(flushState);
+        fRecordedOps[i]->execute(flushState, fRecordedOps[i].get()->bounds());
         flushState->setOpArgs(nullptr);
     }
 
@@ -197,7 +197,7 @@ void GrTextureOpList::gatherProxyIntervals(GrResourceAllocator* alloc) const {
     for (int i = 0; i < fRecordedOps.count(); ++i) {
         const GrOp* op = fRecordedOps[i].get(); // only diff from the GrRenderTargetOpList version
         if (op) {
-            op->visitProxies(gather);
+            op->visitProxies(gather, GrOp::VisitorType::kAllocatorGather);
         }
 
         // Even though the op may have been moved we still need to increment the op count to

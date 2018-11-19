@@ -13,10 +13,11 @@
 #include "SkPaintDefaults.h"
 #include "SkPoint.h"
 #include "SkString.h"
+#include "SkTextBlob.h"
+#include "SkTextUtils.h"
 
 class SkCanvas;
 class SkPaint;
-class SkTextBlob;
 class SkTypeface;
 
 namespace sksg {
@@ -36,8 +37,8 @@ public:
     SG_ATTRIBUTE(Size    , SkScalar         , fSize    )
     SG_ATTRIBUTE(ScaleX  , SkScalar         , fScaleX  )
     SG_ATTRIBUTE(SkewX   , SkScalar         , fSkewX   )
-    SG_ATTRIBUTE(Align   , SkPaint::Align   , fAlign   )
-    SG_ATTRIBUTE(Hinting , SkPaint::Hinting , fHinting )
+    SG_ATTRIBUTE(Align   , SkTextUtils::Align   , fAlign   )
+    SG_ATTRIBUTE(Hinting , SkFontHinting    , fHinting )
 
     // TODO: add shaping functionality.
 
@@ -49,7 +50,7 @@ protected:
     SkPath onAsPath() const override;
 
 private:
-    explicit Text(sk_sp<SkTypeface>, const SkString&);
+    Text(sk_sp<SkTypeface>, const SkString&);
 
     SkPoint alignedPosition(SkScalar advance) const;
 
@@ -60,14 +61,40 @@ private:
     SkScalar                fSize     = SkPaintDefaults_TextSize;
     SkScalar                fScaleX   = 1;
     SkScalar                fSkewX    = 0;
-    SkPaint::Align          fAlign    = SkPaint::kLeft_Align;
-    SkPaint::Hinting        fHinting  = SkPaintDefaults_Hinting;
+    SkTextUtils::Align      fAlign    = SkTextUtils::kLeft_Align;
+    SkFontHinting           fHinting  = SkPaintDefaults_Hinting;
 
     sk_sp<SkTextBlob> fBlob; // cached text blob
 
     using INHERITED = GeometryNode;
 };
 
+/**
+ * Concrete Geometry node, wrapping an external SkTextBlob.
+ */
+class TextBlob final : public GeometryNode {
+public:
+    static sk_sp<TextBlob> Make(sk_sp<SkTextBlob> = nullptr);
+    ~TextBlob() override;
+
+    SG_ATTRIBUTE(Blob    , sk_sp<SkTextBlob>, fBlob    )
+    SG_ATTRIBUTE(Position, SkPoint          , fPosition)
+
+protected:
+    void onClip(SkCanvas*, bool antiAlias) const override;
+    void onDraw(SkCanvas*, const SkPaint&) const override;
+
+    SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
+    SkPath onAsPath() const override;
+
+private:
+    explicit TextBlob(sk_sp<SkTextBlob>);
+
+    sk_sp<SkTextBlob> fBlob;
+    SkPoint           fPosition = SkPoint::Make(0, 0);
+
+    using INHERITED = GeometryNode;
+};
 } // namespace sksg
 
 #endif // SkSGText_DEFINED

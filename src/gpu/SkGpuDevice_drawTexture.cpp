@@ -156,29 +156,7 @@ void SkGpuDevice::drawPinnedTextureProxy(sk_sp<GrTextureProxy> proxy, uint32_t p
     }
     GrTextureAdjuster adjuster(this->context(), std::move(proxy), alphaType, pinnedUniqueID,
                                colorSpace);
-    this->drawTextureProducer(&adjuster, srcRect, dstRect, constraint, viewMatrix, paint);
-}
-
-void SkGpuDevice::drawTextureMaker(GrTextureMaker* maker, int imageW, int imageH,
-                                   const SkRect* srcRect, const SkRect* dstRect,
-                                   SkCanvas::SrcRectConstraint constraint,
-                                   const SkMatrix& viewMatrix, const SkPaint& paint) {
-    GrAA aa = GrAA(paint.isAntiAlias());
-    if (can_use_draw_texture(paint)) {
-        sk_sp<SkColorSpace> cs;
-        // We've done enough checks above to allow us to pass ClampNearest() and not check for
-        // scaling adjustments.
-        auto proxy = maker->refTextureProxyForParams(
-                GrSamplerState::ClampNearest(), fRenderTargetContext->colorSpaceInfo().colorSpace(),
-                &cs, nullptr);
-        if (!proxy) {
-            return;
-        }
-        draw_texture(paint, viewMatrix, srcRect, dstRect, aa, constraint, std::move(proxy),
-                     maker->alphaType(), cs.get(), this->clip(), fRenderTargetContext.get());
-        return;
-    }
-    this->drawTextureProducer(maker, srcRect, dstRect, constraint, viewMatrix, paint);
+    this->drawTextureProducer(&adjuster, srcRect, dstRect, constraint, viewMatrix, paint, false);
 }
 
 void SkGpuDevice::drawTextureProducer(GrTextureProducer* producer,
@@ -186,7 +164,22 @@ void SkGpuDevice::drawTextureProducer(GrTextureProducer* producer,
                                       const SkRect* dstRect,
                                       SkCanvas::SrcRectConstraint constraint,
                                       const SkMatrix& viewMatrix,
-                                      const SkPaint& paint) {
+                                      const SkPaint& paint,
+                                      bool attemptDrawTexture) {
+    if (attemptDrawTexture && can_use_draw_texture(paint)) {
+        GrAA aa = GrAA(paint.isAntiAlias());
+        // We've done enough checks above to allow us to pass ClampNearest() and not check for
+        // scaling adjustments.
+        auto proxy = producer->refTextureProxyForParams(GrSamplerState::ClampNearest(), nullptr);
+        if (!proxy) {
+            return;
+        }
+        draw_texture(paint, viewMatrix, srcRect, dstRect, aa, constraint, std::move(proxy),
+                     producer->alphaType(), producer->colorSpace(), this->clip(),
+                     fRenderTargetContext.get());
+        return;
+    }
+
     // This is the funnel for all non-tiled bitmap/image draw calls. Log a histogram entry.
     SK_HISTOGRAM_BOOLEAN("DrawTiled", false);
 
@@ -296,9 +289,10 @@ void SkGpuDevice::drawTextureProducerImpl(GrTextureProducer* producer,
         }
         textureMatrix = &tempMatrix;
     }
-    auto fp = producer->createFragmentProcessor(
-            *textureMatrix, clippedSrcRect, constraintMode, coordsAllInsideSrcRect, filterMode,
-            fRenderTargetContext->colorSpaceInfo().colorSpace());
+    auto fp = producer->createFragmentProcessor(*textureMatrix, clippedSrcRect, constraintMode,
+                                                coordsAllInsideSrcRect, filterMode);
+    fp = GrColorSpaceXformEffect::Make(std::move(fp), producer->colorSpace(), producer->alphaType(),
+                                       fRenderTargetContext->colorSpaceInfo().colorSpace());
     if (!fp) {
         return;
     }

@@ -458,7 +458,6 @@ void GLES1Renderer::drawTexture(Context *context,
 
     setAttributesEnabled(context, glState, AttributesMask());
 
-    context->gatherParams<EntryPoint::DrawArrays>(PrimitiveMode::Triangles, 0, 6);
     context->drawArrays(PrimitiveMode::Triangles, 0, 6);
 
     setAttributesEnabled(context, glState, prevAttributesMask);
@@ -532,7 +531,7 @@ angle::Result GLES1Renderer::linkProgram(Context *context,
         programObject->bindAttributeLocation(index, name.c_str());
     }
 
-    ANGLE_TRY_HANDLE(context, programObject->link(context));
+    ANGLE_TRY(programObject->link(context));
     programObject->resolveLink(context);
 
     ANGLE_TRY(glState->onProgramExecutableChange(context, programObject));

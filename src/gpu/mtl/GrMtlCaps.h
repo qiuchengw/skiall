@@ -80,6 +80,20 @@ public:
         return false;
     }
 
+    bool getYUVAConfigFromBackendTexture(const GrBackendTexture&,
+                                         GrPixelConfig*) const override {
+        return false;
+    }
+
+    bool getYUVAConfigFromBackendFormat(const GrBackendFormat&,
+                                        GrPixelConfig*) const override {
+        return false;
+    }
+
+    bool performPartialClearsAsDraws() const override {
+        return true;
+    }
+
 private:
     void initFeatureSet(MTLFeatureSet featureSet);
 

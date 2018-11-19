@@ -366,6 +366,9 @@ struct Extensions
     // GL_ANGLE_robust_client_memory
     bool robustClientMemory;
 
+    // GL_OES_texture_border_clamp
+    bool textureBorderClamp;
+
     // GL_EXT_texture_sRGB_decode
     bool textureSRGBDecode;
 
@@ -443,6 +446,15 @@ struct Extensions
     // GL_EXT_blend_func_extended
     bool blendFuncExtended;
     GLuint maxDualSourceDrawBuffers;
+
+    // GL_ANGLE_memory_size
+    bool memorySize;
+
+    // GL_ANGLE_texture_multisample
+    bool textureMultisample;
+
+    // GL_ANGLE_multi_draw
+    bool multiDraw;
 };
 
 struct ExtensionInfo
@@ -739,6 +751,9 @@ struct DisplayExtensions
     // EGL_ANGLE_direct_composition
     bool directComposition;
 
+    // EGL_ANGLE_windows_ui_composition
+    bool windowsUIComposition;
+
     // KHR_create_context_no_error
     bool createContextNoError;
 
@@ -795,6 +810,12 @@ struct DisplayExtensions
 
     // EGL_ANDROID_blob_cache
     bool blobCache;
+
+    // EGL_ANDROID_image_native_buffer
+    bool imageNativeBuffer;
+
+    // EGL_ANDROID_get_frame_timestamps
+    bool getFrameTimestamps;
 };
 
 struct DeviceExtensions

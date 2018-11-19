@@ -15,7 +15,7 @@
 #ifndef sw_PixelRoutine_hpp
 #define sw_PixelRoutine_hpp
 
-#include "Renderer/QuadRasterizer.hpp"
+#include "Device/QuadRasterizer.hpp"
 
 namespace sw
 {
@@ -51,8 +51,6 @@ namespace sw
 
 		void alphaTest(Int &aMask, Short4 &alpha);
 		void alphaToCoverage(Int cMask[4], Float4 &alpha);
-		void fogBlend(Vector4f &c0, Float4 &fog);
-		void pixelFog(Float4 &visibility);
 
 		// Raster operations
 		void alphaBlend(int index, Pointer<Byte> &cBuffer, Vector4s &current, Int &x);

@@ -366,6 +366,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                  GLsizei *length,
                                  GLfloat *params);
     void getTexParameteriv(TextureType target, GLenum pname, GLint *params);
+    void getTexParameterIiv(TextureType target, GLenum pname, GLint *params);
+    void getTexParameterIuiv(TextureType target, GLenum pname, GLuint *params);
     void getTexParameterivRobust(TextureType target,
                                  GLenum pname,
                                  GLsizei bufSize,
@@ -404,6 +406,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                               const GLfloat *params);
     void texParameteri(TextureType target, GLenum pname, GLint param);
     void texParameteriv(TextureType target, GLenum pname, const GLint *params);
+    void texParameterIiv(TextureType target, GLenum pname, const GLint *params);
+    void texParameterIuiv(TextureType target, GLenum pname, const GLuint *params);
     void texParameterivRobust(TextureType target,
                               GLenum pname,
                               GLsizei bufSize,
@@ -418,6 +422,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                 const GLuint *params);
     void samplerParameteri(GLuint sampler, GLenum pname, GLint param);
     void samplerParameteriv(GLuint sampler, GLenum pname, const GLint *param);
+    void samplerParameterIiv(GLuint sampler, GLenum pname, const GLint *param);
+    void samplerParameterIuiv(GLuint sampler, GLenum pname, const GLuint *param);
     void samplerParameterivRobust(GLuint sampler,
                                   GLenum pname,
                                   GLsizei bufSize,
@@ -438,6 +444,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                   const GLfloat *param);
 
     void getSamplerParameteriv(GLuint sampler, GLenum pname, GLint *params);
+    void getSamplerParameterIiv(GLuint sampler, GLenum pname, GLint *params);
+    void getSamplerParameterIuiv(GLuint sampler, GLenum pname, GLuint *params);
     void getSamplerParameterivRobust(GLuint sampler,
                                      GLenum pname,
                                      GLsizei bufSize,
@@ -1557,6 +1565,26 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     void memoryBarrier(GLbitfield barriers);
     void memoryBarrierByRegion(GLbitfield barriers);
+    void multiDrawArrays(PrimitiveMode mode,
+                         const GLint *firsts,
+                         const GLsizei *counts,
+                         GLsizei drawcount);
+    void multiDrawArraysInstanced(PrimitiveMode mode,
+                                  const GLint *firsts,
+                                  const GLsizei *counts,
+                                  const GLsizei *instanceCounts,
+                                  GLsizei drawcount);
+    void multiDrawElements(PrimitiveMode mode,
+                           const GLsizei *counts,
+                           GLenum type,
+                           const GLsizei *offsets,
+                           GLsizei drawcount);
+    void multiDrawElementsInstanced(PrimitiveMode mode,
+                                    const GLsizei *counts,
+                                    GLenum type,
+                                    const GLsizei *offsets,
+                                    const GLsizei *instanceCounts,
+                                    GLsizei drawcount);
 
     void framebufferTexture(GLenum target, GLenum attachment, GLuint texture, GLint level);
 
@@ -1610,12 +1638,9 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                               angle::MemoryBuffer **zeroBufferOut) const;
     angle::ScratchBuffer *getScratchBuffer() const { return &mScratchBuffer; }
 
-    Error prepareForDispatch();
+    angle::Result prepareForDispatch();
 
     MemoryProgramCache *getMemoryProgramCache() const { return mMemoryProgramCache; }
-
-    template <EntryPoint EP, typename... ParamsT>
-    void gatherParams(ParamsT &&... params);
 
     // Notification for a state change in a Texture.
     void onTextureChange(const Texture *texture);
@@ -1685,9 +1710,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     bool isWebGL() const { return mState.isWebGL(); }
     bool isWebGL1() const { return mState.isWebGL1(); }
 
-    template <typename T>
-    const T &getParams() const;
-
     bool isValidBufferBinding(BufferBinding binding) const { return mValidBufferBindings[binding]; }
 
     // GLES1 emulation: Renderer level (for validation)
@@ -1711,16 +1733,16 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     bool noopDrawInstanced(PrimitiveMode mode, GLsizei count, GLsizei instanceCount);
 
     angle::Result prepareForDraw(PrimitiveMode mode);
-    Error prepareForClear(GLbitfield mask);
-    Error prepareForClearBuffer(GLenum buffer, GLint drawbuffer);
-    Error syncState(const State::DirtyBits &bitMask, const State::DirtyObjects &objectMask);
+    angle::Result prepareForClear(GLbitfield mask);
+    angle::Result prepareForClearBuffer(GLenum buffer, GLint drawbuffer);
+    angle::Result syncState(const State::DirtyBits &bitMask, const State::DirtyObjects &objectMask);
     angle::Result syncDirtyBits();
     angle::Result syncDirtyBits(const State::DirtyBits &bitMask);
     angle::Result syncDirtyObjects(const State::DirtyObjects &objectMask);
-    Error syncStateForReadPixels();
-    Error syncStateForTexImage();
-    Error syncStateForBlit();
-    Error syncStateForPathOperation();
+    angle::Result syncStateForReadPixels();
+    angle::Result syncStateForTexImage();
+    angle::Result syncStateForBlit();
+    angle::Result syncStateForPathOperation();
 
     VertexArray *checkVertexArrayAllocation(GLuint vertexArrayHandle);
     TransformFeedback *checkTransformFeedbackAllocation(GLuint transformFeedback);
@@ -1757,11 +1779,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     // Stores for each buffer binding type whether is it allowed to be used in this context.
     angle::PackedEnumBitSet<BufferBinding> mValidBufferBindings;
-
-    // Caches entry point parameters and values re-used between layers.
-    mutable const ParamTypeInfo *mSavedArgsType;
-    static constexpr size_t kParamsBufferSize = 128u;
-    mutable std::array<uint8_t, kParamsBufferSize> mParamsBuffer;
 
     std::unique_ptr<rx::ContextImpl> mImplementation;
 
@@ -1860,34 +1877,6 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     std::shared_ptr<angle::WorkerThreadPool> mThreadPool;
 };
-
-template <typename T>
-const T &Context::getParams() const
-{
-    const T *params = reinterpret_cast<T *>(mParamsBuffer.data());
-    ASSERT(mSavedArgsType->hasDynamicType(T::TypeInfo));
-    return *params;
-}
-
-template <EntryPoint EP, typename... ArgsT>
-ANGLE_INLINE void Context::gatherParams(ArgsT &&... args)
-{
-    static_assert(sizeof(EntryPointParamType<EP>) <= kParamsBufferSize,
-                  "Params struct too large, please increase kParamsBufferSize.");
-
-    mSavedArgsType = &EntryPointParamType<EP>::TypeInfo;
-
-    // Skip doing any work for ParamsBase/Invalid type.
-    if (!EntryPointParamType<EP>::TypeInfo.isValid())
-    {
-        return;
-    }
-
-    EntryPointParamType<EP> *objBuffer =
-        reinterpret_cast<EntryPointParamType<EP> *>(mParamsBuffer.data());
-    EntryPointParamType<EP>::template Factory<EP>(objBuffer, this, std::forward<ArgsT>(args)...);
-}
-
 }  // namespace gl
 
 #endif  // LIBANGLE_CONTEXT_H_

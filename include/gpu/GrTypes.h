@@ -227,7 +227,7 @@ enum class GrMipMapped : bool {
  * GPU SkImage and SkSurfaces can be stored such that (0, 0) in texture space may correspond to
  * either the top-left or bottom-left content pixel.
  */
-enum GrSurfaceOrigin {
+enum GrSurfaceOrigin : int {
     kTopLeft_GrSurfaceOrigin,
     kBottomLeft_GrSurfaceOrigin,
 };
@@ -238,6 +238,7 @@ enum GrSurfaceOrigin {
  */
 enum GrGLBackendState {
     kRenderTarget_GrGLBackendState     = 1 << 0,
+    // Also includes samplers bound to texture units.
     kTextureBinding_GrGLBackendState   = 1 << 1,
     // View state stands for scissor and viewport
     kView_GrGLBackendState             = 1 << 2,

@@ -166,10 +166,11 @@ const GrUniqueKey& GrCCAtlas::getOrAssignUniqueKey(GrOnFlushResourceProvider* on
     return fUniqueKey;
 }
 
-sk_sp<GrCCAtlas::CachedAtlasInfo> GrCCAtlas::refOrMakeCachedAtlasInfo() {
+sk_sp<GrCCAtlas::CachedAtlasInfo> GrCCAtlas::refOrMakeCachedAtlasInfo(uint32_t contextUniqueID) {
     if (!fCachedAtlasInfo) {
-        fCachedAtlasInfo = sk_make_sp<CachedAtlasInfo>();
+        fCachedAtlasInfo = sk_make_sp<CachedAtlasInfo>(contextUniqueID);
     }
+    SkASSERT(fCachedAtlasInfo->fContextUniqueID == contextUniqueID);
     return fCachedAtlasInfo;
 }
 
@@ -201,7 +202,8 @@ sk_sp<GrRenderTargetContext> GrCCAtlas::makeRenderTargetContext(
     }
 
     SkIRect clearRect = SkIRect::MakeSize(fDrawBounds);
-    rtc->clear(&clearRect, 0, GrRenderTargetContext::CanClearFullscreen::kYes);
+    rtc->clear(&clearRect, SK_PMColor4fTRANSPARENT,
+               GrRenderTargetContext::CanClearFullscreen::kYes);
     return rtc;
 }
 

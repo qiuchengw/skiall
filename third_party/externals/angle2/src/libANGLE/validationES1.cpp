@@ -6,7 +6,7 @@
 
 // validationES1.cpp: Validation functions for OpenGL ES 1.0 entry point parameters
 
-#include "libANGLE/validationES1.h"
+#include "libANGLE/validationES1_autogen.h"
 
 #include "common/debug.h"
 #include "libANGLE/Context.h"
@@ -1312,7 +1312,7 @@ bool ValidateTexParameterx(Context *context, TextureType target, GLenum pname, G
 {
     ANGLE_VALIDATE_IS_GLES1(context);
     GLfloat paramf = FixedToFloat(param);
-    return ValidateTexParameterBase(context, target, pname, 1, &paramf);
+    return ValidateTexParameterBase(context, target, pname, -1, false, &paramf);
 }
 
 bool ValidateTexParameterxv(Context *context,
@@ -1326,7 +1326,7 @@ bool ValidateTexParameterxv(Context *context,
     {
         paramsf[i] = FixedToFloat(params[i]);
     }
-    return ValidateTexParameterBase(context, target, pname, -1, paramsf);
+    return ValidateTexParameterBase(context, target, pname, -1, true, paramsf);
 }
 
 bool ValidateTranslatef(Context *context, GLfloat x, GLfloat y, GLfloat z)
@@ -1556,7 +1556,7 @@ bool ValidateIsRenderbufferOES(Context *context, GLuint renderbuffer)
 
 bool ValidateRenderbufferStorageOES(Context *context,
                                     GLenum target,
-                                    GLint internalformat,
+                                    GLenum internalformat,
                                     GLsizei width,
                                     GLsizei height)
 {

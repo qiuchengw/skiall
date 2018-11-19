@@ -230,6 +230,7 @@ Extensions::Extensions()
       requestExtension(false),
       bindGeneratesResource(false),
       robustClientMemory(false),
+      textureBorderClamp(false),
       textureSRGBDecode(false),
       sRGBWriteControl(false),
       colorBufferFloatRGB(false),
@@ -255,7 +256,10 @@ Extensions::Extensions()
       textureStorageMultisample2DArray(false),
       multiviewMultisample(false),
       blendFuncExtended(false),
-      maxDualSourceDrawBuffers(0)
+      maxDualSourceDrawBuffers(0),
+      memorySize(false),
+      textureMultisample(false),
+      multiDraw(false)
 {
 }
 
@@ -857,6 +861,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_color_buffer_float"] = enableableExtension(&Extensions::colorBufferFloat);
         map["GL_OES_vertex_array_object"] = enableableExtension(&Extensions::vertexArrayObject);
         map["GL_KHR_debug"] = esOnlyExtension(&Extensions::debug);
+        map["GL_OES_texture_border_clamp"] = enableableExtension(&Extensions::textureBorderClamp);
         // TODO(jmadill): Enable this when complete.
         //map["GL_KHR_no_error"] = esOnlyExtension(&Extensions::noError);
         map["GL_ANGLE_lossy_etc_decode"] = enableableExtension(&Extensions::lossyETCDecode);
@@ -889,11 +894,14 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_texture_storage_multisample_2d_array"] = enableableExtension(&Extensions::textureStorageMultisample2DArray);
         map["GL_ANGLE_multiview_multisample"] = enableableExtension(&Extensions::multiviewMultisample);
         map["GL_EXT_blend_func_extended"] = enableableExtension(&Extensions::blendFuncExtended);
+        map["GL_ANGLE_texture_multisample"] = enableableExtension(&Extensions::textureMultisample);
+        map["GL_ANGLE_multi_draw"] = enableableExtension(&Extensions::multiDraw);
         // GLES1 extensinos
         map["GL_OES_point_size_array"] = enableableExtension(&Extensions::pointSizeArray);
         map["GL_OES_texture_cube_map"] = enableableExtension(&Extensions::textureCubeMap);
         map["GL_OES_point_sprite"] = enableableExtension(&Extensions::pointSprite);
         map["GL_OES_draw_texture"] = enableableExtension(&Extensions::drawTexture);
+        map["GL_ANGLE_memory_size"] = enableableExtension(&Extensions::memorySize);
         // clang-format on
 
         return map;
@@ -1334,6 +1342,7 @@ DisplayExtensions::DisplayExtensions()
       getAllProcAddresses(false),
       flexibleSurfaceCompatibility(false),
       directComposition(false),
+      windowsUIComposition(false),
       createContextNoError(false),
       stream(false),
       streamConsumerGLTexture(false),
@@ -1352,7 +1361,9 @@ DisplayExtensions::DisplayExtensions()
       iosurfaceClientBuffer(false),
       createContextExtensionsEnabled(false),
       presentationTime(false),
-      blobCache(false)
+      blobCache(false),
+      imageNativeBuffer(false),
+      getFrameTimestamps(false)
 {
 }
 
@@ -1371,6 +1382,7 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_ANGLE_keyed_mutex",                               keyedMutex,                         &extensionStrings);
     InsertExtensionString("EGL_ANGLE_surface_orientation",                       surfaceOrientation,                 &extensionStrings);
     InsertExtensionString("EGL_ANGLE_direct_composition",                        directComposition,                  &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_windows_ui_composition",                    windowsUIComposition,               &extensionStrings);
     InsertExtensionString("EGL_NV_post_sub_buffer",                              postSubBuffer,                      &extensionStrings);
     InsertExtensionString("EGL_KHR_create_context",                              createContext,                      &extensionStrings);
     InsertExtensionString("EGL_EXT_device_query",                                deviceQuery,                        &extensionStrings);
@@ -1401,6 +1413,8 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_ANGLE_create_context_extensions_enabled",         createContextExtensionsEnabled,     &extensionStrings);
     InsertExtensionString("EGL_ANDROID_presentation_time",                       presentationTime,                   &extensionStrings);
     InsertExtensionString("EGL_ANDROID_blob_cache",                              blobCache,                          &extensionStrings);
+    InsertExtensionString("EGL_ANDROID_image_native_buffer",                     imageNativeBuffer,                  &extensionStrings);
+    InsertExtensionString("EGL_ANDROID_get_frame_timestamps",                    getFrameTimestamps,                 &extensionStrings);
     // TODO(jmadill): Enable this when complete.
     //InsertExtensionString("KHR_create_context_no_error",                       createContextNoError,               &extensionStrings);
     // clang-format on

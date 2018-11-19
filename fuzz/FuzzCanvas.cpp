@@ -887,12 +887,9 @@ static void fuzz_paint_text(Fuzz* fuzz, SkPaint* paint) {
     paint->setLCDRenderText(     make_fuzz_t<bool>(fuzz));
     paint->setEmbeddedBitmapText(make_fuzz_t<bool>(fuzz));
     paint->setAutohinted(        make_fuzz_t<bool>(fuzz));
-    paint->setVerticalText(      make_fuzz_t<bool>(fuzz));
     paint->setFakeBoldText(      make_fuzz_t<bool>(fuzz));
-    paint->setDevKernText(       make_fuzz_t<bool>(fuzz));
-    paint->setHinting(           make_fuzz_t_range<SkPaint::Hinting>(fuzz, 0,
-                                                                     SkPaint::kFull_Hinting));
-    paint->setTextAlign(         make_fuzz_t_range<SkPaint::Align>(fuzz, 0, 2));
+    paint->setHinting(           make_fuzz_t_range<SkFontHinting>(fuzz, 0,
+                                                                     kFull_SkFontHinting));
 }
 
 static void fuzz_paint_text_encoding(Fuzz* fuzz, SkPaint* paint) {
@@ -1295,10 +1292,7 @@ static void fuzz_canvas(Fuzz* fuzz, SkCanvas* canvas, int depth = 9) {
                 if (usePaint) {
                     fuzz_paint(fuzz, &paint, depth - 1);
                 }
-                SkCanvas::SrcRectConstraint constraint =
-                        make_fuzz_t<bool>(fuzz) ? SkCanvas::kStrict_SrcRectConstraint
-                                                : SkCanvas::kFast_SrcRectConstraint;
-                canvas->drawImageRect(img, src, dst, usePaint ? &paint : nullptr, constraint);
+                canvas->drawImageRect(img, src, dst, usePaint ? &paint : nullptr);
                 break;
             }
             case 35: {
@@ -1324,10 +1318,7 @@ static void fuzz_canvas(Fuzz* fuzz, SkCanvas* canvas, int depth = 9) {
                 if (usePaint) {
                     fuzz_paint(fuzz, &paint, depth - 1);
                 }
-                SkCanvas::SrcRectConstraint constraint =
-                        make_fuzz_t<bool>(fuzz) ? SkCanvas::kStrict_SrcRectConstraint
-                                                : SkCanvas::kFast_SrcRectConstraint;
-                canvas->drawImageRect(img, dst, usePaint ? &paint : nullptr, constraint);
+                canvas->drawImageRect(img, dst, usePaint ? &paint : nullptr);
                 break;
             }
             case 37: {

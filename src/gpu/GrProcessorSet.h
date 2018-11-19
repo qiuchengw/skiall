@@ -141,7 +141,7 @@ public:
      */
     Analysis finalize(const GrProcessorAnalysisColor& colorInput,
                       const GrProcessorAnalysisCoverage coverageInput, const GrAppliedClip*,
-                      bool isMixedSamples, const GrCaps&, GrColor* inputColorOverride);
+                      bool isMixedSamples, const GrCaps&, SkPMColor4f* inputColorOverride);
 
     bool isFinalized() const { return SkToBool(kFinalized_Flag & fFlags); }
 
@@ -150,7 +150,9 @@ public:
     static GrProcessorSet MakeEmptySet();
     static constexpr const Analysis EmptySetAnalysis() { return Analysis(Empty::kEmpty); }
 
+#ifdef SK_DEBUG
     SkString dumpProcessors() const;
+#endif
 
     void visitProxies(const std::function<void(GrSurfaceProxy*)>& func) const {
         for (int i = 0; i < this->numFragmentProcessors(); ++i) {

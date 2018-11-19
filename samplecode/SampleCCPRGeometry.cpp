@@ -94,7 +94,7 @@ private:
         return RequiresDstTexture::kNo;
     }
     void onPrepare(GrOpFlushState*) override {}
-    void onExecute(GrOpFlushState*) override;
+    void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
     CCPRGeometryView* fView;
 
@@ -188,7 +188,8 @@ void CCPRGeometryView::onDrawContent(SkCanvas* canvas) {
                                                                    kAlpha_half_GrPixelConfig,
                                                                    nullptr);
         SkASSERT(ccbuff);
-        ccbuff->clear(nullptr, 0, GrRenderTargetContext::CanClearFullscreen::kYes);
+        ccbuff->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                      GrRenderTargetContext::CanClearFullscreen::kYes);
         ccbuff->priv().testingOnly_addDrawOp(pool->allocate<DrawCoverageCountOp>(this));
 
         // Visualize coverage count in main canvas.
@@ -317,7 +318,8 @@ void CCPRGeometryView::updateGpuData() {
     }
 }
 
-void CCPRGeometryView::DrawCoverageCountOp::onExecute(GrOpFlushState* state) {
+void CCPRGeometryView::DrawCoverageCountOp::onExecute(GrOpFlushState* state,
+                                                      const SkRect& chainBounds) {
     GrResourceProvider* rp = state->resourceProvider();
     GrContext* context = state->gpu()->getContext();
     GrGLGpu* glGpu = GrBackendApi::kOpenGL == context->contextPriv().getBackend()

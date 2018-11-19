@@ -17,9 +17,9 @@
 
 #include "Reactor/Nucleus.hpp"
 
-#include "Common/Thread.hpp"
-#include "Common/MutexLock.hpp"
-#include "Common/Socket.hpp"
+#include "System/Thread.hpp"
+#include "System/MutexLock.hpp"
+#include "System/Socket.hpp"
 
 #include <string>
 
@@ -48,7 +48,7 @@ namespace sw
 			bool enableSSE3;
 			bool enableSSSE3;
 			bool enableSSE4_1;
-			Optimization optimization[10];
+			rr::Optimization optimization[10];
 			bool disableServer;
 			bool keepSystemCursor;
 			bool forceWindowed;

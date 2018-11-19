@@ -426,7 +426,7 @@ TextureVk::TextureVk(const gl::TextureState &state, RendererVk *renderer)
 
 TextureVk::~TextureVk() = default;
 
-gl::Error TextureVk::onDestroy(const gl::Context *context)
+void TextureVk::onDestroy(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
     RendererVk *renderer = contextVk->getRenderer();
@@ -435,17 +435,16 @@ gl::Error TextureVk::onDestroy(const gl::Context *context)
     renderer->releaseObject(renderer->getCurrentQueueSerial(), &mSampler);
 
     mPixelBuffer.release(renderer);
-    return gl::NoError();
 }
 
-gl::Error TextureVk::setImage(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              GLenum internalFormat,
-                              const gl::Extents &size,
-                              GLenum format,
-                              GLenum type,
-                              const gl::PixelUnpackState &unpack,
-                              const uint8_t *pixels)
+angle::Result TextureVk::setImage(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  GLenum internalFormat,
+                                  const gl::Extents &size,
+                                  GLenum format,
+                                  GLenum type,
+                                  const gl::PixelUnpackState &unpack,
+                                  const uint8_t *pixels)
 {
     ContextVk *contextVk = vk::GetImpl(context);
     RendererVk *renderer = contextVk->getRenderer();
@@ -458,7 +457,7 @@ gl::Error TextureVk::setImage(const gl::Context *context,
     // Early-out on empty textures, don't create a zero-sized storage.
     if (size.empty())
     {
-        return gl::NoError();
+        return angle::Result::Continue();
     }
 
     // Create a new graph node to store image initialization commands.
@@ -471,17 +470,17 @@ gl::Error TextureVk::setImage(const gl::Context *context,
                                                       formatInfo, unpack, type, pixels));
     }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error TextureVk::setSubImage(const gl::Context *context,
-                                 const gl::ImageIndex &index,
-                                 const gl::Box &area,
-                                 GLenum format,
-                                 GLenum type,
-                                 const gl::PixelUnpackState &unpack,
-                                 gl::Buffer *unpackBuffer,
-                                 const uint8_t *pixels)
+angle::Result TextureVk::setSubImage(const gl::Context *context,
+                                     const gl::ImageIndex &index,
+                                     const gl::Box &area,
+                                     GLenum format,
+                                     GLenum type,
+                                     const gl::PixelUnpackState &unpack,
+                                     gl::Buffer *unpackBuffer,
+                                     const uint8_t *pixels)
 {
     ContextVk *contextVk                 = vk::GetImpl(context);
     const gl::InternalFormat &formatInfo = gl::GetInternalFormatInfo(format, type);
@@ -492,38 +491,38 @@ gl::Error TextureVk::setSubImage(const gl::Context *context,
     // Create a new graph node to store image initialization commands.
     mImage.finishCurrentCommands(contextVk->getRenderer());
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error TextureVk::setCompressedImage(const gl::Context *context,
-                                        const gl::ImageIndex &index,
-                                        GLenum internalFormat,
-                                        const gl::Extents &size,
-                                        const gl::PixelUnpackState &unpack,
-                                        size_t imageSize,
-                                        const uint8_t *pixels)
+angle::Result TextureVk::setCompressedImage(const gl::Context *context,
+                                            const gl::ImageIndex &index,
+                                            GLenum internalFormat,
+                                            const gl::Extents &size,
+                                            const gl::PixelUnpackState &unpack,
+                                            size_t imageSize,
+                                            const uint8_t *pixels)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error TextureVk::setCompressedSubImage(const gl::Context *context,
-                                           const gl::ImageIndex &index,
-                                           const gl::Box &area,
-                                           GLenum format,
-                                           const gl::PixelUnpackState &unpack,
-                                           size_t imageSize,
-                                           const uint8_t *pixels)
+angle::Result TextureVk::setCompressedSubImage(const gl::Context *context,
+                                               const gl::ImageIndex &index,
+                                               const gl::Box &area,
+                                               GLenum format,
+                                               const gl::PixelUnpackState &unpack,
+                                               size_t imageSize,
+                                               const uint8_t *pixels)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error TextureVk::copyImage(const gl::Context *context,
-                               const gl::ImageIndex &index,
-                               const gl::Rectangle &sourceArea,
-                               GLenum internalFormat,
-                               gl::Framebuffer *source)
+angle::Result TextureVk::copyImage(const gl::Context *context,
+                                   const gl::ImageIndex &index,
+                                   const gl::Rectangle &sourceArea,
+                                   GLenum internalFormat,
+                                   gl::Framebuffer *source)
 {
     gl::Extents newImageSize(sourceArea.width, sourceArea.height, 1);
     const gl::InternalFormat &internalFormatInfo =
@@ -533,25 +532,25 @@ gl::Error TextureVk::copyImage(const gl::Context *context,
                             source);
 }
 
-gl::Error TextureVk::copySubImage(const gl::Context *context,
-                                  const gl::ImageIndex &index,
-                                  const gl::Offset &destOffset,
-                                  const gl::Rectangle &sourceArea,
-                                  gl::Framebuffer *source)
+angle::Result TextureVk::copySubImage(const gl::Context *context,
+                                      const gl::ImageIndex &index,
+                                      const gl::Offset &destOffset,
+                                      const gl::Rectangle &sourceArea,
+                                      gl::Framebuffer *source)
 {
     const gl::InternalFormat &currentFormat = *mState.getBaseLevelDesc().format.info;
     return copySubImageImpl(context, index, destOffset, sourceArea, currentFormat, source);
 }
 
-gl::Error TextureVk::copyTexture(const gl::Context *context,
-                                 const gl::ImageIndex &index,
-                                 GLenum internalFormat,
-                                 GLenum type,
-                                 size_t sourceLevel,
-                                 bool unpackFlipY,
-                                 bool unpackPremultiplyAlpha,
-                                 bool unpackUnmultiplyAlpha,
-                                 const gl::Texture *source)
+angle::Result TextureVk::copyTexture(const gl::Context *context,
+                                     const gl::ImageIndex &index,
+                                     GLenum internalFormat,
+                                     GLenum type,
+                                     size_t sourceLevel,
+                                     bool unpackFlipY,
+                                     bool unpackPremultiplyAlpha,
+                                     bool unpackUnmultiplyAlpha,
+                                     const gl::Texture *source)
 {
     TextureVk *sourceVk = vk::GetImpl(source);
     const gl::ImageDesc &sourceImageDesc =
@@ -567,15 +566,15 @@ gl::Error TextureVk::copyTexture(const gl::Context *context,
                               unpackUnmultiplyAlpha, sourceVk);
 }
 
-gl::Error TextureVk::copySubTexture(const gl::Context *context,
-                                    const gl::ImageIndex &index,
-                                    const gl::Offset &destOffset,
-                                    size_t sourceLevel,
-                                    const gl::Box &sourceBox,
-                                    bool unpackFlipY,
-                                    bool unpackPremultiplyAlpha,
-                                    bool unpackUnmultiplyAlpha,
-                                    const gl::Texture *source)
+angle::Result TextureVk::copySubTexture(const gl::Context *context,
+                                        const gl::ImageIndex &index,
+                                        const gl::Offset &destOffset,
+                                        size_t sourceLevel,
+                                        const gl::Box &sourceBox,
+                                        bool unpackFlipY,
+                                        bool unpackPremultiplyAlpha,
+                                        bool unpackUnmultiplyAlpha,
+                                        const gl::Texture *source)
 {
     gl::TextureTarget target                 = index.getTarget();
     size_t level                             = static_cast<size_t>(index.getLevelIndex());
@@ -621,16 +620,16 @@ angle::Result TextureVk::copySubImageImpl(const gl::Context *context,
     return angle::Result::Continue();
 }
 
-gl::Error TextureVk::copySubTextureImpl(ContextVk *contextVk,
-                                        const gl::ImageIndex &index,
-                                        const gl::Offset &destOffset,
-                                        const gl::InternalFormat &destFormat,
-                                        size_t sourceLevel,
-                                        const gl::Rectangle &sourceArea,
-                                        bool unpackFlipY,
-                                        bool unpackPremultiplyAlpha,
-                                        bool unpackUnmultiplyAlpha,
-                                        TextureVk *source)
+angle::Result TextureVk::copySubTextureImpl(ContextVk *contextVk,
+                                            const gl::ImageIndex &index,
+                                            const gl::Offset &destOffset,
+                                            const gl::InternalFormat &destFormat,
+                                            size_t sourceLevel,
+                                            const gl::Rectangle &sourceArea,
+                                            bool unpackFlipY,
+                                            bool unpackPremultiplyAlpha,
+                                            bool unpackUnmultiplyAlpha,
+                                            TextureVk *source)
 {
     RendererVk *renderer = contextVk->getRenderer();
 
@@ -644,13 +643,13 @@ gl::Error TextureVk::copySubTextureImpl(ContextVk *contextVk,
     uint8_t *sourceData = nullptr;
     ANGLE_TRY(source->copyImageDataToBuffer(contextVk, sourceLevel, 1, sourceArea, &sourceData));
 
-    // Using the front-end ANGLE format for the colorRead and colorWrite functions.  Otherwise
-    // emulated formats like luminance-alpha would not know how to interpret the data.
-    const angle::Format &sourceAngleFormat = source->getImage().getFormat().angleFormat();
-    const angle::Format &destAngleFormat =
-        renderer->getFormat(destFormat.sizedInternalFormat).angleFormat();
+    const vk::Format &sourceVkFormat = source->getImage().getFormat();
+    const vk::Format &destVkFormat   = renderer->getFormat(destFormat.sizedInternalFormat);
+
+    const angle::Format &sourceTextureFormat = sourceVkFormat.textureFormat();
+    const angle::Format &destTextureFormat   = destVkFormat.textureFormat();
     size_t destinationAllocationSize =
-        sourceArea.width * sourceArea.height * destAngleFormat.pixelBytes;
+        sourceArea.width * sourceArea.height * destTextureFormat.pixelBytes;
 
     // Allocate memory in the destination texture for the copy/conversion
     uint8_t *destData = nullptr;
@@ -659,14 +658,30 @@ gl::Error TextureVk::copySubTextureImpl(ContextVk *contextVk,
         gl::Extents(sourceArea.width, sourceArea.height, 1), destOffset, &destData));
 
     // Source and dest data is tightly packed
-    GLuint sourceDataRowPitch = sourceArea.width * sourceAngleFormat.pixelBytes;
-    GLuint destDataRowPitch   = sourceArea.width * destAngleFormat.pixelBytes;
+    GLuint sourceDataRowPitch = sourceArea.width * sourceTextureFormat.pixelBytes;
+    GLuint destDataRowPitch   = sourceArea.width * destTextureFormat.pixelBytes;
 
-    CopyImageCHROMIUM(sourceData, sourceDataRowPitch, sourceAngleFormat.pixelBytes, 0,
-                      sourceAngleFormat.pixelReadFunction, destData, destDataRowPitch,
-                      destAngleFormat.pixelBytes, 0, destAngleFormat.pixelWriteFunction,
-                      destFormat.format, destFormat.componentType, sourceArea.width,
-                      sourceArea.height, 1, unpackFlipY, unpackPremultiplyAlpha,
+    rx::PixelReadFunction pixelReadFunction   = sourceTextureFormat.pixelReadFunction;
+    rx::PixelWriteFunction pixelWriteFunction = destTextureFormat.pixelWriteFunction;
+
+    // Fix up the read/write functions for the sake of luminance/alpha that are emulated with
+    // formats whose channels don't correspond to the original format (alpha is emulated with red,
+    // and luminance/alpha is emulated with red/green).
+    GLenum sourceInternalFormat = sourceVkFormat.internalFormat;
+    GLenum destInternalFormat   = destVkFormat.internalFormat;
+    if (gl::GetSizedInternalFormatInfo(sourceInternalFormat).isLUMA())
+    {
+        pixelReadFunction = sourceVkFormat.angleFormat().pixelReadFunction;
+    }
+    if (gl::GetSizedInternalFormatInfo(destInternalFormat).isLUMA())
+    {
+        pixelWriteFunction = destVkFormat.angleFormat().pixelWriteFunction;
+    }
+
+    CopyImageCHROMIUM(sourceData, sourceDataRowPitch, sourceTextureFormat.pixelBytes, 0,
+                      pixelReadFunction, destData, destDataRowPitch, destTextureFormat.pixelBytes,
+                      0, pixelWriteFunction, destFormat.format, destFormat.componentType,
+                      sourceArea.width, sourceArea.height, 1, unpackFlipY, unpackPremultiplyAlpha,
                       unpackUnmultiplyAlpha);
 
     // Create a new graph node to store image initialization commands.
@@ -675,11 +690,11 @@ gl::Error TextureVk::copySubTextureImpl(ContextVk *contextVk,
     return angle::Result::Continue();
 }
 
-gl::Error TextureVk::setStorage(const gl::Context *context,
-                                gl::TextureType type,
-                                size_t levels,
-                                GLenum internalFormat,
-                                const gl::Extents &size)
+angle::Result TextureVk::setStorage(const gl::Context *context,
+                                    gl::TextureType type,
+                                    size_t levels,
+                                    GLenum internalFormat,
+                                    const gl::Extents &size)
 {
     ContextVk *contextVk             = GetAs<ContextVk>(context->getImplementation());
     RendererVk *renderer             = contextVk->getRenderer();
@@ -693,24 +708,24 @@ gl::Error TextureVk::setStorage(const gl::Context *context,
     }
 
     ANGLE_TRY(initImage(contextVk, format, size, static_cast<uint32_t>(levels), commandBuffer));
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error TextureVk::setEGLImageTarget(const gl::Context *context,
-                                       gl::TextureType type,
-                                       egl::Image *image)
+angle::Result TextureVk::setEGLImageTarget(const gl::Context *context,
+                                           gl::TextureType type,
+                                           egl::Image *image)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error TextureVk::setImageExternal(const gl::Context *context,
-                                      gl::TextureType type,
-                                      egl::Stream *stream,
-                                      const egl::Stream::GLTextureDescription &desc)
+angle::Result TextureVk::setImageExternal(const gl::Context *context,
+                                          gl::TextureType type,
+                                          egl::Stream *stream,
+                                          const egl::Stream::GLTextureDescription &desc)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
 angle::Result TextureVk::redefineImage(const gl::Context *context,
@@ -827,7 +842,7 @@ angle::Result TextureVk::generateMipmapsWithCPU(const gl::Context *context)
     return mPixelBuffer.flushUpdatesToImage(contextVk, getLevelCount(), &mImage, commandBuffer);
 }
 
-gl::Error TextureVk::generateMipmap(const gl::Context *context)
+angle::Result TextureVk::generateMipmap(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
 
@@ -843,7 +858,7 @@ gl::Error TextureVk::generateMipmap(const gl::Context *context)
         else
         {
             // There is nothing to generate if there is nothing uploaded so far.
-            return gl::NoError();
+            return angle::Result::Continue();
         }
     }
 
@@ -867,25 +882,25 @@ gl::Error TextureVk::generateMipmap(const gl::Context *context)
     // We're changing this textureVk content, make sure we let the graph know.
     mImage.finishCurrentCommands(renderer);
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error TextureVk::setBaseLevel(const gl::Context *context, GLuint baseLevel)
+angle::Result TextureVk::setBaseLevel(const gl::Context *context, GLuint baseLevel)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error TextureVk::bindTexImage(const gl::Context *context, egl::Surface *surface)
+angle::Result TextureVk::bindTexImage(const gl::Context *context, egl::Surface *surface)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error TextureVk::releaseTexImage(const gl::Context *context)
+angle::Result TextureVk::releaseTexImage(const gl::Context *context)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
 angle::Result TextureVk::getAttachmentRenderTarget(const gl::Context *context,
@@ -968,13 +983,17 @@ angle::Result TextureVk::syncState(const gl::Context *context,
     }
 
     ContextVk *contextVk = vk::GetImpl(context);
+    RendererVk *renderer = contextVk->getRenderer();
     if (mSampler.valid())
     {
-        RendererVk *renderer = contextVk->getRenderer();
         renderer->releaseObject(renderer->getCurrentQueueSerial(), &mSampler);
     }
 
+    const gl::Extensions &extensions     = renderer->getNativeExtensions();
     const gl::SamplerState &samplerState = mState.getSamplerState();
+
+    float maxAnisotropy   = samplerState.getMaxAnisotropy();
+    bool anisotropyEnable = extensions.textureFilterAnisotropic && maxAnisotropy > 1.0f;
 
     // Create a simple sampler. Force basic parameter settings.
     VkSamplerCreateInfo samplerInfo     = {};
@@ -987,8 +1006,8 @@ angle::Result TextureVk::syncState(const gl::Context *context,
     samplerInfo.addressModeV            = gl_vk::GetSamplerAddressMode(samplerState.getWrapT());
     samplerInfo.addressModeW            = gl_vk::GetSamplerAddressMode(samplerState.getWrapR());
     samplerInfo.mipLodBias              = 0.0f;
-    samplerInfo.anisotropyEnable        = VK_FALSE;
-    samplerInfo.maxAnisotropy           = 1.0f;
+    samplerInfo.anisotropyEnable        = anisotropyEnable;
+    samplerInfo.maxAnisotropy           = maxAnisotropy;
     samplerInfo.compareEnable           = VK_FALSE;
     samplerInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
     samplerInfo.minLod                  = samplerState.getMinLod();
@@ -996,18 +1015,19 @@ angle::Result TextureVk::syncState(const gl::Context *context,
     samplerInfo.borderColor             = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
 
-    return mSampler.init(contextVk, samplerInfo);
+    ANGLE_VK_TRY(contextVk, mSampler.init(contextVk->getDevice(), samplerInfo));
+    return angle::Result::Continue();
 }
 
-gl::Error TextureVk::setStorageMultisample(const gl::Context *context,
-                                           gl::TextureType type,
-                                           GLsizei samples,
-                                           GLint internalformat,
-                                           const gl::Extents &size,
-                                           bool fixedSampleLocations)
+angle::Result TextureVk::setStorageMultisample(const gl::Context *context,
+                                               gl::TextureType type,
+                                               GLsizei samples,
+                                               GLint internalformat,
+                                               const gl::Extents &size,
+                                               bool fixedSampleLocations)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError() << "setStorageMultisample is unimplemented.";
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
 angle::Result TextureVk::initializeContents(const gl::Context *context,

@@ -15,8 +15,8 @@
 #ifndef sw_VertexRoutine_hpp
 #define sw_VertexRoutine_hpp
 
-#include "Renderer/Color.hpp"
-#include "Renderer/VertexProcessor.hpp"
+#include "Device/Color.hpp"
+#include "Device/VertexProcessor.hpp"
 #include "ShaderCore.hpp"
 #include "VertexShader.hpp"
 
@@ -54,7 +54,7 @@ namespace sw
 		const VertexProcessor::State &state;
 
 	private:
-		virtual void pipeline(UInt &index) = 0;
+		virtual void program(UInt &index) = 0;
 
 		typedef VertexProcessor::State::Input Stream;
 

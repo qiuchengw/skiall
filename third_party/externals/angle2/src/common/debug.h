@@ -31,7 +31,8 @@ namespace gl
 class ScopedPerfEventHelper : angle::NonCopyable
 {
   public:
-    ScopedPerfEventHelper(const char* format, ...);
+    ANGLE_FORMAT_PRINTF(2, 3)
+    ScopedPerfEventHelper(const char *format, ...);
     ~ScopedPerfEventHelper();
 };
 
@@ -214,7 +215,6 @@ std::ostream &FmtHex(std::ostream &os, T value)
 #define ANGLE_TRACE_ENABLED
 #endif
 
-#define ANGLE_EMPTY_STATEMENT for (;;) break
 #if !defined(NDEBUG) || defined(ANGLE_ENABLE_RELEASE_ASSERTS)
 #define ANGLE_ENABLE_ASSERTS
 #endif
@@ -281,40 +281,59 @@ std::ostream &FmtHex(std::ostream &os, T value)
 
 #if defined(ANGLE_TRACE_ENABLED) || defined(ANGLE_ENABLE_ASSERTS)
 #define UNIMPLEMENTED()                                                                       \
+    do                                                                                        \
     {                                                                                         \
         WARN() << "\t! Unimplemented: " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ \
                << ")";                                                                        \
         ASSERT(NOASSERT_UNIMPLEMENTED);                                                       \
-    }                                                                                         \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 
 // A macro for code which is not expected to be reached under valid assumptions
 #define UNREACHABLE()                                                                              \
+    do                                                                                             \
     {                                                                                              \
         ERR() << "\t! Unreachable reached: " << __FUNCTION__ << "(" << __FILE__ << ":" << __LINE__ \
               << ")";                                                                              \
         ASSERT(false);                                                                             \
-    }                                                                                              \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 #else
 #define UNIMPLEMENTED()                 \
+    do                                  \
     {                                   \
         ASSERT(NOASSERT_UNIMPLEMENTED); \
-    }                                   \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 
 // A macro for code which is not expected to be reached under valid assumptions
 #define UNREACHABLE()  \
+    do                 \
     {                  \
         ASSERT(false); \
-    }                  \
-    ANGLE_EMPTY_STATEMENT
+    } while (0)
 #endif  // defined(ANGLE_TRACE_ENABLED) || defined(ANGLE_ENABLE_ASSERTS)
 
 #if defined(ANGLE_PLATFORM_WINDOWS)
 #define ANGLE_FUNCTION __FUNCTION__
 #else
 #define ANGLE_FUNCTION __func__
+#endif
+
+// Defining ANGLE_ENABLE_STRUCT_PADDING_WARNINGS will enable warnings when members are added to
+// structs to enforce packing. This is helpful for diagnosing unexpected struct sizes when making
+// fast cache variables.
+#if defined(__clang__)
+#define ANGLE_ENABLE_STRUCT_PADDING_WARNINGS \
+    _Pragma("clang diagnostic push") _Pragma("clang diagnostic error \"-Wpadded\"")
+#define ANGLE_DISABLE_STRUCT_PADDING_WARNINGS _Pragma("clang diagnostic pop")
+#elif defined(COMPILER_GCC)
+#define ANGLE_ENABLE_STRUCT_PADDING_WARNINGS \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic error \"-Wpadded\"")
+#define ANGLE_DISABLE_STRUCT_PADDING_WARNINGS _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define ANGLE_ENABLE_STRUCT_PADDING_WARNINGS __pragma(warning(push)) __pragma(warning(error : 4820))
+#define ANGLE_DISABLE_STRUCT_PADDING_WARNINGS __pragma(warning(pop))
+#else
+#define ANGLE_ENABLE_STRUCT_PADDING_WARNINGS
+#define ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 #endif
 
 #endif   // COMMON_DEBUG_H_

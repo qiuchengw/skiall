@@ -6,7 +6,7 @@
 
 // validationES3.cpp: Validation functions for OpenGL ES 3.0 entry point parameters
 
-#include "libANGLE/validationES3.h"
+#include "libANGLE/validationES3_autogen.h"
 
 #include "anglebase/numerics/safe_conversions.h"
 #include "common/mathutil.h"
@@ -17,6 +17,7 @@
 #include "libANGLE/FramebufferAttachment.h"
 #include "libANGLE/Renderbuffer.h"
 #include "libANGLE/Texture.h"
+#include "libANGLE/VertexArray.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/validationES.h"
 
@@ -1432,11 +1433,10 @@ bool ValidateDrawRangeElements(Context *context,
         return true;
     }
 
-    // Use the parameter buffer to retrieve and cache the index range.
-    const DrawCallParams &params = context->getParams<DrawCallParams>();
-    ANGLE_VALIDATION_TRY(params.ensureIndexRangeResolved(context));
-
-    const IndexRange &indexRange = params.getIndexRange();
+    // Note that resolving the index range is a bit slow. We should probably optimize this.
+    IndexRange indexRange;
+    ANGLE_VALIDATION_TRY(context->getGLState().getVertexArray()->getIndexRange(
+        context, type, count, indices, &indexRange));
 
     if (indexRange.end > end || indexRange.start < start)
     {
@@ -3101,6 +3101,78 @@ bool ValidateDrawElementsInstanced(Context *context,
     return ValidateDrawElementsInstancedCommon(context, mode, count, type, indices, instanceCount);
 }
 
+bool ValidateMultiDrawArraysInstancedANGLE(Context *context,
+                                           PrimitiveMode mode,
+                                           const GLint *firsts,
+                                           const GLsizei *counts,
+                                           const GLsizei *instanceCounts,
+                                           GLsizei drawcount)
+{
+    if (!context->getExtensions().multiDraw)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
+        return false;
+    }
+    if (context->getClientMajorVersion() < 3)
+    {
+        if (!context->getExtensions().instancedArrays)
+        {
+            ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
+            return false;
+        }
+        if (!ValidateDrawInstancedANGLE(context))
+        {
+            return false;
+        }
+    }
+    for (GLsizei drawID = 0; drawID < drawcount; ++drawID)
+    {
+        if (!ValidateDrawArraysInstancedBase(context, mode, firsts[drawID], counts[drawID],
+                                             instanceCounts[drawID]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ValidateMultiDrawElementsInstancedANGLE(Context *context,
+                                             PrimitiveMode mode,
+                                             const GLsizei *counts,
+                                             GLenum type,
+                                             const GLsizei *offsets,
+                                             const GLsizei *instanceCounts,
+                                             GLsizei drawcount)
+{
+    if (!context->getExtensions().multiDraw)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
+        return false;
+    }
+    if (context->getClientMajorVersion() < 3)
+    {
+        if (!context->getExtensions().instancedArrays)
+        {
+            ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
+            return false;
+        }
+        if (!ValidateDrawInstancedANGLE(context))
+        {
+            return false;
+        }
+    }
+    for (GLsizei drawID = 0; drawID < drawcount; ++drawID)
+    {
+        const void *indices = reinterpret_cast<void *>(static_cast<long>(offsets[drawID]));
+        if (!ValidateDrawElementsInstancedCommon(context, mode, counts[drawID], type, indices,
+                                                 instanceCounts[drawID]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool ValidateFramebufferTextureMultiviewLayeredANGLE(Context *context,
                                                      GLenum target,
                                                      GLenum attachment,
@@ -4023,9 +4095,35 @@ bool ValidateGetSamplerParameteriv(Context *context, GLuint sampler, GLenum pnam
     return ValidateGetSamplerParameterBase(context, sampler, pname, nullptr);
 }
 
+bool ValidateGetSamplerParameterIivOES(Context *context,
+                                       GLuint sampler,
+                                       GLenum pname,
+                                       GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateGetSamplerParameterBase(context, sampler, pname, nullptr);
+}
+
+bool ValidateGetSamplerParameterIuivOES(Context *context,
+                                        GLuint sampler,
+                                        GLenum pname,
+                                        GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateGetSamplerParameterBase(context, sampler, pname, nullptr);
+}
+
 bool ValidateSamplerParameterf(Context *context, GLuint sampler, GLenum pname, GLfloat param)
 {
-    return ValidateSamplerParameterBase(context, sampler, pname, -1, &param);
+    return ValidateSamplerParameterBase(context, sampler, pname, -1, false, &param);
 }
 
 bool ValidateSamplerParameterfv(Context *context,
@@ -4033,17 +4131,43 @@ bool ValidateSamplerParameterfv(Context *context,
                                 GLenum pname,
                                 const GLfloat *params)
 {
-    return ValidateSamplerParameterBase(context, sampler, pname, -1, params);
+    return ValidateSamplerParameterBase(context, sampler, pname, -1, true, params);
 }
 
 bool ValidateSamplerParameteri(Context *context, GLuint sampler, GLenum pname, GLint param)
 {
-    return ValidateSamplerParameterBase(context, sampler, pname, -1, &param);
+    return ValidateSamplerParameterBase(context, sampler, pname, -1, false, &param);
 }
 
 bool ValidateSamplerParameteriv(Context *context, GLuint sampler, GLenum pname, const GLint *params)
 {
-    return ValidateSamplerParameterBase(context, sampler, pname, -1, params);
+    return ValidateSamplerParameterBase(context, sampler, pname, -1, true, params);
+}
+
+bool ValidateSamplerParameterIivOES(Context *context,
+                                    GLuint sampler,
+                                    GLenum pname,
+                                    const GLint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateSamplerParameterBase(context, sampler, pname, -1, true, params);
+}
+
+bool ValidateSamplerParameterIuivOES(Context *context,
+                                     GLuint sampler,
+                                     GLenum pname,
+                                     const GLuint *params)
+{
+    if (context->getClientMajorVersion() < 3)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES3Required);
+        return false;
+    }
+    return ValidateSamplerParameterBase(context, sampler, pname, -1, true, params);
 }
 
 bool ValidateGetVertexAttribIiv(Context *context, GLuint index, GLenum pname, GLint *params)
@@ -4147,6 +4271,57 @@ bool ValidateGetFragDataIndexEXT(Context *context, GLuint program, const char *n
         return false;
     }
     return true;
+}
+
+bool ValidateTexStorage2DMultisampleANGLE(Context *context,
+                                          TextureType target,
+                                          GLsizei samples,
+                                          GLenum internalFormat,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLboolean fixedSampleLocations)
+{
+    if (!context->getExtensions().textureMultisample)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(),
+                             MultisampleTextureExtensionOrES31Required);
+        return false;
+    }
+
+    return ValidateTexStorage2DMultisampleBase(context, target, samples, internalFormat, width,
+                                               height);
+}
+
+bool ValidateGetTexLevelParameterfvANGLE(Context *context,
+                                         TextureTarget target,
+                                         GLint level,
+                                         GLenum pname,
+                                         GLfloat *params)
+{
+    if (!context->getExtensions().textureMultisample)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(),
+                             MultisampleTextureExtensionOrES31Required);
+        return false;
+    }
+
+    return ValidateGetTexLevelParameterBase(context, target, level, pname, nullptr);
+}
+
+bool ValidateGetTexLevelParameterivANGLE(Context *context,
+                                         TextureTarget target,
+                                         GLint level,
+                                         GLenum pname,
+                                         GLint *params)
+{
+    if (!context->getExtensions().textureMultisample)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(),
+                             MultisampleTextureExtensionOrES31Required);
+        return false;
+    }
+
+    return ValidateGetTexLevelParameterBase(context, target, level, pname, nullptr);
 }
 
 }  // namespace gl

@@ -131,10 +131,9 @@ angle::Result SyncDefaultUniformBlock(ContextVk *contextVk,
     return angle::Result::Continue();
 }
 
-bool UseLineRaster(const ContextVk *contextVk, const gl::DrawCallParams &drawCallParams)
+bool UseLineRaster(const ContextVk *contextVk, gl::PrimitiveMode mode)
 {
-    return contextVk->getFeatures().basicGLLineRasterization &&
-           gl::IsLineMode(drawCallParams.mode());
+    return contextVk->getFeatures().basicGLLineRasterization && gl::IsLineMode(mode);
 }
 }  // anonymous namespace
 
@@ -199,10 +198,12 @@ ProgramVk::ProgramVk(const gl::ProgramState &state) : ProgramImpl(state), mUnifo
 
 ProgramVk::~ProgramVk() = default;
 
-gl::Error ProgramVk::destroy(const gl::Context *context)
+void ProgramVk::destroy(const gl::Context *context)
 {
     ContextVk *contextVk = vk::GetImpl(context);
-    return reset(contextVk);
+
+    // We don't interrupt exectution in destructors.
+    (void)reset(contextVk);
 }
 
 angle::Result ProgramVk::reset(ContextVk *contextVk)
@@ -230,6 +231,11 @@ angle::Result ProgramVk::reset(ContextVk *contextVk)
 
     mDescriptorSets.clear();
     mUsedDescriptorSetRange.invalidate();
+
+    for (vk::SharedDescriptorPoolBinding &binding : mDescriptorPoolBindings)
+    {
+        binding.reset();
+    }
 
     return angle::Result::Continue();
 }
@@ -358,7 +364,7 @@ angle::Result ProgramVk::initDefaultUniformBlocks(const gl::Context *glContext)
 
     for (vk::ShaderType shaderType : vk::AllShaderTypes())
     {
-        gl::ShaderType glShaderType = static_cast<gl::ShaderType>(shaderType);
+        gl::ShaderType glShaderType              = static_cast<gl::ShaderType>(shaderType);
         gl::Shader *shader                       = mState.getAttachedShader(glShaderType);
         const std::vector<sh::Uniform> &uniforms = shader->getUniforms();
         InitDefaultUniformBlock(uniforms, shader, &layoutMap[shaderType],
@@ -366,7 +372,7 @@ angle::Result ProgramVk::initDefaultUniformBlocks(const gl::Context *glContext)
     }
 
     // Init the default block layout info.
-    const auto &uniforms  = mState.getUniforms();
+    const auto &uniforms = mState.getUniforms();
     for (const gl::VariableLocation &location : mState.getUniformLocations())
     {
         vk::ShaderMap<sh::BlockMemberInfo> layoutInfo;
@@ -439,7 +445,8 @@ angle::Result ProgramVk::initDefaultUniformBlocks(const gl::Context *glContext)
             uniformBufferInfo.queueFamilyIndexCount = 0;
             uniformBufferInfo.pQueueFamilyIndices   = nullptr;
 
-            ANGLE_TRY(mEmptyUniformBlockStorage.buffer.init(contextVk, uniformBufferInfo));
+            ANGLE_VK_TRY(contextVk, mEmptyUniformBlockStorage.buffer.init(contextVk->getDevice(),
+                                                                          uniformBufferInfo));
 
             // Assume host visible/coherent memory available.
             VkMemoryPropertyFlags flags =
@@ -735,12 +742,12 @@ void ProgramVk::setPathFragmentInputGen(const std::string &inputName,
 }
 
 angle::Result ProgramVk::initShaders(ContextVk *contextVk,
-                                     const gl::DrawCallParams &drawCallParams,
+                                     gl::PrimitiveMode mode,
                                      const vk::ShaderAndSerial **vertexShaderAndSerialOut,
                                      const vk::ShaderAndSerial **fragmentShaderAndSerialOut,
                                      const vk::PipelineLayout **pipelineLayoutOut)
 {
-    if (UseLineRaster(contextVk, drawCallParams))
+    if (UseLineRaster(contextVk, mode))
     {
         ANGLE_TRY(mLineRasterShaderInfo.getShaders(contextVk, mVertexSource, mFragmentSource, true,
                                                    vertexShaderAndSerialOut,
@@ -775,6 +782,7 @@ angle::Result ProgramVk::allocateDescriptorSet(ContextVk *contextVk, uint32_t de
     const vk::DescriptorSetLayout &descriptorSetLayout =
         mDescriptorSetLayouts[descriptorSetIndex].get();
     ANGLE_TRY(dynamicDescriptorPool->allocateSets(contextVk, descriptorSetLayout.ptr(), 1,
+                                                  &mDescriptorPoolBindings[descriptorSetIndex],
                                                   &mDescriptorSets[descriptorSetIndex]));
     return angle::Result::Continue();
 }
@@ -940,7 +948,6 @@ void ProgramVk::setDefaultUniformBlocksMinSizeForTesting(size_t minSize)
 }
 
 angle::Result ProgramVk::updateDescriptorSets(ContextVk *contextVk,
-                                              const gl::DrawCallParams &drawCallParams,
                                               vk::CommandBuffer *commandBuffer)
 {
     // Can probably use better dirty bits here.

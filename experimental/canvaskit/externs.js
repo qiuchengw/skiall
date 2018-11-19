@@ -24,23 +24,165 @@
 
 var CanvasKit = {
 	// public API (i.e. things we declare in the pre-js file)
-	Color: function(r, g, b, a) {},
+	Color: function() {},
+	/** @return {CanvasKit.SkRect} */
+	LTRBRect: function() {},
+	MakeCanvas: function() {},
+	MakeCanvasSurface: function() {},
+	MakeImageShader: function() {},
+	MakeLinearGradientShader: function() {},
+	MakeRadialGradientShader: function() {},
+	MakeNimaActor: function() {},
+	MakeSkDashPathEffect: function() {},
+	MakeSkVertices: function() {},
+	MakeSurface: function() {},
 	currentContext: function() {},
-	getWebGLSurface: function(htmlID) {},
-	getRasterN32PremulSurface: function(htmlID) {},
-	MakeSkDashPathEffect: function(intervals, phase) {},
+	getSkDataBytes: function() {},
+	initFonts: function() {},
 	setCurrentContext: function() {},
-	LTRBRect: function(l, t, r, b) {},
 
 	// private API (i.e. things declared in the bindings that we use
 	// in the pre-js file)
-	_getWebGLSurface: function(htmlID, w, h) {},
-	_getRasterN32PremulSurface: function(w, h) {},
-	_malloc: function(size) {},
-	onRuntimeInitialized: function() {},
-	_MakeSkDashPathEffect: function(ptr, len, phase) {},
+	_MakeImageShader: function() {},
+	_MakeLinearGradientShader: function() {},
+	_MakeNimaActor: function() {},
+	_MakeRadialGradientShader: function() {},
+	_MakeSkDashPathEffect: function() {},
+	_MakeSkVertices: function() {},
+	_getRasterN32PremulSurface: function() {},
+	_getWebGLSurface: function() {},
 
 	// Objects and properties on CanvasKit
+
+	NimaActor: {
+		// public API (from C++ bindings)
+		duration: function() {},
+		getAnimationNames: function() {},
+		render: function() {},
+		seek: function() {},
+		setAnimationByIndex: function() {},
+		setAnimationByName: function() {},
+
+		// private API
+	},
+
+	SkCanvas: {
+		// public API (from C++ bindings)
+		clear: function() {},
+		drawPaint: function() {},
+		drawPath: function() {},
+		drawText: function() {},
+		flush: function() {},
+		rotate: function() {},
+		save: function() {},
+		scale: function() {},
+		setMatrix: function() {},
+		skew: function() {},
+		translate: function() {},
+
+		// private API
+		delete: function() {},
+	},
+
+	SkImage: {
+		// private API
+		_encodeToData: function() {},
+		_encodeToDataWithFormat: function() {},
+	},
+
+	SkPath: {
+		// public API (from C++ bindings)
+
+		// private API
+		_addPath: function() {},
+		_arc: function() {},
+		_arcTo: function() {},
+		_close: function() {},
+		_conicTo: function() {},
+		_cubicTo: function() {},
+		_dash: function() {},
+		_lineTo: function() {},
+		_moveTo: function() {},
+		_op: function() {},
+		_quadTo: function() {},
+		_rect: function() {},
+		_simplify: function() {},
+		_stroke: function() {},
+		_transform: function() {},
+		_trim: function() {},
+		delete: function() {},
+	},
+
+	SkPaint: {
+		// public API (from C++ bindings)
+		/** @return {CanvasKit.SkPaint} */
+		copy: function() {},
+		measureText: function() {},
+		setAntiAlias: function() {},
+		setColor: function() {},
+		setPathEffect: function() {},
+		setShader: function() {},
+		setStrokeWidth: function() {},
+		setStyle: function() {},
+		setTextSize: function() {},
+
+		//private API
+		delete: function() {},
+	},
+
+	SkRect: {
+		fLeft: {},
+		fTop: {},
+		fRight: {},
+		fBottom: {},
+	},
+
+	SkSurface: {
+		// public API (from C++ bindings)
+		/** @return {CanvasKit.SkCanvas} */
+		getCanvas: function() {},
+		/** @return {CanvasKit.SkImage} */
+		makeImageSnapshot: function() {},
+
+		// private API
+		_flush: function() {},
+		_getRasterN32PremulSurface: function() {},
+		_readPixels: function() {},
+		delete: function() {},
+	},
+
+	SkVertices: {
+		// public API (from C++ bindings)
+		/** @return {CanvasKit.SkVertices} */
+		applyBones: function() {},
+
+		// private API
+		/** @return {CanvasKit.SkVertices} */
+		_applyBones: function() {},
+	},
+
+	// Constants and Enums
+	gpu: {},
+	skottie: {},
+	PaintStyle: {
+		FILL: {},
+		STROKE: {},
+		STROKE_AND_FILL: {},
+	},
+
+	FillType: {
+		WINDING: {},
+		EVENODD: {},
+		INVERSE_WINDING: {},
+		INVERSE_EVENODD: {},
+	},
+
+	ImageFormat: {
+		PNG: {},
+		JPEG: {},
+	},
+
+	// Things Enscriptem adds for us
 
 	/** Represents the heap of the WASM code
 	 * @type {ArrayBuffer}
@@ -49,56 +191,58 @@ var CanvasKit = {
 	/**
 	 * @type {Float32Array}
 	 */
-	HEAPF32: {}, // only needed for TypedArray mallocs
+	HEAPF32: {},
 	/**
 	 * @type {Uint8Array}
 	 */
 	HEAPU8: {},
+	/**
+	 * @type {Uint16Array}
+	 */
+	HEAPU16: {},
+	/**
+	 * @type {Int32Array}
+	 */
+	HEAP32: {},
 
+	_malloc: function() {},
+	_free: function() {},
+	onRuntimeInitialized: function() {},
+};
 
-	SkPath: {
-		// public API should go below because closure still will
-		// remove things declared here and not on the prototype.
-
-		// private API
-		_addPath: function(path, scaleX, skewX, transX, skewY, scaleY, transY, pers0, pers1, pers2) {},
-		_arcTo: function(x1, y1, x2, y2, radius) {},
-		_close: function() {},
-		_conicTo: function(x1, y1, x2, y2, w) {},
-		_cubicTo: function(cp1x, cp1y, cp2x, cp2y, x, y) {},
-		_lineTo: function(x1, y1) {},
-		_moveTo: function(x1, y1) {},
-		_op: function(otherPath, op) {},
-		_quadTo: function(cpx, cpy, x, y) {},
-		_rect: function(x, y, w, h) {},
-		_simplify: function() {},
-		_transform: function(scaleX, skewX, transX, skewY, scaleY, transY, pers0, pers1, pers2) {},
-	},
-
-	SkSurface: {
-		// public API should go below because closure still will
-		// remove things declared here and not on the prototype.
-
-		// private API
-		_readPixels: function(w, h, ptr) {},
-	}
-}
-
-// Path public API
+// Public API things that are newly declared in the JS should go here.
+// It's not enough to declare them above, because closure can still erase them
+// unless they go on the prototype.
 CanvasKit.SkPath.prototype.addPath = function() {};
-CanvasKit.SkPath.prototype.arcTo = function(x1, y1, x2, y2, radius) {};
+CanvasKit.SkPath.prototype.arc = function() {};
+CanvasKit.SkPath.prototype.arcTo = function() {};
 CanvasKit.SkPath.prototype.close = function() {};
-CanvasKit.SkPath.prototype.conicTo = function(x1, y1, x2, y2, w) {};
-CanvasKit.SkPath.prototype.cubicTo = function(cp1x, cp1y, cp2x, cp2y, x, y) {};
-CanvasKit.SkPath.prototype.lineTo = function(x, y) {};
-CanvasKit.SkPath.prototype.moveTo = function(x, y) {};
-CanvasKit.SkPath.prototype.op = function(otherPath, op) {};
-CanvasKit.SkPath.prototype.quadTo = function(x1, y1, x2, y2) {};
-CanvasKit.SkPath.prototype.rect = function(x, y, w, h) {};
+CanvasKit.SkPath.prototype.conicTo = function() {};
+CanvasKit.SkPath.prototype.cubicTo = function() {};
+CanvasKit.SkPath.prototype.dash = function() {};
+CanvasKit.SkPath.prototype.lineTo = function() {};
+CanvasKit.SkPath.prototype.moveTo = function() {};
+CanvasKit.SkPath.prototype.op = function() {};
+CanvasKit.SkPath.prototype.quadTo = function() {};
+CanvasKit.SkPath.prototype.rect = function() {};
 CanvasKit.SkPath.prototype.simplify = function() {};
+CanvasKit.SkPath.prototype.stroke = function() {};
 CanvasKit.SkPath.prototype.transform = function() {};
+CanvasKit.SkPath.prototype.trim = function() {};
 
 CanvasKit.SkSurface.prototype.flush = function() {};
+CanvasKit.SkSurface.prototype.dispose = function() {};
+
+CanvasKit.SkVertices.prototype.applyBones = function() {};
+
+CanvasKit.SkImage.prototype.encodeToData = function() {};
+
+// Define StrokeOpts object
+var StrokeOpts = {};
+StrokeOpts.prototype.width;
+StrokeOpts.prototype.miter_limit;
+StrokeOpts.prototype.cap;
+StrokeOpts.prototype.join;
 
 // Not sure why this is needed - might be a bug in emsdk that this isn't properly declared.
 function loadWebAssemblyModule() {}

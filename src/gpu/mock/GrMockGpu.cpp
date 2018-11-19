@@ -48,7 +48,7 @@ sk_sp<GrGpu> GrMockGpu::Make(const GrMockOptions* mockOptions,
 }
 
 GrGpuRTCommandBuffer* GrMockGpu::getCommandBuffer(
-                                GrRenderTarget* rt, GrSurfaceOrigin origin,
+                                GrRenderTarget* rt, GrSurfaceOrigin origin, const SkRect& bounds,
                                 const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
                                 const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) {
     return new GrMockGpuRTCommandBuffer(this, rt, origin);
@@ -102,7 +102,7 @@ sk_sp<GrTexture> GrMockGpu::onCreateTexture(const GrSurfaceDesc& desc, SkBudgete
 }
 
 sk_sp<GrTexture> GrMockGpu::onWrapBackendTexture(const GrBackendTexture& tex,
-                                                 GrWrapOwnership ownership) {
+                                                 GrWrapOwnership ownership, bool purgeImmediately) {
     GrSurfaceDesc desc;
     desc.fWidth = tex.width();
     desc.fHeight = tex.height();
@@ -115,7 +115,7 @@ sk_sp<GrTexture> GrMockGpu::onWrapBackendTexture(const GrBackendTexture& tex,
                                                      : GrMipMapsStatus::kNotAllocated;
 
     return sk_sp<GrTexture>(new GrMockTexture(this, GrMockTexture::kWrapped, desc, mipMapsStatus,
-                                              info));
+                                              info, purgeImmediately));
 }
 
 sk_sp<GrTexture> GrMockGpu::onWrapRenderableBackendTexture(const GrBackendTexture& tex,

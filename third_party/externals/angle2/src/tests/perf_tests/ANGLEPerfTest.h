@@ -37,16 +37,38 @@ class Event;
     ASSERT_EQ(static_cast<GLenum>(expected), static_cast<GLenum>(actual))
 #endif  // !defined(ASSERT_GLENUM_EQ)
 
+// These are trace events according to Google's "Trace Event Format".
+// See https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU
+// Only a subset of the properties are implemented.
+struct TraceEvent final
+{
+    TraceEvent() {}
+
+    TraceEvent(char phaseIn, const char *categoryNameIn, const char *nameIn, double timestampIn)
+        : phase(phaseIn), categoryName(categoryNameIn), name(nameIn), timestamp(timestampIn)
+    {
+    }
+
+    char phase       = 0;
+    const char *categoryName = nullptr;
+    const char *name = nullptr;
+    double timestamp = 0;
+};
+
 class ANGLEPerfTest : public testing::Test, angle::NonCopyable
 {
   public:
-    ANGLEPerfTest(const std::string &name, const std::string &suffix);
+    ANGLEPerfTest(const std::string &name,
+                  const std::string &suffix,
+                  unsigned int iterationsPerStep);
     virtual ~ANGLEPerfTest();
 
     virtual void step() = 0;
 
     // Called right before timer is stopped to let the test wait for asynchronous operations.
     virtual void finishTest() {}
+
+    Timer *getTimer() const { return mTimer; }
 
   protected:
     void run();
@@ -62,15 +84,18 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
     void abortTest() { mRunning = false; }
 
     unsigned int getNumStepsPerformed() const { return mNumStepsPerformed; }
+    void doRunLoop(double maxRunTime);
 
     std::string mName;
     std::string mSuffix;
     Timer *mTimer;
-    double mRunTimeSeconds;
     bool mSkipTest;
 
   private:
+    void printResults();
+
     unsigned int mNumStepsPerformed;
+    unsigned int mIterationsPerStep;
     bool mRunning;
 };
 
@@ -80,16 +105,16 @@ struct RenderTestParams : public angle::PlatformParameters
 
     EGLint windowWidth  = 64;
     EGLint windowHeight = 64;
+    unsigned int iterationsPerStep = 0;
 };
 
 class ANGLERenderTest : public ANGLEPerfTest
 {
   public:
     ANGLERenderTest(const std::string &name, const RenderTestParams &testParams);
-    ANGLERenderTest(const std::string &name,
-                    const RenderTestParams &testParams,
-                    const std::vector<std::string> &extensionPrerequisites);
     ~ANGLERenderTest();
+
+    void addExtensionPrerequisite(const char *extensionName);
 
     virtual void initializeBenchmark() { }
     virtual void destroyBenchmark() { }
@@ -99,6 +124,8 @@ class ANGLERenderTest : public ANGLEPerfTest
     bool popEvent(Event *event);
 
     OSWindow *getWindow();
+
+    std::vector<TraceEvent> &getTraceEventBuffer();
 
     virtual void overrideWorkaroundsD3D(angle::WorkaroundsD3D *workaroundsD3D) {}
 
@@ -121,8 +148,11 @@ class ANGLERenderTest : public ANGLEPerfTest
 
     EGLWindow *mEGLWindow;
     OSWindow *mOSWindow;
-    std::vector<std::string> mExtensionPrerequisites;
+    std::vector<const char *> mExtensionPrerequisites;
     angle::PlatformMethods mPlatformMethods;
+
+    // Trace event record that can be output.
+    std::vector<TraceEvent> mTraceEventBuffer;
 };
 
 extern bool g_OnlyOneRunFrame;

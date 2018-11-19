@@ -6,15 +6,15 @@
 
 // validationES31.cpp: Validation functions for OpenGL ES 3.1 entry point parameters
 
-#include "libANGLE/validationES31.h"
+#include "libANGLE/validationES31_autogen.h"
 
 #include "libANGLE/Context.h"
 #include "libANGLE/ErrorStrings.h"
 #include "libANGLE/Framebuffer.h"
 #include "libANGLE/VertexArray.h"
 #include "libANGLE/validationES.h"
-#include "libANGLE/validationES2.h"
-#include "libANGLE/validationES3.h"
+#include "libANGLE/validationES2_autogen.h"
+#include "libANGLE/validationES3_autogen.h"
 
 #include "common/utilities.h"
 
@@ -537,7 +537,7 @@ bool ValidateDrawElementsIndirect(Context *context,
 
     const State &state         = context->getGLState();
     const VertexArray *vao     = state.getVertexArray();
-    Buffer *elementArrayBuffer = vao->getElementArrayBuffer().get();
+    Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
     if (!elementArrayBuffer)
     {
         context->handleError(InvalidOperation() << "zero is bound to ELEMENT_ARRAY_BUFFER");
@@ -891,11 +891,11 @@ bool ValidateProgramUniformMatrix4x3fv(Context *context,
                                         transpose);
 }
 
-bool ValidateGetTexLevelParameterBase(Context *context,
-                                      TextureTarget target,
-                                      GLint level,
-                                      GLenum pname,
-                                      GLsizei *length)
+bool ValidateGetTexLevelParameterfv(Context *context,
+                                    TextureTarget target,
+                                    GLint level,
+                                    GLenum pname,
+                                    GLfloat *params)
 {
     if (context->getClientVersion() < ES_3_1)
     {
@@ -903,75 +903,6 @@ bool ValidateGetTexLevelParameterBase(Context *context,
         return false;
     }
 
-    if (length)
-    {
-        *length = 0;
-    }
-
-    TextureType type = TextureTargetToType(target);
-
-    if (!ValidTexLevelDestinationTarget(context, type))
-    {
-        ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidTextureTarget);
-        return false;
-    }
-
-    if (context->getTargetTexture(type) == nullptr)
-    {
-        context->handleError(InvalidEnum() << "No texture bound.");
-        return false;
-    }
-
-    if (!ValidMipLevel(context, type, level))
-    {
-        context->handleError(InvalidValue());
-        return false;
-    }
-
-    switch (pname)
-    {
-        case GL_TEXTURE_RED_TYPE:
-        case GL_TEXTURE_GREEN_TYPE:
-        case GL_TEXTURE_BLUE_TYPE:
-        case GL_TEXTURE_ALPHA_TYPE:
-        case GL_TEXTURE_DEPTH_TYPE:
-            break;
-        case GL_TEXTURE_RED_SIZE:
-        case GL_TEXTURE_GREEN_SIZE:
-        case GL_TEXTURE_BLUE_SIZE:
-        case GL_TEXTURE_ALPHA_SIZE:
-        case GL_TEXTURE_DEPTH_SIZE:
-        case GL_TEXTURE_STENCIL_SIZE:
-        case GL_TEXTURE_SHARED_SIZE:
-            break;
-        case GL_TEXTURE_INTERNAL_FORMAT:
-        case GL_TEXTURE_WIDTH:
-        case GL_TEXTURE_HEIGHT:
-        case GL_TEXTURE_DEPTH:
-            break;
-        case GL_TEXTURE_SAMPLES:
-        case GL_TEXTURE_FIXED_SAMPLE_LOCATIONS:
-            break;
-        case GL_TEXTURE_COMPRESSED:
-            break;
-        default:
-            ANGLE_VALIDATION_ERR(context, InvalidEnum(), InvalidPname);
-            return false;
-    }
-
-    if (length)
-    {
-        *length = 1;
-    }
-    return true;
-}
-
-bool ValidateGetTexLevelParameterfv(Context *context,
-                                    TextureTarget target,
-                                    GLint level,
-                                    GLenum pname,
-                                    GLfloat *params)
-{
     return ValidateGetTexLevelParameterBase(context, target, level, pname, nullptr);
 }
 
@@ -993,6 +924,12 @@ bool ValidateGetTexLevelParameteriv(Context *context,
                                     GLenum pname,
                                     GLint *params)
 {
+    if (context->getClientVersion() < ES_3_1)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidOperation(), ES31Required);
+        return false;
+    }
+
     return ValidateGetTexLevelParameterBase(context, target, level, pname, nullptr);
 }
 
@@ -1011,7 +948,7 @@ bool ValidateGetTexLevelParameterivRobustANGLE(Context *context,
 bool ValidateTexStorage2DMultisample(Context *context,
                                      TextureType target,
                                      GLsizei samples,
-                                     GLint internalFormat,
+                                     GLenum internalFormat,
                                      GLsizei width,
                                      GLsizei height,
                                      GLboolean fixedSampleLocations)
@@ -1022,19 +959,8 @@ bool ValidateTexStorage2DMultisample(Context *context,
         return false;
     }
 
-    if (target != TextureType::_2DMultisample)
-    {
-        context->handleError(InvalidEnum() << "Target must be TEXTURE_2D_MULTISAMPLE.");
-        return false;
-    }
-
-    if (width < 1 || height < 1)
-    {
-        ANGLE_VALIDATION_ERR(context, InvalidValue(), NegativeSize);
-        return false;
-    }
-
-    return ValidateTexStorageMultisample(context, target, samples, internalFormat, width, height);
+    return ValidateTexStorage2DMultisampleBase(context, target, samples, internalFormat, width,
+                                               height);
 }
 
 bool ValidateGetMultisamplefv(Context *context, GLenum pname, GLuint index, GLfloat *val)
@@ -1967,7 +1893,7 @@ bool ValidateFramebufferTextureEXT(Context *context,
 bool ValidateTexStorage3DMultisampleOES(Context *context,
                                         TextureType target,
                                         GLsizei samples,
-                                        GLint sizedinternalformat,
+                                        GLenum sizedinternalformat,
                                         GLsizei width,
                                         GLsizei height,
                                         GLsizei depth,

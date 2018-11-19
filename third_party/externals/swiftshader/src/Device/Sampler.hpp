@@ -15,9 +15,9 @@
 #ifndef sw_Sampler_hpp
 #define sw_Sampler_hpp
 
-#include "Main/Config.hpp"
-#include "Renderer/Surface.hpp"
-#include "Common/Types.hpp"
+#include "Device/Config.hpp"
+#include "Device/Surface.hpp"
+#include "System/Types.hpp"
 
 namespace sw
 {
@@ -193,7 +193,6 @@ namespace sw
 		void setMaxLevel(int maxLevel);
 		void setMinLod(float minLod);
 		void setMaxLod(float maxLod);
-		void setSyncRequired(bool isSincRequired);
 
 		static void setFilterQuality(FilterType maximumFilterQuality);
 		static void setMipmapQuality(MipmapType maximumFilterQuality);
@@ -203,7 +202,6 @@ namespace sw
 		bool hasUnsignedTexture() const;
 		bool hasCubeTexture() const;
 		bool hasVolumeTexture() const;
-		bool requiresSync() const;
 
 		const Texture &getTextureData();
 
@@ -228,7 +226,6 @@ namespace sw
 		bool sRGB;
 		bool gather;
 		bool highPrecisionFiltering;
-		bool syncRequired;
 		int border;
 
 		SwizzleType swizzleR;

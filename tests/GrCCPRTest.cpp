@@ -76,14 +76,15 @@ public:
     GrCoverageCountingPathRenderer* ccpr() const { return fCCPR; }
 
     bool valid() const { return fCCPR && fRTC; }
-    void clear() const { fRTC->clear(nullptr, 0, GrRenderTargetContext::CanClearFullscreen::kYes); }
+    void clear() const { fRTC->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                                     GrRenderTargetContext::CanClearFullscreen::kYes); }
     void abandonGrContext() { fCtx = nullptr; fCCPR = nullptr; fRTC = nullptr; }
 
     void drawPath(const SkPath& path, const SkMatrix& matrix = SkMatrix::I()) const {
         SkASSERT(this->valid());
 
         GrPaint paint;
-        paint.setColor4f(GrColor4f(0, 1, 0, 1));
+        paint.setColor4f({ 0, 1, 0, 1 });
 
         GrNoClip noClip;
         SkIRect clipBounds = SkIRect::MakeWH(kCanvasSize, kCanvasSize);
@@ -105,7 +106,7 @@ public:
                 &clipBounds, &matrix, &shape, GrAAType::kCoverage, false});
     }
 
-    void clipFullscreenRect(SkPath clipPath, GrColor4f color = GrColor4f(0, 1, 0, 1)) {
+    void clipFullscreenRect(SkPath clipPath, SkPMColor4f color = { 0, 1, 0, 1 }) {
         SkASSERT(this->valid());
 
         GrPaint paint;

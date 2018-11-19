@@ -186,6 +186,31 @@ inline bool IsIntegerSampler(TBasicType type)
     return false;
 }
 
+inline bool IsIntegerSamplerUnsigned(TBasicType type)
+{
+    switch (type)
+    {
+        case EbtISampler2D:
+        case EbtISampler3D:
+        case EbtISamplerCube:
+        case EbtISampler2DArray:
+        case EbtISampler2DMS:
+        case EbtISampler2DMSArray:
+            return false;
+        case EbtUSampler2D:
+        case EbtUSampler3D:
+        case EbtUSamplerCube:
+        case EbtUSampler2DArray:
+        case EbtUSampler2DMS:
+        case EbtUSampler2DMSArray:
+            return true;
+        default:
+            assert(!IsIntegerSampler(type));
+    }
+
+    return false;
+}
+
 inline bool IsSampler2DMS(TBasicType type)
 {
     switch (type)
@@ -595,6 +620,8 @@ enum TQualifier
     EvqPosition,
     EvqPointSize,
 
+    EvqDrawID,  // ANGLE_multi_draw
+
     // built-ins read by fragment shader
     EvqFragCoord,
     EvqFrontFacing,
@@ -881,6 +908,7 @@ inline const char *getQualifierString(TQualifier q)
     case EvqVertexID:               return "VertexID";
     case EvqPosition:               return "Position";
     case EvqPointSize:              return "PointSize";
+    case EvqDrawID:                 return "DrawID";
     case EvqFragCoord:              return "FragCoord";
     case EvqFrontFacing:            return "FrontFacing";
     case EvqPointCoord:             return "PointCoord";
