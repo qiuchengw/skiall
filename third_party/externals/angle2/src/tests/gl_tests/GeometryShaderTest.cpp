@@ -49,13 +49,12 @@ class GeometryShaderTest : public ANGLETest
 };
 
 class GeometryShaderTestES3 : public ANGLETest
-{
-};
+{};
 
 // Verify that Geometry Shader cannot be created in an OpenGL ES 3.0 context.
 TEST_P(GeometryShaderTestES3, CreateGeometryShaderInES3)
 {
-    EXPECT_TRUE(!extensionEnabled("GL_EXT_geometry_shader"));
+    EXPECT_TRUE(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
     GLuint geometryShader = glCreateShader(GL_GEOMETRY_SHADER_EXT);
     EXPECT_EQ(0u, geometryShader);
     EXPECT_GL_ERROR(GL_INVALID_ENUM);
@@ -64,29 +63,28 @@ TEST_P(GeometryShaderTestES3, CreateGeometryShaderInES3)
 // Verify that Geometry Shader can be created and attached to a program.
 TEST_P(GeometryShaderTest, CreateAndAttachGeometryShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &geometryShaderSource =
-        R"(#version 310 es
-        #extension GL_EXT_geometry_shader : require
-        layout (invocations = 3, triangles) in;
-        layout (triangle_strip, max_vertices = 3) out;
-        in vec4 texcoord[];
-        out vec4 o_texcoord;
-        void main()
-        {
-            int n;
-            for (n = 0; n < gl_in.length(); n++)
-            {
-                gl_Position = gl_in[n].gl_Position;
-                gl_Layer   = gl_InvocationID;
-                o_texcoord = texcoord[n];
-                EmitVertex();
-            }
-            EndPrimitive();
-        })";
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+layout (invocations = 3, triangles) in;
+layout (triangle_strip, max_vertices = 3) out;
+in vec4 texcoord[];
+out vec4 o_texcoord;
+void main()
+{
+    int n;
+    for (n = 0; n < gl_in.length(); n++)
+    {
+        gl_Position = gl_in[n].gl_Position;
+        gl_Layer   = gl_InvocationID;
+        o_texcoord = texcoord[n];
+        EmitVertex();
+    }
+    EndPrimitive();
+})";
 
-    GLuint geometryShader = CompileShader(GL_GEOMETRY_SHADER_EXT, geometryShaderSource);
+    GLuint geometryShader = CompileShader(GL_GEOMETRY_SHADER_EXT, kGS);
 
     EXPECT_NE(0u, geometryShader);
 
@@ -104,7 +102,7 @@ TEST_P(GeometryShaderTest, CreateAndAttachGeometryShader)
 // requirement of GL_EXT_geometry_shader SPEC.
 TEST_P(GeometryShaderTest, GeometryShaderImplementationDependentLimits)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     const std::map<GLenum, int> limits = {{GL_MAX_FRAMEBUFFER_LAYERS_EXT, 256},
                                           {GL_MAX_GEOMETRY_UNIFORM_COMPONENTS_EXT, 1024},
@@ -139,7 +137,7 @@ TEST_P(GeometryShaderTest, GeometryShaderImplementationDependentLimits)
 // Verify that all the combined resource limits meet the requirement of GL_EXT_geometry_shader SPEC.
 TEST_P(GeometryShaderTest, CombinedResourceLimits)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     // See http://anglebug.com/2261.
     ANGLE_SKIP_TEST_IF(IsAndroid());
@@ -161,7 +159,7 @@ TEST_P(GeometryShaderTest, CombinedResourceLimits)
 // Verify that linking a program with an uncompiled geometry shader causes a link failure.
 TEST_P(GeometryShaderTest, LinkWithUncompiledGeometryShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLuint vertexShader   = CompileShader(GL_VERTEX_SHADER, essl31_shaders::vs::Simple());
     GLuint fragmentShader = CompileShader(GL_FRAGMENT_SHADER, essl31_shaders::fs::Red());
@@ -192,11 +190,11 @@ TEST_P(GeometryShaderTest, LinkWithUncompiledGeometryShader)
 // in this program causes a link error.
 TEST_P(GeometryShaderTest, LinkWhenShaderVersionMismatch)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     const std::string &emptyGeometryShader = CreateEmptyGeometryShader("points", "points", 2, 1);
 
-    GLuint program = CompileProgramWithGS(essl3_shaders::vs::Simple(), emptyGeometryShader,
+    GLuint program = CompileProgramWithGS(essl3_shaders::vs::Simple(), emptyGeometryShader.c_str(),
                                           essl3_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 }
@@ -205,32 +203,32 @@ TEST_P(GeometryShaderTest, LinkWhenShaderVersionMismatch)
 // output primitive, or declaration on 'max_vertices' causes a link failure.
 TEST_P(GeometryShaderTest, LinkValidationOnGeometryShaderLayouts)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &gsWithoutInputPrimitive  = CreateEmptyGeometryShader("", "points", 2, 1);
-    const std::string &gsWithoutOutputPrimitive = CreateEmptyGeometryShader("points", "", 2, 1);
-    const std::string &gsWithoutInvocations = CreateEmptyGeometryShader("points", "points", -1, 1);
-    const std::string &gsWithoutMaxVertices = CreateEmptyGeometryShader("points", "points", 2, -1);
+    const std::string gsWithoutInputPrimitive  = CreateEmptyGeometryShader("", "points", 2, 1);
+    const std::string gsWithoutOutputPrimitive = CreateEmptyGeometryShader("points", "", 2, 1);
+    const std::string gsWithoutInvocations = CreateEmptyGeometryShader("points", "points", -1, 1);
+    const std::string gsWithoutMaxVertices = CreateEmptyGeometryShader("points", "points", 2, -1);
 
     // Linking a program with a geometry shader that only lacks 'invocations' should not cause a
     // link failure.
-    GLuint program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutInvocations,
-                                          essl31_shaders::fs::Red());
+    GLuint program = CompileProgramWithGS(essl31_shaders::vs::Simple(),
+                                          gsWithoutInvocations.c_str(), essl31_shaders::fs::Red());
     EXPECT_NE(0u, program);
 
     glDeleteProgram(program);
 
     // Linking a program with a geometry shader that lacks input primitive, output primitive or
     // 'max_vertices' causes a link failure.
-    program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutInputPrimitive,
+    program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutInputPrimitive.c_str(),
                                    essl31_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 
-    program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutOutputPrimitive,
+    program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutOutputPrimitive.c_str(),
                                    essl31_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 
-    program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutMaxVertices,
+    program = CompileProgramWithGS(essl31_shaders::vs::Simple(), gsWithoutMaxVertices.c_str(),
                                    essl31_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 
@@ -241,45 +239,42 @@ TEST_P(GeometryShaderTest, LinkValidationOnGeometryShaderLayouts)
 // geometry shader in the program.
 TEST_P(GeometryShaderTest, VertexShaderArrayOutput)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &vertexShader =
-        R"(#version 310 es
-        in vec4 vertex_in;
-        out vec4 vertex_out[3];
-        void main()
-        {
-            gl_Position = vertex_in;
-            vertex_out[0] = vec4(1.0, 0.0, 0.0, 1.0);
-            vertex_out[1] = vec4(0.0, 1.0, 0.0, 1.0);
-            vertex_out[2] = vec4(0.0, 0.0, 1.0, 1.0);
-        })";
+    constexpr char kVS[] = R"(#version 310 es
+in vec4 vertex_in;
+out vec4 vertex_out[3];
+void main()
+{
+    gl_Position = vertex_in;
+    vertex_out[0] = vec4(1.0, 0.0, 0.0, 1.0);
+    vertex_out[1] = vec4(0.0, 1.0, 0.0, 1.0);
+    vertex_out[2] = vec4(0.0, 0.0, 1.0, 1.0);
+})";
 
-    const std::string &geometryShader =
-        R"(#version 310 es
-        #extension GL_EXT_geometry_shader : require
-        layout (invocations = 3, triangles) in;
-        layout (points, max_vertices = 3) out;
-        in vec4 vertex_out[];
-        out vec4 geometry_color;
-        void main()
-        {
-            gl_Position = gl_in[0].gl_Position;
-            geometry_color = vertex_out[0];
-            EmitVertex();
-        })";
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+layout (invocations = 3, triangles) in;
+layout (points, max_vertices = 3) out;
+in vec4 vertex_out[];
+out vec4 geometry_color;
+void main()
+{
+    gl_Position = gl_in[0].gl_Position;
+    geometry_color = vertex_out[0];
+    EmitVertex();
+})";
 
-    const std::string &fragmentShader =
-        R"(#version 310 es
-        precision mediump float;
-        in vec4 geometry_color;
-        layout (location = 0) out vec4 output_color;
-        void main()
-        {
-            output_color = geometry_color;
-        })";
+    constexpr char kFS[] = R"(#version 310 es
+precision mediump float;
+in vec4 geometry_color;
+layout (location = 0) out vec4 output_color;
+void main()
+{
+    output_color = geometry_color;
+})";
 
-    GLuint program = CompileProgramWithGS(vertexShader, geometryShader, fragmentShader);
+    GLuint program = CompileProgramWithGS(kVS, kGS, kFS);
     EXPECT_EQ(0u, program);
 
     EXPECT_GL_NO_ERROR();
@@ -289,46 +284,43 @@ TEST_P(GeometryShaderTest, VertexShaderArrayOutput)
 // from those in a geometry shader.
 TEST_P(GeometryShaderTest, UniformMismatchBetweenGeometryAndFragmentShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &vertexShader =
-        R"(#version 310 es
-        uniform highp vec4 uniform_value_vert;
-        in vec4 vertex_in;
-        out vec4 vertex_out;
-        void main()
-        {
-            gl_Position = vertex_in;
-            vertex_out = uniform_value_vert;
-        })";
+    constexpr char kVS[] = R"(#version 310 es
+uniform highp vec4 uniform_value_vert;
+in vec4 vertex_in;
+out vec4 vertex_out;
+void main()
+{
+    gl_Position = vertex_in;
+    vertex_out = uniform_value_vert;
+})";
 
-    const std::string &geometryShader =
-        R"(#version 310 es
-        #extension GL_EXT_geometry_shader : require
-        uniform vec4 uniform_value;
-        layout (invocations = 3, triangles) in;
-        layout (points, max_vertices = 3) out;
-        in vec4 vertex_out[];
-        out vec4 geometry_color;
-        void main()
-        {
-            gl_Position = gl_in[0].gl_Position;
-            geometry_color = vertex_out[0] + uniform_value;
-            EmitVertex();
-        })";
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+uniform vec4 uniform_value;
+layout (invocations = 3, triangles) in;
+layout (points, max_vertices = 3) out;
+in vec4 vertex_out[];
+out vec4 geometry_color;
+void main()
+{
+    gl_Position = gl_in[0].gl_Position;
+    geometry_color = vertex_out[0] + uniform_value;
+    EmitVertex();
+})";
 
-    const std::string &fragmentShader =
-        R"(#version 310 es
-        precision highp float;
-        uniform float uniform_value;
-        in vec4 geometry_color;
-        layout (location = 0) out vec4 output_color;
-        void main()
-        {
-            output_color = vec4(geometry_color.rgb, uniform_value);
-        })";
+    constexpr char kFS[] = R"(#version 310 es
+precision highp float;
+uniform float uniform_value;
+in vec4 geometry_color;
+layout (location = 0) out vec4 output_color;
+void main()
+{
+    output_color = vec4(geometry_color.rgb, uniform_value);
+})";
 
-    GLuint program = CompileProgramWithGS(vertexShader, geometryShader, fragmentShader);
+    GLuint program = CompileProgramWithGS(kVS, kGS, kFS);
     EXPECT_EQ(0u, program);
 
     EXPECT_GL_NO_ERROR();
@@ -338,7 +330,7 @@ TEST_P(GeometryShaderTest, UniformMismatchBetweenGeometryAndFragmentShader)
 // MAX_GEOMETRY_UNIFORM_BLOCKS_EXT.
 TEST_P(GeometryShaderTest, TooManyUniformBlocks)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLint maxGeometryUniformBlocks = 0;
     glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS_EXT, &maxGeometryUniformBlocks);
@@ -366,8 +358,8 @@ TEST_P(GeometryShaderTest, TooManyUniformBlocks)
     stream << "    EmitVertex();\n"
               "}\n";
 
-    GLuint program =
-        CompileProgramWithGS(essl31_shaders::vs::Simple(), stream.str(), essl31_shaders::fs::Red());
+    GLuint program = CompileProgramWithGS(essl31_shaders::vs::Simple(), stream.str().c_str(),
+                                          essl31_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 
     EXPECT_GL_NO_ERROR();
@@ -377,7 +369,7 @@ TEST_P(GeometryShaderTest, TooManyUniformBlocks)
 // exceeds MAX_GEOMETRY_SHADER_STORAGE_BLOCKS_EXT.
 TEST_P(GeometryShaderTest, TooManyShaderStorageBlocks)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLint maxGeometryShaderStorageBlocks = 0;
     glGetIntegerv(GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS_EXT, &maxGeometryShaderStorageBlocks);
@@ -405,8 +397,8 @@ TEST_P(GeometryShaderTest, TooManyShaderStorageBlocks)
     stream << "    EmitVertex();\n"
               "}\n";
 
-    GLuint program =
-        CompileProgramWithGS(essl31_shaders::vs::Simple(), stream.str(), essl31_shaders::fs::Red());
+    GLuint program = CompileProgramWithGS(essl31_shaders::vs::Simple(), stream.str().c_str(),
+                                          essl31_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 
     EXPECT_GL_NO_ERROR();
@@ -416,40 +408,38 @@ TEST_P(GeometryShaderTest, TooManyShaderStorageBlocks)
 // different from that in a geometry shader.
 TEST_P(GeometryShaderTest, UniformBlockMismatchBetweenVertexAndGeometryShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &vertexShader =
-        R"(#version 310 es
-        uniform ubo
-        {
-            vec4 uniform_value_vert;
-        } block0;
-        in vec4 vertex_in;
-        out vec4 vertex_out;
-        void main()
-        {
-            gl_Position = vertex_in;
-            vertex_out = block0.uniform_value_vert;
-        })";
+    constexpr char kVS[] = R"(#version 310 es
+uniform ubo
+{
+    vec4 uniform_value_vert;
+} block0;
+in vec4 vertex_in;
+out vec4 vertex_out;
+void main()
+{
+    gl_Position = vertex_in;
+    vertex_out = block0.uniform_value_vert;
+})";
 
-    const std::string &geometryShader =
-        R"(#version 310 es
-        #extension GL_EXT_geometry_shader : require
-        uniform ubo
-        {
-            vec4 uniform_value_geom;
-        } block0;
-        layout (triangles) in;
-        layout (points, max_vertices = 1) out;
-        in vec4 vertex_out[];
-        void main()
-        {
-            gl_Position = gl_in[0].gl_Position + vertex_out[0];
-            gl_Position += block0.uniform_value_geom;
-            EmitVertex();
-        })";
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+uniform ubo
+{
+    vec4 uniform_value_geom;
+} block0;
+layout (triangles) in;
+layout (points, max_vertices = 1) out;
+in vec4 vertex_out[];
+void main()
+{
+    gl_Position = gl_in[0].gl_Position + vertex_out[0];
+    gl_Position += block0.uniform_value_geom;
+    EmitVertex();
+})";
 
-    GLuint program = CompileProgramWithGS(vertexShader, geometryShader, essl31_shaders::fs::Red());
+    GLuint program = CompileProgramWithGS(kVS, kGS, essl31_shaders::fs::Red());
     EXPECT_EQ(0u, program);
 
     EXPECT_GL_NO_ERROR();
@@ -459,7 +449,7 @@ TEST_P(GeometryShaderTest, UniformBlockMismatchBetweenVertexAndGeometryShader)
 // shader is different from that in a fragment shader.
 TEST_P(GeometryShaderTest, ShaderStorageBlockMismatchBetweenGeometryAndFragmentShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLint maxGeometryShaderStorageBlocks = 0;
     glGetIntegerv(GL_MAX_GEOMETRY_SHADER_STORAGE_BLOCKS_EXT, &maxGeometryShaderStorageBlocks);
@@ -475,36 +465,33 @@ TEST_P(GeometryShaderTest, ShaderStorageBlockMismatchBetweenGeometryAndFragmentS
     // [OpenGL ES 3.1] Table 20.44
     ANGLE_SKIP_TEST_IF(maxFragmentShaderStorageBlocks == 0);
 
-    const std::string &geometryShader =
-        R"(#version 310 es
-        #extension GL_EXT_geometry_shader : require
-        buffer ssbo
-        {
-            vec4 ssbo_value;
-        } block0;
-        layout (triangles) in;
-        layout (points, max_vertices = 1) out;
-        void main()
-        {
-            gl_Position = gl_in[0].gl_Position + block0.ssbo_value;
-            EmitVertex();
-        })";
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+buffer ssbo
+{
+    vec4 ssbo_value;
+} block0;
+layout (triangles) in;
+layout (points, max_vertices = 1) out;
+void main()
+{
+    gl_Position = gl_in[0].gl_Position + block0.ssbo_value;
+    EmitVertex();
+})";
 
-    const std::string &fragmentShader =
-        R"(#version 310 es
-        precision highp float;
-        buffer ssbo
-        {
-            vec3 ssbo_value;
-        } block0;
-        layout (location = 0) out vec4 output_color;
-        void main()
-        {
-            output_color = vec4(block0.ssbo_value, 1);
-        })";
+    constexpr char kFS[] = R"(#version 310 es
+precision highp float;
+buffer ssbo
+{
+    vec3 ssbo_value;
+} block0;
+layout (location = 0) out vec4 output_color;
+void main()
+{
+    output_color = vec4(block0.ssbo_value, 1);
+})";
 
-    GLuint program =
-        CompileProgramWithGS(essl31_shaders::vs::Simple(), geometryShader, fragmentShader);
+    GLuint program = CompileProgramWithGS(essl31_shaders::vs::Simple(), kGS, kFS);
     EXPECT_EQ(0u, program);
 
     EXPECT_GL_NO_ERROR();
@@ -514,19 +501,18 @@ TEST_P(GeometryShaderTest, ShaderStorageBlockMismatchBetweenGeometryAndFragmentS
 // EXT_geometry_shader, or we will get an INVALID_ENUM error.
 TEST_P(GeometryShaderTest, ReferencedByGeometryShaderWithoutExtensionEnabled)
 {
-    ANGLE_SKIP_TEST_IF(extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &fragmentShader =
-        R"(#version 310 es
-        precision highp float;
-        uniform vec4 color;
-        layout(location = 0) out vec4 oColor;
-        void main()
-        {
-            oColor = color;
-        })";
+    constexpr char kFS[] = R"(#version 310 es
+precision highp float;
+uniform vec4 color;
+layout(location = 0) out vec4 oColor;
+void main()
+{
+    oColor = color;
+})";
 
-    ANGLE_GL_PROGRAM(program, essl31_shaders::vs::Simple(), fragmentShader);
+    ANGLE_GL_PROGRAM(program, essl31_shaders::vs::Simple(), kFS);
 
     const GLuint index = glGetProgramResourceIndex(program, GL_UNIFORM, "color");
     ASSERT_GL_NO_ERROR();
@@ -546,51 +532,48 @@ TEST_P(GeometryShaderTest, ReferencedByGeometryShaderWithoutExtensionEnabled)
 // EXT_geometry_shader.
 TEST_P(GeometryShaderTest, ReferencedByGeometryShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
-    const std::string &vertexShader =
-        R"(#version 310 es
-        precision highp float;
-        layout(location = 0) in highp vec4 position;
-        void main()
-        {
-            gl_Position = position;
-        })";
+    constexpr char kVS[] = R"(#version 310 es
+precision highp float;
+layout(location = 0) in highp vec4 position;
+void main()
+{
+    gl_Position = position;
+})";
 
-    const std::string &geometryShader =
-        R"(#version 310 es
-        #extension GL_EXT_geometry_shader : require
-        layout (binding = 3) uniform ubo0
-        {
-            vec4 ubo0_location;
-        } block0;
-        layout (binding = 4) uniform ubo1
-        {
-            vec4 ubo1_location;
-        } block1;
-        uniform vec4 u_color;
-        layout (triangles) in;
-        layout (points, max_vertices = 1) out;
-        out vec4 gs_out;
-        void main()
-        {
-            gl_Position = gl_in[0].gl_Position;
-            gl_Position += block0.ubo0_location + block1.ubo1_location;
-            gs_out = u_color;
-            EmitVertex();
-        })";
+    constexpr char kGS[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+layout (binding = 3) uniform ubo0
+{
+    vec4 ubo0_location;
+} block0;
+layout (binding = 4) uniform ubo1
+{
+    vec4 ubo1_location;
+} block1;
+uniform vec4 u_color;
+layout (triangles) in;
+layout (points, max_vertices = 1) out;
+out vec4 gs_out;
+void main()
+{
+    gl_Position = gl_in[0].gl_Position;
+    gl_Position += block0.ubo0_location + block1.ubo1_location;
+    gs_out = u_color;
+    EmitVertex();
+})";
 
-    const std::string &fragmentShader =
-        R"(#version 310 es
-        precision highp float;
-        in vec4 gs_out;
-        layout(location = 0) out vec4 oColor;
-        void main()
-        {
-            oColor = gs_out;
-        })";
+    constexpr char kFS[] = R"(#version 310 es
+precision highp float;
+in vec4 gs_out;
+layout(location = 0) out vec4 oColor;
+void main()
+{
+    oColor = gs_out;
+})";
 
-    ANGLE_GL_PROGRAM_WITH_GS(program, vertexShader, geometryShader, fragmentShader);
+    ANGLE_GL_PROGRAM_WITH_GS(program, kVS, kGS, kFS);
 
     constexpr GLenum kProps[]    = {GL_REFERENCED_BY_GEOMETRY_SHADER_EXT};
     constexpr GLsizei kPropCount = static_cast<GLsizei>(ArraySize(kProps));
@@ -630,25 +613,23 @@ TEST_P(GeometryShaderTest, ReferencedByGeometryShader)
     // [EXT_geometry_shader] Table 20.43gs
     if (maxGeometryShaderStorageBlocks > 0)
     {
-        const std::string &geometryShaderWithSSBO =
-            R"(#version 310 es
-            #extension GL_EXT_geometry_shader : require
-            layout (binding = 2) buffer ssbo
-            {
-                vec4 ssbo_value;
-            } block0;
-            layout (triangles) in;
-            layout (points, max_vertices = 1) out;
-            out vec4 gs_out;
-            void main()
-            {
-                gl_Position = gl_in[0].gl_Position + block0.ssbo_value;
-                gs_out = block0.ssbo_value;
-                EmitVertex();
-            })";
+        constexpr char kGSWithSSBO[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+layout (binding = 2) buffer ssbo
+{
+    vec4 ssbo_value;
+} block0;
+layout (triangles) in;
+layout (points, max_vertices = 1) out;
+out vec4 gs_out;
+void main()
+{
+    gl_Position = gl_in[0].gl_Position + block0.ssbo_value;
+    gs_out = block0.ssbo_value;
+    EmitVertex();
+})";
 
-        ANGLE_GL_PROGRAM_WITH_GS(programWithSSBO, vertexShader, geometryShaderWithSSBO,
-                                 fragmentShader);
+        ANGLE_GL_PROGRAM_WITH_GS(programWithSSBO, kVS, kGSWithSSBO, kFS);
 
         params.fill(0);
         index = glGetProgramResourceIndex(programWithSSBO, GL_SHADER_STORAGE_BLOCK, "ssbo");
@@ -671,23 +652,21 @@ TEST_P(GeometryShaderTest, ReferencedByGeometryShader)
     // [EXT_geometry_shader] Table 20.43gs
     if (maxGeometryAtomicCounterBuffers > 0)
     {
-        const std::string &geometryShaderWithAtomicCounters =
-            R"(#version 310 es
-            #extension GL_EXT_geometry_shader : require
-            layout(binding = 1, offset = 0) uniform atomic_uint gs_counter;
-            layout (triangles) in;
-            layout (points, max_vertices = 1) out;
-            out vec4 gs_out;
-            void main()
-            {
-                atomicCounterIncrement(gs_counter);
-                gl_Position = gl_in[0].gl_Position;
-                gs_out = vec4(1.0, 0.0, 0.0, 1.0);
-                EmitVertex();
-            })";
+        constexpr char kGSWithAtomicCounters[] = R"(#version 310 es
+#extension GL_EXT_geometry_shader : require
+layout(binding = 1, offset = 0) uniform atomic_uint gs_counter;
+layout (triangles) in;
+layout (points, max_vertices = 1) out;
+out vec4 gs_out;
+void main()
+{
+    atomicCounterIncrement(gs_counter);
+    gl_Position = gl_in[0].gl_Position;
+    gs_out = vec4(1.0, 0.0, 0.0, 1.0);
+    EmitVertex();
+})";
 
-        ANGLE_GL_PROGRAM_WITH_GS(programWithAtomicCounter, vertexShader,
-                                 geometryShaderWithAtomicCounters, fragmentShader);
+        ANGLE_GL_PROGRAM_WITH_GS(programWithAtomicCounter, kVS, kGSWithAtomicCounters, kFS);
 
         params.fill(0);
         index = glGetProgramResourceIndex(programWithAtomicCounter, GL_UNIFORM, "gs_counter");
@@ -702,7 +681,7 @@ TEST_P(GeometryShaderTest, ReferencedByGeometryShader)
 // Verify correct errors can be reported when we use illegal parameters on FramebufferTextureEXT.
 TEST_P(GeometryShaderTest, NegativeFramebufferTextureEXT)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLFramebuffer fbo;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -740,7 +719,7 @@ TEST_P(GeometryShaderTest, NegativeFramebufferTextureEXT)
 
     GLint max3DSize;
     glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &max3DSize);
-    GLint max3DLevel = std::log2(max3DSize);
+    GLint max3DLevel = static_cast<GLint>(std::log2(max3DSize));
     glFramebufferTextureEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, max3DLevel + 1);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 }
@@ -748,7 +727,7 @@ TEST_P(GeometryShaderTest, NegativeFramebufferTextureEXT)
 // Verify CheckFramebufferStatus can work correctly on layered depth and stencil attachments.
 TEST_P(GeometryShaderTest, LayeredFramebufferCompletenessWithDepthAttachment)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLint maxFramebufferLayers;
     glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS_EXT, &maxFramebufferLayers);
@@ -821,7 +800,7 @@ TEST_P(GeometryShaderTest, LayeredFramebufferCompletenessWithDepthAttachment)
 // Verify correct errors can be reported when we use layered cube map attachments on a framebuffer.
 TEST_P(GeometryShaderTest, NegativeLayeredFramebufferCompletenessWithCubeMapTextures)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_geometry_shader"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_geometry_shader"));
 
     GLTexture tex;
     glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
@@ -842,4 +821,4 @@ TEST_P(GeometryShaderTest, NegativeLayeredFramebufferCompletenessWithCubeMapText
 
 ANGLE_INSTANTIATE_TEST(GeometryShaderTestES3, ES3_OPENGL(), ES3_OPENGLES(), ES3_D3D11());
 ANGLE_INSTANTIATE_TEST(GeometryShaderTest, ES31_OPENGL(), ES31_OPENGLES(), ES31_D3D11());
-}
+}  // namespace

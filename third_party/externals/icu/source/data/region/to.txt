@@ -1,11 +1,5 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/to.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 to{
     Countries{
         001{"Māmani"}
@@ -25,7 +19,7 @@ to{
         030{"ʻĒsia fakahahake"}
         034{"ʻĒsia fakatonga"}
         035{"ʻĒsia fakatongahahake"}
-        039{"ʻIulope fakatonga"}
+        039{"ʻEulope fakatonga"}
         053{"ʻAositelēlēsia"}
         054{"Melanīsia"}
         057{"Potu fonua Mikolonīsia"}
@@ -33,10 +27,10 @@ to{
         142{"ʻĒsia"}
         143{"ʻĒsia lotoloto"}
         145{"ʻĒsia fakahihifo"}
-        150{"ʻIulope"}
-        151{"ʻIulope fakahahake"}
-        154{"ʻIulope fakatokelau"}
-        155{"ʻIulope fakahihifo"}
+        150{"ʻEulope"}
+        151{"ʻEulope fakahahake"}
+        154{"ʻEulope fakatokelau"}
+        155{"ʻEulope fakahihifo"}
         419{"ʻAmelika fakalatina"}
         AC{"Motu ʻAsenisini"}
         AD{"ʻAnitola"}
@@ -46,7 +40,6 @@ to{
         AI{"Anikuila"}
         AL{"ʻAlipania"}
         AM{"ʻĀmenia"}
-        AN{"Anitila fakahōlani"}
         AO{"ʻAngikola"}
         AQ{"ʻAnitātika"}
         AR{"ʻAsenitina"}
@@ -80,7 +73,7 @@ to{
         CA{"Kānata"}
         CC{"ʻOtumotu Koko"}
         CD{"Kongo - Kinisasa"}
-        CF{"Lipapilika ʻAfilika Lotoloto"}
+        CF{"Lepupelika ʻAfilika Lotoloto"}
         CG{"Kongo - Palasavila"}
         CH{"Suisilani"}
         CI{"Matafonua ʻAivolī"}
@@ -96,14 +89,14 @@ to{
         CW{"Kulasao"}
         CX{"Motu Kilisimasi"}
         CY{"Saipalesi"}
-        CZ{"Lipapilika Seki"}
+        CZ{"Sēkia"}
         DE{"Siamane"}
         DG{"Tieko Kāsia"}
         DJ{"Siputi"}
         DK{"Tenimaʻake"}
         DM{"Tominika"}
-        DO{"Lipapilika Tominika"}
-        DZ{"ʻAisilia"}
+        DO{"Lepupelika Tominika"}
+        DZ{"ʻAlisilia"}
         EA{"Siuta mo Melila"}
         EC{"ʻEkuetoa"}
         EE{"ʻEsitōnia"}
@@ -112,7 +105,8 @@ to{
         ER{"ʻElitulia"}
         ES{"Sipeini"}
         ET{"ʻĪtiōpia"}
-        EU{"ʻIulope fakatahataha"}
+        EU{"ʻEulope fakatahataha"}
+        EZ{"ʻEulope fekauʻaki-paʻanga"}
         FI{"Finilani"}
         FJ{"Fisi"}
         FK{"ʻOtumotu Fokulani"}
@@ -188,13 +182,13 @@ to{
         MF{"Sā Mātini (fakafalanisē)"}
         MG{"Matakasika"}
         MH{"ʻOtumotu Māsolo"}
-        MK{"Masetōnia"}
+        MK{"Masetōnia (FYROM)"}
         ML{"Māli"}
-        MM{"Pema"}
+        MM{"Mianimā (Pema)"}
         MN{"Mongokōlia"}
         MO{"Makau"}
         MP{"ʻOtumotu Maliana tokelau"}
-        MQ{"Māteniki"}
+        MQ{"Mātiniki"}
         MR{"Maulitenia"}
         MS{"Moʻungaselati"}
         MT{"Malita"}
@@ -226,7 +220,7 @@ to{
         PL{"Polani"}
         PM{"Sā Piea mo Mikeloni"}
         PN{"ʻOtumotu Pitikeni"}
-        PR{"Pueto Liko"}
+        PR{"Puēto Liko"}
         PS{"Palesitaine"}
         PT{"Potukali"}
         PW{"Palau"}
@@ -259,7 +253,7 @@ to{
         SX{"Sā Mātini (fakahōlani)"}
         SY{"Sīlia"}
         SZ{"Suasilani"}
-        TA{"Tulisiteni ta Kunuha"}
+        TA{"Tulisitani ta Kunuha"}
         TC{"ʻOtumotu Tuki mo Kaikosi"}
         TD{"Sāti"}
         TF{"Potu fonua tonga fakafalanisē"}
@@ -279,6 +273,7 @@ to{
         UA{"ʻŪkalaʻine"}
         UG{"ʻIukanitā"}
         UM{"ʻOtumotu siʻi ʻo ʻAmelika"}
+        UN{"ʻŪ fonua fakatahataha"}
         US{"Puleʻanga fakatahataha ʻAmelika"}
         UY{"ʻUlukuai"}
         UZ{"ʻUsipekitani"}
@@ -305,8 +300,8 @@ to{
     }
     Countries%variant{
         CD{"Kongo (LTK)"}
-        CG{"Kongo (Lipapilika)"}
-        MK{"Masetōnia (FYROM)"}
+        CG{"Kongo (Lepupelika)"}
+        CZ{"Lepupelika Seki"}
     }
-    Version{"2.1.19.14"}
+    Version{"2.1.44.88"}
 }

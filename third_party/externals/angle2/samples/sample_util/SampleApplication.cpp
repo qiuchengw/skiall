@@ -5,10 +5,11 @@
 //
 
 #include "SampleApplication.h"
-#include "EGLWindow.h"
-#include "random_utils.h"
 
-#include "angle_gl.h"
+#include "util/EGLWindow.h"
+#include "util/gles_loader_autogen.h"
+#include "util/random_utils.h"
+#include "util/system_utils.h"
 
 #include <string.h>
 #include <iostream>
@@ -48,33 +49,32 @@ SampleApplication::SampleApplication(std::string name,
                                      EGLint glesMinorVersion,
                                      size_t width,
                                      size_t height)
-    : mName(std::move(name)), mWidth(width), mHeight(height), mRunning(false)
+    : mName(std::move(name)),
+      mWidth(width),
+      mHeight(height),
+      mRunning(false),
+      mEGLWindow(nullptr),
+      mOSWindow(nullptr)
 {
-    EGLint requestedRenderer = EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
+    mPlatformParams.renderer     = EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
 
     if (argc > 1 && strncmp(argv[1], kUseAngleArg, strlen(kUseAngleArg)) == 0)
     {
-        requestedRenderer = GetDisplayTypeFromArg(argv[1] + strlen(kUseAngleArg));
+        mPlatformParams.renderer = GetDisplayTypeFromArg(argv[1] + strlen(kUseAngleArg));
     }
 
-    mEGLWindow.reset(new EGLWindow(glesMajorVersion, glesMinorVersion,
-                                   EGLPlatformParameters(requestedRenderer)));
+    // Load EGL library so we can initialize the display.
+    mEntryPointsLib.reset(angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
+
+    mEGLWindow = EGLWindow::New(glesMajorVersion, glesMinorVersion);
     mTimer.reset(CreateTimer());
-    mOSWindow.reset(CreateOSWindow());
-
-    mEGLWindow->setConfigRedBits(8);
-    mEGLWindow->setConfigGreenBits(8);
-    mEGLWindow->setConfigBlueBits(8);
-    mEGLWindow->setConfigAlphaBits(8);
-    mEGLWindow->setConfigDepthBits(24);
-    mEGLWindow->setConfigStencilBits(8);
-
-    // Disable vsync
-    mEGLWindow->setSwapInterval(0);
+    mOSWindow = OSWindow::New();
 }
 
 SampleApplication::~SampleApplication()
 {
+    EGLWindow::Delete(&mEGLWindow);
+    OSWindow::Delete(&mOSWindow);
 }
 
 bool SampleApplication::initialize()
@@ -82,17 +82,11 @@ bool SampleApplication::initialize()
     return true;
 }
 
-void SampleApplication::destroy()
-{
-}
+void SampleApplication::destroy() {}
 
-void SampleApplication::step(float dt, double totalTime)
-{
-}
+void SampleApplication::step(float dt, double totalTime) {}
 
-void SampleApplication::draw()
-{
-}
+void SampleApplication::draw() {}
 
 void SampleApplication::swap()
 {
@@ -101,7 +95,7 @@ void SampleApplication::swap()
 
 OSWindow *SampleApplication::getWindow() const
 {
-    return mOSWindow.get();
+    return mOSWindow;
 }
 
 EGLConfig SampleApplication::getConfig() const
@@ -133,18 +127,34 @@ int SampleApplication::run()
 
     mOSWindow->setVisible(true);
 
-    if (!mEGLWindow->initializeGL(mOSWindow.get()))
+    ConfigParameters configParams;
+    configParams.redBits     = 8;
+    configParams.greenBits   = 8;
+    configParams.blueBits    = 8;
+    configParams.alphaBits   = 8;
+    configParams.depthBits   = 24;
+    configParams.stencilBits = 8;
+
+    if (!mEGLWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), mPlatformParams, configParams))
     {
         return -1;
     }
 
-    mRunning = true;
+    // Disable vsync
+    if (!mEGLWindow->setSwapInterval(0))
+    {
+        return -1;
+    }
+
+    angle::LoadGLES(eglGetProcAddress);
+
+    mRunning   = true;
     int result = 0;
 
     if (!initialize())
     {
         mRunning = false;
-        result = -1;
+        result   = -1;
     }
 
     mTimer->start();
@@ -153,7 +163,7 @@ int SampleApplication::run()
     while (mRunning)
     {
         double elapsedTime = mTimer->getElapsedTime();
-        double deltaTime = elapsedTime - prevTime;
+        double deltaTime   = elapsedTime - prevTime;
 
         step(static_cast<float>(deltaTime), elapsedTime);
 

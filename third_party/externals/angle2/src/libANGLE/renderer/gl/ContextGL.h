@@ -30,7 +30,9 @@ struct WorkaroundsGL;
 class ContextGL : public ContextImpl
 {
   public:
-    ContextGL(const gl::ContextState &state, const std::shared_ptr<RendererGL> &renderer);
+    ContextGL(const gl::State &state,
+              gl::ErrorSet *errorSet,
+              const std::shared_ptr<RendererGL> &renderer);
     ~ContextGL() override;
 
     angle::Result initialize() override;
@@ -73,9 +75,31 @@ class ContextGL : public ContextImpl
     // Path object creation
     std::vector<PathImpl *> createPaths(GLsizei range) override;
 
+    // Memory object creation.
+    MemoryObjectImpl *createMemoryObject() override;
+
+    // Semaphore creation.
+    SemaphoreImpl *createSemaphore() override;
+
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
     angle::Result finish(const gl::Context *context) override;
+
+    // Semaphore operations.
+    angle::Result waitSemaphore(const gl::Context *context,
+                                const gl::Semaphore *semaphore,
+                                GLuint numBufferBarriers,
+                                const GLuint *buffers,
+                                GLuint numTextureBarriers,
+                                const GLuint *textures,
+                                const GLenum *srcLayouts) override;
+    angle::Result signalSemaphore(const gl::Context *context,
+                                  const gl::Semaphore *semaphore,
+                                  GLuint numBufferBarriers,
+                                  const GLuint *buffers,
+                                  GLuint numTextureBarriers,
+                                  const GLuint *textures,
+                                  const GLenum *dstLayouts) override;
 
     // Drawing methods.
     angle::Result drawArrays(const gl::Context *context,
@@ -91,12 +115,12 @@ class ContextGL : public ContextImpl
     angle::Result drawElements(const gl::Context *context,
                                gl::PrimitiveMode mode,
                                GLsizei count,
-                               GLenum type,
+                               gl::DrawElementsType type,
                                const void *indices) override;
     angle::Result drawElementsInstanced(const gl::Context *context,
                                         gl::PrimitiveMode mode,
                                         GLsizei count,
-                                        GLenum type,
+                                        gl::DrawElementsType type,
                                         const void *indices,
                                         GLsizei instances) override;
     angle::Result drawRangeElements(const gl::Context *context,
@@ -104,14 +128,14 @@ class ContextGL : public ContextImpl
                                     GLuint start,
                                     GLuint end,
                                     GLsizei count,
-                                    GLenum type,
+                                    gl::DrawElementsType type,
                                     const void *indices) override;
     angle::Result drawArraysIndirect(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      const void *indirect) override;
     angle::Result drawElementsIndirect(const gl::Context *context,
                                        gl::PrimitiveMode mode,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        const void *indirect) override;
 
     // CHROMIUM_path_rendering implementation
@@ -159,7 +183,7 @@ class ContextGL : public ContextImpl
                                              const GLfloat *transformValues) override;
 
     // Device loss
-    GLenum getResetStatus() override;
+    gl::GraphicsResetStatus getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -171,7 +195,7 @@ class ContextGL : public ContextImpl
     void popGroupMarker() override;
 
     // KHR_debug
-    void pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message) override;
+    void pushDebugGroup(GLenum source, GLuint id, const std::string &message) override;
     void popDebugGroup() override;
 
     // State sync with dirty bits.
@@ -211,6 +235,8 @@ class ContextGL : public ContextImpl
     angle::Result memoryBarrier(const gl::Context *context, GLbitfield barriers) override;
     angle::Result memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers) override;
 
+    void setMaxShaderCompilerThreads(GLuint count) override;
+
   private:
     angle::Result setDrawArraysState(const gl::Context *context,
                                      GLint first,
@@ -219,13 +245,12 @@ class ContextGL : public ContextImpl
 
     angle::Result setDrawElementsState(const gl::Context *context,
                                        GLsizei count,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        const void *indices,
                                        GLsizei instanceCount,
                                        const void **outIndices);
 
-    angle::Result setDrawIndirectState(const gl::Context *context);
-
+  protected:
     std::shared_ptr<RendererGL> mRenderer;
 };
 

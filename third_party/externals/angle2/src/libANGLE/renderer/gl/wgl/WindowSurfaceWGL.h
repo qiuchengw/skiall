@@ -29,7 +29,7 @@ class WindowSurfaceWGL : public SurfaceWGL
     ~WindowSurfaceWGL() override;
 
     egl::Error initialize(const egl::Display *display) override;
-    egl::Error makeCurrent() override;
+    egl::Error makeCurrent(const gl::Context *context) override;
 
     egl::Error swap(const gl::Context *context) override;
     egl::Error postSubBuffer(const gl::Context *context,
@@ -63,6 +63,6 @@ class WindowSurfaceWGL : public SurfaceWGL
     EGLint mSwapBehavior;
 };
 
-}
+}  // namespace rx
 
-#endif // LIBANGLE_RENDERER_GL_WGL_WINDOWSURFACEWGL_H_
+#endif  // LIBANGLE_RENDERER_GL_WGL_WINDOWSURFACEWGL_H_

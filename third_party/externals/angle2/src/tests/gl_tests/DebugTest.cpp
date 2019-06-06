@@ -26,11 +26,9 @@ class DebugTest : public ANGLETest
         setDebugEnabled(true);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
-        mDebugExtensionAvailable = extensionEnabled("GL_KHR_debug");
+        mDebugExtensionAvailable = IsGLExtensionEnabled("GL_KHR_debug");
         if (mDebugExtensionAvailable)
         {
             glEnable(GL_DEBUG_OUTPUT);
@@ -116,7 +114,7 @@ TEST_P(DebugTest, InsertMessage)
     GLenum typeBuf     = 0;
     GLenum idBuf       = 0;
     GLenum severityBuf = 0;
-    GLsizei lengthBuf = 0;
+    GLsizei lengthBuf  = 0;
     std::vector<char> messageBuf(messageLength + 1);
     GLuint ret =
         glGetDebugMessageLogKHR(1, static_cast<GLsizei>(messageBuf.size()), &sourceBuf, &typeBuf,
@@ -173,7 +171,7 @@ TEST_P(DebugTest, InsertMessageMultiple)
         GLenum typeBuf     = 0;
         GLenum idBuf       = 0;
         GLenum severityBuf = 0;
-        GLsizei lengthBuf = 0;
+        GLsizei lengthBuf  = 0;
         std::vector<char> messageBuf(messageLength + 1);
         GLuint ret =
             glGetDebugMessageLogKHR(1, static_cast<GLsizei>(messageBuf.size()), &sourceBuf,

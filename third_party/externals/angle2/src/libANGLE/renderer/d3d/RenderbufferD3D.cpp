@@ -6,7 +6,6 @@
 
 // RenderbufferD3d.cpp: Implements the RenderbufferD3D class, a specialization of RenderbufferImpl
 
-
 #include "libANGLE/renderer/d3d/RenderbufferD3D.h"
 
 #include "libANGLE/Context.h"
@@ -20,8 +19,7 @@ namespace rx
 {
 RenderbufferD3D::RenderbufferD3D(const gl::RenderbufferState &state, RendererD3D *renderer)
     : RenderbufferImpl(state), mRenderer(renderer), mRenderTarget(nullptr), mImage(nullptr)
-{
-}
+{}
 
 RenderbufferD3D::~RenderbufferD3D()
 {
@@ -60,8 +58,8 @@ angle::Result RenderbufferD3D::setStorageMultisample(const gl::Context *context,
 
     // ANGLE_framebuffer_multisample states GL_OUT_OF_MEMORY is generated on a failure to create
     // the specified storage.
-    // Because ES 3.0 already knows the exact number of supported samples, it would already have been
-    // validated and generated GL_INVALID_VALUE.
+    // Because ES 3.0 already knows the exact number of supported samples, it would already have
+    // been validated and generated GL_INVALID_VALUE.
     const gl::TextureCaps &formatCaps = mRenderer->getNativeTextureCaps().get(creationFormat);
     ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextD3D>(context), samples <= formatCaps.getMaxSamples());
 
@@ -74,7 +72,7 @@ angle::Result RenderbufferD3D::setStorageMultisample(const gl::Context *context,
     mImage        = nullptr;
     mRenderTarget = newRT;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result RenderbufferD3D::setStorageEGLImageTarget(const gl::Context *context,
@@ -83,7 +81,7 @@ angle::Result RenderbufferD3D::setStorageEGLImageTarget(const gl::Context *conte
     mImage = GetImplAs<EGLImageD3D>(image);
     SafeDelete(mRenderTarget);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result RenderbufferD3D::getRenderTarget(const gl::Context *context,
@@ -96,7 +94,7 @@ angle::Result RenderbufferD3D::getRenderTarget(const gl::Context *context,
     else
     {
         *outRenderTarget = mRenderTarget;
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 }
 

@@ -7,8 +7,6 @@
 // EGLDirectCompositionTest.cpp:
 //   Tests pertaining to DirectComposition and WindowsUIComposition.
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
 #include <d3d11.h>
 #include "test_utils/ANGLETest.h"
 
@@ -21,10 +19,9 @@
 #include <wrl.h>
 #include <memory>
 
-#include "OSWindow.h"
-#include "com_utils.h"
 #include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
-#include "test_utils/ANGLETest.h"
+#include "util/OSWindow.h"
+#include "util/com_utils.h"
 
 using namespace angle;
 using namespace ABI::Windows::System;
@@ -41,7 +38,7 @@ class EGLDirectCompositionTest : public ANGLETest
   protected:
     EGLDirectCompositionTest() : mOSWindow(nullptr) {}
 
-    void SetUp() override
+    void testSetUp() override
     {
         if (!mRoHelper.SupportedWindowsRelease())
         {
@@ -49,7 +46,7 @@ class EGLDirectCompositionTest : public ANGLETest
         }
 
         // Create an OS Window
-        mOSWindow = std::unique_ptr<OSWindow>(CreateOSWindow());
+        mOSWindow = OSWindow::New();
 
         mOSWindow->initialize("EGLDirectCompositionTest", WINDOWWIDTH, WINDOWHEIGHT);
         auto nativeWindow = mOSWindow->getNativeWindow();
@@ -85,7 +82,8 @@ class EGLDirectCompositionTest : public ANGLETest
         ComPtr<IVisual> angleVis;
         ASSERT_TRUE(SUCCEEDED(mAngleHost.As(&angleVis)));
 
-        ASSERT_TRUE(SUCCEEDED(angleVis->put_Size({WINDOWWIDTH, WINDOWHEIGHT})));
+        ASSERT_TRUE(SUCCEEDED(angleVis->put_Size(
+            {static_cast<FLOAT>(WINDOWWIDTH), static_cast<FLOAT>(WINDOWHEIGHT)})));
 
         ASSERT_TRUE(SUCCEEDED(angleVis->put_Offset({0, 0, 0})));
 
@@ -146,7 +144,9 @@ class EGLDirectCompositionTest : public ANGLETest
             EGL_DEPTH_SIZE, 8, EGL_STENCIL_SIZE, 8, EGL_NONE};
 
         const EGLint defaultDisplayAttributes[] = {
-            EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_NONE,
+            EGL_PLATFORM_ANGLE_TYPE_ANGLE,
+            EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+            EGL_NONE,
         };
 
         PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
@@ -191,16 +191,18 @@ class EGLDirectCompositionTest : public ANGLETest
         ASSERT_TRUE(eglMakeCurrent(mEglDisplay, surface, surface, mEglContext) != EGL_FALSE);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (!mRoHelper.SupportedWindowsRelease())
         {
             return;
         }
         ASSERT_EGL_TRUE(eglTerminate(mEglDisplay));
+
+        OSWindow::Delete(&mOSWindow);
     }
 
-    std::unique_ptr<OSWindow> mOSWindow;
+    OSWindow *mOSWindow;
     ComPtr<ICompositor> mCompositor;
     ComPtr<IDispatcherQueueController> mDispatcherController;
     ComPtr<ICompositionColorBrush> mColorBrush;
@@ -287,4 +289,4 @@ TEST_P(EGLDirectCompositionTest, RenderSolidColor)
     ASSERT_EGL_TRUE(eglDestroyContext(mEglDisplay, mEglContext));
 }
 
-ANGLE_INSTANTIATE_TEST(EGLDirectCompositionTest, ES2_D3D11());
+ANGLE_INSTANTIATE_TEST(EGLDirectCompositionTest, WithNoFixture(ES2_D3D11()));

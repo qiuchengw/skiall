@@ -49,8 +49,7 @@ class VertexData
   public:
     VertexData(int dimension, const double *data, unsigned offset, unsigned stride)
         : mDimension(dimension), mData(data), mOffset(offset), mStride(stride)
-    {
-    }
+    {}
     int getDimension() const { return mDimension; }
     double getValue(unsigned vertexNumber, int component) const
     {
@@ -168,7 +167,7 @@ struct Attrib
 template <class T>
 void Store(double value, void *dest)
 {
-    T v = value;
+    T v = static_cast<T>(value);
     memcpy(dest, &v, sizeof(v));
 }
 
@@ -243,16 +242,14 @@ class AttributeLayoutTest : public ANGLETest
 
     void GetTestCases(void);
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glClearColor(.2f, .2f, .2f, .0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDisable(GL_DEPTH_TEST);
 
-        const std::string vertexSource =
+        constexpr char kVS[] =
             "attribute mediump vec2 coord;\n"
             "attribute mediump vec3 color;\n"
             "varying mediump vec3 vcolor;\n"
@@ -262,14 +259,14 @@ class AttributeLayoutTest : public ANGLETest
             "    vcolor = color;\n"
             "}\n";
 
-        const std::string fragmentSource =
+        constexpr char kFS[] =
             "varying mediump vec3 vcolor;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = vec4(vcolor, 0);\n"
             "}\n";
 
-        mProgram = CompileProgram(vertexSource, fragmentSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mProgram);
         glUseProgram(mProgram);
 
@@ -278,12 +275,11 @@ class AttributeLayoutTest : public ANGLETest
         GetTestCases();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         mTestCases.clear();
         glDeleteProgram(mProgram);
         glDeleteBuffers(1, &mIndexBuffer);
-        ANGLETest::TearDown();
     }
 
     virtual bool Skip(const TestCase &) { return false; }
@@ -410,9 +406,9 @@ void AttributeLayoutTest::GetTestCases(void)
     if (es3)
     {
         mTestCases.push_back({SInt(M0, 0, 40, mCoord), UInt(M0, 16, 40, mColor)});
-        if (!IsAndroid())
-            mTestCases.push_back(
-                {NormSInt(M0, 0, 40, mCoord), NormUInt(M0, 16, 40, mColor)});  // anglebug.com/2641
+        // Fails on Nexus devices (anglebug.com/2641)
+        if (!IsNexus5X() && !IsNexus6P())
+            mTestCases.push_back({NormSInt(M0, 0, 40, mCoord), NormUInt(M0, 16, 40, mColor)});
     }
 }
 
@@ -465,9 +461,9 @@ TEST_P(AttributeLayoutBufferIndexed, Test)
     Run(false);
 }
 
-#define PARAMS                                                                            \
-    ES2_VULKAN(), ES2_OPENGL(), ES2_D3D9(), ES2_D3D11(), ES2_D3D11_FL9_3(), ES3_OPENGL(), \
-        ES2_OPENGLES(), ES3_OPENGLES()
+#define PARAMS                                                                         \
+    ES2_VULKAN(), ES2_OPENGL(), ES2_D3D9(), ES2_D3D11(), ES3_OPENGL(), ES2_OPENGLES(), \
+        ES3_OPENGLES()
 
 ANGLE_INSTANTIATE_TEST(AttributeLayoutNonIndexed, PARAMS);
 ANGLE_INSTANTIATE_TEST(AttributeLayoutMemoryIndexed, PARAMS);

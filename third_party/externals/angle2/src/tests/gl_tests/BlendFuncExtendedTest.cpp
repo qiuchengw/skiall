@@ -8,7 +8,7 @@
 
 #include "test_utils/ANGLETest.h"
 
-#include "shader_utils.h"
+#include "util/shader_utils.h"
 
 #include <algorithm>
 #include <cmath>
@@ -85,12 +85,10 @@ const GLuint kWidth  = 100;
 const GLuint kHeight = 100;
 
 class EXTBlendFuncExtendedTest : public ANGLETest
-{
-};
+{};
 
 class EXTBlendFuncExtendedTestES3 : public ANGLETest
-{
-};
+{};
 
 class EXTBlendFuncExtendedDrawTest : public ANGLETest
 {
@@ -105,10 +103,8 @@ class EXTBlendFuncExtendedDrawTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenBuffers(1, &mVBO);
         glBindBuffer(GL_ARRAY_BUFFER, mVBO);
 
@@ -120,7 +116,7 @@ class EXTBlendFuncExtendedDrawTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mVBO);
         if (mProgram)
@@ -129,8 +125,6 @@ class EXTBlendFuncExtendedDrawTest : public ANGLETest
         }
 
         ASSERT_GL_NO_ERROR();
-
-        ANGLETest::TearDown();
     }
 
     void makeProgram(const char *vertSource, const char *fragSource)
@@ -213,9 +207,9 @@ class EXTBlendFuncExtendedDrawTestES3 : public EXTBlendFuncExtendedDrawTest
   protected:
     EXTBlendFuncExtendedDrawTestES3() : EXTBlendFuncExtendedDrawTest(), mIsES31OrNewer(false) {}
 
-    void SetUp() override
+    void testSetUp() override
     {
-        EXTBlendFuncExtendedDrawTest::SetUp();
+        EXTBlendFuncExtendedDrawTest::testSetUp();
         if (getClientMajorVersion() > 3 || getClientMinorVersion() >= 1)
         {
             mIsES31OrNewer = true;
@@ -246,7 +240,7 @@ class EXTBlendFuncExtendedDrawTestES3 : public EXTBlendFuncExtendedDrawTest
 // Test EXT_blend_func_extended related gets.
 TEST_P(EXTBlendFuncExtendedTest, TestMaxDualSourceDrawBuffers)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     GLint maxDualSourceDrawBuffers = 0;
     glGetIntegerv(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT, &maxDualSourceDrawBuffers);
@@ -259,7 +253,7 @@ TEST_P(EXTBlendFuncExtendedTest, TestMaxDualSourceDrawBuffers)
 // Outputs to primary color buffer using primary and secondary colors.
 TEST_P(EXTBlendFuncExtendedDrawTest, FragColor)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     const char *kFragColorShader =
         "#extension GL_EXT_blend_func_extended : require\n"
@@ -280,7 +274,7 @@ TEST_P(EXTBlendFuncExtendedDrawTest, FragColor)
 // Outputs to a color buffer using primary and secondary frag data.
 TEST_P(EXTBlendFuncExtendedDrawTest, FragData)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     const char *kFragColorShader =
         "#extension GL_EXT_blend_func_extended : require\n"
@@ -300,7 +294,7 @@ TEST_P(EXTBlendFuncExtendedDrawTest, FragData)
 // Test an ESSL 3.00 shader that uses two fragment outputs with locations specified in the shader.
 TEST_P(EXTBlendFuncExtendedDrawTestES3, FragmentOutputLocationsInShader)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     const char *kFragColorShader = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
@@ -325,9 +319,9 @@ void main() {
 // Test an ESSL 3.00 shader that uses two fragment outputs with locations specified through the API.
 TEST_P(EXTBlendFuncExtendedDrawTestES3, FragmentOutputLocationAPI)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
-    const std::string &kFragColorShader = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
 precision mediump float;
 uniform vec4 src0;
@@ -339,7 +333,7 @@ void main() {
     outSrc1 = src1;
 })";
 
-    mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFragColorShader, [](GLuint program) {
+    mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFS, [](GLuint program) {
         glBindFragDataLocationIndexedEXT(program, 0, 0, "outSrc0");
         glBindFragDataLocationIndexedEXT(program, 0, 1, "outSrc1");
     });
@@ -356,9 +350,9 @@ void main() {
 // the API and location for another being set automatically.
 TEST_P(EXTBlendFuncExtendedDrawTestES3, FragmentOutputLocationsAPIAndAutomatic)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
-    const std::string &kFragColorShader = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
 precision mediump float;
 uniform vec4 src0;
@@ -370,7 +364,7 @@ void main() {
     outSrc1 = src1;
 })";
 
-    mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFragColorShader, [](GLuint program) {
+    mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFS, [](GLuint program) {
         glBindFragDataLocationIndexedEXT(program, 0, 1, "outSrc1");
     });
 
@@ -386,12 +380,12 @@ void main() {
 // the API.
 TEST_P(EXTBlendFuncExtendedDrawTestES3, FragmentArrayOutputLocationsAPI)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     // TODO: Investigate this mac-only failure.  http://angleproject.com/1085
     ANGLE_SKIP_TEST_IF(IsOSX());
 
-    const std::string &kFragColorShader = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
 precision mediump float;
 uniform vec4 src0;
@@ -403,7 +397,7 @@ void main() {
     outSrc1[0] = src1;
 })";
 
-    mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFragColorShader, [](GLuint program) {
+    mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFS, [](GLuint program) {
         // Specs aren't very clear on what kind of name should be used when binding location for
         // array variables. We only allow names that do include the "[0]" suffix.
         glBindFragDataLocationIndexedEXT(program, 0, 0, "outSrc0[0]");
@@ -430,9 +424,9 @@ void main() {
 // Test an ESSL 3.00 program with a link-time fragment output location conflict.
 TEST_P(EXTBlendFuncExtendedTestES3, FragmentOutputLocationConflict)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
-    const std::string &kFragShader = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
 precision mediump float;
 uniform vec4 src0;
@@ -445,7 +439,7 @@ void main() {
 })";
 
     GLuint vs = CompileShader(GL_VERTEX_SHADER, essl3_shaders::vs::Simple());
-    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFragShader);
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFS);
     ASSERT_NE(0u, vs);
     ASSERT_NE(0u, fs);
 
@@ -471,9 +465,9 @@ void main() {
 // create link-time conflicts.
 TEST_P(EXTBlendFuncExtendedTestES3, FragmentOutputLocationForNonexistentOutput)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
-    const std::string &kFragShader = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
 precision mediump float;
 uniform vec4 src0;
@@ -483,7 +477,7 @@ void main() {
 })";
 
     GLuint vs = CompileShader(GL_VERTEX_SHADER, essl3_shaders::vs::Simple());
-    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFragShader);
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, kFS);
     ASSERT_NE(0u, vs);
     ASSERT_NE(0u, fs);
 
@@ -510,13 +504,13 @@ void main() {
 // Test mixing shader-assigned and automatic output locations.
 TEST_P(EXTBlendFuncExtendedTestES3, FragmentOutputLocationsPartiallyAutomatic)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     GLint maxDrawBuffers;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
     ANGLE_SKIP_TEST_IF(maxDrawBuffers < 4);
 
-    const std::string &kFragShader = R"(#version 300 es
+    constexpr char kFS[] = R"(#version 300 es
 #extension GL_EXT_blend_func_extended : require
 precision mediump float;
 uniform vec4 src0;
@@ -533,7 +527,7 @@ void main() {
     out3 = src3;
 })";
 
-    GLuint program = CompileProgram(essl3_shaders::vs::Simple(), kFragShader);
+    GLuint program = CompileProgram(essl3_shaders::vs::Simple(), kFS);
     ASSERT_NE(0u, program);
 
     GLint location = glGetFragDataLocation(program, "out0");
@@ -549,7 +543,7 @@ void main() {
 // Test a fragment output array that doesn't fit because contiguous locations are not available.
 TEST_P(EXTBlendFuncExtendedTestES3, FragmentOutputArrayDoesntFit)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_blend_func_extended"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_blend_func_extended"));
 
     GLint maxDrawBuffers;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuffers);
@@ -568,7 +562,7 @@ void main() {
 })";
 
     GLuint vs = CompileShader(GL_VERTEX_SHADER, essl3_shaders::vs::Simple());
-    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fragShader.str());
+    GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fragShader.str().c_str());
     ASSERT_NE(0u, vs);
     ASSERT_NE(0u, fs);
 

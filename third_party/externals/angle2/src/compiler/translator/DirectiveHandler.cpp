@@ -10,6 +10,7 @@
 
 #include "angle_gl.h"
 #include "common/debug.h"
+#include "compiler/translator/Common.h"
 #include "compiler/translator/Diagnostics.h"
 
 namespace sh
@@ -43,12 +44,9 @@ TDirectiveHandler::TDirectiveHandler(TExtensionBehavior &extBehavior,
       mShaderVersion(shaderVersion),
       mShaderType(shaderType),
       mDebugShaderPrecisionSupported(debugShaderPrecisionSupported)
-{
-}
+{}
 
-TDirectiveHandler::~TDirectiveHandler()
-{
-}
+TDirectiveHandler::~TDirectiveHandler() {}
 
 void TDirectiveHandler::handleError(const angle::pp::SourceLocation &loc, const std::string &msg)
 {
@@ -193,7 +191,7 @@ void TDirectiveHandler::handleVersion(const angle::pp::SourceLocation &loc, int 
     }
     else
     {
-        std::stringstream stream;
+        std::stringstream stream = sh::InitializeStream<std::stringstream>();
         stream << version;
         std::string str = stream.str();
         mDiagnostics.error(loc, "version number not supported", str.c_str());

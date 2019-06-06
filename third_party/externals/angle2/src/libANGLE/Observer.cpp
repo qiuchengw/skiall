@@ -19,16 +19,13 @@
 namespace angle
 {
 namespace
-{
-}  // anonymous namespace
+{}  // anonymous namespace
 
 // Observer implementation.
 ObserverInterface::~ObserverInterface() = default;
 
 // Subject implementation.
-Subject::Subject()
-{
-}
+Subject::Subject() {}
 
 Subject::~Subject()
 {
@@ -100,10 +97,5 @@ void ObserverBinding::onStateChange(const gl::Context *context, SubjectMessage m
 void ObserverBinding::onSubjectReset()
 {
     mSubject = nullptr;
-}
-
-const Subject *ObserverBinding::getSubject() const
-{
-    return mSubject;
 }
 }  // namespace angle

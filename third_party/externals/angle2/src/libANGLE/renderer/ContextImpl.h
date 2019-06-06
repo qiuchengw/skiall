@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "common/angleutils.h"
-#include "libANGLE/ContextState.h"
+#include "libANGLE/State.h"
 #include "libANGLE/renderer/GLImplFactory.h"
 
 namespace gl
@@ -21,15 +21,16 @@ namespace gl
 class ErrorSet;
 class MemoryProgramCache;
 class Path;
+class Semaphore;
 struct Workarounds;
-}
+}  // namespace gl
 
 namespace rx
 {
 class ContextImpl : public GLImplFactory
 {
   public:
-    ContextImpl(const gl::ContextState &state);
+    ContextImpl(const gl::State &state, gl::ErrorSet *errorSet);
     ~ContextImpl() override;
 
     virtual void onDestroy(const gl::Context *context) {}
@@ -40,11 +41,27 @@ class ContextImpl : public GLImplFactory
     virtual angle::Result flush(const gl::Context *context)  = 0;
     virtual angle::Result finish(const gl::Context *context) = 0;
 
+    // Semaphore operations.
+    virtual angle::Result waitSemaphore(const gl::Context *context,
+                                        const gl::Semaphore *semaphore,
+                                        GLuint numBufferBarriers,
+                                        const GLuint *buffers,
+                                        GLuint numTextureBarriers,
+                                        const GLuint *textures,
+                                        const GLenum *srcLayouts)   = 0;
+    virtual angle::Result signalSemaphore(const gl::Context *context,
+                                          const gl::Semaphore *semaphore,
+                                          GLuint numBufferBarriers,
+                                          const GLuint *buffers,
+                                          GLuint numTextureBarriers,
+                                          const GLuint *textures,
+                                          const GLenum *dstLayouts) = 0;
+
     // Drawing methods.
     virtual angle::Result drawArrays(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      GLint first,
-                                     GLsizei count)              = 0;
+                                     GLsizei count)                  = 0;
     virtual angle::Result drawArraysInstanced(const gl::Context *context,
                                               gl::PrimitiveMode mode,
                                               GLint first,
@@ -54,12 +71,12 @@ class ContextImpl : public GLImplFactory
     virtual angle::Result drawElements(const gl::Context *context,
                                        gl::PrimitiveMode mode,
                                        GLsizei count,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        const void *indices)        = 0;
     virtual angle::Result drawElementsInstanced(const gl::Context *context,
                                                 gl::PrimitiveMode mode,
                                                 GLsizei count,
-                                                GLenum type,
+                                                gl::DrawElementsType type,
                                                 const void *indices,
                                                 GLsizei instances) = 0;
     virtual angle::Result drawRangeElements(const gl::Context *context,
@@ -67,7 +84,7 @@ class ContextImpl : public GLImplFactory
                                             GLuint start,
                                             GLuint end,
                                             GLsizei count,
-                                            GLenum type,
+                                            gl::DrawElementsType type,
                                             const void *indices)   = 0;
 
     virtual angle::Result drawArraysIndirect(const gl::Context *context,
@@ -75,7 +92,7 @@ class ContextImpl : public GLImplFactory
                                              const void *indirect)   = 0;
     virtual angle::Result drawElementsIndirect(const gl::Context *context,
                                                gl::PrimitiveMode mode,
-                                               GLenum type,
+                                               gl::DrawElementsType type,
                                                const void *indirect) = 0;
 
     // CHROMIUM_path_rendering path drawing methods.
@@ -125,7 +142,7 @@ class ContextImpl : public GLImplFactory
                                                      const GLfloat *transformValues);
 
     // Device loss
-    virtual GLenum getResetStatus() = 0;
+    virtual gl::GraphicsResetStatus getResetStatus() = 0;
 
     // Vendor and description strings.
     virtual std::string getVendorString() const        = 0;
@@ -137,8 +154,11 @@ class ContextImpl : public GLImplFactory
     virtual void popGroupMarker()                                      = 0;
 
     // KHR_debug
-    virtual void pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message) = 0;
-    virtual void popDebugGroup()                                                               = 0;
+    virtual void pushDebugGroup(GLenum source, GLuint id, const std::string &message) = 0;
+    virtual void popDebugGroup()                                                      = 0;
+
+    // KHR_parallel_shader_compile
+    virtual void setMaxShaderCompilerThreads(GLuint count) {}
 
     // State sync with dirty bits.
     virtual angle::Result syncState(const gl::Context *context,
@@ -151,6 +171,7 @@ class ContextImpl : public GLImplFactory
 
     // Context switching
     virtual angle::Result onMakeCurrent(const gl::Context *context) = 0;
+    virtual angle::Result onUnMakeCurrent(const gl::Context *context);
 
     // Native capabilities, unmodified by gl::Context.
     virtual gl::Caps getNativeCaps() const                         = 0;
@@ -171,10 +192,9 @@ class ContextImpl : public GLImplFactory
     virtual angle::Result memoryBarrierByRegion(const gl::Context *context,
                                                 GLbitfield barriers)                     = 0;
 
-    const gl::ContextState &getContextState() { return mState; }
+    const gl::State &getState() { return mState; }
     int getClientMajorVersion() const { return mState.getClientMajorVersion(); }
     int getClientMinorVersion() const { return mState.getClientMinorVersion(); }
-    const gl::State &getGLState() const { return mState.getState(); }
     const gl::Caps &getCaps() const { return mState.getCaps(); }
     const gl::TextureCapsMap &getTextureCaps() const { return mState.getTextureCaps(); }
     const gl::Extensions &getExtensions() const { return mState.getExtensions(); }
@@ -185,9 +205,6 @@ class ContextImpl : public GLImplFactory
     // on draw calls we can store the refreshed shaders in the cache.
     void setMemoryProgramCache(gl::MemoryProgramCache *memoryProgramCache);
 
-    // TODO(jmadill): Move init into the constructor. http://anglebug.com/2491
-    void setErrorSet(gl::ErrorSet *errorSet);
-
     void handleError(GLenum errorCode,
                      const char *message,
                      const char *file,
@@ -195,7 +212,7 @@ class ContextImpl : public GLImplFactory
                      unsigned int line);
 
   protected:
-    const gl::ContextState &mState;
+    const gl::State &mState;
     gl::MemoryProgramCache *mMemoryProgramCache;
     gl::ErrorSet *mErrors;
 };

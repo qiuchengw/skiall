@@ -1,13 +1,7 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/ka.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 ka{
-    Version{"2.1.19.94"}
+    Version{"2.1.43.50"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -85,6 +79,7 @@ ka{
                 dnam{"კვადრატული კილომეტრი"}
                 one{"{0} კვადრატული კილომეტრი"}
                 other{"{0} კვადრატული კილომეტრი"}
+                per{"{0} კვადრატულ კილომეტრში"}
             }
             square-meter{
                 dnam{"კვადრატული მეტრი"}
@@ -96,6 +91,7 @@ ka{
                 dnam{"კვადრატული მილი"}
                 one{"{0} კვადრატული მილი"}
                 other{"{0} კვადრატული მილი"}
+                per{"{0} კვადრატულ მილში"}
             }
             square-yard{
                 dnam{"კვადრატული იარდი"}
@@ -105,6 +101,38 @@ ka{
         }
         compound{
             per{"{0}/{1}"}
+        }
+        concentr{
+            karat{
+                dnam{"კარატი"}
+                one{"{0} კარატი"}
+                other{"{0} კარატი"}
+            }
+            milligram-per-deciliter{
+                dnam{"მილიგრამი დეცილიტრზე"}
+                one{"{0} მილიგრამი დეცილიტრზე"}
+                other{"{0} მილიგრამი დეცილიტრზე"}
+            }
+            millimole-per-liter{
+                dnam{"მილიმოლი ლიტრზე"}
+                one{"{0} მილიმოლი ლიტრზე"}
+                other{"{0} მილიმოლი ლიტრზე"}
+            }
+            part-per-million{
+                dnam{"ნაწილი მილიონზე"}
+                one{"{0} ნაწილი მილიონზე"}
+                other{"{0} ნაწილი მილიონზე"}
+            }
+            percent{
+                dnam{"პროცენტი"}
+                one{"{0} პროცენტი"}
+                other{"{0} პროცენტი"}
+            }
+            permille{
+                dnam{"პრომილე"}
+                one{"{0} პრომილე"}
+                other{"{0} პრომილე"}
+            }
         }
         consumption{
             liter-per-100kilometers{
@@ -122,8 +150,14 @@ ka{
                 one{"{0} მილი გალონზე"}
                 other{"{0} მილი გალონზე"}
             }
+            mile-per-gallon-imperial{
+                dnam{"იმპ. გალონი მილზე"}
+                one{"{0} იმპ. გალონი მილზე"}
+                other{"{0} იმპ. გალონი მილზე"}
+            }
         }
         coordinate{
+            dnam{"კარდინალური მიმართულება"}
             east{"{0} აღმოსავლეთით"}
             north{"{0} ჩრდილოეთით"}
             south{"{0} სამხრეთით"}
@@ -169,6 +203,11 @@ ka{
                 dnam{"მეგაბაიტი"}
                 one{"{0} მეგაბაიტი"}
                 other{"{0} მეგაბაიტი"}
+            }
+            petabyte{
+                dnam{"პბაიტი"}
+                one{"{0} პბაიტი"}
+                other{"{0} პეტაბაიტი"}
             }
             terabit{
                 dnam{"ტერაბიტი"}
@@ -407,6 +446,11 @@ ka{
                 one{"{0} პიკომეტრი"}
                 other{"{0} პიკომეტრი"}
             }
+            point{
+                dnam{"პუნქტი"}
+                one{"{0} პუნქტი"}
+                other{"{0} პუნქტი"}
+            }
             yard{
                 dnam{"იარდი"}
                 one{"{0} იარდი"}
@@ -509,6 +553,11 @@ ka{
             }
         }
         pressure{
+            atmosphere{
+                dnam{"ატმოსფეროები"}
+                one{"{0} ატმოსფერო"}
+                other{"{0} ატმოსფერო"}
+            }
             hectopascal{
                 dnam{"ჰექტოპასკალი"}
                 one{"{0} ჰექტოპასკალი"}
@@ -533,13 +582,6 @@ ka{
                 dnam{"ფუნტი კვადრატულ დუიმზე"}
                 one{"{0} ფუნტი კვადრატულ დუიმზე"}
                 other{"{0} ფუნტი კვადრატულ დუიმზე"}
-            }
-        }
-        proportion{
-            karat{
-                dnam{"კარატი"}
-                one{"{0} კარატი"}
-                other{"{0} კარატი"}
             }
         }
         speed{
@@ -660,6 +702,12 @@ ka{
                 other{"{0} გალონი"}
                 per{"{0} გალონში"}
             }
+            gallon-imperial{
+                dnam{"იმპ. გალონი"}
+                one{"{0} იმპ. გალონი"}
+                other{"{0} იმპ. გალონი"}
+                per{"{0}/იმპ. გალ."}
+            }
             hectoliter{
                 dnam{"ჰექტოლიტრი"}
                 one{"{0} ჰექტოლიტრი"}
@@ -758,6 +806,13 @@ ka{
         compound{
             per{"{0}/{1}"}
         }
+        concentr{
+            percent{
+                dnam{"%"}
+                one{"{0}%"}
+                other{"{0}%"}
+            }
+        }
         consumption{
             liter-per-100kilometers{
                 dnam{"ლ/100კმ"}
@@ -766,6 +821,7 @@ ka{
             }
         }
         coordinate{
+            dnam{"მიმართულება"}
             east{"{0}აღმ."}
             north{"{0}ჩრდ."}
             south{"{0} სამხრ."}
@@ -1021,6 +1077,7 @@ ka{
                 dnam{"კმ²"}
                 one{"{0} კმ²"}
                 other{"{0} კმ²"}
+                per{"{0}/კმ²"}
             }
             square-meter{
                 dnam{"მ²"}
@@ -1032,6 +1089,7 @@ ka{
                 dnam{"მილი²"}
                 one{"{0} მილი²"}
                 other{"{0} მილი²"}
+                per{"{0}/მილი²"}
             }
             square-yard{
                 dnam{"იარდი²"}
@@ -1041,6 +1099,38 @@ ka{
         }
         compound{
             per{"{0}/{1}"}
+        }
+        concentr{
+            karat{
+                dnam{"კარატი"}
+                one{"{0} კარ."}
+                other{"{0} კარ."}
+            }
+            milligram-per-deciliter{
+                dnam{"მგ/დლ"}
+                one{"{0} მგ/დლ"}
+                other{"{0} მგ/დლ"}
+            }
+            millimole-per-liter{
+                dnam{"მმოლ/ლ"}
+                one{"{0} მმოლ/ლ"}
+                other{"{0} მმოლ/ლ"}
+            }
+            part-per-million{
+                dnam{"ნაწილი/მილიონზე"}
+                one{"{0} ppm"}
+                other{"{0} ppm"}
+            }
+            percent{
+                dnam{"%"}
+                one{"{0}%"}
+                other{"{0}%"}
+            }
+            permille{
+                dnam{"‰"}
+                one{"{0}‰"}
+                other{"{0}‰"}
+            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1058,8 +1148,14 @@ ka{
                 one{"{0} მილი/გალ."}
                 other{"{0} მილი/გალ."}
             }
+            mile-per-gallon-imperial{
+                dnam{"მილი/იმპ. გალონზე"}
+                one{"{0} მილი/იმპ. გალონზე"}
+                other{"{0} მილი/იმპ. გალონზე"}
+            }
         }
         coordinate{
+            dnam{"მიმართულება"}
             east{"{0}აღმ."}
             north{"{0}ჩრდ."}
             south{"{0} სამხრ."}
@@ -1105,6 +1201,11 @@ ka{
                 dnam{"მბაიტი"}
                 one{"{0} მბაიტი"}
                 other{"{0} მბაიტი"}
+            }
+            petabyte{
+                dnam{"პბაიტი"}
+                one{"{0} პბაიტი"}
+                other{"{0} პბაიტი"}
             }
             terabit{
                 dnam{"ტბიტი"}
@@ -1343,6 +1444,11 @@ ka{
                 one{"{0} პმ"}
                 other{"{0} პმ"}
             }
+            point{
+                dnam{"პნქტ."}
+                one{"{0} პნქტ."}
+                other{"{0} პქნტ."}
+            }
             yard{
                 dnam{"იარდი"}
                 one{"{0} იარდი"}
@@ -1445,6 +1551,11 @@ ka{
             }
         }
         pressure{
+            atmosphere{
+                dnam{"ატმ."}
+                one{"{0} ატმ."}
+                other{"{0} ატმ."}
+            }
             hectopascal{
                 dnam{"ჰპა"}
                 one{"{0} ჰპა"}
@@ -1469,13 +1580,6 @@ ka{
                 dnam{"ფნტ. კვ. დმ."}
                 one{"{0} ფნტ. კვ. დმ."}
                 other{"{0} ფნტ. კვ. დმ."}
-            }
-        }
-        proportion{
-            karat{
-                dnam{"კარატი"}
-                one{"{0} კარ."}
-                other{"{0} კარ."}
             }
         }
         speed{
@@ -1595,6 +1699,12 @@ ka{
                 one{"{0} გალონი"}
                 other{"{0} გალონი"}
                 per{"{0}/გალონი"}
+            }
+            gallon-imperial{
+                dnam{"იმპ. გალ."}
+                one{"{0} იმპ. გალ."}
+                other{"{0} იმპ. გალ."}
+                per{"{0}/იმპ. გალ."}
             }
             hectoliter{
                 dnam{"ჰლ"}

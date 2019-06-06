@@ -13,7 +13,8 @@
 // limitations under the License.
 
 #include "VkShaderModule.hpp"
-#include <memory.h>
+
+#include <cstring>
 
 namespace vk
 {
@@ -21,6 +22,7 @@ namespace vk
 ShaderModule::ShaderModule(const VkShaderModuleCreateInfo* pCreateInfo, void* mem) : code(reinterpret_cast<uint32_t*>(mem))
 {
 	memcpy(code, pCreateInfo->pCode, pCreateInfo->codeSize);
+	wordCount = static_cast<uint32_t>(pCreateInfo->codeSize / sizeof(uint32_t));
 }
 
 void ShaderModule::destroy(const VkAllocationCallbacks* pAllocator)

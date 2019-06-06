@@ -14,8 +14,8 @@
 #include "common/Color.h"
 #include "common/MemoryBuffer.h"
 #include "common/debug.h"
-#include "libANGLE/ContextState.h"
 #include "libANGLE/Device.h"
+#include "libANGLE/State.h"
 #include "libANGLE/Version.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/formatutils.h"
@@ -36,7 +36,7 @@ class FramebufferState;
 class InfoLog;
 class Texture;
 struct LinkedVarying;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -92,25 +92,25 @@ class Context : angle::NonCopyable
 
 // ANGLE_TRY for HRESULT errors.
 #define ANGLE_TRY_HR(CONTEXT, EXPR, MESSAGE)                                                     \
-    \
-{                                                                                         \
+    do                                                                                           \
+    {                                                                                            \
         auto ANGLE_LOCAL_VAR = (EXPR);                                                           \
         if (ANGLE_UNLIKELY(FAILED(ANGLE_LOCAL_VAR)))                                             \
         {                                                                                        \
             CONTEXT->handleResult(ANGLE_LOCAL_VAR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
-            return angle::Result::Stop();                                                        \
+            return angle::Result::Stop;                                                          \
         }                                                                                        \
-    \
-}
+    } while (0)
 
 #define ANGLE_CHECK_HR(CONTEXT, EXPR, MESSAGE, ERROR)                                  \
+    do                                                                                 \
     {                                                                                  \
         if (ANGLE_UNLIKELY(!(EXPR)))                                                   \
         {                                                                              \
             CONTEXT->handleResult(ERROR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
-            return angle::Result::Stop();                                              \
+            return angle::Result::Stop;                                                \
         }                                                                              \
-    }
+    } while (0)
 
 #define ANGLE_HR_UNREACHABLE(context) \
     UNREACHABLE();                    \
@@ -156,7 +156,7 @@ class RendererD3D : public BufferFactoryD3D
     virtual egl::ConfigSet generateConfigs()                                            = 0;
     virtual void generateDisplayExtensions(egl::DisplayExtensions *outExtensions) const = 0;
 
-    virtual ContextImpl *createContext(const gl::ContextState &state) = 0;
+    virtual ContextImpl *createContext(const gl::State &state, gl::ErrorSet *errorSet) = 0;
 
     std::string getVendorString() const;
 
@@ -294,30 +294,30 @@ class RendererD3D : public BufferFactoryD3D
                                                          RenderTargetD3D *renderTargetD3D) = 0;
     virtual TextureStorage *createTextureStorageExternal(
         egl::Stream *stream,
-        const egl::Stream::GLTextureDescription &desc)                                   = 0;
+        const egl::Stream::GLTextureDescription &desc)                                        = 0;
     virtual TextureStorage *createTextureStorage2D(GLenum internalformat,
                                                    bool renderTarget,
                                                    GLsizei width,
                                                    GLsizei height,
                                                    int levels,
-                                                   bool hintLevelZeroOnly)               = 0;
+                                                   bool hintLevelZeroOnly)                    = 0;
     virtual TextureStorage *createTextureStorageCube(GLenum internalformat,
                                                      bool renderTarget,
                                                      int size,
                                                      int levels,
-                                                     bool hintLevelZeroOnly)             = 0;
+                                                     bool hintLevelZeroOnly)                  = 0;
     virtual TextureStorage *createTextureStorage3D(GLenum internalformat,
                                                    bool renderTarget,
                                                    GLsizei width,
                                                    GLsizei height,
                                                    GLsizei depth,
-                                                   int levels)                           = 0;
+                                                   int levels)                                = 0;
     virtual TextureStorage *createTextureStorage2DArray(GLenum internalformat,
                                                         bool renderTarget,
                                                         GLsizei width,
                                                         GLsizei height,
                                                         GLsizei depth,
-                                                        int levels)                      = 0;
+                                                        int levels)                           = 0;
     virtual TextureStorage *createTextureStorage2DMultisample(GLenum internalformat,
                                                               GLsizei width,
                                                               GLsizei height,
@@ -343,7 +343,7 @@ class RendererD3D : public BufferFactoryD3D
                                                   const gl::Box &destArea)    = 0;
 
     // Device lost
-    GLenum getResetStatus();
+    gl::GraphicsResetStatus getResetStatus();
     void notifyDeviceLost();
     virtual bool resetDevice()          = 0;
     virtual bool testDeviceLost()       = 0;
@@ -408,7 +408,7 @@ class RendererD3D : public BufferFactoryD3D
   private:
     void ensureCapsInitialized() const;
 
-    virtual angle::WorkaroundsD3D generateWorkarounds() const = 0;
+    virtual void generateWorkarounds(angle::WorkaroundsD3D *workarounds) const = 0;
 
     mutable bool mCapsInitialized;
     mutable gl::Caps mNativeCaps;

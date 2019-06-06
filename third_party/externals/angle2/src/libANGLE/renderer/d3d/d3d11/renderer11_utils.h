@@ -242,15 +242,13 @@ class LazyShader final : public LazyResource<GetResourceTypeFromD3D11<D3D11Shade
     // All parameters must be constexpr. Not supported in VS2013.
     constexpr LazyShader(const BYTE *byteCode, size_t byteCodeSize, const char *name)
         : mByteCode(byteCode, byteCodeSize), mName(name)
-    {
-    }
+    {}
 
     constexpr LazyShader(LazyShader &&shader)
         : LazyResource<GetResourceTypeFromD3D11<D3D11ShaderType>()>(std::move(shader)),
           mByteCode(std::move(shader.mByteCode)),
           mName(shader.mName)
-    {
-    }
+    {}
 
     angle::Result resolve(d3d::Context *context, Renderer11 *renderer) override
     {
@@ -307,8 +305,9 @@ void SetBufferData(ID3D11DeviceContext *context, ID3D11Buffer *constantBuffer, c
     }
 }
 
-angle::WorkaroundsD3D GenerateWorkarounds(const Renderer11DeviceCaps &deviceCaps,
-                                          const DXGI_ADAPTER_DESC &adapterDesc);
+void GenerateWorkarounds(const Renderer11DeviceCaps &deviceCaps,
+                         const DXGI_ADAPTER_DESC &adapterDesc,
+                         angle::WorkaroundsD3D *workarounds);
 
 enum ReservedConstantBufferSlot
 {
@@ -424,7 +423,8 @@ enum class StagingAccess
 };
 
 bool UsePresentPathFast(const Renderer11 *renderer, const gl::FramebufferAttachment *colorbuffer);
-bool UsePrimitiveRestartWorkaround(bool primitiveRestartFixedIndexEnabled, GLenum type);
+bool UsePrimitiveRestartWorkaround(bool primitiveRestartFixedIndexEnabled,
+                                   gl::DrawElementsType type);
 
 enum class IndexStorageType
 {
@@ -445,8 +445,8 @@ enum class IndexStorageType
 
 IndexStorageType ClassifyIndexStorage(const gl::State &glState,
                                       const gl::Buffer *elementArrayBuffer,
-                                      GLenum elementType,
-                                      GLenum destElementType,
+                                      gl::DrawElementsType elementType,
+                                      gl::DrawElementsType destElementType,
                                       unsigned int offset);
 
 }  // namespace rx

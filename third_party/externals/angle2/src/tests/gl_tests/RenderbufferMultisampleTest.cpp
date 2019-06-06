@@ -27,21 +27,17 @@ class RenderbufferMultisampleTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenRenderbuffers(1, &mRenderbuffer);
 
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteRenderbuffers(1, &mRenderbuffer);
         mRenderbuffer = 0;
-
-        ANGLETest::TearDown();
     }
 
     GLuint mRenderbuffer = 0;
@@ -85,4 +81,4 @@ ANGLE_INSTANTIATE_TEST(RenderbufferMultisampleTest,
                        ES31_D3D11(),
                        ES31_OPENGL(),
                        ES31_OPENGLES());
-}
+}  // namespace

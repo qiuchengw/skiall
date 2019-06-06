@@ -6,15 +6,18 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
 #include "libANGLE/Fence.h"
 #include "libANGLE/renderer/FenceNVImpl.h"
 #include "libANGLE/renderer/SyncImpl.h"
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
 
-namespace {
+namespace
+{
 
 //
 // FenceNV tests
@@ -42,21 +45,18 @@ class FenceNVTest : public testing::Test
         mFence = new gl::FenceNV(mImpl);
     }
 
-    virtual void TearDown()
-    {
-        delete mFence;
-    }
+    virtual void TearDown() { delete mFence; }
 
     MockFenceNVImpl *mImpl;
-    gl::FenceNV* mFence;
+    gl::FenceNV *mFence;
 };
 
 TEST_F(FenceNVTest, DestructionDeletesImpl)
 {
-    MockFenceNVImpl* impl = new MockFenceNVImpl;
+    MockFenceNVImpl *impl = new MockFenceNVImpl;
     EXPECT_CALL(*impl, destroy()).Times(1).RetiresOnSaturation();
 
-    gl::FenceNV* fence = new gl::FenceNV(impl);
+    gl::FenceNV *fence = new gl::FenceNV(impl);
     delete fence;
 
     // Only needed because the mock is leaked if bugs are present,
@@ -67,21 +67,21 @@ TEST_F(FenceNVTest, DestructionDeletesImpl)
 
 TEST_F(FenceNVTest, SetAndTestBehavior)
 {
-    EXPECT_CALL(*mImpl, set(_, _))
-        .WillOnce(Return(angle::Result::Continue()))
-        .RetiresOnSaturation();
+    EXPECT_CALL(*mImpl, set(_, _)).WillOnce(Return(angle::Result::Continue)).RetiresOnSaturation();
     EXPECT_FALSE(mFence->isSet());
-    EXPECT_FALSE(mFence->set(nullptr, GL_ALL_COMPLETED_NV).isError());
+    EXPECT_EQ(angle::Result::Continue, mFence->set(nullptr, GL_ALL_COMPLETED_NV));
     EXPECT_TRUE(mFence->isSet());
     // Fake the behavior of testing the fence before and after it's passed.
     EXPECT_CALL(*mImpl, test(_, _))
-        .WillOnce(DoAll(SetArgumentPointee<1>(GL_FALSE), Return(angle::Result::Continue())))
-        .WillOnce(DoAll(SetArgumentPointee<1>(GL_TRUE), Return(angle::Result::Continue())))
+        .WillOnce(DoAll(SetArgumentPointee<1>(static_cast<GLboolean>(GL_FALSE)),
+                        Return(angle::Result::Continue)))
+        .WillOnce(DoAll(SetArgumentPointee<1>(static_cast<GLboolean>(GL_TRUE)),
+                        Return(angle::Result::Continue)))
         .RetiresOnSaturation();
     GLboolean out;
-    EXPECT_FALSE(mFence->test(nullptr, &out).isError());
+    EXPECT_EQ(angle::Result::Continue, mFence->test(nullptr, &out));
     EXPECT_EQ(GL_FALSE, out);
-    EXPECT_FALSE(mFence->test(nullptr, &out).isError());
+    EXPECT_EQ(angle::Result::Continue, mFence->test(nullptr, &out));
     EXPECT_EQ(GL_TRUE, out);
 }
 
@@ -137,20 +137,20 @@ TEST_F(FenceSyncTest, DestructionDeletesImpl)
 TEST_F(FenceSyncTest, SetAndGetStatusBehavior)
 {
     EXPECT_CALL(*mImpl, set(_, _, _))
-        .WillOnce(Return(angle::Result::Continue()))
+        .WillOnce(Return(angle::Result::Continue))
         .RetiresOnSaturation();
-    EXPECT_FALSE(mFence->set(nullptr, GL_SYNC_GPU_COMMANDS_COMPLETE, 0).isError());
+    EXPECT_EQ(angle::Result::Continue, mFence->set(nullptr, GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
     EXPECT_EQ(static_cast<GLenum>(GL_SYNC_GPU_COMMANDS_COMPLETE), mFence->getCondition());
     // Fake the behavior of testing the fence before and after it's passed.
     EXPECT_CALL(*mImpl, getStatus(_, _))
-        .WillOnce(DoAll(SetArgumentPointee<1>(GL_UNSIGNALED), Return(angle::Result::Continue())))
-        .WillOnce(DoAll(SetArgumentPointee<1>(GL_SIGNALED), Return(angle::Result::Continue())))
+        .WillOnce(DoAll(SetArgumentPointee<1>(GL_UNSIGNALED), Return(angle::Result::Continue)))
+        .WillOnce(DoAll(SetArgumentPointee<1>(GL_SIGNALED), Return(angle::Result::Continue)))
         .RetiresOnSaturation();
     GLint out;
-    EXPECT_FALSE(mFence->getStatus(nullptr, &out).isError());
+    EXPECT_EQ(angle::Result::Continue, mFence->getStatus(nullptr, &out));
     EXPECT_EQ(GL_UNSIGNALED, out);
-    EXPECT_FALSE(mFence->getStatus(nullptr, &out).isError());
+    EXPECT_EQ(angle::Result::Continue, mFence->getStatus(nullptr, &out));
     EXPECT_EQ(GL_SIGNALED, out);
 }
 
-} // namespace
+}  // namespace

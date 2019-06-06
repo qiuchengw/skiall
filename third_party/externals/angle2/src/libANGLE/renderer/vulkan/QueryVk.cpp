@@ -18,8 +18,7 @@ namespace rx
 {
 
 QueryVk::QueryVk(gl::QueryType type) : QueryImpl(type), mCachedResult(0), mCachedResultValid(false)
-{
-}
+{}
 
 QueryVk::~QueryVk() = default;
 
@@ -51,16 +50,14 @@ angle::Result QueryVk::begin(const gl::Context *context)
                 contextVk, &mQueryHelperTimeElapsedBegin));
         }
 
-        mQueryHelperTimeElapsedBegin.writeTimestamp(contextVk,
-                                                    mQueryHelperTimeElapsedBegin.getQueryPool(),
-                                                    mQueryHelperTimeElapsedBegin.getQuery());
+        mQueryHelperTimeElapsedBegin.writeTimestamp(contextVk);
     }
     else
     {
-        mQueryHelper.beginQuery(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+        mQueryHelper.beginQuery(contextVk);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::end(const gl::Context *context)
@@ -69,15 +66,14 @@ angle::Result QueryVk::end(const gl::Context *context)
 
     if (getType() == gl::QueryType::TimeElapsed)
     {
-        mQueryHelper.writeTimestamp(contextVk, mQueryHelper.getQueryPool(),
-                                    mQueryHelper.getQuery());
+        mQueryHelper.writeTimestamp(contextVk);
     }
     else
     {
-        mQueryHelper.endQuery(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+        mQueryHelper.endQuery(contextVk);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::queryCounter(const gl::Context *context)
@@ -93,16 +89,16 @@ angle::Result QueryVk::queryCounter(const gl::Context *context)
 
     ASSERT(getType() == gl::QueryType::Timestamp);
 
-    mQueryHelper.writeTimestamp(contextVk, mQueryHelper.getQueryPool(), mQueryHelper.getQuery());
+    mQueryHelper.writeTimestamp(contextVk);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
 {
     if (mCachedResultValid)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     ContextVk *contextVk = vk::GetImpl(context);
@@ -112,25 +108,25 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
     // finite time.
     // Note regarding time-elapsed: end should have been called after begin, so flushing when end
     // has pending work should flush begin too.
-    if (mQueryHelper.hasPendingWork(renderer))
+    if (mQueryHelper.hasPendingWork(contextVk))
     {
-        ANGLE_TRY(renderer->flush(contextVk));
+        ANGLE_TRY(contextVk->flushImpl(nullptr));
 
-        ASSERT(!mQueryHelperTimeElapsedBegin.hasPendingWork(renderer));
-        ASSERT(!mQueryHelper.hasPendingWork(renderer));
+        ASSERT(!mQueryHelperTimeElapsedBegin.hasPendingWork(contextVk));
+        ASSERT(!mQueryHelper.hasPendingWork(contextVk));
     }
 
     // If the command buffer this query is being written to is still in flight, its reset command
     // may not have been performed by the GPU yet.  To avoid a race condition in this case, wait
     // for the batch to finish first before querying (or return not-ready if not waiting).
-    ANGLE_TRY(renderer->checkCompletedCommands(contextVk));
-    if (mQueryHelper.isResourceInUse(renderer))
+    ANGLE_TRY(contextVk->checkCompletedCommands());
+    if (contextVk->isSerialInUse(mQueryHelper.getStoredQueueSerial()))
     {
         if (!wait)
         {
-            return angle::Result::Continue();
+            return angle::Result::Continue;
         }
-        ANGLE_TRY(renderer->finishToSerial(contextVk, mQueryHelper.getStoredQueueSerial()));
+        ANGLE_TRY(contextVk->finishToSerial(mQueryHelper.getStoredQueueSerial()));
     }
 
     VkQueryResultFlags flags = (wait ? VK_QUERY_RESULT_WAIT_BIT : 0) | VK_QUERY_RESULT_64_BIT;
@@ -143,9 +139,11 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
     {
         // If VK_QUERY_RESULT_WAIT_BIT was given, VK_NOT_READY cannot have been returned.
         ASSERT(!wait);
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
     ANGLE_VK_TRY(contextVk, result);
+
+    double timestampPeriod = renderer->getPhysicalDeviceProperties().limits.timestampPeriod;
 
     // Fix up the results to what OpenGL expects.
     switch (getType())
@@ -156,6 +154,7 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
             mCachedResult = !!mCachedResult;
             break;
         case gl::QueryType::Timestamp:
+            mCachedResult = static_cast<uint64_t>(mCachedResult * timestampPeriod);
             break;
         case gl::QueryType::TimeElapsed:
         {
@@ -170,6 +169,8 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
             ANGLE_VK_TRY(contextVk, result);
 
             mCachedResult = timeElapsedEnd - mCachedResult;
+            mCachedResult = static_cast<uint64_t>(mCachedResult * timestampPeriod);
+
             break;
         }
         default:
@@ -178,34 +179,34 @@ angle::Result QueryVk::getResult(const gl::Context *context, bool wait)
     }
 
     mCachedResultValid = true;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 angle::Result QueryVk::getResult(const gl::Context *context, GLint *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = static_cast<GLint>(mCachedResult);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::getResult(const gl::Context *context, GLuint *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = static_cast<GLuint>(mCachedResult);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::getResult(const gl::Context *context, GLint64 *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = static_cast<GLint64>(mCachedResult);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::getResult(const gl::Context *context, GLuint64 *params)
 {
     ANGLE_TRY(getResult(context, true));
     *params = mCachedResult;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result QueryVk::isResultAvailable(const gl::Context *context, bool *available)
@@ -213,7 +214,7 @@ angle::Result QueryVk::isResultAvailable(const gl::Context *context, bool *avail
     ANGLE_TRY(getResult(context, false));
     *available = mCachedResultValid;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

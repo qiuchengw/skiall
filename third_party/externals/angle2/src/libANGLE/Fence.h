@@ -20,7 +20,7 @@ namespace rx
 {
 class FenceNVImpl;
 class SyncImpl;
-}
+}  // namespace rx
 
 namespace gl
 {
@@ -56,7 +56,7 @@ class Sync final : public RefCountObject, public LabeledObject
 
     void onDestroy(const Context *context) override;
 
-    void setLabel(const std::string &label) override;
+    void setLabel(const Context *context, const std::string &label) override;
     const std::string &getLabel() const override;
 
     angle::Result set(const Context *context, GLenum condition, GLbitfield flags);
@@ -81,4 +81,4 @@ class Sync final : public RefCountObject, public LabeledObject
 
 }  // namespace gl
 
-#endif   // LIBANGLE_FENCE_H_
+#endif  // LIBANGLE_FENCE_H_

@@ -60,10 +60,12 @@ struct FunctionsEGL::EGLDispatchTable
           createImageKHRPtr(nullptr),
           destroyImageKHRPtr(nullptr),
 
-          clientWaitSyncKHRPtr(nullptr),
           createSyncKHRPtr(nullptr),
           destroySyncKHRPtr(nullptr),
+          clientWaitSyncKHRPtr(nullptr),
           getSyncAttribKHRPtr(nullptr),
+
+          waitSyncKHRPtr(nullptr),
 
           swapBuffersWithDamageKHRPtr(nullptr),
 
@@ -76,8 +78,7 @@ struct FunctionsEGL::EGLDispatchTable
           getNextFrameIdANDROIDPtr(nullptr),
           getFrameTimestampSupportedANDROIDPtr(nullptr),
           getFrameTimestampsANDROIDPtr(nullptr)
-    {
-    }
+    {}
 
     // 1.0
     PFNEGLBINDAPIPROC bindAPIPtr;
@@ -108,10 +109,13 @@ struct FunctionsEGL::EGLDispatchTable
     PFNEGLDESTROYIMAGEKHRPROC destroyImageKHRPtr;
 
     // EGL_KHR_fence_sync
-    PFNEGLCLIENTWAITSYNCKHRPROC clientWaitSyncKHRPtr;
     PFNEGLCREATESYNCKHRPROC createSyncKHRPtr;
     PFNEGLDESTROYSYNCKHRPROC destroySyncKHRPtr;
+    PFNEGLCLIENTWAITSYNCKHRPROC clientWaitSyncKHRPtr;
     PFNEGLGETSYNCATTRIBKHRPROC getSyncAttribKHRPtr;
+
+    // EGL_KHR_wait_sync
+    PFNEGLWAITSYNCKHRPROC waitSyncKHRPtr;
 
     // EGL_KHR_swap_buffers_with_damage
     PFNEGLSWAPBUFFERSWITHDAMAGEKHRPROC swapBuffersWithDamageKHRPtr;
@@ -132,8 +136,7 @@ struct FunctionsEGL::EGLDispatchTable
 
 FunctionsEGL::FunctionsEGL()
     : majorVersion(0), minorVersion(0), mFnPtrs(new EGLDispatchTable()), mEGLDisplay(EGL_NO_DISPLAY)
-{
-}
+{}
 
 FunctionsEGL::~FunctionsEGL()
 {
@@ -142,11 +145,14 @@ FunctionsEGL::~FunctionsEGL()
 
 egl::Error FunctionsEGL::initialize(EGLNativeDisplayType nativeDisplay)
 {
-#define ANGLE_GET_PROC_OR_ERROR(MEMBER, NAME)                                       \
-    if (!SetPtr(MEMBER, getProcAddress(#NAME)))                                     \
-    {                                                                               \
-        return egl::EglNotInitialized() << "Could not load EGL entry point " #NAME; \
-    }
+#define ANGLE_GET_PROC_OR_ERROR(MEMBER, NAME)                                           \
+    do                                                                                  \
+    {                                                                                   \
+        if (!SetPtr(MEMBER, getProcAddress(#NAME)))                                     \
+        {                                                                               \
+            return egl::EglNotInitialized() << "Could not load EGL entry point " #NAME; \
+        }                                                                               \
+    } while (0)
 
     ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->bindAPIPtr, eglBindAPI);
     ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->chooseConfigPtr, eglChooseConfig);
@@ -202,10 +208,14 @@ egl::Error FunctionsEGL::initialize(EGLNativeDisplayType nativeDisplay)
     }
     if (hasExtension("EGL_KHR_fence_sync"))
     {
-        ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->clientWaitSyncKHRPtr, eglClientWaitSyncKHR);
         ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->createSyncKHRPtr, eglCreateSyncKHR);
         ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->destroySyncKHRPtr, eglDestroySyncKHR);
+        ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->clientWaitSyncKHRPtr, eglClientWaitSyncKHR);
         ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->getSyncAttribKHRPtr, eglGetSyncAttribKHR);
+    }
+    if (hasExtension("EGL_KHR_wait_sync"))
+    {
+        ANGLE_GET_PROC_OR_ERROR(&mFnPtrs->waitSyncKHRPtr, eglWaitSyncKHR);
     }
 
     if (hasExtension("EGL_KHR_swap_buffers_with_damage"))
@@ -382,24 +392,29 @@ EGLBoolean FunctionsEGL::destroyImageKHR(EGLImageKHR image) const
     return mFnPtrs->destroyImageKHRPtr(mEGLDisplay, image);
 }
 
-EGLSyncKHR FunctionsEGL::createSyncKHR(EGLenum type, const EGLint *attrib_list)
+EGLSyncKHR FunctionsEGL::createSyncKHR(EGLenum type, const EGLint *attrib_list) const
 {
     return mFnPtrs->createSyncKHRPtr(mEGLDisplay, type, attrib_list);
 }
 
-EGLBoolean FunctionsEGL::destroySyncKHR(EGLSyncKHR sync)
+EGLBoolean FunctionsEGL::destroySyncKHR(EGLSyncKHR sync) const
 {
     return mFnPtrs->destroySyncKHRPtr(mEGLDisplay, sync);
 }
 
-EGLint FunctionsEGL::clientWaitSyncKHR(EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout)
+EGLint FunctionsEGL::clientWaitSyncKHR(EGLSyncKHR sync, EGLint flags, EGLTimeKHR timeout) const
 {
     return mFnPtrs->clientWaitSyncKHRPtr(mEGLDisplay, sync, flags, timeout);
 }
 
-EGLBoolean FunctionsEGL::getSyncAttribKHR(EGLSyncKHR sync, EGLint attribute, EGLint *value)
+EGLBoolean FunctionsEGL::getSyncAttribKHR(EGLSyncKHR sync, EGLint attribute, EGLint *value) const
 {
     return mFnPtrs->getSyncAttribKHRPtr(mEGLDisplay, sync, attribute, value);
+}
+
+EGLint FunctionsEGL::waitSyncKHR(EGLSyncKHR sync, EGLint flags) const
+{
+    return mFnPtrs->waitSyncKHRPtr(mEGLDisplay, sync, flags);
 }
 
 EGLBoolean FunctionsEGL::swapBuffersWithDamageKHR(EGLSurface surface,

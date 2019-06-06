@@ -5,6 +5,7 @@
 //
 
 #include "compiler/translator/BuiltInFunctionEmulatorGLSL.h"
+
 #include "angle_gl.h"
 #include "compiler/translator/BuiltInFunctionEmulator.h"
 #include "compiler/translator/VersionGLSL.h"
@@ -80,12 +81,14 @@ void InitBuiltInAtanFunctionEmulatorForGLSLWorkarounds(BuiltInFunctionEmulator *
                              "    else return 1.57079632 * sign(y);\n"
                              "}\n");
     static const std::array<TSymbolUniqueId, 4> ids = {
-        BuiltInId::atan_Float1_Float1, BuiltInId::atan_Float2_Float2, BuiltInId::atan_Float3_Float3,
+        BuiltInId::atan_Float1_Float1,
+        BuiltInId::atan_Float2_Float2,
+        BuiltInId::atan_Float3_Float3,
         BuiltInId::atan_Float4_Float4,
     };
     for (int dim = 2; dim <= 4; ++dim)
     {
-        std::stringstream ss;
+        std::stringstream ss = sh::InitializeStream<std::stringstream>();
         ss << "emu_precision vec" << dim << " atan_emu(emu_precision vec" << dim
            << " y, emu_precision vec" << dim << " x)\n"
            << "{\n"

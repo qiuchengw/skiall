@@ -68,14 +68,12 @@ class ErrorMessagesTest : public ANGLETest
         setConfigAlphaBits(8);
         setWebGLCompatibilityEnabled(true);
     }
-
-    void SetUp() override { ANGLETest::SetUp(); }
 };
 
 // Verify functionality of WebGL specific errors using KHR_debug
 TEST_P(ErrorMessagesTest, ErrorMessages)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_KHR_debug"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_KHR_debug"));
 
     glEnable(GL_DEBUG_OUTPUT);
 
@@ -87,7 +85,7 @@ TEST_P(ErrorMessagesTest, ErrorMessages)
     constexpr GLenum type      = GL_DEBUG_TYPE_ERROR;
     constexpr GLenum severity  = GL_DEBUG_SEVERITY_HIGH;
     constexpr GLuint id1       = 1282;
-    const std::string message1 = gl::kErrorWebglBindAttribLocationReservedPrefix;
+    const std::string message1 = gl::err::kWebglBindAttribLocationReservedPrefix;
     Message expectedMessage;
 
     GLint numMessages = 0;
@@ -119,4 +117,4 @@ ANGLE_INSTANTIATE_TEST(ErrorMessagesTest,
                        ES2_OPENGLES(),
                        ES3_OPENGLES(),
                        ES2_VULKAN());
-}  // namespace
+}  // namespace angle

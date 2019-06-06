@@ -9,6 +9,7 @@
 #include "test_utils/ANGLETest.h"
 
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
 
 namespace angle
 {
@@ -30,8 +31,8 @@ class ExplicitContextTest : public ANGLETest
 // Test to ensure that the basic functionality of the extension works.
 TEST_P(ExplicitContextTest, BasicTest)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_explicit_context") ||
-                       !extensionEnabled("GL_ANGLE_explicit_context_gles1"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_ANGLE_explicit_context") ||
+                       !IsGLExtensionEnabled("GL_ANGLE_explicit_context_gles1"));
 
     EGLContext context = getEGLWindow()->getContext();
 
@@ -47,19 +48,14 @@ TEST_P(ExplicitContextTest, BasicTest)
 // Test to ensure that extension works with eglGetProcAddress
 TEST_P(ExplicitContextTest, GetProcAddress)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_explicit_context") ||
-                       !extensionEnabled("GL_ANGLE_explicit_context_gles1"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_ANGLE_explicit_context") ||
+                       !IsGLExtensionEnabled("GL_ANGLE_explicit_context_gles1"));
 
     EGLContext context = getEGLWindow()->getContext();
 
-    PFNGLCLEARCOLORCONTEXTANGLE clearColor = reinterpret_cast<PFNGLCLEARCOLORCONTEXTANGLE>(
-        eglGetProcAddress("glClearColorContextANGLE"));
-    PFNGLCLEARCONTEXTANGLE clear =
-        reinterpret_cast<PFNGLCLEARCONTEXTANGLE>(eglGetProcAddress("glClearContextANGLE"));
-
     // Clear to green
-    clearColor(context, 1.0f, 0, 0, 1.0f);
-    clear(context, GL_COLOR_BUFFER_BIT);
+    glClearColorContextANGLE(context, 1.0f, 0, 0, 1.0f);
+    glClearContextANGLE(context, GL_COLOR_BUFFER_BIT);
 
     // Check for green
     EXPECT_PIXEL_EQ(0, 0, 255, 0, 0, 255);
@@ -69,8 +65,8 @@ TEST_P(ExplicitContextTest, GetProcAddress)
 // Test to ensure that a passed context of null results in a no-op
 TEST_P(ExplicitContextTest, NullContext)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_ANGLE_explicit_context") ||
-                       !extensionEnabled("GL_ANGLE_explicit_context_gles1"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_ANGLE_explicit_context") ||
+                       !IsGLExtensionEnabled("GL_ANGLE_explicit_context_gles1"));
 
     EGLContext context = getEGLWindow()->getContext();
 

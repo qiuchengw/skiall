@@ -12,6 +12,7 @@
 #include "angle_gl.h"
 #include "common/PackedEnums.h"
 #include "common/angleutils.h"
+#include "libANGLE/Error.h"
 
 #include <EGL/egl.h>
 
@@ -19,7 +20,6 @@ namespace gl
 {
 class Buffer;
 class Context;
-class Error;
 class Sync;
 class Framebuffer;
 class GLES1State;
@@ -47,7 +47,7 @@ void QueryRenderbufferiv(const Context *context,
                          const Renderbuffer *renderbuffer,
                          GLenum pname,
                          GLint *params);
-void QueryShaderiv(Shader *shader, GLenum pname, GLint *params);
+void QueryShaderiv(const Context *context, Shader *shader, GLenum pname, GLint *params);
 void QueryTexLevelParameterfv(const Texture *texture,
                               TextureTarget target,
                               GLint level,
@@ -104,12 +104,12 @@ void QueryInternalFormativ(const TextureCaps &format, GLenum pname, GLsizei bufS
 
 void QueryFramebufferParameteriv(const Framebuffer *framebuffer, GLenum pname, GLint *params);
 
-Error QuerySynciv(const Context *context,
-                  const Sync *sync,
-                  GLenum pname,
-                  GLsizei bufSize,
-                  GLsizei *length,
-                  GLint *values);
+angle::Result QuerySynciv(const Context *context,
+                          const Sync *sync,
+                          GLenum pname,
+                          GLsizei bufSize,
+                          GLsizei *length,
+                          GLint *values);
 
 void SetTexParameterf(Context *context, Texture *texture, GLenum pname, GLfloat param);
 void SetTexParameterfv(Context *context, Texture *texture, GLenum pname, const GLfloat *params);
@@ -231,7 +231,9 @@ unsigned int GetTexParameterCount(GLenum pname);
 namespace egl
 {
 struct Config;
+class Display;
 class Surface;
+class Sync;
 
 void QueryConfigAttrib(const Config *config, EGLint attribute, EGLint *value);
 
@@ -239,6 +241,7 @@ void QueryContextAttrib(const gl::Context *context, EGLint attribute, EGLint *va
 
 void QuerySurfaceAttrib(const Surface *surface, EGLint attribute, EGLint *value);
 void SetSurfaceAttrib(Surface *surface, EGLint attribute, EGLint value);
+Error GetSyncAttrib(Display *display, Sync *sync, EGLint attribute, EGLint *value);
 
 }  // namespace egl
 

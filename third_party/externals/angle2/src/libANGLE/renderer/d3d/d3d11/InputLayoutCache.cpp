@@ -65,9 +65,7 @@ struct PackedAttribute
 
 }  // anonymous namespace
 
-PackedAttributeLayout::PackedAttributeLayout() : numAttributes(0), flags(0), attributeData({})
-{
-}
+PackedAttributeLayout::PackedAttributeLayout() : numAttributes(0), flags(0), attributeData({}) {}
 
 PackedAttributeLayout::PackedAttributeLayout(const PackedAttributeLayout &other) = default;
 
@@ -102,13 +100,9 @@ bool PackedAttributeLayout::operator==(const PackedAttributeLayout &other) const
            (attributeData == other.attributeData);
 }
 
-InputLayoutCache::InputLayoutCache() : mLayoutCache(kDefaultCacheSize * 2)
-{
-}
+InputLayoutCache::InputLayoutCache() : mLayoutCache(kDefaultCacheSize * 2) {}
 
-InputLayoutCache::~InputLayoutCache()
-{
-}
+InputLayoutCache::~InputLayoutCache() {}
 
 void InputLayoutCache::clear()
 {
@@ -193,7 +187,7 @@ angle::Result InputLayoutCache::getInputLayout(
         }
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result InputLayoutCache::createInputLayout(
@@ -306,7 +300,7 @@ angle::Result InputLayoutCache::createInputLayout(
 
     ANGLE_TRY(renderer->allocateResource(context11, inputElementArray, &vertexShaderData,
                                          inputLayoutOut));
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void InputLayoutCache::setCacheSize(size_t newCacheSize)

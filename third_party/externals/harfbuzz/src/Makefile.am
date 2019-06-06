@@ -15,7 +15,6 @@ check_PROGRAMS =
 # Convenience targets:
 lib: $(BUILT_SOURCES) libharfbuzz.la
 libs: $(BUILT_SOURCES) $(lib_LTLIBRARIES)
-fuzzing: $(BUILT_SOURCES) libharfbuzz-fuzzing.la libharfbuzz-subset-fuzzing.la
 
 lib_LTLIBRARIES = libharfbuzz.la
 
@@ -28,10 +27,6 @@ HBDEPS =
 HBSOURCES =  $(HB_BASE_sources)
 HBSOURCES += $(HB_BASE_RAGEL_GENERATED_sources)
 HBHEADERS = $(HB_BASE_headers)
-
-HBSOURCES += $(HB_OT_sources)
-HBSOURCES += $(HB_OT_RAGEL_GENERATED_sources)
-HBHEADERS += $(HB_OT_headers)
 
 if HAVE_FALLBACK
 HBSOURCES += $(HB_FALLBACK_sources)
@@ -169,36 +164,6 @@ pkginclude_HEADERS += $(HB_SUBSET_headers)
 pkgconfig_DATA += harfbuzz-subset.pc
 EXTRA_DIST += harfbuzz-subset.pc.in
 
-FUZZING_CPPFLAGS = \
-	-DHB_MAX_NESTING_LEVEL=3 \
-	-DHB_SANITIZE_MAX_EDITS=3 \
-	-DHB_SANITIZE_MAX_OPS_FACTOR=3 \
-	-DHB_SANITIZE_MAX_OPS_MIN=128 \
-	-DHB_BUFFER_MAX_LEN_FACTOR=3 \
-	-DHB_BUFFER_MAX_LEN_MIN=8 \
-	-DHB_BUFFER_MAX_LEN_DEFAULT=128 \
-	-DHB_BUFFER_MAX_OPS_FACTOR=8 \
-	-DHB_BUFFER_MAX_OPS_MIN=64 \
-	-DHB_BUFFER_MAX_OPS_DEFAULT=1024 \
-	$(NULL)
-EXTRA_LTLIBRARIES = libharfbuzz-fuzzing.la libharfbuzz-subset-fuzzing.la
-
-libharfbuzz_fuzzing_la_LINK = $(chosen_linker) $(libharfbuzz_fuzzing_la_LDFLAGS)
-libharfbuzz_fuzzing_la_SOURCES = $(libharfbuzz_la_SOURCES)
-libharfbuzz_fuzzing_la_CPPFLAGS = $(HBCFLAGS) $(FUZZING_CPPFLAGS)
-libharfbuzz_fuzzing_la_LDFLAGS = $(AM_LDFLAGS)
-libharfbuzz_fuzzing_la_LIBADD = $(libharfbuzz_la_LIBADD)
-EXTRA_libharfbuzz_fuzzing_la_DEPENDENCIES = $(EXTRA_libharfbuzz_la_DEPENDENCIES)
-CLEANFILES += libharfbuzz-fuzzing.la
-
-libharfbuzz_subset_fuzzing_la_LINK = $(chosen_linker) $(libharfbuzz_subset_fuzzing_la_LDFLAGS)
-libharfbuzz_subset_fuzzing_la_SOURCES = $(libharfbuzz_subset_la_SOURCES)
-libharfbuzz_subset_fuzzing_la_CPPFLAGS = $(HBCFLAGS) $(FUZZING_CPPFLAGS)
-libharfbuzz_subset_fuzzing_la_LDFLAGS = $(AM_LDFLAGS)
-libharfbuzz_subset_fuzzing_la_LIBADD = $(libharfbuzz_subset_la_LIBADD)
-EXTRA_libharfbuzz_subset_fuzzing_la_DEPENDENCIES = $(EXTRA_libharfbuzz_subset_la_DEPENDENCIES)
-CLEANFILES += libharfbuzz-subset-fuzzing.la
-
 if HAVE_ICU
 if HAVE_ICU_BUILTIN
 HBCFLAGS += $(ICU_CFLAGS)
@@ -330,12 +295,10 @@ built-sources: $(BUILT_SOURCES)
 
 RAGEL_GENERATED = \
 	$(patsubst %,$(srcdir)/%,$(HB_BASE_RAGEL_GENERATED_sources)) \
-	$(patsubst %,$(srcdir)/%,$(HB_OT_RAGEL_GENERATED_sources)) \
 	$(NULL)
 BUILT_SOURCES += $(RAGEL_GENERATED)
 EXTRA_DIST += \
 	$(HB_BASE_RAGEL_sources) \
-	$(HB_OT_RAGEL_sources) \
 	$(NULL)
 # We decided to add ragel-generated files to git...
 #MAINTAINERCLEANFILES += $(RAGEL_GENERATED)
@@ -421,15 +384,23 @@ dump_use_data_SOURCES = dump-use-data.cc hb-ot-shape-complex-use-table.cc
 dump_use_data_CPPFLAGS = $(HBCFLAGS)
 dump_use_data_LDADD = libharfbuzz.la $(HBLIBS)
 
-check_PROGRAMS += test-ot-tag test-unicode-ranges
-TESTS += test-ot-tag test-unicode-ranges
+COMPILED_TESTS = test-iter test-ot-tag test-unicode-ranges
+COMPILED_TESTS_CPPFLAGS = $(HBCFLAGS) -DMAIN -UNDEBUG
+COMPILED_TESTS_LDADD = libharfbuzz.la $(HBLIBS)
+check_PROGRAMS += $(COMPILED_TESTS)
+TESTS += $(COMPILED_TESTS)
+
+test_iter_SOURCES = test-iter.cc hb-static.cc
+test_iter_CPPFLAGS = $(COMPILED_TESTS_CPPFLAGS)
+test_iter_LDADD = $(COMPILED_TESTS_LDADD)
 
 test_ot_tag_SOURCES = hb-ot-tag.cc
-test_ot_tag_CPPFLAGS = $(HBCFLAGS) -DMAIN
-test_ot_tag_LDADD = libharfbuzz.la $(HBLIBS)
+test_ot_tag_CPPFLAGS = $(COMPILED_TESTS_CPPFLAGS)
+test_ot_tag_LDADD = $(COMPILED_TESTS_LDADD)
 
 test_unicode_ranges_SOURCES = test-unicode-ranges.cc
-test_unicode_ranges_LDADD = libharfbuzz.la $(HBLIBS)
+test_unicode_ranges_CPPFLAGS = $(COMPILED_TESTS_CPPFLAGS)
+test_unicode_ranges_LDADD = $(COMPILED_TESTS_LDADD)
 
 TESTS_ENVIRONMENT = \
 	srcdir="$(srcdir)" \
@@ -455,6 +426,8 @@ HarfBuzz_0_0_gir_CFLAGS = \
 	-DHB_H_IN \
 	-DHB_OT_H \
 	-DHB_OT_H_IN \
+	-DHB_AAT_H \
+	-DHB_AAT_H_IN \
 	-DHB_GOBJECT_H \
 	-DHB_GOBJECT_H_IN \
 	-DHB_EXTERN= \

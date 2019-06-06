@@ -30,16 +30,14 @@ Framebuffer9::Framebuffer9(const gl::FramebufferState &data, Renderer9 *renderer
     ASSERT(mRenderer != nullptr);
 }
 
-Framebuffer9::~Framebuffer9()
-{
-}
+Framebuffer9::~Framebuffer9() {}
 
 angle::Result Framebuffer9::discard(const gl::Context *context,
                                     size_t count,
                                     const GLenum *attachments)
 {
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Framebuffer9::invalidate(const gl::Context *context,
@@ -47,7 +45,7 @@ angle::Result Framebuffer9::invalidate(const gl::Context *context,
                                        const GLenum *attachments)
 {
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Framebuffer9::invalidateSub(const gl::Context *context,
@@ -56,7 +54,7 @@ angle::Result Framebuffer9::invalidateSub(const gl::Context *context,
                                           const gl::Rectangle &area)
 {
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Framebuffer9::clearImpl(const gl::Context *context,
@@ -65,7 +63,7 @@ angle::Result Framebuffer9::clearImpl(const gl::Context *context,
     ANGLE_TRY(mRenderer->applyRenderTarget(context, mRenderTargetCache.getColors()[0],
                                            mRenderTargetCache.getDepthStencil()));
 
-    const gl::State &glState = context->getGLState();
+    const gl::State &glState = context->getState();
     float nearZ              = glState.getNearPlane();
     float farZ               = glState.getFarPlane();
     mRenderer->setViewport(glState.getViewport(), nearZ, farZ, gl::PrimitiveMode::Triangles,
@@ -75,7 +73,7 @@ angle::Result Framebuffer9::clearImpl(const gl::Context *context,
 
     mRenderer->clear(clearParams, mRenderTargetCache.getColors()[0],
                      mRenderTargetCache.getDepthStencil());
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Framebuffer9::readPixelsImpl(const gl::Context *context,
@@ -170,7 +168,7 @@ angle::Result Framebuffer9::readPixelsImpl(const gl::Context *context,
     if (directToPixels)
     {
         SafeRelease(systemSurface);
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     RECT rect;
@@ -211,7 +209,7 @@ angle::Result Framebuffer9::readPixelsImpl(const gl::Context *context,
     systemSurface->UnlockRect();
     SafeRelease(systemSurface);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Framebuffer9::blitImpl(const gl::Context *context,
@@ -381,7 +379,7 @@ angle::Result Framebuffer9::blitImpl(const gl::Context *context,
         ANGLE_TRY_HR(context9, result, "Internal blit failed.");
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 GLenum Framebuffer9::getRenderTargetImplementationFormat(RenderTargetD3D *renderTarget) const
@@ -396,7 +394,7 @@ angle::Result Framebuffer9::getSamplePosition(const gl::Context *context,
                                               GLfloat *xy) const
 {
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Framebuffer9::syncState(const gl::Context *context,
@@ -404,6 +402,6 @@ angle::Result Framebuffer9::syncState(const gl::Context *context,
 {
     ANGLE_TRY(FramebufferD3D::syncState(context, dirtyBits));
     ANGLE_TRY(mRenderTargetCache.update(context, mState, dirtyBits));
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 }  // namespace rx

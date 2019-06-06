@@ -32,7 +32,7 @@ class ClientArraysTest : public ANGLETest
 // the GL extension should always be present
 TEST_P(ClientArraysTest, ExtensionStringExposed)
 {
-    EXPECT_TRUE(extensionEnabled("GL_ANGLE_client_arrays"));
+    EXPECT_TRUE(IsGLExtensionEnabled("GL_ANGLE_client_arrays"));
 }
 
 // Verify that GL_CLIENT_ARRAYS_ANGLE can be queried but not changed
@@ -76,14 +76,14 @@ TEST_P(ClientArraysTest, ForbidsClientSideElementBuffer)
 {
     ASSERT_GL_FALSE(glIsEnabled(GL_CLIENT_ARRAYS_ANGLE));
 
-    const std::string &vert =
+    constexpr char kVS[] =
         "attribute vec3 a_pos;\n"
         "void main()\n"
         "{\n"
         "    gl_Position = vec4(a_pos, 1.0);\n"
         "}\n";
 
-    ANGLE_GL_PROGRAM(program, vert, essl1_shaders::fs::Red());
+    ANGLE_GL_PROGRAM(program, kVS, essl1_shaders::fs::Red());
 
     GLint posLocation = glGetAttribLocation(program.get(), "a_pos");
     ASSERT_NE(-1, posLocation);
@@ -112,10 +112,9 @@ ANGLE_INSTANTIATE_TEST(ClientArraysTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
                        ES3_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
                        ES3_OPENGLES(),
                        ES2_VULKAN());
-}  // namespace
+}  // namespace angle

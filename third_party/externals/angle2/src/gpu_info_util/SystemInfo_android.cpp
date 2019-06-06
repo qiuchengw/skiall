@@ -10,6 +10,7 @@
 #include <vulkan/vulkan.h>
 #include "gpu_info_util/SystemInfo_internal.h"
 
+#include <sys/system_properties.h>
 #include <cstring>
 #include <fstream>
 
@@ -110,8 +111,29 @@ std::string FormatString(const char *fmt, ...)
     return std::string(&buffer[0], len);
 }
 
+bool GetAndroidSystemProperty(const std::string &propertyName, std::string *value)
+{
+    // PROP_VALUE_MAX from <sys/system_properties.h>
+    std::vector<char> propertyBuf(PROP_VALUE_MAX);
+    int len = __system_property_get(propertyName.c_str(), propertyBuf.data());
+    if (len <= 0)
+    {
+        return false;
+    }
+    *value = std::string(propertyBuf.data());
+    return true;
+}
+
 bool GetSystemInfo(SystemInfo *info)
 {
+    bool isFullyPopulated = true;
+
+    isFullyPopulated =
+        GetAndroidSystemProperty("ro.product.manufacturer", &info->machineManufacturer) &&
+        isFullyPopulated;
+    isFullyPopulated =
+        GetAndroidSystemProperty("ro.product.model", &info->machineModelName) && isFullyPopulated;
+
     // This implementation builds on top of the Vulkan API, but cannot assume the existence of the
     // Vulkan library.  ANGLE can be installed on versions of Android as old as Ice Cream Sandwich.
     // Therefore, we need to use dlopen()/dlsym() in order to see if Vulkan is installed on the
@@ -129,7 +151,7 @@ bool GetSystemInfo(SystemInfo *info)
         GPA(vkLibrary, PFN_vkEnumeratePhysicalDevices, "vkEnumeratePhysicalDevices");
     PFN_vkGetPhysicalDeviceProperties pfnGetPhysicalDeviceProperties =
         GPA(vkLibrary, PFN_vkGetPhysicalDeviceProperties, "vkGetPhysicalDeviceProperties");
-    uint32_t physicalDeviceCount       = 0;
+    uint32_t physicalDeviceCount = 0;
     if (!pfnEnumeratePhysicalDevices ||
         pfnEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
     {
@@ -160,26 +182,26 @@ bool GetSystemInfo(SystemInfo *info)
         switch (properties.vendorID)
         {
             case kVendorID_AMD:
-                gpu.driverVendor  = "Advanced Micro Devices, Inc";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Advanced Micro Devices, Inc";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_ARM:
-                gpu.driverVendor  = "Arm Holdings";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Arm Holdings";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_ImgTec:
-                gpu.driverVendor  = "Imagination Technologies Limited";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Imagination Technologies Limited";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_Intel:
-                gpu.driverVendor  = "Intel Corporation";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Intel Corporation";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
-            case kVendorID_Nvidia:
+            case kVendorID_NVIDIA:
                 gpu.driverVendor  = "NVIDIA Corporation";
                 gpu.driverVersion = FormatString("%d.%d.%d.%d", properties.driverVersion >> 22,
                                                  (properties.driverVersion >> 14) & 0XFF,
@@ -208,18 +230,18 @@ bool GetSystemInfo(SystemInfo *info)
                 }
                 break;
             case kVendorID_Vivante:
-                gpu.driverVendor  = "Vivante";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Vivante";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_VeriSilicon:
-                gpu.driverVendor  = "VeriSilicon";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "VeriSilicon";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             case kVendorID_Kazan:
-                gpu.driverVendor  = "Kazan Software";
-                gpu.driverVersion = FormatString("0x%x", properties.driverVersion);
+                gpu.driverVendor                = "Kazan Software";
+                gpu.driverVersion               = FormatString("0x%x", properties.driverVersion);
                 gpu.detailedDriverVersion.major = properties.driverVersion;
                 break;
             default:
@@ -228,7 +250,7 @@ bool GetSystemInfo(SystemInfo *info)
         gpu.driverDate = "";
     }
 
-    return true;
+    return isFullyPopulated;
 }
 
 }  // namespace angle

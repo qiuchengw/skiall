@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 * Copyright (C) 2015, International Business Machines Corporation and
@@ -35,7 +37,7 @@ public:
     virtual int32_t count(UErrorCode& status) const;
 private:
     int32_t pos;
-    UVector *fNumsysNames;
+    UVector *fNumsysNames = nullptr;
 };
 
 U_NAMESPACE_END

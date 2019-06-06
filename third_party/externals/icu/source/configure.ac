@@ -1,5 +1,6 @@
 # -*-autoconf-*-
-AC_COPYRIGHT([ Copyright (c) 1999-2015, International Business Machines Corporation and others. All Rights Reserved. ])
+AC_COPYRIGHT([ Copyright (C) 2016 and later: Unicode, Inc. and others. License & terms of use: http://www.unicode.org/copyright.html ])
+# AC_COPYRIGHT([ Copyright (c) 1999-2015, International Business Machines Corporation and others. All Rights Reserved. ])
 # configure.in for ICU
 # Stephen F. Booth, heavily modified by Yves and others
 
@@ -99,6 +100,16 @@ UCONFIG_CPPFLAGS=""
 # such as -std
 UCONFIG_CFLAGS=""
 
+# Check whether to install icu-config
+AC_ARG_ENABLE([icu-config],
+    AS_HELP_STRING([--enable-icu-config], [install icu-config]),
+        [case "${enableval}" in
+            yes) enable_icu_config=true ;;
+            no) enable_icu_config=false ;;
+            *) AC_MSG_ERROR([bad value '${enableval}' for --enable-icu-config]) ;;
+        esac], [enable_icu_config=true])
+AC_SUBST(INSTALL_ICU_CONFIG, [$enable_icu_config])
+
 # Check whether to build debug libraries
 AC_MSG_CHECKING([whether to build debug libraries])
 enabled=no
@@ -183,6 +194,8 @@ fi
 
 #AC_CHECK_PROG(AUTOCONF, autoconf, autoconf, true)
 #AC_CHECK_PROG(STRIP, strip, strip, true)
+
+AC_CHECK_PROGS(PYTHON3, python3)
 
 # Check for the platform make
 AC_PATH_PROGS(U_MAKE, gmake gnumake, make)
@@ -364,11 +377,14 @@ AC_ARG_ENABLE(draft,
 AC_MSG_RESULT($enabled)
 # Make sure that we can use draft API in ICU.
 if test "$U_DEFAULT_SHOW_DRAFT" = 0; then
-    CONFIG_CPPFLAGS="$CONFIG_CPPFLAGS -DU_SHOW_DRAFT_API"
+    CONFIG_CPPFLAGS="$CONFIG_CPPFLAGS -DU_SHOW_DRAFT_API -DU_SHOW_INTERNAL_API"
 fi
 AC_SUBST(U_DEFAULT_SHOW_DRAFT)
 
 AC_PROG_RANLIB
+
+# need sed
+AC_PROG_SED
 
 # look for 'ar' the proper way
 AC_CHECK_TOOL(AR, ar, false)
@@ -491,48 +507,27 @@ else
 fi
 
 if [[ "$GXX" = yes ]]; then
-    # if CXXFLAGS does not have a "-std=" setting, set it now to -std=c++0x,
+    # if CXXFLAGS does not have a "-std=" setting, set it now to -std=c++11,
     # and check that the compiler still works.
     if ! echo "$CXXFLAGS" | grep '\-std=' >/dev/null 2>&1; then
         OLD_CXXFLAGS="${CXXFLAGS}"
-        CXXFLAGS="$CXXFLAGS --std=c++0x"
+        CXXFLAGS="$CXXFLAGS -std=c++11"
         AC_MSG_CHECKING([[if we have a C++11 compiler]])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]],[[]])],[cxx11_okay=yes],[cxx11_okay=no])
         AC_MSG_RESULT($cxx11_okay)
         if [[ $cxx11_okay = yes ]]; then
-            AC_MSG_NOTICE([Adding CXXFLAGS option --std=c++0x])
-            UCONFIG_CXXFLAGS="${UCONFIG_CXXFLAGS} --std=c++0x"
+            AC_MSG_NOTICE([Adding CXXFLAGS option -std=c++11])
+            UCONFIG_CXXFLAGS="${UCONFIG_CXXFLAGS} -std=c++11"
         else
             CXXFLAGS="$OLD_CXXFLAGS"
         fi
+        case "${host}" in
+        *-*-solaris*)
+            CXXFLAGS="$OLD_CXXFLAGS"
+            ;;
+        esac
     fi
 fi
-
-AC_MSG_CHECKING([[if #include <string> works]])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <string>]], [[]])], [ac_cv_header_stdstring=yes], [ac_cv_header_stdstring=no])
-AC_MSG_RESULT($ac_cv_header_stdstring)
-if test $ac_cv_header_stdstring = yes
-then
-	U_HAVE_STD_STRING=1
-else
-        U_HAVE_STD_STRING=0
-        CONFIG_CPPFLAGS="${CONFIG_CPPFLAGS} -DU_HAVE_STD_STRING=0"
-fi
-AC_SUBST(U_HAVE_STD_STRING)
-
-
-AC_MSG_CHECKING([[if #include <atomic> works]])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <atomic>]], [[]])], [ac_cv_header_atomic=yes], [ac_cv_header_atomic=no])
-AC_MSG_RESULT($ac_cv_header_atomic)
-if test $ac_cv_header_atomic = yes
-then
-	U_HAVE_ATOMIC=1
-else
-        U_HAVE_ATOMIC=0
-fi
-# Make this available via CPPFLAGS
-CONFIG_CPPFLAGS="${CONFIG_CPPFLAGS} -DU_HAVE_ATOMIC=${U_HAVE_ATOMIC}"
-AC_SUBST(U_HAVE_ATOMIC)
 
 AC_LANG_POP([C++])
 
@@ -828,8 +823,8 @@ AC_SUBST(U_TZSET)
 
 U_HAVE_TZNAME=0
 AC_CACHE_CHECK(for tzname,ac_cv_var_tzname,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[#ifndef __USE_POSIX
-#define __USE_POSIX
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE
 #endif
 #include <stdlib.h>
 #include <time.h>
@@ -855,11 +850,8 @@ AC_SUBST(U_HAVE_TZNAME)
 AC_SUBST(U_TZNAME)
 
 AC_CACHE_CHECK(for timezone,ac_cv_var_timezone,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([#ifndef __USE_POSIX
-#define __USE_POSIX
-#endif
-#ifndef __USE_XOPEN
-#define __USE_XOPEN
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE
 #endif
 #include <time.h>
 ], [[timezone = 1;]])],[ac_cv_var_timezone=yes],[ac_cv_var_timezone=no])])
@@ -886,6 +878,24 @@ else
 fi
 AC_SUBST(U_HAVE_TIMEZONE)
 AC_SUBST(U_TIMEZONE)
+
+AC_CHECK_FUNC(strtod_l)
+if test x$ac_cv_func_strtod_l = xyes
+then
+    U_HAVE_STRTOD_L=1
+    AC_CHECK_HEADER(xlocale.h)
+    if test "$ac_cv_header_xlocale_h" = yes; then
+      U_HAVE_XLOCALE_H=1
+      CONFIG_CPPFLAGS="${CONFIG_CPPFLAGS} -DU_HAVE_STRTOD_L=1 -DU_HAVE_XLOCALE_H=1"
+    else
+      U_HAVE_XLOCALE_H=0
+      CONFIG_CPPFLAGS="${CONFIG_CPPFLAGS} -DU_HAVE_STRTOD_L=1 -DU_HAVE_XLOCALE_H=0"
+    fi
+else
+    CONFIG_CPPFLAGS="${CONFIG_CPPFLAGS} -DU_HAVE_STRTOD_L=0"
+    U_HAVE_STRTOD_L=0
+fi
+AC_SUBST(U_HAVE_STRTOD_L)
 
 # Checks for typedefs
 AC_CHECK_TYPE(int8_t,signed char)
@@ -1027,19 +1037,14 @@ case "${host}" in
     ;;
 esac
 
-# GCC >= 4.4 supports UTF16 string literals. The CFLAGS and CXXFLAGS may change in the future.
+# GCC >= 4.4 supports UTF16 string literals. As of ICU 62, both C and C++ files require them.
 if test "$CHECK_UTF16_STRING_RESULT" = "unknown"; then
     if test "$GCC" = yes; then
-        OLD_CFLAGS="${CFLAGS}"
-        CFLAGS="${CFLAGS} -std=gnu99"
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-static const char16_t test[] = u"This is a UTF16 literal string.";
+static const unsigned short test[] = u"This is a UTF16 literal string.";
         ]], [[]])],[CC_UTF16_STRING=1],[CC_UTF16_STRING=0])
         if test "$CC_UTF16_STRING" = 1; then
-            UCONFIG_CFLAGS="${UCONFIG_CFLAGS} -std=gnu99"
             CHECK_UTF16_STRING_RESULT="C only";
-        else
-            CFLAGS="${OLD_CFLAGS}"
         fi
     fi
     if test "$GXX" = yes; then
@@ -1080,29 +1085,27 @@ AC_ARG_ENABLE(icuio,
 	icuio=true)
 ICU_CONDITIONAL(ICUIO, test "$icuio" = true)
 
-# Enable/disable layout
-AC_ARG_ENABLE(layout,
-	[  --enable-layout         build ICU's DEPRECATED layout library [default=yes]],
-	[case "${enableval}" in
-		yes) layout=true ;;
-		no)  layout=false ;;
-		*) AC_MSG_ERROR(bad value ${enableval} for --enable-layout) ;;
-		esac],
-	layout=true)
-ICU_CONDITIONAL(LAYOUT, test "$layout" = true)
-
 # Enable/disable layoutex
 AC_ARG_ENABLE(layoutex,
-	[  --enable-layoutex         build ICU's Paragraph Layout library [default=same-as-layout].
-            If not building with the ICU Layout library, then icu-le-hb must be installed via pkg-config.
-            See http://harfbuzz.org],
+	[  --enable-layoutex         build ICU's Paragraph Layout library [default=yes].
+            icu-le-hb must be installed via pkg-config. See http://harfbuzz.org],
 	[case "${enableval}" in
-		yes) layoutex=true ;;
+		yes) layoutex=$have_icu_le_hb ;;
 		no)  layoutex=false ;;
 		*) AC_MSG_ERROR(bad value ${enableval} for --enable-layoutex) ;;
 		esac],
-	layoutex=$layout)
+	layoutex=$have_icu_le_hb)
 ICU_CONDITIONAL(LAYOUTEX, test "$layoutex" = true)
+
+# Enable/disable layout
+AC_ARG_ENABLE(layout,
+	[],
+	[case "${enableval}" in
+		yes) AC_MSG_ERROR(The ICU Layout Engine has been removed.) ;;
+		no)   ;;
+		*) ;;
+		esac],
+	)
 
 # Enable/disable tools
 AC_ARG_ENABLE(tools,
@@ -1325,7 +1328,6 @@ AC_CONFIG_FILES([icudefs.mk \
 		stubdata/Makefile \
 		common/Makefile \
 		i18n/Makefile \
-		layout/Makefile \
 		layoutex/Makefile \
 		io/Makefile \
 		extra/Makefile \
@@ -1351,6 +1353,7 @@ AC_CONFIG_FILES([icudefs.mk \
 		tools/pkgdata/Makefile \
 		tools/tzcode/Makefile \
 		tools/gencfu/Makefile \
+		tools/escapesrc/Makefile \
 		test/Makefile \
 		test/compat/Makefile \
 		test/testdata/Makefile \
@@ -1459,6 +1462,19 @@ if test "$tools" = false;
 then
         echo "## Note: you have disabled ICU's tools. This ICU cannot build its own data or tests."
         echo "## Expect build failures in the 'data', 'test', and other directories."
+fi
+
+if test -z "$PYTHON3";
+then
+    echo ""
+    echo "NOTICE: Unable to find Python 3. ICU versions 64 and later will require Python 3 to build."
+    echo "See ICU-10923 for more information: https://unicode-org.atlassian.net/browse/ICU-10923"
+    echo ""
+else
+    echo ""
+    echo "Found Python 3. You are all set for ICU 64, which will require Python 3 to build."
+    echo "For more info on Python 3 requirement, see: https://unicode-org.atlassian.net/browse/ICU-10923"
+    echo ""
 fi
 
 $as_unset _CXX_CXXSUFFIX

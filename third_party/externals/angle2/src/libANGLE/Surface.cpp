@@ -27,8 +27,9 @@ namespace egl
 
 SurfaceState::SurfaceState(const egl::Config *configIn, const AttributeMap &attributesIn)
     : label(nullptr), config(configIn), attributes(attributesIn), timestampsEnabled(false)
-{
-}
+{}
+
+SurfaceState::~SurfaceState() = default;
 
 Surface::Surface(EGLint surfaceType,
                  const egl::Config *config,
@@ -108,9 +109,7 @@ Surface::Surface(EGLint surfaceType,
     mOrientation = static_cast<EGLint>(attributes.get(EGL_SURFACE_ORIENTATION_ANGLE, 0));
 }
 
-Surface::~Surface()
-{
-}
+Surface::~Surface() {}
 
 rx::FramebufferAttachmentObjectImpl *Surface::getAttachmentImpl() const
 {
@@ -137,7 +136,7 @@ void Surface::postSwap(const gl::Context *context)
     if (mRobustResourceInitialization && mSwapBehavior != EGL_BUFFER_PRESERVED)
     {
         mInitState = gl::InitState::MayNeedInit;
-        onStorageChange(context);
+        onStateChange(context, angle::SubjectMessage::SubjectChanged);
     }
 }
 
@@ -178,15 +177,18 @@ Error Surface::initialize(const Display *display)
     return NoError();
 }
 
-Error Surface::setIsCurrent(const gl::Context *context, bool isCurrent)
+Error Surface::makeCurrent(const gl::Context *context)
 {
-    if (isCurrent)
-    {
-        mRefCount++;
-        return NoError();
-    }
+    ANGLE_TRY(mImplementation->makeCurrent(context));
 
-    return releaseRef(context->getCurrentDisplay());
+    mRefCount++;
+    return NoError();
+}
+
+Error Surface::unMakeCurrent(const gl::Context *context)
+{
+    ANGLE_TRY(mImplementation->unMakeCurrent(context));
+    return releaseRef(context->getDisplay());
 }
 
 Error Surface::releaseRef(const Display *display)
@@ -400,13 +402,12 @@ EGLint Surface::getHeight() const
     return mFixedSize ? static_cast<EGLint>(mFixedHeight) : mImplementation->getHeight();
 }
 
-Error Surface::bindTexImage(const gl::Context *context, gl::Texture *texture, EGLint buffer)
+Error Surface::bindTexImage(gl::Context *context, gl::Texture *texture, EGLint buffer)
 {
     ASSERT(!mTexture);
     ANGLE_TRY(mImplementation->bindTexImage(context, texture, buffer));
 
-    auto glErr = texture->bindTexImageFromSurface(context, this);
-    if (glErr.isError())
+    if (texture->bindTexImageFromSurface(context, this) == angle::Result::Stop)
     {
         return Error(EGL_BAD_SURFACE);
     }
@@ -423,11 +424,7 @@ Error Surface::releaseTexImage(const gl::Context *context, EGLint buffer)
     ANGLE_TRY(mImplementation->releaseTexImage(context, buffer));
 
     ASSERT(mTexture);
-    auto glErr = mTexture->releaseTexImageFromSurface(context);
-    if (glErr.isError())
-    {
-        return Error(EGL_BAD_SURFACE);
-    }
+    ANGLE_TRY(ResultToEGL(mTexture->releaseTexImageFromSurface(context)));
 
     return releaseTexImageFromTexture(context);
 }
@@ -441,7 +438,7 @@ Error Surface::releaseTexImageFromTexture(const gl::Context *context)
 {
     ASSERT(mTexture);
     mTexture = nullptr;
-    return releaseRef(context->getCurrentDisplay());
+    return releaseRef(context->getDisplay());
 }
 
 gl::Extents Surface::getAttachmentSize(const gl::ImageIndex & /*target*/) const
@@ -537,9 +534,7 @@ WindowSurface::WindowSurface(rx::EGLImplFactory *implFactory,
     mImplementation = implFactory->createWindowSurface(mState, window, attribs);
 }
 
-WindowSurface::~WindowSurface()
-{
-}
+WindowSurface::~WindowSurface() {}
 
 PbufferSurface::PbufferSurface(rx::EGLImplFactory *implFactory,
                                const Config *config,
@@ -560,9 +555,7 @@ PbufferSurface::PbufferSurface(rx::EGLImplFactory *implFactory,
         implFactory->createPbufferFromClientBuffer(mState, buftype, clientBuffer, attribs);
 }
 
-PbufferSurface::~PbufferSurface()
-{
-}
+PbufferSurface::~PbufferSurface() {}
 
 PixmapSurface::PixmapSurface(rx::EGLImplFactory *implFactory,
                              const Config *config,
@@ -573,19 +566,13 @@ PixmapSurface::PixmapSurface(rx::EGLImplFactory *implFactory,
     mImplementation = implFactory->createPixmapSurface(mState, nativePixmap, attribs);
 }
 
-PixmapSurface::~PixmapSurface()
-{
-}
+PixmapSurface::~PixmapSurface() {}
 
 // SurfaceDeleter implementation.
 
-SurfaceDeleter::SurfaceDeleter(const Display *display) : mDisplay(display)
-{
-}
+SurfaceDeleter::SurfaceDeleter(const Display *display) : mDisplay(display) {}
 
-SurfaceDeleter::~SurfaceDeleter()
-{
-}
+SurfaceDeleter::~SurfaceDeleter() {}
 
 void SurfaceDeleter::operator()(Surface *surface)
 {

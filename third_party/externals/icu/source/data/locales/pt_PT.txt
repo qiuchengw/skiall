@@ -1,20 +1,20 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/pt_PT.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 pt_PT{
     Ellipsis{
         medial{"{0}…{1}"}
     }
+    ExemplarCharactersNumbers{"[  \\- , % ‰ + 0 1 2 3 4 5 6 7 8 9]"}
     ExemplarCharactersPunctuation{
         "[\\- ‐ – — , ; \\: ! ? . … ' \u0022 “ ” « » ( ) \\[ \\] § @ * / \\& # † ‡ ′ "
         "″]"
     }
     NumberElements{
+        arab{
+            miscPatterns{
+                range{"{0} - {1}"}
+            }
+        }
         latn{
             miscPatterns{
                 range{"{0} - {1}"}
@@ -145,9 +145,14 @@ pt_PT{
                 group{" "}
             }
         }
+        minimalPairs{
+            ordinal{
+                other{"{0}.º lugar"}
+            }
+        }
         minimumGroupingDigits{"2"}
     }
-    Version{"2.1.19.79"}
+    Version{"2.1.44.9"}
     calendar{
         buddhist{
             DateTimePatterns{
@@ -157,13 +162,21 @@ pt_PT{
                 "HH:mm",
                 "EEEE, d 'de' MMMM 'de' y G",
                 "d 'de' MMMM 'de' y G",
-                "dd/MM/y G",
+                "d MMM y G",
                 "d/M/y G",
                 "{1}, {0}",
                 "{1} 'às' {0}",
                 "{1} 'às' {0}",
                 "{1}, {0}",
                 "{1}, {0}",
+            }
+            eras{
+                narrow{
+                    "BE",
+                }
+                wide{
+                    "BE",
+                }
             }
         }
         chinese{
@@ -225,7 +238,7 @@ pt_PT{
                 "HH:mm",
                 "EEEE, d 'de' MMMM 'de' y G",
                 "d 'de' MMMM 'de' y G",
-                "dd/MM/y G",
+                "d MMM y G",
                 "d/M/y G",
                 "{1}, {0}",
                 "{1} 'às' {0}",
@@ -249,7 +262,6 @@ pt_PT{
                     M{"MMM–MMM"}
                 }
                 MMMEd{
-                    M{"ccc, dd/MM – ccc, dd/MM"}
                     d{"ccc, dd/MM – ccc, dd/MM"}
                 }
                 MMMMEd{
@@ -267,7 +279,6 @@ pt_PT{
                     y{"y–y G"}
                 }
                 yMMMEd{
-                    M{"E, dd/MM – E, dd/MM/y G"}
                     d{"E, dd/MM – E, dd/MM/y G"}
                     y{"E, dd/MM/y – E, dd/MM/y G"}
                 }
@@ -312,6 +323,10 @@ pt_PT{
             availableFormats{
                 MMMEd{"E, d/MM"}
                 MMMMEd{"ccc, d 'de' MMMM"}
+                MMMMW{
+                    one{"W.'ª' 'semana' 'de' MMM"}
+                    other{"W.'ª' 'semana' 'de' MMM"}
+                }
                 MMMd{"d/MM"}
                 Md{"dd/MM"}
                 yMMM{"MM/y"}
@@ -320,7 +335,10 @@ pt_PT{
                 yMMMMEd{"ccc, d 'de' MMMM 'de' y"}
                 yMMMd{"d/MM/y"}
                 yQQQ{"QQQQ 'de' y"}
-                yQQQQ{"QQQQ 'de' y"}
+                yw{
+                    one{"w.'ª' 'semana' 'de' Y"}
+                    other{"w.'ª' 'semana' 'de' Y"}
+                }
             }
             dayNames{
                 format{
@@ -372,9 +390,7 @@ pt_PT{
                         pm{"p.m."}
                     }
                     narrow{
-                        afternoon1{"tarde"}
                         am{"a.m."}
-                        morning1{"manhã"}
                         pm{"p.m."}
                     }
                     wide{
@@ -418,7 +434,6 @@ pt_PT{
                     d{"d–d"}
                 }
                 h{
-                    a{"h a – h a"}
                     h{"h–h a"}
                 }
                 hv{
@@ -436,9 +451,7 @@ pt_PT{
                     M{"MMM–MMM 'de' y"}
                 }
                 yMMMEd{
-                    M{"E, dd/MM – E, dd/MM/y"}
                     d{"E, dd/MM – E, dd/MM/y"}
-                    y{"E, dd/MM/y – E, dd/MM/y"}
                 }
                 yMMMMEd{
                     M{"E, d 'de' MMMM – E, d 'de' MMMM 'de' y"}
@@ -476,13 +489,33 @@ pt_PT{
                 "HH:mm",
                 "EEEE, d 'de' MMMM 'de' y G",
                 "d 'de' MMMM 'de' y G",
-                "dd/MM/y G",
+                "d MMM y G",
                 "d/M/y G",
                 "{1}, {0}",
                 "{1} 'às' {0}",
                 "{1} 'às' {0}",
                 "{1}, {0}",
                 "{1}, {0}",
+            }
+            monthNames{
+                format{
+                    wide{
+                        "Tishri",
+                        "Heshvan",
+                        "Kislev",
+                        "Tevet",
+                        "Shevat",
+                        "Adar I",
+                        "Adar",
+                        "Nisan",
+                        "Iyar",
+                        "Sivan",
+                        "Tamuz",
+                        "Av",
+                        "Elul",
+                        "Adar II",
+                    }
+                }
             }
         }
         islamic{
@@ -493,7 +526,7 @@ pt_PT{
                 "HH:mm",
                 "EEEE, d 'de' MMMM 'de' y G",
                 "d 'de' MMMM 'de' y G",
-                "dd/MM/y G",
+                "d MMM y G",
                 "d/M/y G",
                 "{1}, {0}",
                 "{1} 'às' {0}",
@@ -527,7 +560,7 @@ pt_PT{
                 "HH:mm",
                 "EEEE, d 'de' MMMM 'de' y G",
                 "d 'de' MMMM 'de' y G",
-                "dd/MM/y G",
+                "d MMM y G",
                 "d/M/y G",
                 "{1}, {0}",
                 "{1} 'às' {0}",
@@ -536,6 +569,30 @@ pt_PT{
                 "{1}, {0}",
             }
         }
+    }
+    characterLabel{
+        box_drawing{"desenho enquadrado"}
+        bullets_stars{"ponto ou estrela"}
+        consonantal_jamo{"jamo consoante"}
+        dash_connector{"travessão ou elemento de ligação"}
+        divination_symbols{"símbolo de divinação"}
+        east_asian_scripts{"escrita leste-asiática"}
+        food_drink{"comida e bebida"}
+        han_characters{"carácter Han"}
+        hanzi_simplified{"hanzi (simplificado)"}
+        hanzi_traditional{"hanzi (tradicional)"}
+        ideographic_desc_characters{"carácter de descrição ideográfica"}
+        letterlike_symbols{"símbolo parecido com uma letra"}
+        limited_use{"de uso limitado"}
+        middle_eastern_scripts{"escrita médio-oriental"}
+        other{"outro"}
+        south_asian_scripts{"escrita sul-asiática"}
+        southeast_asian_scripts{"escrita sudeste-asiática"}
+        sport{"desporto"}
+        travel{"viagens"}
+        vocalic_jamo{"jamo vogal"}
+        weather{"meteorologia"}
+        western_asian_scripts{"escrita oeste-asiática"}
     }
     contextTransforms{
         languages:intvector{
@@ -551,6 +608,13 @@ pt_PT{
     }
     fields{
         day{
+            relative{
+                "-1"{"ontem"}
+                "-2"{"anteontem"}
+                "0"{"hoje"}
+                "1"{"amanhã"}
+                "2"{"depois de amanhã"}
+            }
             relativeTime{
                 future{
                     one{"dentro de {0} dia"}
@@ -558,11 +622,62 @@ pt_PT{
                 }
             }
         }
+        day-narrow{
+            relative{
+                "-1"{"ontem"}
+                "-2"{"anteontem"}
+                "0"{"hoje"}
+                "1"{"amanhã"}
+                "2"{"depois de amanhã"}
+            }
+            relativeTime{
+                future{
+                    one{"+{0} dia"}
+                    other{"+{0} dias"}
+                }
+                past{
+                    one{"há {0} dias"}
+                    other{"há {0} dias"}
+                }
+            }
+        }
         day-short{
+            relative{
+                "-1"{"ontem"}
+                "-2"{"anteontem"}
+                "0"{"hoje"}
+                "1"{"amanhã"}
+                "2"{"depois de amanhã"}
+            }
             relativeTime{
                 future{
                     one{"dentro de {0} dia"}
                     other{"dentro de {0} dias"}
+                }
+            }
+        }
+        dayperiod{
+            dn{"am/pm"}
+        }
+        dayperiod-narrow{
+            dn{"am/pm"}
+        }
+        dayperiod-short{
+            dn{"am/pm"}
+        }
+        fri{
+            relativeTime{
+                future{
+                    one{"dentro de {0} sexta-feira"}
+                    other{"dentro de {0} sextas-feiras"}
+                }
+            }
+        }
+        fri-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} sex."}
+                    other{"dentro de {0} sex."}
                 }
             }
         }
@@ -572,12 +687,34 @@ pt_PT{
                 "0"{"esta sexta"}
                 "1"{"próxima sexta"}
             }
+            relativeTime{
+                future{
+                    one{"dentro de {0} sexta"}
+                    other{"dentro de {0} sextas"}
+                }
+                past{
+                    one{"há {0} sexta"}
+                    other{"há {0} sextas"}
+                }
+            }
         }
         hour{
             relativeTime{
                 future{
                     one{"dentro de {0} hora"}
                     other{"dentro de {0} horas"}
+                }
+            }
+        }
+        hour-narrow{
+            relativeTime{
+                future{
+                    one{"+{0} h"}
+                    other{"+{0} h"}
+                }
+                past{
+                    one{"-{0} h"}
+                    other{"-{0} h"}
                 }
             }
         }
@@ -623,11 +760,37 @@ pt_PT{
                 }
             }
         }
+        mon{
+            relativeTime{
+                future{
+                    one{"dentro de {0} segunda-feira"}
+                    other{"dentro de {0} segundas-feiras"}
+                }
+            }
+        }
+        mon-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} seg."}
+                    other{"dentro de {0} seg."}
+                }
+            }
+        }
         mon-short{
             relative{
                 "-1"{"segunda passada"}
                 "0"{"esta segunda"}
                 "1"{"próxima segunda"}
+            }
+            relativeTime{
+                future{
+                    one{"dentro de {0} segunda"}
+                    other{"dentro de {0} segundas"}
+                }
+                past{
+                    one{"há {0} segunda"}
+                    other{"há {0} segundas"}
+                }
             }
         }
         month{
@@ -635,6 +798,18 @@ pt_PT{
                 future{
                     one{"dentro de {0} mês"}
                     other{"dentro de {0} meses"}
+                }
+            }
+        }
+        month-narrow{
+            relativeTime{
+                future{
+                    one{"+{0} mês"}
+                    other{"+{0} meses"}
+                }
+                past{
+                    one{"-{0} mês"}
+                    other{"-{0} meses"}
                 }
             }
         }
@@ -693,11 +868,57 @@ pt_PT{
                 }
             }
         }
+        sat{
+            relativeTime{
+                future{
+                    one{"dentro de {0} sábado"}
+                    other{"dentro de {0} sábados"}
+                }
+            }
+        }
+        sat-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} sáb."}
+                    other{"dentro de {0} sáb."}
+                }
+            }
+        }
+        sat-short{
+            relative{
+                "-1"{"sábado passado"}
+                "0"{"este sábado"}
+                "1"{"próximo sábado"}
+            }
+            relativeTime{
+                future{
+                    one{"dentro de {0} sábado"}
+                    other{"dentro de {0} sábados"}
+                }
+                past{
+                    one{"há {0} sábado"}
+                    other{"há {0} sábados"}
+                }
+            }
+        }
         second{
             relativeTime{
                 future{
                     one{"dentro de {0} segundo"}
                     other{"dentro de {0} segundos"}
+                }
+            }
+        }
+        second-narrow{
+            dn{"s"}
+            relativeTime{
+                future{
+                    one{"+{0} s"}
+                    other{"+{0} s"}
+                }
+                past{
+                    one{"-{0} s"}
+                    other{"-{0} s"}
                 }
             }
         }
@@ -714,9 +935,53 @@ pt_PT{
                 }
             }
         }
-        thu-narrow{
+        sun{
+            relativeTime{
+                future{
+                    one{"dentro de {0} domingo"}
+                    other{"dentro de {0} domingos"}
+                }
+                past{
+                    one{"há {0} domingo"}
+                    other{"há {0} domingos"}
+                }
+            }
+        }
+        sun-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} dom."}
+                    other{"dentro de {0} dom."}
+                }
+            }
+        }
+        sun-short{
             relative{
-                "1"{"próxima qui."}
+                "-1"{"domingo passado"}
+                "0"{"este domingo"}
+                "1"{"próximo domingo"}
+            }
+            relativeTime{
+                future{
+                    one{"dentro de {0} domingo"}
+                    other{"dentro de {0} domingos"}
+                }
+            }
+        }
+        thu{
+            relativeTime{
+                future{
+                    one{"dentro de {0} quinta-feira"}
+                    other{"dentro de {0} quintas-feiras"}
+                }
+            }
+        }
+        thu-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} qui."}
+                    other{"dentro de {0} qui."}
+                }
             }
         }
         thu-short{
@@ -725,6 +990,32 @@ pt_PT{
                 "0"{"esta quinta"}
                 "1"{"próxima quinta"}
             }
+            relativeTime{
+                future{
+                    one{"dentro de {0} quinta"}
+                    other{"dentro de {0} quintas"}
+                }
+                past{
+                    one{"há {0} quinta"}
+                    other{"há {0} quintas"}
+                }
+            }
+        }
+        tue{
+            relativeTime{
+                future{
+                    one{"dentro de {0} terça-feira"}
+                    other{"dentro de {0} terças-feiras"}
+                }
+            }
+        }
+        tue-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} ter."}
+                    other{"dentro de {0} ter."}
+                }
+            }
         }
         tue-short{
             relative{
@@ -732,12 +1023,52 @@ pt_PT{
                 "0"{"esta terça"}
                 "1"{"próxima terça"}
             }
+            relativeTime{
+                future{
+                    one{"dentro de {0} terça"}
+                    other{"dentro de {0} terças"}
+                }
+                past{
+                    one{"há {0} terça"}
+                    other{"há {0} terças"}
+                }
+            }
+        }
+        wed{
+            relativeTime{
+                future{
+                    one{"dentro de {0} quarta-feira"}
+                    other{"dentro de {0} quartas-feiras"}
+                }
+                past{
+                    one{"há {0} quarta-feira"}
+                    other{"há {0} quartas-feiras"}
+                }
+            }
+        }
+        wed-narrow{
+            relativeTime{
+                future{
+                    one{"dentro de {0} qua."}
+                    other{"dentro de {0} qua."}
+                }
+            }
         }
         wed-short{
             relative{
                 "-1"{"quarta passada"}
                 "0"{"esta quarta"}
                 "1"{"próxima quarta"}
+            }
+            relativeTime{
+                future{
+                    one{"dentro de {0} quarta"}
+                    other{"dentro de {0} quartas"}
+                }
+                past{
+                    one{"há {0} quarta"}
+                    other{"há {0} quartas"}
+                }
             }
         }
         week{
@@ -748,7 +1079,20 @@ pt_PT{
                 }
             }
         }
+        week-narrow{
+            relativeTime{
+                future{
+                    one{"+{0} sem."}
+                    other{"+{0} sem."}
+                }
+                past{
+                    one{"-{0} sem."}
+                    other{"-{0} sem."}
+                }
+            }
+        }
         week-short{
+            relativePeriod{"a sem. de {0}"}
             relativeTime{
                 future{
                     one{"dentro de {0} sem."}
@@ -756,11 +1100,29 @@ pt_PT{
                 }
             }
         }
+        weekday-narrow{
+            dn{"dia da semana"}
+        }
+        weekday-short{
+            dn{"dia da semana"}
+        }
         year{
             relativeTime{
                 future{
                     one{"dentro de {0} ano"}
                     other{"dentro de {0} anos"}
+                }
+            }
+        }
+        year-narrow{
+            relativeTime{
+                future{
+                    one{"+{0} ano"}
+                    other{"+{0} anos"}
+                }
+                past{
+                    one{"-{0} ano"}
+                    other{"-{0} anos"}
                 }
             }
         }
@@ -772,10 +1134,11 @@ pt_PT{
                 }
             }
         }
-    }
-    transformNames{
-        x-Accents{"Acentos"}
-        x-Fullwidth{"Largura completa"}
-        x-Halfwidth{"Meia largura"}
+        zone-narrow{
+            dn{"fuso horário"}
+        }
+        zone-short{
+            dn{"fuso horário"}
+        }
     }
 }

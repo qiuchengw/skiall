@@ -14,10 +14,10 @@
 #include <set>
 
 #if defined(ANGLE_ENABLE_WINDOWS_STORE)
-#include <windows.applicationmodel.core.h>
-#include <windows.graphics.display.h>
-#include <wrl.h>
-#include <wrl/wrappers/corewrappers.h>
+#    include <windows.applicationmodel.core.h>
+#    include <windows.graphics.display.h>
+#    include <wrl.h>
+#    include <wrl/wrappers/corewrappers.h>
 #endif
 
 namespace
@@ -443,6 +443,30 @@ bool IsImageType(GLenum type)
     return false;
 }
 
+bool IsImage2DType(GLenum type)
+{
+    switch (type)
+    {
+        case GL_IMAGE_2D:
+        case GL_INT_IMAGE_2D:
+        case GL_UNSIGNED_INT_IMAGE_2D:
+            return true;
+        case GL_IMAGE_3D:
+        case GL_INT_IMAGE_3D:
+        case GL_UNSIGNED_INT_IMAGE_3D:
+        case GL_IMAGE_2D_ARRAY:
+        case GL_INT_IMAGE_2D_ARRAY:
+        case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
+        case GL_IMAGE_CUBE:
+        case GL_INT_IMAGE_CUBE:
+        case GL_UNSIGNED_INT_IMAGE_CUBE:
+            return false;
+        default:
+            UNREACHABLE();
+            return false;
+    }
+}
+
 bool IsAtomicCounterType(GLenum type)
 {
     return type == GL_UNSIGNED_INT_ATOMIC_COUNTER;
@@ -530,22 +554,22 @@ int AllocateFirstFreeBits(unsigned int *bits, unsigned int allocationSize, unsig
     return -1;
 }
 
-IndexRange ComputeIndexRange(GLenum indexType,
+IndexRange ComputeIndexRange(DrawElementsType indexType,
                              const GLvoid *indices,
                              size_t count,
                              bool primitiveRestartEnabled)
 {
     switch (indexType)
     {
-        case GL_UNSIGNED_BYTE:
+        case DrawElementsType::UnsignedByte:
             return ComputeTypedIndexRange(static_cast<const GLubyte *>(indices), count,
                                           primitiveRestartEnabled,
                                           GetPrimitiveRestartIndex(indexType));
-        case GL_UNSIGNED_SHORT:
+        case DrawElementsType::UnsignedShort:
             return ComputeTypedIndexRange(static_cast<const GLushort *>(indices), count,
                                           primitiveRestartEnabled,
                                           GetPrimitiveRestartIndex(indexType));
-        case GL_UNSIGNED_INT:
+        case DrawElementsType::UnsignedInt:
             return ComputeTypedIndexRange(static_cast<const GLuint *>(indices), count,
                                           primitiveRestartEnabled,
                                           GetPrimitiveRestartIndex(indexType));
@@ -555,15 +579,15 @@ IndexRange ComputeIndexRange(GLenum indexType,
     }
 }
 
-GLuint GetPrimitiveRestartIndex(GLenum indexType)
+GLuint GetPrimitiveRestartIndex(DrawElementsType indexType)
 {
     switch (indexType)
     {
-        case GL_UNSIGNED_BYTE:
+        case DrawElementsType::UnsignedByte:
             return 0xFF;
-        case GL_UNSIGNED_SHORT:
+        case DrawElementsType::UnsignedShort:
             return 0xFFFF;
-        case GL_UNSIGNED_INT:
+        case DrawElementsType::UnsignedInt:
             return 0xFFFFFFFF;
         default:
             UNREACHABLE();
@@ -591,20 +615,14 @@ bool IsTriangleMode(PrimitiveMode drawMode)
     return false;
 }
 
-bool IsLineMode(PrimitiveMode primitiveMode)
+namespace priv
 {
-    switch (primitiveMode)
-    {
-        case PrimitiveMode::LineLoop:
-        case PrimitiveMode::LineStrip:
-        case PrimitiveMode::LineStripAdjacency:
-        case PrimitiveMode::Lines:
-            return true;
-
-        default:
-            return false;
-    }
-}
+const angle::PackedEnumMap<PrimitiveMode, bool> gLineModes = {
+    {{PrimitiveMode::LineLoop, true},
+     {PrimitiveMode::LineStrip, true},
+     {PrimitiveMode::LineStripAdjacency, true},
+     {PrimitiveMode::Lines, true}}};
+}  // namespace priv
 
 bool IsIntegerFormat(GLenum unsizedFormat)
 {
@@ -753,7 +771,8 @@ std::string ParseResourceName(const std::string &name, std::vector<unsigned int>
 }
 
 const sh::ShaderVariable *FindShaderVarField(const sh::ShaderVariable &var,
-                                             const std::string &fullName)
+                                             const std::string &fullName,
+                                             GLuint *fieldIndexOut)
 {
     if (var.fields.empty())
     {
@@ -774,11 +793,12 @@ const sh::ShaderVariable *FindShaderVarField(const sh::ShaderVariable &var,
     {
         return nullptr;
     }
-    for (const auto &field : var.fields)
+    for (size_t field = 0; field < var.fields.size(); ++field)
     {
-        if (field.name == fieldName)
+        if (var.fields[field].name == fieldName)
         {
-            return &field;
+            *fieldIndexOut = static_cast<GLuint>(field);
+            return &var.fields[field];
         }
     }
     return nullptr;
@@ -1023,7 +1043,7 @@ EGLClientBuffer GLObjectHandleToEGLClientBuffer(GLuint handle)
 #if !defined(ANGLE_ENABLE_WINDOWS_STORE)
 std::string getTempPath()
 {
-#ifdef ANGLE_PLATFORM_WINDOWS
+#    ifdef ANGLE_PLATFORM_WINDOWS
     char path[MAX_PATH];
     DWORD pathLen = GetTempPathA(sizeof(path) / sizeof(path[0]), path);
     if (pathLen == 0)
@@ -1040,10 +1060,10 @@ std::string getTempPath()
     }
 
     return path;
-#else
+#    else
     UNIMPLEMENTED();
     return "";
-#endif
+#    endif
 }
 
 void writeFile(const char *path, const void *content, size_t size)

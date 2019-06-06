@@ -28,6 +28,7 @@ check_PROGRAMS = $(TEST_PROGS)
 noinst_PROGRAMS = $(TEST_PROGS)
 
 TEST_PROGS = \
+	test-aat-layout \
 	test-baseline \
 	test-blob \
 	test-buffer \
@@ -47,12 +48,13 @@ TEST_PROGS = \
 	test-subset-os2 \
 	test-subset-post \
 	test-subset-vmtx \
+	test-subset-cff1 \
+	test-subset-cff2 \
 	test-unicode \
 	test-version \
 	$(NULL)
 
 test_subset_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
-test_subset_codepoints_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 test_subset_cmap_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 test_subset_glyf_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 test_subset_hdmx_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
@@ -60,6 +62,8 @@ test_subset_hmtx_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 test_subset_os2_LDADD  = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 test_subset_post_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 test_subset_vmtx_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_cff1_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
+test_subset_cff2_LDADD = $(LDADD) $(top_builddir)/src/libharfbuzz-subset.la
 
 test_unicode_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
@@ -74,8 +78,10 @@ endif
 
 TEST_PROGS += \
 	test-ot-color \
+	test-ot-ligature-carets \
 	test-ot-name \
 	test-ot-tag \
+	test-ot-extents-cff \
 	$(NULL)
 
 
@@ -148,9 +154,9 @@ check-gtester:
 
 # Check tests under valgrind.  Saves log to log-valgrind.txt
 VALGRIND_FLAGS = \
-	--tool=memcheck --suppressions=$(srcdir)/.valgrind-suppressions \
+	--tool=memcheck \
 	--track-origins=yes \
-	--leak-check=yes
+	--leak-check=yes \
 	$(EXTRA_VALGRIND_FLAGS)
 #	Can't do for now: --show-reachable=yes
 CLEANFILES +=  log-valgrind.txt

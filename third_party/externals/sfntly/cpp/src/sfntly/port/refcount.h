@@ -97,24 +97,22 @@
   #pragma warning(disable:4250)
 #endif
 
+bool TestSmartPointer();
+
 namespace sfntly {
+
+template <typename T>
+class Ptr;
 
 class RefCount {
  public:
   // Make gcc -Wnon-virtual-dtor happy.
   virtual ~RefCount() {}
 
-  virtual size_t AddRef() const = 0;
-  virtual size_t Release() const = 0;
-};
-
-template <typename T>
-class NoAddRefRelease : public T {
- public:
-  NoAddRefRelease();
-  ~NoAddRefRelease();
-
  private:
+  template <typename T>
+  friend class Ptr;
+
   virtual size_t AddRef() const = 0;
   virtual size_t Release() const = 0;
 };
@@ -142,6 +140,7 @@ class RefCounted : virtual public RefCount {
     return *this;
   }
 
+ private:
   virtual size_t AddRef() const {
     size_t new_count = AtomicIncrement(&ref_count_);
     DEBUG_OUTPUT("A ");
@@ -160,6 +159,7 @@ class RefCounted : virtual public RefCount {
   }
 
   mutable size_t ref_count_;  // reference count of current object
+  friend bool ::TestSmartPointer();
 #if defined (ENABLE_OBJECT_COUNTER)
   static size_t object_counter_;
   static size_t next_id_;
@@ -224,8 +224,8 @@ class Ptr {
     return *p_;  // It can throw!
   }
 
-  NoAddRefRelease<T>* operator->() const {
-    return (NoAddRefRelease<T>*)p_;  // It can throw!
+  T* operator->() const {
+    return p_;  // It can throw!
   }
 
   bool operator!() const {

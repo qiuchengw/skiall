@@ -34,39 +34,7 @@
 namespace rx
 {
 
-StateManagerGL::IndexedBufferBinding::IndexedBufferBinding() : offset(0), size(0), buffer(0)
-{
-}
-
-namespace
-{
-bool AllRectanglesMatch(const gl::Rectangle &matchingRectangle,
-                        const std::vector<gl::Rectangle> &rectangles)
-{
-    for (const auto &rect : rectangles)
-    {
-        if (matchingRectangle != rect)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-std::vector<gl::Rectangle> ApplyOffsets(const gl::Rectangle &modifiableRectangle,
-                                        const std::vector<gl::Offset> &offsets)
-{
-    std::vector<gl::Rectangle> result;
-    result.reserve(offsets.size());
-    for (size_t i = 0u; i < offsets.size(); ++i)
-    {
-        result.emplace_back(gl::Rectangle(modifiableRectangle.x + offsets[i].x,
-                                          modifiableRectangle.y + offsets[i].y,
-                                          modifiableRectangle.width, modifiableRectangle.height));
-    }
-    return result;
-}
-}  // namespace
+StateManagerGL::IndexedBufferBinding::IndexedBufferBinding() : offset(0), size(0), buffer(0) {}
 
 StateManagerGL::StateManagerGL(const FunctionsGL *functions,
                                const gl::Caps &rendererCaps,
@@ -98,9 +66,8 @@ StateManagerGL::StateManagerGL(const FunctionsGL *functions,
       mFramebuffers(angle::FramebufferBindingSingletonMax, 0),
       mRenderbuffer(0),
       mScissorTestEnabled(false),
-      mScissors(extensions.maxViews),
-      mViewports(extensions.maxViews),
-      mViewportOffsets(extensions.maxViews),
+      mScissor(0, 0, 0, 0),
+      mViewport(0, 0, 0, 0),
       mNear(0.0f),
       mFar(1.0f),
       mBlendEnabled(false),
@@ -159,8 +126,8 @@ StateManagerGL::StateManagerGL(const FunctionsGL *functions,
       mPathStencilFunc(GL_ALWAYS),
       mPathStencilRef(0),
       mPathStencilMask(std::numeric_limits<GLuint>::max()),
-      mIsSideBySideDrawFramebuffer(false),
-      mIsMultiviewEnabled(extensions.multiview),
+      mIsMultiviewEnabled(extensions.multiview || extensions.multiview2),
+      mProvokingVertex(GL_LAST_VERTEX_CONVENTION),
       mLocalDirtyBits()
 {
     ASSERT(mFunctions);
@@ -195,9 +162,7 @@ StateManagerGL::StateManagerGL(const FunctionsGL *functions,
     angle::Matrix<GLfloat>::setToIdentity(mPathMatrixMV);
 }
 
-StateManagerGL::~StateManagerGL()
-{
-}
+StateManagerGL::~StateManagerGL() {}
 
 void StateManagerGL::deleteProgram(GLuint program)
 {
@@ -676,7 +641,7 @@ void StateManagerGL::endQuery(gl::QueryType type, QueryGL *queryObject, GLuint q
 void StateManagerGL::updateDrawIndirectBufferBinding(const gl::Context *context)
 {
     gl::Buffer *drawIndirectBuffer =
-        context->getGLState().getTargetBuffer(gl::BufferBinding::DrawIndirect);
+        context->getState().getTargetBuffer(gl::BufferBinding::DrawIndirect);
     if (drawIndirectBuffer != nullptr)
     {
         const BufferGL *bufferGL = GetImplAs<BufferGL>(drawIndirectBuffer);
@@ -687,7 +652,7 @@ void StateManagerGL::updateDrawIndirectBufferBinding(const gl::Context *context)
 void StateManagerGL::updateDispatchIndirectBufferBinding(const gl::Context *context)
 {
     gl::Buffer *dispatchIndirectBuffer =
-        context->getGLState().getTargetBuffer(gl::BufferBinding::DispatchIndirect);
+        context->getState().getTargetBuffer(gl::BufferBinding::DispatchIndirect);
     if (dispatchIndirectBuffer != nullptr)
     {
         const BufferGL *bufferGL = GetImplAs<BufferGL>(dispatchIndirectBuffer);
@@ -718,7 +683,7 @@ angle::Result StateManagerGL::pauseAllQueries(const gl::Context *context)
         }
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result StateManagerGL::pauseQuery(const gl::Context *context, gl::QueryType type)
@@ -732,7 +697,7 @@ angle::Result StateManagerGL::pauseQuery(const gl::Context *context, gl::QueryTy
         mQueries[type]                = nullptr;
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result StateManagerGL::resumeAllQueries(const gl::Context *context)
@@ -749,7 +714,7 @@ angle::Result StateManagerGL::resumeAllQueries(const gl::Context *context)
         }
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result StateManagerGL::resumeQuery(const gl::Context *context, gl::QueryType type)
@@ -762,23 +727,23 @@ angle::Result StateManagerGL::resumeQuery(const gl::Context *context, gl::QueryT
         mTemporaryPausedQueries[type] = nullptr;
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result StateManagerGL::onMakeCurrent(const gl::Context *context)
 {
-    const gl::State &glState = context->getGLState();
+    const gl::State &glState = context->getState();
 
 #if defined(ANGLE_ENABLE_ASSERTS)
     // Temporarily pausing queries during context switch is not supported
-    for (auto &pausedQuery : mTemporaryPausedQueries)
+    for (QueryGL *pausedQuery : mTemporaryPausedQueries)
     {
         ASSERT(pausedQuery == nullptr);
     }
 #endif
 
     // If the context has changed, pause the previous context's queries
-    auto contextID = context->getContextState().getContextID();
+    auto contextID = context->getState().getContextID();
     if (contextID != mPrevDrawContext)
     {
         for (gl::QueryType type : angle::AllEnums<gl::QueryType>())
@@ -807,12 +772,12 @@ angle::Result StateManagerGL::onMakeCurrent(const gl::Context *context)
     // this state here since MakeCurrent is expected to be called less frequently than draw calls.
     setTextureCubemapSeamlessEnabled(context->getClientMajorVersion() >= 3);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void StateManagerGL::updateProgramTextureBindings(const gl::Context *context)
 {
-    const gl::State &glState   = context->getGLState();
+    const gl::State &glState   = context->getState();
     const gl::Program *program = glState.getProgram();
 
     // It is possible there is no active program during a path operation.
@@ -848,7 +813,7 @@ void StateManagerGL::updateProgramTextureBindings(const gl::Context *context)
 
 void StateManagerGL::updateProgramStorageBufferBindings(const gl::Context *context)
 {
-    const gl::State &glState   = context->getGLState();
+    const gl::State &glState   = context->getState();
     const gl::Program *program = glState.getProgram();
 
     // It is possible there is no active program during a path operation.
@@ -881,7 +846,7 @@ void StateManagerGL::updateProgramStorageBufferBindings(const gl::Context *conte
 void StateManagerGL::updateProgramUniformBufferBindings(const gl::Context *context)
 {
     // Sync the current program state
-    const gl::State &glState   = context->getGLState();
+    const gl::State &glState   = context->getState();
     const gl::Program *program = glState.getProgram();
 
     // It is possible there is no active program during a path operation.
@@ -913,7 +878,7 @@ void StateManagerGL::updateProgramUniformBufferBindings(const gl::Context *conte
 
 void StateManagerGL::updateProgramAtomicCounterBufferBindings(const gl::Context *context)
 {
-    const gl::State &glState   = context->getGLState();
+    const gl::State &glState   = context->getState();
     const gl::Program *program = glState.getProgram();
 
     // It is possible there is no active program during a path operation.
@@ -944,7 +909,7 @@ void StateManagerGL::updateProgramAtomicCounterBufferBindings(const gl::Context 
 
 void StateManagerGL::updateProgramImageBindings(const gl::Context *context)
 {
-    const gl::State &glState   = context->getGLState();
+    const gl::State &glState   = context->getState();
     const gl::Program *program = glState.getProgram();
 
     // It is possible there is no active program during a path operation.
@@ -978,17 +943,18 @@ void StateManagerGL::setAttributeCurrentData(size_t index,
         mVertexAttribCurrentValues[index] = data;
         switch (mVertexAttribCurrentValues[index].Type)
         {
-            case GL_FLOAT:
+            case gl::VertexAttribType::Float:
                 mFunctions->vertexAttrib4fv(static_cast<GLuint>(index),
-                                            mVertexAttribCurrentValues[index].FloatValues);
+                                            mVertexAttribCurrentValues[index].Values.FloatValues);
                 break;
-            case GL_INT:
+            case gl::VertexAttribType::Int:
                 mFunctions->vertexAttribI4iv(static_cast<GLuint>(index),
-                                             mVertexAttribCurrentValues[index].IntValues);
+                                             mVertexAttribCurrentValues[index].Values.IntValues);
                 break;
-            case GL_UNSIGNED_INT:
-                mFunctions->vertexAttribI4uiv(static_cast<GLuint>(index),
-                                              mVertexAttribCurrentValues[index].UnsignedIntValues);
+            case gl::VertexAttribType::UnsignedInt:
+                mFunctions->vertexAttribI4uiv(
+                    static_cast<GLuint>(index),
+                    mVertexAttribCurrentValues[index].Values.UnsignedIntValues);
                 break;
             default:
                 UNREACHABLE();
@@ -1019,78 +985,23 @@ void StateManagerGL::setScissorTestEnabled(bool enabled)
 
 void StateManagerGL::setScissor(const gl::Rectangle &scissor)
 {
-    if (!AllRectanglesMatch(scissor, mScissors))
+    if (scissor != mScissor)
     {
-        mScissors.assign(mScissors.size(), scissor);
-        mFunctions->scissor(scissor.x, scissor.y, scissor.width, scissor.height);
+        mScissor = scissor;
+        mFunctions->scissor(mScissor.x, mScissor.y, mScissor.width, mScissor.height);
 
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_SCISSOR);
-    }
-}
-
-void StateManagerGL::setScissorArrayv(GLuint first, const std::vector<gl::Rectangle> &scissors)
-{
-    ASSERT(mFunctions->scissorArrayv != nullptr);
-    size_t offset = static_cast<size_t>(first);
-    ASSERT(offset + scissors.size() <= mScissors.size());
-    if (!std::equal(scissors.cbegin(), scissors.cend(), mScissors.cbegin() + offset))
-    {
-        std::copy(scissors.begin(), scissors.end(), mScissors.begin() + offset);
-        mFunctions->scissorArrayv(first, static_cast<GLsizei>(scissors.size()), &scissors[0].x);
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_SCISSOR);
-    }
-}
-
-void StateManagerGL::setScissorIndexed(GLuint index, const gl::Rectangle &scissor)
-{
-    ASSERT(mFunctions->scissorIndexed != nullptr);
-    ASSERT(static_cast<size_t>(index) < mScissors.size());
-    if (mScissors[index] != scissor)
-    {
-        mScissors[index] = scissor;
-        mFunctions->scissorIndexed(index, scissor.x, scissor.y, scissor.width, scissor.height);
         mLocalDirtyBits.set(gl::State::DIRTY_BIT_SCISSOR);
     }
 }
 
 void StateManagerGL::setViewport(const gl::Rectangle &viewport)
 {
-    if (!AllRectanglesMatch(viewport, mViewports))
+    if (viewport != mViewport)
     {
-        mViewports.assign(mViewports.size(), viewport);
-        mFunctions->viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        mViewport = viewport;
+        mFunctions->viewport(mViewport.x, mViewport.y, mViewport.width, mViewport.height);
 
         mLocalDirtyBits.set(gl::State::DIRTY_BIT_VIEWPORT);
-    }
-}
-
-void StateManagerGL::setViewportArrayv(GLuint first, const std::vector<gl::Rectangle> &viewports)
-{
-    ASSERT(mFunctions->viewportArrayv != nullptr);
-    size_t offset = static_cast<size_t>(first);
-    ASSERT(offset + viewports.size() <= mViewports.size());
-    if (!std::equal(viewports.cbegin(), viewports.cend(), mViewports.cbegin() + offset))
-    {
-        std::copy(viewports.begin(), viewports.end(), mViewports.begin() + offset);
-        std::vector<float> viewportsAsFloats(4u * viewports.size());
-        for (size_t i = 0u; i < viewports.size(); ++i)
-        {
-            viewportsAsFloats[i * 4u]      = static_cast<float>(viewports[i].x);
-            viewportsAsFloats[i * 4u + 1u] = static_cast<float>(viewports[i].y);
-            viewportsAsFloats[i * 4u + 2u] = static_cast<float>(viewports[i].width);
-            viewportsAsFloats[i * 4u + 3u] = static_cast<float>(viewports[i].height);
-        }
-        mFunctions->viewportArrayv(first, static_cast<GLsizei>(viewports.size()),
-                                   viewportsAsFloats.data());
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_VIEWPORT);
-    }
-}
-
-void StateManagerGL::setSideBySide(bool isSideBySide)
-{
-    if (mIsSideBySideDrawFramebuffer != isSideBySide)
-    {
-        mIsSideBySideDrawFramebuffer = isSideBySide;
     }
 }
 
@@ -1580,7 +1491,7 @@ void StateManagerGL::syncState(const gl::Context *context,
                                const gl::State::DirtyBits &glDirtyBits,
                                const gl::State::DirtyBits &bitMask)
 {
-    const gl::State &state = context->getGLState();
+    const gl::State &state = context->getState();
 
     // Changing the draw framebuffer binding sometimes requires resetting srgb blending.
     if (glDirtyBits[gl::State::DIRTY_BIT_DRAW_FRAMEBUFFER_BINDING])
@@ -1589,28 +1500,9 @@ void StateManagerGL::syncState(const gl::Context *context,
         {
             mLocalDirtyBits.set(gl::State::DIRTY_BIT_FRAMEBUFFER_SRGB);
         }
-
-        if (mIsMultiviewEnabled)
-        {
-            // When a new draw framebuffer is bound, we have to mark the layout, viewport offsets,
-            // scissor test, scissor and viewport rectangle bits as dirty because it could be a
-            // transition from or to a side-by-side draw framebuffer.
-            mLocalDirtyBits.set(gl::State::DIRTY_BIT_SCISSOR_TEST_ENABLED);
-            mLocalDirtyBits.set(gl::State::DIRTY_BIT_SCISSOR);
-            mLocalDirtyBits.set(gl::State::DIRTY_BIT_VIEWPORT);
-
-            const gl::FramebufferAttachment *attachment =
-                state.getDrawFramebuffer()->getFirstNonNullAttachment();
-            if (attachment)
-            {
-                setSideBySide(attachment->getMultiviewLayout() ==
-                              GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE);
-            }
-        }
     }
 
-    const gl::State::DirtyBits &glAndLocalDirtyBits = (glDirtyBits | mLocalDirtyBits) & bitMask;
-
+    const gl::State::DirtyBits glAndLocalDirtyBits = (glDirtyBits | mLocalDirtyBits) & bitMask;
     if (!glAndLocalDirtyBits.any())
     {
         return;
@@ -1628,31 +1520,13 @@ void StateManagerGL::syncState(const gl::Context *context,
             case gl::State::DIRTY_BIT_SCISSOR:
             {
                 const gl::Rectangle &scissor = state.getScissor();
-                if (!mIsSideBySideDrawFramebuffer)
-                {
-                    setScissor(scissor);
-                }
-                else
-                {
-                    const gl::Framebuffer *drawFramebuffer = state.getDrawFramebuffer();
-                    ASSERT(drawFramebuffer != nullptr);
-                    applyViewportOffsetsAndSetScissors(scissor, *drawFramebuffer);
-                }
+                setScissor(scissor);
             }
             break;
             case gl::State::DIRTY_BIT_VIEWPORT:
             {
                 const gl::Rectangle &viewport = state.getViewport();
-                if (!mIsSideBySideDrawFramebuffer)
-                {
-                    setViewport(viewport);
-                }
-                else
-                {
-                    const gl::Framebuffer *drawFramebuffer = state.getDrawFramebuffer();
-                    ASSERT(drawFramebuffer != nullptr);
-                    applyViewportOffsetsAndSetViewports(viewport, *drawFramebuffer);
-                }
+                setViewport(viewport);
             }
             break;
             case gl::State::DIRTY_BIT_DEPTH_RANGE:
@@ -1965,6 +1839,9 @@ void StateManagerGL::syncState(const gl::Context *context,
                 }
                 break;
             }
+            case gl::State::DIRTY_BIT_PROVOKING_VERTEX:
+                setProvokingVertex(ToGLenum(state.getProvokingVertex()));
+                break;
             default:
                 UNREACHABLE();
                 break;
@@ -2111,6 +1988,17 @@ void StateManagerGL::setPathRenderingStencilState(GLenum func, GLint ref, GLuint
     }
 }
 
+void StateManagerGL::setProvokingVertex(GLenum mode)
+{
+    if (mode != mProvokingVertex)
+    {
+        mFunctions->provokingVertex(mode);
+        mProvokingVertex = mode;
+
+        mLocalDirtyBits.set(gl::State::DIRTY_BIT_PROVOKING_VERTEX);
+    }
+}
+
 void StateManagerGL::setTextureCubemapSeamlessEnabled(bool enabled)
 {
     // TODO(jmadill): Also check for seamless extension.
@@ -2131,35 +2019,6 @@ void StateManagerGL::setTextureCubemapSeamlessEnabled(bool enabled)
             mFunctions->disable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         }
     }
-}
-
-// According to the ANGLE_multiview spec, the behavior of glScissor and glViewport is different
-// if the active draw framebuffer has a side-by-side layout. In such situations glScissor and
-// glViewport specify the static offset and dimensions for each view to which the viewport
-// offsets have to be applied to compute the view's final scissor and viewport rectangles.
-void StateManagerGL::applyViewportOffsetsAndSetScissors(const gl::Rectangle &scissor,
-                                                        const gl::Framebuffer &drawFramebuffer)
-{
-
-    const std::vector<gl::Offset> *attachmentViewportOffsets = drawFramebuffer.getViewportOffsets();
-    const std::vector<gl::Offset> &viewportOffsets =
-        attachmentViewportOffsets != nullptr
-            ? *attachmentViewportOffsets
-            : gl::FramebufferAttachment::GetDefaultViewportOffsetVector();
-    const std::vector<gl::Rectangle> &scissorArray = ApplyOffsets(scissor, viewportOffsets);
-    setScissorArrayv(0u, scissorArray);
-}
-
-void StateManagerGL::applyViewportOffsetsAndSetViewports(const gl::Rectangle &viewport,
-                                                         const gl::Framebuffer &drawFramebuffer)
-{
-    const std::vector<gl::Offset> *attachmentViewportOffsets = drawFramebuffer.getViewportOffsets();
-    const std::vector<gl::Offset> &viewportOffsets =
-        attachmentViewportOffsets != nullptr
-            ? *attachmentViewportOffsets
-            : gl::FramebufferAttachment::GetDefaultViewportOffsetVector();
-    const std::vector<gl::Rectangle> &viewportArray = ApplyOffsets(viewport, viewportOffsets);
-    setViewportArrayv(0u, viewportArray);
 }
 
 void StateManagerGL::propagateProgramToVAO(const gl::Program *program, VertexArrayGL *vao)
@@ -2193,22 +2052,15 @@ void StateManagerGL::updateMultiviewBaseViewLayerIndexUniformImpl(
 {
     ASSERT(mIsMultiviewEnabled && program && program->usesMultiview());
     const ProgramGL *programGL = GetImplAs<ProgramGL>(program);
-    switch (drawFramebufferState.getMultiviewLayout())
+    if (drawFramebufferState.isMultiview())
     {
-        case GL_FRAMEBUFFER_MULTIVIEW_SIDE_BY_SIDE_ANGLE:
-            programGL->enableSideBySideRenderingPath();
-            break;
-        case GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE:
-            programGL->enableLayeredRenderingPath(drawFramebufferState.getBaseViewIndex());
-            break;
-        default:
-            break;
+        programGL->enableLayeredRenderingPath(drawFramebufferState.getBaseViewIndex());
     }
 }
 
 void StateManagerGL::syncSamplersState(const gl::Context *context)
 {
-    const gl::State::SamplerBindingVector &samplers = context->getGLState().getSamplers();
+    const gl::State::SamplerBindingVector &samplers = context->getState().getSamplers();
 
     // This could be optimized by using a separate binding dirty bit per sampler.
     for (size_t samplerIndex = 0; samplerIndex < samplers.size(); ++samplerIndex)
@@ -2229,13 +2081,13 @@ void StateManagerGL::syncSamplersState(const gl::Context *context)
 void StateManagerGL::syncTransformFeedbackState(const gl::Context *context)
 {
     // Set the current transform feedback state
-    gl::TransformFeedback *transformFeedback = context->getGLState().getCurrentTransformFeedback();
+    gl::TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
     if (transformFeedback)
     {
         TransformFeedbackGL *transformFeedbackGL =
             GetImplAs<TransformFeedbackGL>(transformFeedback);
         bindTransformFeedback(GL_TRANSFORM_FEEDBACK, transformFeedbackGL->getTransformFeedbackID());
-        transformFeedbackGL->syncActiveState(transformFeedback->isActive(),
+        transformFeedbackGL->syncActiveState(context, transformFeedback->isActive(),
                                              transformFeedback->getPrimitiveMode());
         transformFeedbackGL->syncPausedState(transformFeedback->isPaused());
         mCurrentTransformFeedback = transformFeedbackGL;
@@ -2246,4 +2098,4 @@ void StateManagerGL::syncTransformFeedbackState(const gl::Context *context)
         mCurrentTransformFeedback = nullptr;
     }
 }
-}
+}  // namespace rx

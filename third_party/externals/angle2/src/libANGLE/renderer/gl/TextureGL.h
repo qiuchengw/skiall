@@ -147,6 +147,14 @@ class TextureGL : public TextureImpl
                                         const gl::Extents &size,
                                         bool fixedSampleLocations) override;
 
+    angle::Result setStorageExternalMemory(const gl::Context *context,
+                                           gl::TextureType type,
+                                           size_t levels,
+                                           GLenum internalFormat,
+                                           const gl::Extents &size,
+                                           gl::MemoryObject *memoryObject,
+                                           GLuint64 offset) override;
+
     angle::Result setImageExternal(const gl::Context *context,
                                    gl::TextureType type,
                                    egl::Stream *stream,
@@ -246,6 +254,6 @@ class TextureGL : public TextureImpl
 
     GLuint mTextureID;
 };
-}
+}  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_GL_TEXTUREGL_H_

@@ -11,8 +11,8 @@
 #include "common/mathutil.h"
 #include "common/utilities.h"
 #include "libANGLE/renderer/d3d/IndexBuffer.h"
-#include "libANGLE/renderer/d3d/VertexBuffer.h"
 #include "libANGLE/renderer/d3d/RendererD3D.h"
+#include "libANGLE/renderer/d3d/VertexBuffer.h"
 
 namespace rx
 {
@@ -54,16 +54,16 @@ void BufferD3D::updateD3DBufferUsage(const gl::Context *context, gl::BufferUsage
         case gl::BufferUsage::StaticCopy:
         case gl::BufferUsage::StaticDraw:
         case gl::BufferUsage::StaticRead:
+        case gl::BufferUsage::DynamicCopy:
+        case gl::BufferUsage::DynamicRead:
+        case gl::BufferUsage::StreamCopy:
+        case gl::BufferUsage::StreamRead:
             mUsage = D3DBufferUsage::STATIC;
             initializeStaticData(context);
             break;
 
-        case gl::BufferUsage::DynamicCopy:
         case gl::BufferUsage::DynamicDraw:
-        case gl::BufferUsage::DynamicRead:
-        case gl::BufferUsage::StreamCopy:
         case gl::BufferUsage::StreamDraw:
-        case gl::BufferUsage::StreamRead:
             mUsage = D3DBufferUsage::DYNAMIC;
             break;
         default:
@@ -175,7 +175,7 @@ void BufferD3D::promoteStaticUsage(const gl::Context *context, size_t dataSize)
 }
 
 angle::Result BufferD3D::getIndexRange(const gl::Context *context,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        size_t offset,
                                        size_t count,
                                        bool primitiveRestartEnabled,
@@ -185,7 +185,7 @@ angle::Result BufferD3D::getIndexRange(const gl::Context *context,
     ANGLE_TRY(getData(context, &data));
 
     *outRange = gl::ComputeIndexRange(type, data + offset, count, primitiveRestartEnabled);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

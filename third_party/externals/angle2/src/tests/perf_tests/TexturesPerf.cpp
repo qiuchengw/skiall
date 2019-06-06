@@ -13,7 +13,7 @@
 #include <random>
 #include <sstream>
 
-#include "shader_utils.h"
+#include "util/shader_utils.h"
 
 namespace angle
 {
@@ -151,7 +151,7 @@ void TexturesBenchmark::initShaders()
     fstrstr << ";\n"
                "}\n";
 
-    mProgram = CompileProgram(vs, fstrstr.str());
+    mProgram = CompileProgram(vs.c_str(), fstrstr.str().c_str());
     ASSERT_NE(0u, mProgram);
 
     for (size_t i = 0; i < params.numTextures; ++i)
@@ -249,13 +249,16 @@ void TexturesBenchmark::drawBenchmark()
                                 minFilters[stateUpdateCount % ArraySize(minFilters)]);
 
                 const GLenum magFilters[] = {
-                    GL_NEAREST, GL_LINEAR,
+                    GL_NEAREST,
+                    GL_LINEAR,
                 };
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                                 magFilters[stateUpdateCount % ArraySize(magFilters)]);
 
                 const GLenum wrapParameters[] = {
-                    GL_CLAMP_TO_EDGE, GL_REPEAT, GL_MIRRORED_REPEAT,
+                    GL_CLAMP_TO_EDGE,
+                    GL_REPEAT,
+                    GL_MIRRORED_REPEAT,
                 };
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
                                 wrapParameters[stateUpdateCount % ArraySize(wrapParameters)]);

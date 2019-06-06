@@ -22,23 +22,16 @@
 namespace rx
 {
 
-DisplayGL::DisplayGL(const egl::DisplayState &state)
-    : DisplayImpl(state), mCurrentDrawSurface(nullptr)
-{
-}
+DisplayGL::DisplayGL(const egl::DisplayState &state) : DisplayImpl(state) {}
 
-DisplayGL::~DisplayGL()
-{
-}
+DisplayGL::~DisplayGL() {}
 
 egl::Error DisplayGL::initialize(egl::Display *display)
 {
     return egl::NoError();
 }
 
-void DisplayGL::terminate()
-{
-}
+void DisplayGL::terminate() {}
 
 ImageImpl *DisplayGL::createImage(const egl::ImageState &state,
                                   const gl::Context *context,
@@ -57,16 +50,10 @@ StreamProducerImpl *DisplayGL::createStreamProducerD3DTexture(
     return nullptr;
 }
 
-egl::Error DisplayGL::makeCurrent(egl::Surface *drawSurface, egl::Surface *readSurface, gl::Context *context)
+egl::Error DisplayGL::makeCurrent(egl::Surface *drawSurface,
+                                  egl::Surface *readSurface,
+                                  gl::Context *context)
 {
-    // Notify the previous surface (if it still exists) that it is no longer current
-    if (mCurrentDrawSurface &&
-        mState.surfaceSet.find(mCurrentDrawSurface) != mState.surfaceSet.end())
-    {
-        ANGLE_TRY(GetImplAs<SurfaceGL>(mCurrentDrawSurface)->unMakeCurrent());
-    }
-    mCurrentDrawSurface = nullptr;
-
     if (!context)
     {
         return egl::NoError();
@@ -76,17 +63,12 @@ egl::Error DisplayGL::makeCurrent(egl::Surface *drawSurface, egl::Surface *readS
     ContextGL *glContext = GetImplAs<ContextGL>(context);
     glContext->getStateManager()->pauseTransformFeedback();
 
-    if (drawSurface != nullptr)
+    if (drawSurface == nullptr)
     {
-        SurfaceGL *glDrawSurface = GetImplAs<SurfaceGL>(drawSurface);
-        ANGLE_TRY(glDrawSurface->makeCurrent());
-        mCurrentDrawSurface = drawSurface;
-        return egl::NoError();
+        ANGLE_TRY(makeCurrentSurfaceless(context));
     }
-    else
-    {
-        return makeCurrentSurfaceless(context);
-    }
+
+    return egl::NoError();
 }
 
 void DisplayGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
@@ -101,4 +83,4 @@ egl::Error DisplayGL::makeCurrentSurfaceless(gl::Context *context)
     UNIMPLEMENTED();
     return egl::NoError();
 }
-}
+}  // namespace rx

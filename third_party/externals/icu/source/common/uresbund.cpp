@@ -1,6 +1,8 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 ******************************************************************************
-* Copyright (C) 1997-2015, International Business Machines Corporation and
+* Copyright (C) 1997-2016, International Business Machines Corporation and
 * others. All Rights Reserved.
 ******************************************************************************
 *
@@ -267,7 +269,7 @@ static UBool U_CALLCONV ures_cleanup(void)
 }
 
 /** INTERNAL: Initializes the cache for resources */
-static void createCache(UErrorCode &status) {
+static void U_CALLCONV createCache(UErrorCode &status) {
     U_ASSERT(cache == NULL);
     cache = uhash_open(hashEntry, compareEntries, NULL, &status);
     ucln_common_registerCleanup(UCLN_COMMON_URES, ures_cleanup);
@@ -365,7 +367,12 @@ static UResourceDataEntry *init_entry(const char *localeID, const char *path, UE
         /* this is the actual loading */
         res_load(&(r->fData), r->fPath, r->fName, status);
 
-        if (U_FAILURE(*status)) { 
+        if (U_FAILURE(*status)) {
+            /* if we failed to load due to an out-of-memory error, exit early. */
+            if (*status == U_MEMORY_ALLOCATION_ERROR) {
+                uprv_free(r);
+                return NULL;
+            }
             /* we have no such entry in dll, so it will always use fallback */
             *status = U_USING_FALLBACK_WARNING;
             r->fBogus = U_USING_FALLBACK_WARNING;
@@ -535,6 +542,11 @@ loadParentsExceptRoot(UResourceDataEntry *&t1,
         UErrorCode usrStatus = U_ZERO_ERROR;
         if (usingUSRData) {  // This code inserts user override data into the inheritance chain.
             u2 = init_entry(name, usrDataPath, &usrStatus);
+            // If we failed due to out-of-memory, report that to the caller and exit early.
+            if (usrStatus == U_MEMORY_ALLOCATION_ERROR) {
+                *status = usrStatus;
+                return FALSE;
+            }
         }
 
         if (usingUSRData && U_SUCCESS(usrStatus) && u2->fBogus == U_ZERO_ERROR) {
@@ -640,21 +652,32 @@ static UResourceDataEntry *entryOpen(const char* path, const char* localeID,
         /* We're going to skip all the locales that do not have any data */
         r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
 
+        // If we failed due to out-of-memory, report the failure and exit early.
+        if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+            *status = intStatus;
+            goto finishUnlock;
+        }
+
         if(r != NULL) { /* if there is one real locale, we can look for parents. */
             t1 = r;
             hasRealData = TRUE;
             if ( usingUSRData ) {  /* This code inserts user override data into the inheritance chain */
                 UErrorCode usrStatus = U_ZERO_ERROR;
                 UResourceDataEntry *u1 = init_entry(t1->fName, usrDataPath, &usrStatus);
-               if ( u1 != NULL ) {
-                 if(u1->fBogus == U_ZERO_ERROR) {
-                   u1->fParent = t1;
-                   r = u1;
-                 } else {
-                   /* the USR override data wasn't found, set it to be deleted */
-                   u1->fCountExisting = 0;
-                 }
-               }
+                // If we failed due to out-of-memory, report the failure and exit early.
+                if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+                    *status = intStatus;
+                    goto finishUnlock;
+                }
+                if ( u1 != NULL ) {
+                    if(u1->fBogus == U_ZERO_ERROR) {
+                        u1->fParent = t1;
+                        r = u1;
+                    } else {
+                        /* the USR override data wasn't found, set it to be deleted */
+                        u1->fCountExisting = 0;
+                    }
+                }
             }
             if (hasChopped && !isRoot) {
                 if (!loadParentsExceptRoot(t1, name, UPRV_LENGTHOF(name), usingUSRData, usrDataPath, status)) {
@@ -669,6 +692,11 @@ static UResourceDataEntry *entryOpen(const char* path, const char* localeID,
             /* insert default locale */
             uprv_strcpy(name, uloc_getDefault());
             r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
+            // If we failed due to out-of-memory, report the failure and exit early.
+            if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+                *status = intStatus;
+                goto finishUnlock;
+            }
             intStatus = U_USING_DEFAULT_WARNING;
             if(r != NULL) { /* the default locale exists */
                 t1 = r;
@@ -688,6 +716,11 @@ static UResourceDataEntry *entryOpen(const char* path, const char* localeID,
         if(r == NULL) {
             uprv_strcpy(name, kRootLocaleName);
             r = findFirstExisting(path, name, &isRoot, &hasChopped, &isDefault, &intStatus);
+            // If we failed due to out-of-memory, report the failure and exit early.
+            if (intStatus == U_MEMORY_ALLOCATION_ERROR) {
+                *status = intStatus;
+                goto finishUnlock;
+            }
             if(r != NULL) {
                 t1 = r;
                 intStatus = U_USING_DEFAULT_WARNING;
@@ -1081,6 +1114,7 @@ static UResourceBundle *init_resb_result(const ResourceData *rdata, Resource r,
                                 pathBuf = (char *)uprv_malloc((uprv_strlen(keyPath)+1)*sizeof(char));
                                 if(pathBuf == NULL) {
                                     *status = U_MEMORY_ALLOCATION_ERROR;
+                                    ures_close(mainRes);
                                     return NULL;
                                 }
                             }
@@ -1485,7 +1519,8 @@ U_CAPI const UChar* U_EXPORT2 ures_getNextString(UResourceBundle *resB, int32_t*
     case URES_BINARY:
     case URES_INT_VECTOR:
         *status = U_RESOURCE_TYPE_MISMATCH;
-    default: /*fall through*/
+        U_FALLTHROUGH;
+    default:
       return NULL;
     }
   }
@@ -1884,32 +1919,27 @@ ures_getByKeyWithFallback(const UResourceBundle *resB,
 
 namespace {
 
-void getAllContainerItemsWithFallback(
+void getAllItemsWithFallback(
         const UResourceBundle *bundle, ResourceDataValue &value,
-        ResourceArraySink *arraySink, ResourceTableSink *tableSink,
+        ResourceSink &sink,
         UErrorCode &errorCode) {
     if (U_FAILURE(errorCode)) { return; }
     // We recursively enumerate child-first,
     // only storing parent items in the absence of child items.
-    // We store a placeholder value for the no-fallback/no-inheritance marker
+    // The sink needs to store a placeholder value for the no-fallback/no-inheritance marker
     // to prevent a parent item from being stored.
     //
     // It would be possible to recursively enumerate parent-first,
     // overriding parent items with child items.
-    // When we see the no-fallback/no-inheritance marker,
-    // then we would remove the parent's item.
+    // When the sink sees the no-fallback/no-inheritance marker,
+    // then it would remove the parent's item.
     // We would deserialize parent values even though they are overridden in a child bundle.
-    UResType expectedType = arraySink != NULL ? URES_ARRAY : URES_TABLE;
-    if (ures_getType(bundle) == expectedType) {
-        value.pResData = &bundle->fResData;
-        if (arraySink != NULL) {
-            ures_getAllArrayItems(&bundle->fResData, bundle->fRes, value, *arraySink, errorCode);
-        } else /* tableSink != NULL */ {
-            ures_getAllTableItems(&bundle->fResData, bundle->fRes, value, *tableSink, errorCode);
-        }
-    }
-    UResourceDataEntry *entry = bundle->fData->fParent;
-    if (entry != NULL && U_SUCCESS(entry->fBogus)) {
+    value.pResData = &bundle->fResData;
+    UResourceDataEntry *parentEntry = bundle->fData->fParent;
+    UBool hasParent = parentEntry != NULL && U_SUCCESS(parentEntry->fBogus);
+    value.setResource(bundle->fRes);
+    sink.put(bundle->fKey, value, !hasParent, errorCode);
+    if (hasParent) {
         // We might try to query the sink whether
         // any fallback from the parent bundle is still possible.
 
@@ -1920,40 +1950,41 @@ void getAllContainerItemsWithFallback(
         // so that we need not create UResourceBundle objects.
         UResourceBundle parentBundle;
         ures_initStackObject(&parentBundle);
-        parentBundle.fTopLevelData = parentBundle.fData = entry;
+        parentBundle.fTopLevelData = parentBundle.fData = parentEntry;
         // TODO: What is the difference between bundle fData and fTopLevelData?
-        uprv_memcpy(&parentBundle.fResData, &entry->fData, sizeof(ResourceData));
+        uprv_memcpy(&parentBundle.fResData, &parentEntry->fData, sizeof(ResourceData));
         // TODO: Try to replace bundle.fResData with just using bundle.fData->fData.
         parentBundle.fHasFallback = !parentBundle.fResData.noFallback;
         parentBundle.fIsTopLevel = TRUE;
         parentBundle.fRes = parentBundle.fResData.rootRes;
         parentBundle.fSize = res_countArrayItems(&(parentBundle.fResData), parentBundle.fRes);
         parentBundle.fIndex = -1;
-        entryIncrease(entry);
+        entryIncrease(parentEntry);
 
         // Look up the container item in the parent bundle.
         UResourceBundle containerBundle;
         ures_initStackObject(&containerBundle);
         const UResourceBundle *rb;
+        UErrorCode pathErrorCode = U_ZERO_ERROR;  // Ignore if parents up to root do not have this path.
         if (bundle->fResPath == NULL || *bundle->fResPath == 0) {
             rb = &parentBundle;
         } else {
             rb = ures_getByKeyWithFallback(&parentBundle, bundle->fResPath,
-                                           &containerBundle, &errorCode);
+                                           &containerBundle, &pathErrorCode);
         }
-        if (U_SUCCESS(errorCode) && ures_getType(rb) == expectedType) {
-            getAllContainerItemsWithFallback(rb, value,
-                                             arraySink, tableSink, errorCode);
+        if (U_SUCCESS(pathErrorCode)) {
+            getAllItemsWithFallback(rb, value, sink, errorCode);
         }
         ures_close(&containerBundle);
         ures_close(&parentBundle);
     }
 }
 
-void getAllContainerItemsWithFallback(
-        const UResourceBundle *bundle, const char *path,
-        ResourceArraySink *arraySink, ResourceTableSink *tableSink,
-        UErrorCode &errorCode) {
+}  // namespace
+
+U_CAPI void U_EXPORT2
+ures_getAllItemsWithFallback(const UResourceBundle *bundle, const char *path,
+                             icu::ResourceSink &sink, UErrorCode &errorCode) {
     if (U_FAILURE(errorCode)) { return; }
     if (path == NULL) {
         errorCode = U_ILLEGAL_ARGUMENT_ERROR;
@@ -1972,30 +2003,10 @@ void getAllContainerItemsWithFallback(
             return;
         }
     }
-    UResType expectedType = arraySink != NULL ? URES_ARRAY : URES_TABLE;
-    if (ures_getType(rb) != expectedType) {
-        errorCode = U_RESOURCE_TYPE_MISMATCH;
-        ures_close(&stackBundle);
-        return;
-    }
     // Get all table items with fallback.
     ResourceDataValue value;
-    getAllContainerItemsWithFallback(rb, value, arraySink, tableSink, errorCode);
+    getAllItemsWithFallback(rb, value, sink, errorCode);
     ures_close(&stackBundle);
-}
-
-}  // namespace
-
-U_CAPI void U_EXPORT2
-ures_getAllArrayItemsWithFallback(const UResourceBundle *bundle, const char *path,
-                                  ResourceArraySink &sink, UErrorCode &errorCode) {
-    getAllContainerItemsWithFallback(bundle, path, &sink, NULL, errorCode);
-}
-
-U_CAPI void U_EXPORT2
-ures_getAllTableItemsWithFallback(const UResourceBundle *bundle, const char *path,
-                                  ResourceTableSink &sink, UErrorCode &errorCode) {
-    getAllContainerItemsWithFallback(bundle, path, NULL, &sink, errorCode);
 }
 
 U_CAPI UResourceBundle* U_EXPORT2 ures_getByKey(const UResourceBundle *resB, const char* inKey, UResourceBundle *fillIn, UErrorCode *status) {
@@ -2429,7 +2440,10 @@ ures_loc_countLocales(UEnumeration *en, UErrorCode * /*status*/) {
     return ures_getSize(&ctx->installed);
 }
 
-static const char* U_CALLCONV 
+U_CDECL_BEGIN
+
+
+static const char * U_CALLCONV
 ures_loc_nextLocale(UEnumeration* en,
                     int32_t* resultLength,
                     UErrorCode* status) {
@@ -2438,7 +2452,7 @@ ures_loc_nextLocale(UEnumeration* en,
     UResourceBundle *k = NULL;
     const char *result = NULL;
     int32_t len = 0;
-    if(ures_hasNext(res) && (k = ures_getNextResource(res, &ctx->curr, status))) {
+    if(ures_hasNext(res) && (k = ures_getNextResource(res, &ctx->curr, status)) != 0) {
         result = ures_getKey(k);
         len = (int32_t)uprv_strlen(result);
     }
@@ -2455,6 +2469,7 @@ ures_loc_resetLocales(UEnumeration* en,
     ures_resetIterator(res);
 }
 
+U_CDECL_END
 
 static const UEnumeration gLocalesEnum = {
     NULL,
@@ -2859,7 +2874,7 @@ ures_getKeywordValues(const char *path, const char *keyword, UErrorCode *status)
     valuesBuf[0]=0;
     valuesBuf[1]=0;
     
-    while((locale = uenum_next(locs, &locLen, status))) {
+    while((locale = uenum_next(locs, &locLen, status)) != 0) {
         UResourceBundle   *bund = NULL;
         UResourceBundle   *subPtr = NULL;
         UErrorCode subStatus = U_ZERO_ERROR; /* don't fail if a bundle is unopenable */
@@ -2884,7 +2899,7 @@ ures_getKeywordValues(const char *path, const char *keyword, UErrorCode *status)
             continue;
         }
         
-        while((subPtr = ures_getNextResource(&item,&subItem,&subStatus))
+        while((subPtr = ures_getNextResource(&item,&subItem,&subStatus)) != 0
             && U_SUCCESS(subStatus)) {
             const char *k;
             int32_t i;

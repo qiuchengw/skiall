@@ -10,6 +10,8 @@
 
 #include "ANGLEPerfTest.h"
 
+#include "util/gles_loader_autogen.h"
+
 namespace
 {
 constexpr unsigned int kIterationsPerStep = 5;
@@ -95,10 +97,10 @@ struct BlitFramebufferParams final : public RenderTestParams
     BlitFramebufferParams()
     {
         iterationsPerStep = kIterationsPerStep;
-        majorVersion = 3;
-        minorVersion = 0;
-        windowWidth  = 256;
-        windowHeight = 256;
+        majorVersion      = 3;
+        minorVersion      = 0;
+        windowWidth       = 256;
+        windowHeight      = 256;
     }
 
     std::string suffix() const override
@@ -247,4 +249,4 @@ ANGLE_INSTANTIATE_TEST(BlitFramebufferPerf,
                        D3D11(BufferType::COLOR, 2),
                        D3D11(BufferType::DEPTH, 2),
                        D3D11(BufferType::STENCIL, 2),
-                       D3D11(BufferType::DEPTH_STENCIL, 2))
+                       D3D11(BufferType::DEPTH_STENCIL, 2));

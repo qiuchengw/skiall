@@ -108,7 +108,7 @@ class FramebufferFormatsTest : public ANGLETest
 
         if (clientVersion == 2)
         {
-            if (extensionEnabled("ANGLE_framebuffer_multisample"))
+            if (IsGLExtensionEnabled("ANGLE_framebuffer_multisample"))
             {
                 int maxSamples;
                 glGetIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSamples);
@@ -148,18 +148,14 @@ class FramebufferFormatsTest : public ANGLETest
         EXPECT_GL_NO_ERROR();
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenFramebuffers(1, &mFramebuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
-        ANGLETest::TearDown();
-
         if (mTexture != 0)
         {
             glDeleteTextures(1, &mTexture);
@@ -193,23 +189,25 @@ class FramebufferFormatsTest : public ANGLETest
 
 TEST_P(FramebufferFormatsTest, RGBA4)
 {
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       !IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     testTextureFormat(GL_RGBA4, 4, 4, 4, 4);
 }
 
 TEST_P(FramebufferFormatsTest, RGB565)
 {
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       !IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     testTextureFormat(GL_RGB565, 5, 6, 5, 0);
 }
 
 TEST_P(FramebufferFormatsTest, RGB8)
 {
-    ANGLE_SKIP_TEST_IF(
-        getClientMajorVersion() < 3 &&
-        (!extensionEnabled("GL_OES_rgb8_rgba8") || !extensionEnabled("GL_EXT_texture_storage")));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       (!IsGLExtensionEnabled("GL_OES_rgb8_rgba8") ||
+                        !IsGLExtensionEnabled("GL_EXT_texture_storage")));
 
     testTextureFormat(GL_RGB8_OES, 8, 8, 8, 0);
 }
@@ -217,17 +215,17 @@ TEST_P(FramebufferFormatsTest, RGB8)
 TEST_P(FramebufferFormatsTest, BGRA8)
 {
     ANGLE_SKIP_TEST_IF(
-        !extensionEnabled("GL_EXT_texture_format_BGRA8888") ||
-        (getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage")));
+        !IsGLExtensionEnabled("GL_EXT_texture_format_BGRA8888") ||
+        (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_EXT_texture_storage")));
 
     testTextureFormat(GL_BGRA8_EXT, 8, 8, 8, 8);
 }
 
 TEST_P(FramebufferFormatsTest, RGBA8)
 {
-    ANGLE_SKIP_TEST_IF(
-        getClientMajorVersion() < 3 &&
-        (!extensionEnabled("GL_OES_rgb8_rgba8") || !extensionEnabled("GL_EXT_texture_storage")));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       (!IsGLExtensionEnabled("GL_OES_rgb8_rgba8") ||
+                        !IsGLExtensionEnabled("GL_EXT_texture_storage")));
 
     testTextureFormat(GL_RGBA8_OES, 8, 8, 8, 8);
 }
@@ -272,6 +270,9 @@ TEST_P(FramebufferFormatsTest, RenderbufferMultisample_STENCIL_INDEX8)
 // Test that binding an incomplete cube map is rejected by ANGLE.
 TEST_P(FramebufferFormatsTest, IncompleteCubeMap)
 {
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
     // First make a complete CubeMap.
     glGenTextures(1, &mTexture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTexture);
@@ -374,8 +375,7 @@ ANGLE_INSTANTIATE_TEST(FramebufferFormatsTest,
                        ES3_OPENGLES());
 
 class FramebufferTest_ES3 : public ANGLETest
-{
-};
+{};
 
 // Covers invalidating an incomplete framebuffer. This should be a no-op, but should not error.
 TEST_P(FramebufferTest_ES3, InvalidateIncomplete)
@@ -801,46 +801,42 @@ TEST_P(FramebufferTest_ES31, RenderingLimitToDefaultFBOSizeWithNoAttachments)
     // anglebug.com/2253
     ANGLE_SKIP_TEST_IF(IsLinux() && IsAMD() && IsDesktopOpenGL());
 
-    const std::string &vertexShader1 =
-        R"(#version 310 es
-        in layout(location = 0) highp vec2 a_position;
-        void main()
-        {
-           gl_Position = vec4(a_position, 0.0, 1.0);
-        })";
+    constexpr char kVS1[] = R"(#version 310 es
+in layout(location = 0) highp vec2 a_position;
+void main()
+{
+    gl_Position = vec4(a_position, 0.0, 1.0);
+})";
 
-    const std::string &fragShader1 =
-        R"(#version 310 es
-        uniform layout(location = 0) highp ivec2 u_expectedSize;
-        out layout(location = 5) mediump vec4 f_color;
-        void main()
-        {
-           if (ivec2(gl_FragCoord.xy) != u_expectedSize) discard;
-           f_color = vec4(1.0, 0.5, 0.25, 1.0);
-        })";
+    constexpr char kFS1[] = R"(#version 310 es
+uniform layout(location = 0) highp ivec2 u_expectedSize;
+out layout(location = 5) mediump vec4 f_color;
+void main()
+{
+    if (ivec2(gl_FragCoord.xy) != u_expectedSize) discard;
+    f_color = vec4(1.0, 0.5, 0.25, 1.0);
+})";
 
-    const std::string &vertexShader2 =
-        R"(#version 310 es
-        in layout(location = 0) highp vec2 a_position;
-        void main()
-        {
-           gl_Position = vec4(a_position, 0.0, 1.0);
-        })";
+    constexpr char kVS2[] = R"(#version 310 es
+in layout(location = 0) highp vec2 a_position;
+void main()
+{
+    gl_Position = vec4(a_position, 0.0, 1.0);
+})";
 
-    const std::string &fragShader2 =
-        R"(#version 310 es
-        uniform layout(location = 0) highp ivec2 u_expectedSize;
-        out layout(location = 2) mediump vec4 f_color;
-        void main()
-        {
-           if (ivec2(gl_FragCoord.xy) != u_expectedSize) discard;
-           f_color = vec4(1.0, 0.5, 0.25, 1.0);
-        })";
+    constexpr char kFS2[] = R"(#version 310 es
+uniform layout(location = 0) highp ivec2 u_expectedSize;
+out layout(location = 2) mediump vec4 f_color;
+void main()
+{
+    if (ivec2(gl_FragCoord.xy) != u_expectedSize) discard;
+    f_color = vec4(1.0, 0.5, 0.25, 1.0);
+})";
 
-    GLuint program1 = CompileProgram(vertexShader1, fragShader1);
+    GLuint program1 = CompileProgram(kVS1, kFS1);
     ASSERT_NE(program1, 0u);
 
-    GLuint program2 = CompileProgram(vertexShader2, fragShader2);
+    GLuint program2 = CompileProgram(kVS2, kFS2);
     ASSERT_NE(program2, 0u);
 
     glUseProgram(program1);
@@ -930,17 +926,17 @@ class AddDummyTextureNoRenderTargetTest : public ANGLETest
 
     void overrideWorkaroundsD3D(WorkaroundsD3D *workarounds) override
     {
-        workarounds->addDummyTextureNoRenderTarget = true;
+        workarounds->forceFeatureEnabled("add_dummy_texture_no_render_target", true);
     }
 };
 
 // Test to verify workaround succeeds when no program outputs exist http://anglebug.com/2283
 TEST_P(AddDummyTextureNoRenderTargetTest, NoProgramOutputWorkaround)
 {
-    const std::string &vShader = "void main() {}";
-    const std::string &fShader = "void main() {}";
+    constexpr char kVS[] = "void main() {}";
+    constexpr char kFS[] = "void main() {}";
 
-    ANGLE_GL_PROGRAM(drawProgram, vShader, fShader);
+    ANGLE_GL_PROGRAM(drawProgram, kVS, kFS);
 
     glUseProgram(drawProgram);
 

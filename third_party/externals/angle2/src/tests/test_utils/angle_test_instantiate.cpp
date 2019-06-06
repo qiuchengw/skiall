@@ -9,46 +9,360 @@
 
 #include "test_utils/angle_test_instantiate.h"
 
-#include <map>
 #include <iostream>
+#include <map>
 
-#include "EGLWindow.h"
-#include "OSWindow.h"
-#include "compiler/translator/Compiler.h"
-#include "compiler/translator/InitializeGlobals.h"
+#include "angle_gl.h"
+#include "common/platform.h"
+#include "gpu_info_util/SystemInfo.h"
 #include "test_utils/angle_test_configs.h"
+#include "util/EGLWindow.h"
+#include "util/OSWindow.h"
+#include "util/system_utils.h"
+
+#if defined(ANGLE_PLATFORM_WINDOWS)
+#    include "util/windows/WGLWindow.h"
+#endif  // defined(ANGLE_PLATFORM_WINDOWS)
 
 namespace angle
 {
-
-bool IsPlatformAvailable(const CompilerParameters &param)
+namespace
 {
-    switch (param.output)
+bool IsANGLEConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
+{
+    std::unique_ptr<angle::Library> eglLibrary;
+
+#if defined(ANGLE_USE_UTIL_LOADER)
+    eglLibrary.reset(angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
+#endif
+
+    EGLWindow *eglWindow = EGLWindow::New(param.majorVersion, param.minorVersion);
+    ConfigParameters configParams;
+    bool result =
+        eglWindow->initializeGL(osWindow, eglLibrary.get(), param.eglParameters, configParams);
+    eglWindow->destroyGL();
+    EGLWindow::Delete(&eglWindow);
+    return result;
+}
+
+bool IsWGLConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
+{
+#if defined(ANGLE_PLATFORM_WINDOWS) && defined(ANGLE_USE_UTIL_LOADER)
+    std::unique_ptr<angle::Library> openglLibrary(angle::OpenSharedLibrary("opengl32"));
+
+    WGLWindow *wglWindow = WGLWindow::New(param.majorVersion, param.minorVersion);
+    ConfigParameters configParams;
+    bool result =
+        wglWindow->initializeGL(osWindow, openglLibrary.get(), param.eglParameters, configParams);
+    wglWindow->destroyGL();
+    WGLWindow::Delete(&wglWindow);
+    return result;
+#else
+    return false;
+#endif  // defined(ANGLE_PLATFORM_WINDOWS) && defined(ANGLE_USE_UTIL_LOADER)
+}
+
+bool IsNativeConfigSupported(const PlatformParameters &param, OSWindow *osWindow)
+{
+    // Not yet implemented.
+    return false;
+}
+
+std::map<PlatformParameters, bool> gParamAvailabilityCache;
+}  // namespace
+
+std::string gSelectedConfig;
+bool gSeparateProcessPerConfig = false;
+
+SystemInfo *GetTestSystemInfo()
+{
+    static SystemInfo *sSystemInfo = nullptr;
+    if (sSystemInfo == nullptr)
     {
-        case SH_HLSL_4_1_OUTPUT:
-        case SH_HLSL_4_0_FL9_3_OUTPUT:
-        case SH_HLSL_3_0_OUTPUT:
+        sSystemInfo = new SystemInfo;
+        if (!GetSystemInfo(sSystemInfo))
         {
-            TPoolAllocator allocator;
-            InitializePoolIndex();
-            allocator.push();
-            SetGlobalPoolAllocator(&allocator);
-            ShHandle translator =
-                sh::ConstructCompiler(GL_FRAGMENT_SHADER, SH_WEBGL2_SPEC, param.output);
-            bool success = translator != nullptr;
-            SetGlobalPoolAllocator(nullptr);
-            allocator.pop();
-            FreePoolIndex();
-            if (!success)
+            std::cerr << "Warning: incomplete system info collection.\n";
+        }
+
+        // Print complete system info when available.
+        // Seems to trip up Android test expectation parsing.
+        // Also don't print info when a config is selected to prevent test spam.
+        if (!IsAndroid() && gSelectedConfig.empty())
+        {
+            PrintSystemInfo(*sSystemInfo);
+        }
+    }
+    return sSystemInfo;
+}
+
+bool IsAndroid()
+{
+#if defined(ANGLE_PLATFORM_ANDROID)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsLinux()
+{
+#if defined(ANGLE_PLATFORM_LINUX)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsOSX()
+{
+#if defined(ANGLE_PLATFORM_APPLE)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsOzone()
+{
+#if defined(USE_OZONE)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsWindows()
+{
+#if defined(ANGLE_PLATFORM_WINDOWS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsFuchsia()
+{
+#if defined(ANGLE_PLATFORM_FUCHSIA)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsAndroidDevice(const std::string &deviceName)
+{
+    if (!IsAndroid())
+    {
+        return false;
+    }
+    SystemInfo *systemInfo = GetTestSystemInfo();
+    if (systemInfo->machineModelName == deviceName)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool IsNexus5X()
+{
+    return IsAndroidDevice("Nexus 5X");
+}
+
+bool IsNexus6P()
+{
+    return IsAndroidDevice("Nexus 6P");
+}
+
+bool IsPixelXL()
+{
+    return IsAndroidDevice("Pixel XL");
+}
+
+bool IsPixel2()
+{
+    return IsAndroidDevice("Pixel 2");
+}
+
+bool IsNVIDIAShield()
+{
+    return IsAndroidDevice("SHIELD Android TV");
+}
+
+bool IsConfigWhitelisted(const SystemInfo &systemInfo, const PlatformParameters &param)
+{
+    VendorID vendorID = systemInfo.gpus[systemInfo.activeGPUIndex].vendorId;
+
+    // We support the default and null back-ends on every platform.
+    if (param.driver == GLESDriverType::AngleEGL)
+    {
+        if (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE)
+            return true;
+        if (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE)
+            return true;
+    }
+
+#if ANGLE_VULKAN_CONFORMANT_CONFIGS_ONLY
+    // Vulkan ES 3.0 is not yet supported.
+    if (param.majorVersion > 2 && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+    {
+        return false;
+    }
+#endif
+
+    if (IsWindows())
+    {
+        switch (param.driver)
+        {
+            case GLESDriverType::AngleEGL:
+                switch (param.getRenderer())
+                {
+                    case EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE:
+                    case EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE:
+                    case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
+                    case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                        return true;
+                    case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
+                        // ES 3.1+ back-end is not supported properly.
+                        if (param.eglParameters.majorVersion == 3 &&
+                            param.eglParameters.minorVersion > 0)
+                        {
+                            return false;
+                        }
+
+                        // Win ES emulation is currently only supported on NVIDIA.
+                        return IsNVIDIA(vendorID);
+                    default:
+                        return false;
+                }
+            case GLESDriverType::SystemWGL:
+                // AMD does not support the ES compatibility extensions.
+                return !IsAMD(vendorID);
+            default:
+                return false;
+        }
+    }
+
+    if (IsOSX())
+    {
+        // We do not support non-ANGLE bindings on OSX.
+        if (param.driver != GLESDriverType::AngleEGL)
+        {
+            return false;
+        }
+
+        // OSX does not support ES 3.1 features.
+        if (param.majorVersion == 3 && param.minorVersion > 0)
+        {
+            return false;
+        }
+
+        // Currently we only support the OpenGL back-end on OSX.
+        return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
+    }
+
+    if (IsFuchsia())
+    {
+        // We do not support non-ANGLE bindings on Fuchsia.
+        if (param.driver != GLESDriverType::AngleEGL)
+        {
+            return false;
+        }
+
+        // Currently we only support the Vulkan back-end on Fuchsia.
+        return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE);
+    }
+
+    if (IsOzone())
+    {
+        // We do not support non-ANGLE bindings on Ozone.
+        if (param.driver != GLESDriverType::AngleEGL)
+            return false;
+
+        // ES 3 configs do not work properly on Ozone.
+        if (param.majorVersion > 2)
+            return false;
+
+        // Currently we only support the GLES back-end on Ozone.
+        return (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE);
+    }
+
+    if (IsLinux())
+    {
+        // We do not support non-ANGLE bindings on Linux.
+        if (param.driver != GLESDriverType::AngleEGL)
+        {
+            return false;
+        }
+
+        // Currently we support the OpenGL and Vulkan back-ends on Linux.
+        switch (param.getRenderer())
+        {
+            case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
+            case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                // Note that system info collection depends on Vulkan support.
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    if (IsAndroid())
+    {
+        // We do not support non-ANGLE bindings on Android.
+        if (param.driver != GLESDriverType::AngleEGL)
+        {
+            return false;
+        }
+
+        // Nexus Android devices don't support backing 3.2 contexts
+        if (param.eglParameters.majorVersion == 3 && param.eglParameters.minorVersion == 2)
+        {
+            if (IsNexus5X() || IsNexus6P())
             {
                 return false;
             }
-            break;
         }
-        default:
-            break;
+
+        // Currently we support the GLES and Vulkan back-ends on Android.
+        switch (param.getRenderer())
+        {
+            case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
+            case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                return true;
+            default:
+                return false;
+        }
     }
-    return true;
+
+    // Unknown platform.
+    return false;
+}
+
+bool IsConfigSupported(const PlatformParameters &param)
+{
+    OSWindow *osWindow = OSWindow::New();
+    bool result        = false;
+    if (osWindow->initialize("CONFIG_TESTER", 1, 1))
+    {
+        switch (param.driver)
+        {
+            case GLESDriverType::AngleEGL:
+                result = IsANGLEConfigSupported(param, osWindow);
+                break;
+            case GLESDriverType::SystemEGL:
+                result = IsNativeConfigSupported(param, osWindow);
+                break;
+            case GLESDriverType::SystemWGL:
+                result = IsWGLConfigSupported(param, osWindow);
+                break;
+        }
+
+        osWindow->destroy();
+    }
+
+    OSWindow::Delete(&osWindow);
+    return result;
 }
 
 bool IsPlatformAvailable(const PlatformParameters &param)
@@ -87,50 +401,91 @@ bool IsPlatformAvailable(const PlatformParameters &param)
             break;
 #endif
 
-      case EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE:
+        case EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE:
 #ifndef ANGLE_ENABLE_NULL
-          return false;
+            return false;
 #endif
-          break;
+            break;
 
-      default:
-          std::cout << "Unknown test platform: " << param << std::endl;
-          return false;
+        default:
+            std::cout << "Unknown test platform: " << param << std::endl;
+            return false;
     }
 
-    static std::map<PlatformParameters, bool> paramAvailabilityCache;
-    auto iter = paramAvailabilityCache.find(param);
-    if (iter != paramAvailabilityCache.end())
+    bool result = false;
+
+    auto iter = gParamAvailabilityCache.find(param);
+    if (iter != gParamAvailabilityCache.end())
     {
-        return iter->second;
+        result = iter->second;
     }
     else
     {
-        OSWindow *osWindow = CreateOSWindow();
-        bool result = osWindow->initialize("CONFIG_TESTER", 1, 1);
-
-        if (result)
+        if (!gSelectedConfig.empty())
         {
-            EGLWindow *eglWindow =
-                new EGLWindow(param.majorVersion, param.minorVersion, param.eglParameters);
-            result = eglWindow->initializeGL(osWindow);
+            std::stringstream strstr;
+            strstr << param;
+            if (strstr.str() == gSelectedConfig)
+            {
+                result = true;
+            }
+        }
+        else
+        {
+            const SystemInfo *systemInfo = GetTestSystemInfo();
 
-            eglWindow->destroyGL();
-            SafeDelete(eglWindow);
+            if (systemInfo)
+            {
+                result = IsConfigWhitelisted(*systemInfo, param);
+            }
+            else
+            {
+                result = IsConfigSupported(param);
+            }
         }
 
-        osWindow->destroy();
-        SafeDelete(osWindow);
+        gParamAvailabilityCache[param] = result;
 
-        paramAvailabilityCache[param] = result;
-
-        if (!result)
+        // Enable this unconditionally to print available platforms.
+        if (!gSelectedConfig.empty())
         {
-            std::cout << "Skipping tests using configuration " << param << " because it is not available." << std::endl;
+            if (result)
+            {
+                std::cout << "Test Config: " << param << "\n";
+            }
         }
-
-        return result;
+        else if (!result)
+        {
+            std::cout << "Skipping tests using configuration " << param
+                      << " because it is not available.\n";
+        }
     }
+
+    // Disable all tests in the parent process when running child processes.
+    if (gSeparateProcessPerConfig)
+    {
+        return false;
+    }
+    return result;
 }
 
+std::vector<std::string> GetAvailableTestPlatformNames()
+{
+    std::vector<std::string> platformNames;
+
+    for (const auto &iter : gParamAvailabilityCache)
+    {
+        if (iter.second)
+        {
+            std::stringstream strstr;
+            strstr << iter.first;
+            platformNames.push_back(strstr.str());
+        }
+    }
+
+    // Keep the list sorted.
+    std::sort(platformNames.begin(), platformNames.end());
+
+    return platformNames;
+}
 }  // namespace angle

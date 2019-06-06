@@ -1,13 +1,7 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/am.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 am{
-    Version{"2.1.19.96"}
+    Version{"2.1.43.65"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -85,6 +79,7 @@ am{
                 dnam{"ካሬ ኪሎሜትር"}
                 one{"{0} ካሬ ኪሎሜትር"}
                 other{"{0} ካሬ ኪሎሜትር"}
+                per{"{0}/ኪሜ²"}
             }
             square-meter{
                 dnam{"ካሬ ሜትር"}
@@ -96,6 +91,7 @@ am{
                 dnam{"ካሬ ማይል"}
                 one{"{0} ካሬ ማይል"}
                 other{"{0} ካሬ ማይል"}
+                per{"{0}/ማይል²"}
             }
             square-yard{
                 dnam{"yd²"}
@@ -105,6 +101,38 @@ am{
         }
         compound{
             per{"{0} በ{1}"}
+        }
+        concentr{
+            karat{
+                dnam{"ካራት"}
+                one{"{0} ካራት"}
+                other{"{0} ካራት"}
+            }
+            milligram-per-deciliter{
+                dnam{"ሚሊ ግራም በ ዴሲ ሊትር"}
+                one{"{0} mg/dL"}
+                other{"{0} mg/dL"}
+            }
+            millimole-per-liter{
+                dnam{"mmol/L"}
+                one{"{0} mmol/L"}
+                other{"{0} mmol/L"}
+            }
+            part-per-million{
+                dnam{"ppm"}
+                one{"{0} ppm"}
+                other{"{0} ppm"}
+            }
+            percent{
+                dnam{"ፐርሰንት"}
+                one{"{0} ፐርሰንት"}
+                other{"{0} ፐርሰንት"}
+            }
+            permille{
+                dnam{"በማይል"}
+                one{"{0} በማይል"}
+                other{"{0}‰"}
+            }
         }
         consumption{
             liter-per-100kilometers{
@@ -122,8 +150,14 @@ am{
                 one{"{0} mpg"}
                 other{"{0} mpg"}
             }
+            mile-per-gallon-imperial{
+                dnam{"mpg Imp."}
+                one{"{0} mpg Imp."}
+                other{"{0} mpg Imp."}
+            }
         }
         coordinate{
+            dnam{"ዓቢይ አቅጣጫ"}
             east{"{0}ምስ"}
             north{"{0}ሰ"}
             south{"{0}ደ"}
@@ -141,9 +175,9 @@ am{
                 other{"{0} ባይት"}
             }
             gigabit{
-                dnam{"ጊባይት"}
-                one{"{0} ጊባይት"}
-                other{"{0} ጊባይት"}
+                dnam{"ጊጋባይት"}
+                one{"{0} ጊጋባይት"}
+                other{"{0} ጊጋባይት"}
             }
             gigabyte{
                 dnam{"ጊባ"}
@@ -151,9 +185,9 @@ am{
                 other{"{0} ጊባ"}
             }
             kilobit{
-                dnam{"ኪባይት"}
-                one{"{0} ኪባይት"}
-                other{"{0} ኪባይት"}
+                dnam{"ኪሎባይት"}
+                one{"{0} ኪሎባይት"}
+                other{"{0} ኪሎባይት"}
             }
             kilobyte{
                 dnam{"ኪባ"}
@@ -166,19 +200,24 @@ am{
                 other{"{0} ሜባ"}
             }
             megabyte{
-                dnam{"ሜባይት"}
-                one{"{0} ሜባይት"}
-                other{"{0} ሜባይት"}
+                dnam{"ሜጋባይት"}
+                one{"{0} ሜጋባይት"}
+                other{"{0} ሜጋባይት"}
+            }
+            petabyte{
+                dnam{"ፔታ ባይት"}
+                one{"{0} ፔታ ባይት"}
+                other{"{0} ፔታ ባይቶች"}
             }
             terabit{
-                dnam{"ቴባ"}
+                dnam{"ቴራባይትስ"}
                 one{"{0} ቴባ"}
                 other{"{0} ቴባ"}
             }
             terabyte{
-                dnam{"ቴባይት"}
-                one{"{0} ቴባይት"}
-                other{"{0} ቴባይት"}
+                dnam{"ቴራባይት"}
+                one{"{0} ቴራባይት"}
+                other{"{0} ቴራባይት"}
             }
         }
         duration{
@@ -334,9 +373,9 @@ am{
                 per{"{0}/ሴሜ"}
             }
             decimeter{
-                dnam{"dm"}
-                one{"{0} dm"}
-                other{"{0} dm"}
+                dnam{"ዴሲ ሜትር"}
+                one{"{0} ዴሲ ሜትር"}
+                other{"{0} ዴሲ ሜትር"}
             }
             foot{
                 dnam{"ጫማ"}
@@ -368,9 +407,9 @@ am{
                 per{"{0}/ሜ"}
             }
             micrometer{
-                dnam{"µm"}
-                one{"{0} µm"}
-                other{"{0} µm"}
+                dnam{"ማይክሮ ሜትር"}
+                one{"{0} ማይክሮ ሜትር"}
+                other{"{0} ማይክሮ ሜትር"}
             }
             mile{
                 dnam{"ማይል"}
@@ -388,9 +427,9 @@ am{
                 other{"{0} ሚሊሜትር"}
             }
             nanometer{
-                dnam{"nm"}
-                one{"{0} nm"}
-                other{"{0} nm"}
+                dnam{"ናኖ ሜትር"}
+                one{"{0} ናኖ ሜትር"}
+                other{"{0} ናኖ ሜትር"}
             }
             nautical-mile{
                 dnam{"nmi"}
@@ -406,6 +445,11 @@ am{
                 dnam{"ፒኮሜትር"}
                 one{"{0} ፒኮሜትር"}
                 other{"{0} ፒኮሜትር"}
+            }
+            point{
+                dnam{"ነጥብ"}
+                one{"{0} ነጥብ"}
+                other{"{0} ነጥብ"}
             }
             yard{
                 dnam{"ያርድ"}
@@ -509,6 +553,11 @@ am{
             }
         }
         pressure{
+            atmosphere{
+                dnam{"ከባቢ አየር"}
+                one{"{0} ከባቢ አየር"}
+                other{"{0} ከባቢ አየር"}
+            }
             hectopascal{
                 dnam{"ሄክቶፓስካል"}
                 one{"{0} ሄክቶፓስካል"}
@@ -533,13 +582,6 @@ am{
                 dnam{"psi"}
                 one{"{0} psi"}
                 other{"{0} psi"}
-            }
-        }
-        proportion{
-            karat{
-                dnam{"ካራት"}
-                one{"{0} ካራት"}
-                other{"{0} ካራት"}
             }
         }
         speed{
@@ -645,9 +687,9 @@ am{
                 other{"{0} mc"}
             }
             deciliter{
-                dnam{"dL"}
-                one{"{0} dL"}
-                other{"{0} dL"}
+                dnam{"ዴሲ ሊትር"}
+                one{"{0} ዴሲ ሊትር"}
+                other{"{0} ዴሲ ሊትር"}
             }
             fluid-ounce{
                 dnam{"fl oz"}
@@ -659,6 +701,12 @@ am{
                 one{"{0} gal"}
                 other{"{0} gal"}
                 per{"{0}/gal"}
+            }
+            gallon-imperial{
+                dnam{"Imp. gal"}
+                one{"{0} gal Imp."}
+                other{"{0} gal Imp."}
+                per{"{0}/gal Imp."}
             }
             hectoliter{
                 dnam{"hL"}
@@ -677,9 +725,9 @@ am{
                 other{"{0} ML"}
             }
             milliliter{
-                dnam{"mL"}
-                one{"{0} mL"}
-                other{"{0} mL"}
+                dnam{"ሚሊ ሊትር"}
+                one{"{0} ሚሊ ሊትር"}
+                other{"{0} ሚሊ ሊትር"}
             }
             pint{
                 dnam{"pt"}
@@ -758,6 +806,13 @@ am{
         compound{
             per{"{0}/{1}"}
         }
+        concentr{
+            percent{
+                dnam{"%"}
+                one{"{0}%"}
+                other{"{0}%"}
+            }
+        }
         consumption{
             liter-per-100kilometers{
                 dnam{"ሊትር በ100 ኪሎሜትሮች"}
@@ -766,6 +821,7 @@ am{
             }
         }
         coordinate{
+            dnam{"አቅጣጫ"}
             east{"{0}ምስ"}
             north{"{0}ሰ"}
             south{"{0}ደ"}
@@ -1026,6 +1082,7 @@ am{
                 dnam{"ካሬ ኪሎሜትር"}
                 one{"{0} ኪሜ²"}
                 other{"{0} ኪሜ²"}
+                per{"{0}/ኪሜ²"}
             }
             square-meter{
                 dnam{"ካሬ ሜትር"}
@@ -1037,6 +1094,7 @@ am{
                 dnam{"ካሬ ማይል"}
                 one{"{0} ካሬ ማይል"}
                 other{"{0} ካሬ ማይል"}
+                per{"{0}/ማይል²"}
             }
             square-yard{
                 dnam{"yd²"}
@@ -1046,6 +1104,38 @@ am{
         }
         compound{
             per{"{0}/{1}"}
+        }
+        concentr{
+            karat{
+                dnam{"ካራት"}
+                one{"{0} ካራት"}
+                other{"{0} ካራት"}
+            }
+            milligram-per-deciliter{
+                dnam{"mg/dL"}
+                one{"{0} mg/dL"}
+                other{"{0} mg/dL"}
+            }
+            millimole-per-liter{
+                dnam{"mmol/L"}
+                one{"{0} mmol/L"}
+                other{"{0} mmol/L"}
+            }
+            part-per-million{
+                dnam{"ppm"}
+                one{"{0} ppm"}
+                other{"{0} ppm"}
+            }
+            percent{
+                dnam{"ፐርሰንት"}
+                one{"{0}%"}
+                other{"{0}%"}
+            }
+            permille{
+                dnam{"በማይል"}
+                one{"{0}‰"}
+                other{"{0}‰"}
+            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1063,8 +1153,14 @@ am{
                 one{"{0} mpg"}
                 other{"{0} mpg"}
             }
+            mile-per-gallon-imperial{
+                dnam{"mpg Imp."}
+                one{"{0} mpg Imp."}
+                other{"{0} mpg Imp."}
+            }
         }
         coordinate{
+            dnam{"አቅጣጫ"}
             east{"{0}ምስ"}
             north{"{0}ሰ"}
             south{"{0}ደ"}
@@ -1082,9 +1178,9 @@ am{
                 other{"{0} ባይት"}
             }
             gigabit{
-                dnam{"ጊባይት"}
-                one{"{0} ጊባይት"}
-                other{"{0} ጊባይት"}
+                dnam{"ጊጋባይት"}
+                one{"{0} ጊጋባይት"}
+                other{"{0} ጊጋባይት"}
             }
             gigabyte{
                 dnam{"ጊባ"}
@@ -1092,9 +1188,9 @@ am{
                 other{"{0} ጊባ"}
             }
             kilobit{
-                dnam{"ኪባይት"}
-                one{"{0} ኪባይት"}
-                other{"{0} ኪባይት"}
+                dnam{"ኪሎባይት"}
+                one{"{0} ኪሎባይት"}
+                other{"{0} ኪሎባይት"}
             }
             kilobyte{
                 dnam{"ኪባ"}
@@ -1107,9 +1203,14 @@ am{
                 other{"{0} ሜባ"}
             }
             megabyte{
-                dnam{"ሜባይት"}
-                one{"{0} ሜባይት"}
-                other{"{0} ሜባይት"}
+                dnam{"ሜጋባይት"}
+                one{"{0} ሜጋባይት"}
+                other{"{0} ሜጋባይት"}
+            }
+            petabyte{
+                dnam{"ፔ ባይት"}
+                one{"{0} ፔባ"}
+                other{"{0} ፔባ"}
             }
             terabit{
                 dnam{"ቴባ"}
@@ -1117,9 +1218,9 @@ am{
                 other{"{0} ቴባ"}
             }
             terabyte{
-                dnam{"ቴባይት"}
-                one{"{0} ቴባይት"}
-                other{"{0} ቴባይት"}
+                dnam{"ቴራባይት"}
+                one{"{0} ቴራባይት"}
+                other{"{0} ቴራባይት"}
             }
         }
         duration{
@@ -1275,9 +1376,9 @@ am{
                 per{"{0}/ሴሜ"}
             }
             decimeter{
-                dnam{"dm"}
-                one{"{0} dm"}
-                other{"{0} dm"}
+                dnam{"ዴሜ"}
+                one{"{0} ዴሜ"}
+                other{"{0} ዴሜ"}
             }
             foot{
                 dnam{"ጫማ"}
@@ -1299,8 +1400,8 @@ am{
             }
             light-year{
                 dnam{"የብርሃን ዓመት"}
-                one{"{0} ly"}
-                other{"{0} ly"}
+                one{"{0} ብዓ"}
+                other{"{0} ብዓ"}
             }
             meter{
                 dnam{"ሜትር"}
@@ -1309,9 +1410,9 @@ am{
                 per{"{0}/ሜ"}
             }
             micrometer{
-                dnam{"µm"}
-                one{"{0} µm"}
-                other{"{0} µm"}
+                dnam{"ማሜ"}
+                one{"{0} ማሜ"}
+                other{"{0} ማሜ"}
             }
             mile{
                 dnam{"ማይል"}
@@ -1329,9 +1430,9 @@ am{
                 other{"{0} ሚሜ"}
             }
             nanometer{
-                dnam{"nm"}
-                one{"{0} nm"}
-                other{"{0} nm"}
+                dnam{"ናሜ"}
+                one{"{0} ናሜ"}
+                other{"{0} ናሜ"}
             }
             nautical-mile{
                 dnam{"nmi"}
@@ -1347,6 +1448,11 @@ am{
                 dnam{"ፒኮሜትር"}
                 one{"{0} ፒሜ"}
                 other{"{0} ፒሜ"}
+            }
+            point{
+                dnam{"ነጥብ"}
+                one{"{0} ነጥብ"}
+                other{"{0} ነጥብ"}
             }
             yard{
                 dnam{"ያርድ"}
@@ -1450,6 +1556,11 @@ am{
             }
         }
         pressure{
+            atmosphere{
+                dnam{"ከባቢ አየር"}
+                one{"{0} ከባቢ አየር"}
+                other{"{0} ከባቢ አየር"}
+            }
             hectopascal{
                 dnam{"ሄክቶፓስካል"}
                 one{"{0} ሄክቶፓስካል"}
@@ -1474,13 +1585,6 @@ am{
                 dnam{"psi"}
                 one{"{0} psi"}
                 other{"{0} psi"}
-            }
-        }
-        proportion{
-            karat{
-                dnam{"ካራት"}
-                one{"{0} ካራት"}
-                other{"{0} ካራት"}
             }
         }
         speed{
@@ -1534,9 +1638,9 @@ am{
                 other{"{0} ኤከር ጫማ"}
             }
             centiliter{
-                dnam{"ሴንቲ ሊትር"}
-                one{"{0} ሴንቲ ሊትር"}
-                other{"{0} ሴንቲ ሊትር"}
+                dnam{"ሴሊ"}
+                one{"{0} ሴሊ"}
+                other{"{0} ሴሊ"}
             }
             cubic-centimeter{
                 dnam{"ሴሜ³"}
@@ -1586,9 +1690,9 @@ am{
                 other{"{0} mc"}
             }
             deciliter{
-                dnam{"dL"}
-                one{"{0} dL"}
-                other{"{0} dL"}
+                dnam{"ዴሊ"}
+                one{"{0} ዴሊ"}
+                other{"{0} ዴሊ"}
             }
             fluid-ounce{
                 dnam{"fl oz"}
@@ -1600,6 +1704,12 @@ am{
                 one{"{0} gal"}
                 other{"{0} gal"}
                 per{"{0}/gal"}
+            }
+            gallon-imperial{
+                dnam{"Imp. gal"}
+                one{"{0} gal Imp."}
+                other{"{0} gal Imp."}
+                per{"{0}/gal Imp."}
             }
             hectoliter{
                 dnam{"hL"}
@@ -1618,9 +1728,9 @@ am{
                 other{"{0} ML"}
             }
             milliliter{
-                dnam{"mL"}
-                one{"{0} mL"}
-                other{"{0} mL"}
+                dnam{"ሚሊ ሊትር"}
+                one{"{0} ሚሊ ሊትር"}
+                other{"{0} ሚሊ ሊትር"}
             }
             pint{
                 dnam{"pt"}

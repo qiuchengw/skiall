@@ -10,6 +10,7 @@
 #ifndef LIBANGLE_RENDERER_D3D_D3D9_CONTEXT9_H_
 #define LIBANGLE_RENDERER_D3D_D3D9_CONTEXT9_H_
 
+#include <stack>
 #include "libANGLE/renderer/d3d/ContextD3D.h"
 
 namespace rx
@@ -19,7 +20,7 @@ class Renderer9;
 class Context9 : public ContextD3D
 {
   public:
-    Context9(const gl::ContextState &state, Renderer9 *renderer);
+    Context9(const gl::State &state, gl::ErrorSet *errorSet, Renderer9 *renderer);
     ~Context9() override;
 
     angle::Result initialize() override;
@@ -63,9 +64,31 @@ class Context9 : public ContextD3D
     // Path object creation
     std::vector<PathImpl *> createPaths(GLsizei) override;
 
+    // Memory object creation.
+    MemoryObjectImpl *createMemoryObject() override;
+
+    // Semaphore creation.
+    SemaphoreImpl *createSemaphore() override;
+
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
     angle::Result finish(const gl::Context *context) override;
+
+    // Semaphore operations.
+    angle::Result waitSemaphore(const gl::Context *context,
+                                const gl::Semaphore *semaphore,
+                                GLuint numBufferBarriers,
+                                const GLuint *buffers,
+                                GLuint numTextureBarriers,
+                                const GLuint *textures,
+                                const GLenum *srcLayouts) override;
+    angle::Result signalSemaphore(const gl::Context *context,
+                                  const gl::Semaphore *semaphore,
+                                  GLuint numBufferBarriers,
+                                  const GLuint *buffers,
+                                  GLuint numTextureBarriers,
+                                  const GLuint *textures,
+                                  const GLenum *dstLayouts) override;
 
     // Drawing methods.
     angle::Result drawArrays(const gl::Context *context,
@@ -81,12 +104,12 @@ class Context9 : public ContextD3D
     angle::Result drawElements(const gl::Context *context,
                                gl::PrimitiveMode mode,
                                GLsizei count,
-                               GLenum type,
+                               gl::DrawElementsType type,
                                const void *indices) override;
     angle::Result drawElementsInstanced(const gl::Context *context,
                                         gl::PrimitiveMode mode,
                                         GLsizei count,
-                                        GLenum type,
+                                        gl::DrawElementsType type,
                                         const void *indices,
                                         GLsizei instances) override;
     angle::Result drawRangeElements(const gl::Context *context,
@@ -94,18 +117,18 @@ class Context9 : public ContextD3D
                                     GLuint start,
                                     GLuint end,
                                     GLsizei count,
-                                    GLenum type,
+                                    gl::DrawElementsType type,
                                     const void *indices) override;
     angle::Result drawArraysIndirect(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      const void *indirect) override;
     angle::Result drawElementsIndirect(const gl::Context *context,
                                        gl::PrimitiveMode mode,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        const void *indirect) override;
 
     // Device loss
-    GLenum getResetStatus() override;
+    gl::GraphicsResetStatus getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -117,7 +140,7 @@ class Context9 : public ContextD3D
     void popGroupMarker() override;
 
     // KHR_debug
-    void pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message) override;
+    void pushDebugGroup(GLenum source, GLuint id, const std::string &message) override;
     void popDebugGroup() override;
 
     // State sync with dirty bits.
@@ -162,6 +185,7 @@ class Context9 : public ContextD3D
   private:
     Renderer9 *mRenderer;
     IncompleteTextureSet mIncompleteTextures;
+    std::stack<std::string> mMarkerStack;
 };
 
 }  // namespace rx

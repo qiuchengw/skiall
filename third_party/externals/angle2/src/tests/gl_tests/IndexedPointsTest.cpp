@@ -27,52 +27,45 @@ class IndexedPointsTest : public ANGLETest
 
     float getIndexPositionY(size_t idx) { return (idx == 2 || idx == 3) ? -0.5f : 0.5f; }
 
-    virtual void SetUp()
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
+        constexpr char kVS[] = R"(precision highp float;
+attribute vec2 position;
 
-        const std::string vertexShaderSource =
-            R"(precision highp float;
-            attribute vec2 position;
+void main() {
+    gl_PointSize = 5.0;
+    gl_Position  = vec4(position, 0.0, 1.0);
+})";
 
-            void main() {
-                gl_PointSize = 5.0;
-                gl_Position  = vec4(position, 0.0, 1.0);
-            })";
+        constexpr char kFS[] = R"(precision highp float;
+void main()
+{
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+})";
 
-        const std::string fragmentShaderSource =
-            R"(precision highp float;
-
-            void main()
-            {
-                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-            })";
-
-        mProgram = CompileProgram(vertexShaderSource, fragmentShaderSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mProgram);
 
-        const std::string vertexShaderSource2 =
-            R"(precision highp float;
-            attribute vec2 position;
-            attribute vec4 color;
-            varying vec4 vcolor;
+        constexpr char kVS2[] = R"(precision highp float;
+attribute vec2 position;
+attribute vec4 color;
+varying vec4 vcolor;
 
-            void main() {
-                gl_PointSize = 5.0;
-                gl_Position  = vec4(position, 0.0, 1.0);
-                vcolor       = color;
-            })";
+void main() {
+    gl_PointSize = 5.0;
+    gl_Position  = vec4(position, 0.0, 1.0);
+    vcolor       = color;
+})";
 
-        const std::string fragmentShaderSource2 =
-            R"(precision highp float;
-            varying vec4 vcolor;
+        constexpr char kFS2[] = R"(precision highp float;
+varying vec4 vcolor;
 
-            void main()
-            {
-                gl_FragColor = vec4(vcolor.xyz, 1.0);
-            })";
+void main()
+{
+    gl_FragColor = vec4(vcolor.xyz, 1.0);
+})";
 
-        mVertexWithColorBufferProgram = CompileProgram(vertexShaderSource2, fragmentShaderSource2);
+        mVertexWithColorBufferProgram = CompileProgram(kVS2, kFS2);
         ASSERT_NE(0u, mVertexWithColorBufferProgram);
 
         // Construct a vertex buffer of position values and color values
@@ -105,7 +98,7 @@ class IndexedPointsTest : public ANGLETest
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
     }
 
-    virtual void TearDown()
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mVertexBuffer);
         glDeleteBuffers(1, &mIndexBuffer);
@@ -113,7 +106,6 @@ class IndexedPointsTest : public ANGLETest
 
         glDeleteBuffers(1, &mVertexWithColorBuffer);
         glDeleteProgram(mVertexWithColorBufferProgram);
-        ANGLETest::TearDown();
     }
 
     void runTest(GLuint firstIndex, bool useVertexBufferWithColor = false)
@@ -166,19 +158,17 @@ class IndexedPointsTest : public ANGLETest
 
             if (i < firstIndex)
             {
-                EXPECT_PIXEL_EQ(x, y, 0, 0, 0, 255);
+                EXPECT_PIXEL_COLOR_EQ(x, y, GLColor::black);
             }
             else
             {
                 if (useVertexBufferWithColor)
                 {
-                    // Pixel data is assumed to be GREEN
-                    EXPECT_PIXEL_EQ(x, y, 0, 255, 0, 255);
+                    EXPECT_PIXEL_COLOR_EQ(x, y, GLColor::green);
                 }
                 else
                 {
-                    // Pixel data is assumed to be RED
-                    EXPECT_PIXEL_EQ(x, y, 255, 0, 0, 255);
+                    EXPECT_PIXEL_COLOR_EQ(x, y, GLColor::red);
                 }
             }
         }
@@ -232,6 +222,7 @@ TEST_P(IndexedPointsTestUByte, VertexWithColorUnsignedByteOffset1)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(1, true);
 }
 
@@ -239,6 +230,7 @@ TEST_P(IndexedPointsTestUByte, VertexWithColorUnsignedByteOffset2)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(2, true);
 }
 
@@ -246,6 +238,7 @@ TEST_P(IndexedPointsTestUByte, VertexWithColorUnsignedByteOffset3)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(3, true);
 }
 
@@ -275,6 +268,7 @@ TEST_P(IndexedPointsTestUShort, VertexWithColorUnsignedShortOffset0)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(0, true);
 }
 
@@ -282,6 +276,7 @@ TEST_P(IndexedPointsTestUShort, VertexWithColorUnsignedShortOffset1)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(1, true);
 }
 
@@ -289,6 +284,7 @@ TEST_P(IndexedPointsTestUShort, VertexWithColorUnsignedShortOffset2)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(2, true);
 }
 
@@ -296,6 +292,7 @@ TEST_P(IndexedPointsTestUShort, VertexWithColorUnsignedShortOffset3)
 {
     // TODO(fjhenigman): Fix with buffer offset http://anglebug.com/2848
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsAMD());
+
     runTest(3, true);
 }
 
@@ -317,7 +314,7 @@ typedef IndexedPointsTest<GLuint, GL_UNSIGNED_INT> IndexedPointsTestUInt;
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset0)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -327,7 +324,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset0)
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset1)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -337,7 +334,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset1)
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset2)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -347,7 +344,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset2)
 
 TEST_P(IndexedPointsTestUInt, UnsignedIntOffset3)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -357,7 +354,7 @@ TEST_P(IndexedPointsTestUInt, UnsignedIntOffset3)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset0)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -367,7 +364,7 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset0)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset1)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -377,7 +374,7 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset1)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset2)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -387,7 +384,7 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset2)
 
 TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset3)
 {
-    if (getClientMajorVersion() < 3 && !extensionEnabled("GL_OES_element_index_uint"))
+    if (getClientMajorVersion() < 3 && !IsGLExtensionEnabled("GL_OES_element_index_uint"))
     {
         return;
     }
@@ -401,19 +398,16 @@ TEST_P(IndexedPointsTestUInt, VertexWithColorUnsignedIntOffset3)
 // TODO(geofflang): Figure out why this test fails on Intel OpenGL
 ANGLE_INSTANTIATE_TEST(IndexedPointsTestUByte,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(IndexedPointsTestUShort,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(IndexedPointsTestUInt,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());

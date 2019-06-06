@@ -21,10 +21,8 @@ class CubeMapTextureTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    virtual void SetUp()
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
         if (mProgram == 0)
         {
@@ -45,31 +43,25 @@ class CubeMapTextureTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    virtual void TearDown()
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram;
     GLint mColorLocation;
 };
 
-// Verify that rendering to the faces of a cube map consecutively will correctly render to each face.
+// Verify that rendering to the faces of a cube map consecutively will correctly render to each
+// face.
 TEST_P(CubeMapTextureTest, RenderToFacesConsecutively)
 {
     // TODO: Diagnose and fix. http://anglebug.com/2954
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel() && IsWindows());
 
-    const GLfloat faceColors[] =
-    {
-        1.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 1.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 1.0f,
-        0.0f, 1.0f, 1.0f, 1.0f,
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel() && IsFuchsia());
+
+    const GLfloat faceColors[] = {
+        1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
     };
 
     GLuint tex = 0;
@@ -89,7 +81,8 @@ TEST_P(CubeMapTextureTest, RenderToFacesConsecutively)
 
     for (GLenum face = 0; face < 6; face++)
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, tex, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, tex, 0);
         EXPECT_GL_NO_ERROR();
 
         glUseProgram(mProgram);
@@ -103,11 +96,13 @@ TEST_P(CubeMapTextureTest, RenderToFacesConsecutively)
 
     for (GLenum face = 0; face < 6; face++)
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, tex, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, tex, 0);
         EXPECT_GL_NO_ERROR();
 
         const GLfloat *faceColor = faceColors + (face * 4);
-        EXPECT_PIXEL_EQ(0, 0, faceColor[0] * 255, faceColor[1] * 255, faceColor[2] * 255, faceColor[3] * 255);
+        EXPECT_PIXEL_EQ(0, 0, faceColor[0] * 255, faceColor[1] * 255, faceColor[2] * 255,
+                        faceColor[3] * 255);
         EXPECT_GL_NO_ERROR();
     }
 
@@ -117,11 +112,10 @@ TEST_P(CubeMapTextureTest, RenderToFacesConsecutively)
     EXPECT_GL_NO_ERROR();
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
+// Use this to select which configurations (e.g. which renderer, which GLES major version) these
+// tests should be run against.
 ANGLE_INSTANTIATE_TEST(CubeMapTextureTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL10_0(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),

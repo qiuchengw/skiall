@@ -30,6 +30,7 @@
     OP(OES_standard_derivatives)                 \
     OP(OES_texture_storage_multisample_2d_array) \
     OP(OVR_multiview)                            \
+    OP(OVR_multiview2)                           \
     OP(ANGLE_multi_draw)
 
 namespace sh

@@ -9,8 +9,8 @@
 #ifndef LIBANGLE_RENDERER_D3D_DISPLAYD3D_H_
 #define LIBANGLE_RENDERER_D3D_DISPLAYD3D_H_
 
-#include "libANGLE/renderer/DisplayImpl.h"
 #include "libANGLE/Device.h"
+#include "libANGLE/renderer/DisplayImpl.h"
 
 #include "libANGLE/renderer/d3d/RendererD3D.h"
 
@@ -43,7 +43,8 @@ class DisplayD3D : public DisplayImpl, public d3d::Context
                            EGLenum target,
                            const egl::AttributeMap &attribs) override;
 
-    ContextImpl *createContext(const gl::ContextState &state,
+    ContextImpl *createContext(const gl::State &state,
+                               gl::ErrorSet *errorSet,
                                const egl::Config *configuration,
                                const gl::Context *shareContext,
                                const egl::AttributeMap &attribs) override;
@@ -51,7 +52,9 @@ class DisplayD3D : public DisplayImpl, public d3d::Context
     StreamProducerImpl *createStreamProducerD3DTexture(egl::Stream::ConsumerType consumerType,
                                                        const egl::AttributeMap &attribs) override;
 
-    egl::Error makeCurrent(egl::Surface *drawSurface, egl::Surface *readSurface, gl::Context *context) override;
+    egl::Error makeCurrent(egl::Surface *drawSurface,
+                           egl::Surface *readSurface,
+                           gl::Context *context) override;
 
     egl::ConfigSet generateConfigs() override;
 
@@ -80,6 +83,8 @@ class DisplayD3D : public DisplayImpl, public d3d::Context
 
     const std::string &getStoredErrorString() const { return mStoredErrorString; }
 
+    void populateFeatureList(angle::FeatureList *features) override;
+
   private:
     void generateExtensions(egl::DisplayExtensions *outExtensions) const override;
     void generateCaps(egl::Caps *outCaps) const override;
@@ -92,4 +97,4 @@ class DisplayD3D : public DisplayImpl, public d3d::Context
 
 }  // namespace rx
 
-#endif // LIBANGLE_RENDERER_D3D_DISPLAYD3D_H_
+#endif  // LIBANGLE_RENDERER_D3D_DISPLAYD3D_H_

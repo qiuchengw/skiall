@@ -16,9 +16,11 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/ProgramLinkedResources.h"
 #include "libANGLE/Uniform.h"
+#include "libANGLE/WorkerThread.h"
 #include "libANGLE/queryconversions.h"
 #include "libANGLE/renderer/gl/ContextGL.h"
 #include "libANGLE/renderer/gl/FunctionsGL.h"
+#include "libANGLE/renderer/gl/RendererGL.h"
 #include "libANGLE/renderer/gl/ShaderGL.h"
 #include "libANGLE/renderer/gl/StateManagerGL.h"
 #include "libANGLE/renderer/gl/WorkaroundsGL.h"
@@ -31,14 +33,17 @@ ProgramGL::ProgramGL(const gl::ProgramState &data,
                      const FunctionsGL *functions,
                      const WorkaroundsGL &workarounds,
                      StateManagerGL *stateManager,
-                     bool enablePathRendering)
+                     bool enablePathRendering,
+                     const std::shared_ptr<RendererGL> &renderer)
     : ProgramImpl(data),
       mFunctions(functions),
       mWorkarounds(workarounds),
       mStateManager(stateManager),
       mEnablePathRendering(enablePathRendering),
       mMultiviewBaseViewLayerIndexUniformLocation(-1),
-      mProgramID(0)
+      mProgramID(0),
+      mRenderer(renderer),
+      mLinkedInParallel(false)
 {
     ASSERT(mFunctions);
     ASSERT(mStateManager);
@@ -52,9 +57,9 @@ ProgramGL::~ProgramGL()
     mProgramID = 0;
 }
 
-angle::Result ProgramGL::load(const gl::Context *context,
-                              gl::InfoLog &infoLog,
-                              gl::BinaryInputStream *stream)
+std::unique_ptr<LinkEvent> ProgramGL::load(const gl::Context *context,
+                                           gl::BinaryInputStream *stream,
+                                           gl::InfoLog &infoLog)
 {
     preLink();
 
@@ -70,13 +75,13 @@ angle::Result ProgramGL::load(const gl::Context *context,
     // Verify that the program linked
     if (!checkLinkStatus(infoLog))
     {
-        return angle::Result::Incomplete();
+        return std::make_unique<LinkEventDone>(angle::Result::Incomplete);
     }
 
     postLink();
     reapplyUBOBindingsIfNeeded(context);
 
-    return angle::Result::Continue();
+    return std::make_unique<LinkEventDone>(angle::Result::Continue);
 }
 
 void ProgramGL::save(const gl::Context *context, gl::BinaryOutputStream *stream)
@@ -100,7 +105,7 @@ void ProgramGL::reapplyUBOBindingsIfNeeded(const gl::Context *context)
 {
     // Re-apply UBO bindings to work around driver bugs.
     const WorkaroundsGL &workaroundsGL = GetImplAs<ContextGL>(context)->getWorkaroundsGL();
-    if (workaroundsGL.reapplyUBOBindingsAfterUsingBinaryProgram)
+    if (workaroundsGL.reapplyUBOBindingsAfterUsingBinaryProgram.enabled)
     {
         const auto &blocks = mState.getUniformBlocks();
         for (size_t blockIndex : mState.getActiveUniformBlockBindingsMask())
@@ -125,17 +130,89 @@ void ProgramGL::setSeparable(bool separable)
     mFunctions->programParameteri(mProgramID, GL_PROGRAM_SEPARABLE, separable ? GL_TRUE : GL_FALSE);
 }
 
+using LinkImplFunctor = std::function<bool(std::string &)>;
+class ProgramGL::LinkTask final : public angle::Closure
+{
+  public:
+    LinkTask(LinkImplFunctor &&functor) : mLinkImplFunctor(functor), mFallbackToMainContext(false)
+    {}
+
+    void operator()() override { mFallbackToMainContext = mLinkImplFunctor(mInfoLog); }
+    bool fallbackToMainContext() { return mFallbackToMainContext; }
+    const std::string &getInfoLog() { return mInfoLog; }
+
+  private:
+    LinkImplFunctor mLinkImplFunctor;
+    bool mFallbackToMainContext;
+    std::string mInfoLog;
+};
+
+using PostLinkImplFunctor = std::function<angle::Result(bool, const std::string &)>;
+
+// The event for a parallelized linking using the native driver extension.
+class ProgramGL::LinkEventNativeParallel final : public LinkEvent
+{
+  public:
+    LinkEventNativeParallel(PostLinkImplFunctor &&functor,
+                            const FunctionsGL *functions,
+                            GLuint programID)
+        : mPostLinkImplFunctor(functor), mFunctions(functions), mProgramID(programID)
+    {}
+
+    angle::Result wait(const gl::Context *context) override
+    {
+        GLint linkStatus = GL_FALSE;
+        mFunctions->getProgramiv(mProgramID, GL_LINK_STATUS, &linkStatus);
+        if (linkStatus == GL_TRUE)
+        {
+            return mPostLinkImplFunctor(false, std::string());
+        }
+        return angle::Result::Incomplete;
+    }
+
+    bool isLinking() override
+    {
+        GLint completionStatus = GL_FALSE;
+        mFunctions->getProgramiv(mProgramID, GL_COMPLETION_STATUS, &completionStatus);
+        return completionStatus == GL_FALSE;
+    }
+
+  private:
+    PostLinkImplFunctor mPostLinkImplFunctor;
+    const FunctionsGL *mFunctions;
+    GLuint mProgramID;
+};
+
+// The event for a parallelized linking using the worker thread pool.
+class ProgramGL::LinkEventGL final : public LinkEvent
+{
+  public:
+    LinkEventGL(std::shared_ptr<angle::WorkerThreadPool> workerPool,
+                std::shared_ptr<ProgramGL::LinkTask> linkTask,
+                PostLinkImplFunctor &&functor)
+        : mLinkTask(linkTask),
+          mWaitableEvent(std::shared_ptr<angle::WaitableEvent>(
+              angle::WorkerThreadPool::PostWorkerTask(workerPool, mLinkTask))),
+          mPostLinkImplFunctor(functor)
+    {}
+
+    angle::Result wait(const gl::Context *context) override
+    {
+        mWaitableEvent->wait();
+        return mPostLinkImplFunctor(mLinkTask->fallbackToMainContext(), mLinkTask->getInfoLog());
+    }
+
+    bool isLinking() override { return !mWaitableEvent->isReady(); }
+
+  private:
+    std::shared_ptr<ProgramGL::LinkTask> mLinkTask;
+    std::shared_ptr<angle::WaitableEvent> mWaitableEvent;
+    PostLinkImplFunctor mPostLinkImplFunctor;
+};
+
 std::unique_ptr<LinkEvent> ProgramGL::link(const gl::Context *context,
                                            const gl::ProgramLinkedResources &resources,
                                            gl::InfoLog &infoLog)
-{
-    // TODO(jie.a.chen@intel.com): Parallelize linking.
-    return std::make_unique<LinkEventDone>(linkImpl(context, resources, infoLog));
-}
-
-angle::Result ProgramGL::linkImpl(const gl::Context *context,
-                                  const gl::ProgramLinkedResources &resources,
-                                  gl::InfoLog &infoLog)
 {
     preLink();
 
@@ -145,12 +222,6 @@ angle::Result ProgramGL::linkImpl(const gl::Context *context,
             GetImplAs<ShaderGL>(mState.getAttachedShader(gl::ShaderType::Compute));
 
         mFunctions->attachShader(mProgramID, computeShaderGL->getShaderID());
-
-        // Link and verify
-        mFunctions->linkProgram(mProgramID);
-
-        // Detach the shaders
-        mFunctions->detachShader(mProgramID, computeShaderGL->getShaderID());
     }
     else
     {
@@ -321,34 +392,93 @@ angle::Result ProgramGL::linkImpl(const gl::Context *context,
                 }
             }
         }
+    }
+    auto workerPool = context->getWorkerThreadPool();
+    auto linkTask   = std::make_shared<LinkTask>([this](std::string &infoLog) {
+        std::string workerInfoLog;
+        ScopedWorkerContextGL worker(mRenderer.get(), &workerInfoLog);
+        if (!worker())
+        {
+#if !defined(NDEBUG)
+            infoLog += "bindWorkerContext failed.\n" + workerInfoLog;
+#endif
+            // Fallback to the main context.
+            return true;
+        }
 
-        // Link and verify
         mFunctions->linkProgram(mProgramID);
 
-        // Detach the shaders
-        mFunctions->detachShader(mProgramID, vertexShaderGL->getShaderID());
-        mFunctions->detachShader(mProgramID, fragmentShaderGL->getShaderID());
-        if (geometryShaderGL)
+        // Make sure the driver actually does the link job.
+        GLint linkStatus = GL_FALSE;
+        mFunctions->getProgramiv(mProgramID, GL_LINK_STATUS, &linkStatus);
+
+        return false;
+    });
+
+    auto postLinkImplTask = [this, &infoLog, &resources](bool fallbackToMainContext,
+                                                         const std::string &workerInfoLog) {
+        infoLog << workerInfoLog;
+        if (fallbackToMainContext)
         {
-            mFunctions->detachShader(mProgramID, geometryShaderGL->getShaderID());
+            mFunctions->linkProgram(mProgramID);
         }
-    }
 
-    // Verify the link
-    if (!checkLinkStatus(infoLog))
+        if (mState.getAttachedShader(gl::ShaderType::Compute))
+        {
+            const ShaderGL *computeShaderGL =
+                GetImplAs<ShaderGL>(mState.getAttachedShader(gl::ShaderType::Compute));
+
+            mFunctions->detachShader(mProgramID, computeShaderGL->getShaderID());
+        }
+        else
+        {
+            const ShaderGL *vertexShaderGL =
+                GetImplAs<ShaderGL>(mState.getAttachedShader(gl::ShaderType::Vertex));
+            const ShaderGL *fragmentShaderGL =
+                GetImplAs<ShaderGL>(mState.getAttachedShader(gl::ShaderType::Fragment));
+            const ShaderGL *geometryShaderGL = rx::SafeGetImplAs<ShaderGL, gl::Shader>(
+                mState.getAttachedShader(gl::ShaderType::Geometry));
+
+            // Detach the shaders
+            mFunctions->detachShader(mProgramID, vertexShaderGL->getShaderID());
+            mFunctions->detachShader(mProgramID, fragmentShaderGL->getShaderID());
+            if (geometryShaderGL)
+            {
+                mFunctions->detachShader(mProgramID, geometryShaderGL->getShaderID());
+            }
+        }
+        // Verify the link
+        if (!checkLinkStatus(infoLog))
+        {
+            return angle::Result::Incomplete;
+        }
+
+        if (mWorkarounds.alwaysCallUseProgramAfterLink.enabled)
+        {
+            mStateManager->forceUseProgram(mProgramID);
+        }
+
+        linkResources(resources);
+        postLink();
+
+        return angle::Result::Continue;
+    };
+
+    if (mRenderer->hasNativeParallelCompile())
     {
-        return angle::Result::Incomplete();
+        mFunctions->linkProgram(mProgramID);
+        return std::make_unique<LinkEventNativeParallel>(postLinkImplTask, mFunctions, mProgramID);
     }
-
-    if (mWorkarounds.alwaysCallUseProgramAfterLink)
+    else if (workerPool->isAsync() &&
+             (!mWorkarounds.dontRelinkProgramsInParallel.enabled || !mLinkedInParallel))
     {
-        mStateManager->forceUseProgram(mProgramID);
+        mLinkedInParallel = true;
+        return std::make_unique<LinkEventGL>(workerPool, linkTask, postLinkImplTask);
     }
-
-    linkResources(resources);
-    postLink();
-
-    return angle::Result::Continue();
+    else
+    {
+        return std::make_unique<LinkEventDone>(postLinkImplTask(true, std::string()));
+    }
 }
 
 GLboolean ProgramGL::validate(const gl::Caps & /*caps*/, gl::InfoLog * /*infoLog*/)
@@ -513,7 +643,10 @@ void ProgramGL::setUniform4uiv(GLint location, GLsizei count, const GLuint *v)
     }
 }
 
-void ProgramGL::setUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix2fv(GLint location,
+                                    GLsizei count,
+                                    GLboolean transpose,
+                                    const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix2fv != nullptr)
     {
@@ -526,7 +659,10 @@ void ProgramGL::setUniformMatrix2fv(GLint location, GLsizei count, GLboolean tra
     }
 }
 
-void ProgramGL::setUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix3fv(GLint location,
+                                    GLsizei count,
+                                    GLboolean transpose,
+                                    const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix3fv != nullptr)
     {
@@ -539,7 +675,10 @@ void ProgramGL::setUniformMatrix3fv(GLint location, GLsizei count, GLboolean tra
     }
 }
 
-void ProgramGL::setUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix4fv(GLint location,
+                                    GLsizei count,
+                                    GLboolean transpose,
+                                    const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix4fv != nullptr)
     {
@@ -552,7 +691,10 @@ void ProgramGL::setUniformMatrix4fv(GLint location, GLsizei count, GLboolean tra
     }
 }
 
-void ProgramGL::setUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix2x3fv(GLint location,
+                                      GLsizei count,
+                                      GLboolean transpose,
+                                      const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix2x3fv != nullptr)
     {
@@ -566,7 +708,10 @@ void ProgramGL::setUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean t
     }
 }
 
-void ProgramGL::setUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix3x2fv(GLint location,
+                                      GLsizei count,
+                                      GLboolean transpose,
+                                      const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix3x2fv != nullptr)
     {
@@ -580,7 +725,10 @@ void ProgramGL::setUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean t
     }
 }
 
-void ProgramGL::setUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix2x4fv(GLint location,
+                                      GLsizei count,
+                                      GLboolean transpose,
+                                      const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix2x4fv != nullptr)
     {
@@ -594,7 +742,10 @@ void ProgramGL::setUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean t
     }
 }
 
-void ProgramGL::setUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix4x2fv(GLint location,
+                                      GLsizei count,
+                                      GLboolean transpose,
+                                      const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix4x2fv != nullptr)
     {
@@ -608,7 +759,10 @@ void ProgramGL::setUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean t
     }
 }
 
-void ProgramGL::setUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix3x4fv(GLint location,
+                                      GLsizei count,
+                                      GLboolean transpose,
+                                      const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix3x4fv != nullptr)
     {
@@ -622,7 +776,10 @@ void ProgramGL::setUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean t
     }
 }
 
-void ProgramGL::setUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+void ProgramGL::setUniformMatrix4x3fv(GLint location,
+                                      GLsizei count,
+                                      GLboolean transpose,
+                                      const GLfloat *value)
 {
     if (mFunctions->programUniformMatrix4x3fv != nullptr)
     {
@@ -688,7 +845,7 @@ bool ProgramGL::getUniformBlockMemberInfo(const std::string & /* memberUniformNa
 
     if (uniformIndex == GL_INVALID_INDEX)
     {
-        *memberInfoOut = sh::BlockMemberInfo::getDefaultBlockInfo();
+        *memberInfoOut = sh::kDefaultBlockMemberInfo;
         return false;
     }
 
@@ -717,7 +874,7 @@ bool ProgramGL::getShaderStorageBlockMemberInfo(const std::string & /* memberNam
 
     if (index == GL_INVALID_INDEX)
     {
-        *memberInfoOut = sh::BlockMemberInfo::getDefaultBlockInfo();
+        *memberInfoOut = sh::kDefaultBlockMemberInfo;
         return false;
     }
 
@@ -804,7 +961,6 @@ void ProgramGL::setPathFragmentInputGen(const std::string &inputName,
             return;
         }
     }
-
 }
 
 void ProgramGL::preLink()
@@ -857,7 +1013,7 @@ void ProgramGL::postLink()
     // Query the uniform information
     ASSERT(mUniformRealLocationMap.empty());
     const auto &uniformLocations = mState.getUniformLocations();
-    const auto &uniforms = mState.getUniforms();
+    const auto &uniforms         = mState.getUniforms();
     mUniformRealLocationMap.resize(uniformLocations.size(), GL_INVALID_INDEX);
     for (size_t uniformLocation = 0; uniformLocation < uniformLocations.size(); uniformLocation++)
     {
@@ -936,7 +1092,7 @@ void ProgramGL::postLink()
 
         PathRenderingFragmentInput baseElementInput;
         baseElementInput.mappedName = mappedName;
-        baseElementInput.location = queryResults[0];
+        baseElementInput.location   = queryResults[0];
         mPathRenderingFragmentInputs.push_back(std::move(baseElementInput));
 
         // If the input is an array it's denoted by [0] suffix on the variable
@@ -953,7 +1109,7 @@ void ProgramGL::postLink()
             {
                 PathRenderingFragmentInput arrayElementInput;
                 arrayElementInput.mappedName = mappedName + "[" + ToString(arrayIndex) + "]";
-                arrayElementInput.location = baseLocation + arrayIndex;
+                arrayElementInput.location   = baseLocation + arrayIndex;
                 mPathRenderingFragmentInputs.push_back(std::move(arrayElementInput));
             }
         }
@@ -1062,6 +1218,6 @@ angle::Result ProgramGL::syncState(const gl::Context *context,
         GLuint binding = static_cast<GLuint>(dirtyBit);
         setUniformBlockBinding(binding, mState.getUniformBlockBinding(binding));
     }
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 }  // namespace rx

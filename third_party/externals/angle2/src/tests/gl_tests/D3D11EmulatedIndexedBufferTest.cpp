@@ -16,6 +16,7 @@
 #include "libANGLE/renderer/d3d/d3d11/Renderer11.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/angle_test_instantiate.h"
+#include "util/EGLWindow.h"
 
 using namespace angle;
 
@@ -25,9 +26,8 @@ namespace
 class D3D11EmulatedIndexedBufferTest : public ANGLETest
 {
   protected:
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
         ASSERT_EQ(EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, GetParam().getRenderer());
 
         mContext                 = static_cast<gl::Context *>(getEGLWindow()->getContext());
@@ -38,7 +38,7 @@ class D3D11EmulatedIndexedBufferTest : public ANGLETest
         GLfloat testData[]  = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
         angle::Result error = mSourceBuffer->setData(nullptr, gl::BufferBinding::Array, testData,
                                                      sizeof(testData), gl::BufferUsage::StaticDraw);
-        ASSERT_EQ(angle::Result::Continue(), error);
+        ASSERT_EQ(angle::Result::Continue, error);
 
         mTranslatedAttribute.baseOffset            = 0;
         mTranslatedAttribute.usesFirstVertexOffset = false;
@@ -55,11 +55,7 @@ class D3D11EmulatedIndexedBufferTest : public ANGLETest
         }
     }
 
-    void TearDown() override
-    {
-        SafeDelete(mSourceBuffer);
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { SafeDelete(mSourceBuffer); }
 
     void createMappableCompareBufferFromEmulatedBuffer(ID3D11Buffer *sourceBuffer,
                                                        GLuint size,
@@ -117,7 +113,7 @@ class D3D11EmulatedIndexedBufferTest : public ANGLETest
         ID3D11Buffer *emulatedBuffer = nullptr;
         angle::Result error          = mSourceBuffer->getEmulatedIndexedBuffer(
             mContext, srcData, mTranslatedAttribute, 0, &emulatedBuffer);
-        ASSERT_EQ(angle::Result::Continue(), error);
+        ASSERT_EQ(angle::Result::Continue, error);
         ASSERT_TRUE(emulatedBuffer != nullptr);
         compareContents(emulatedBuffer);
     }
@@ -140,7 +136,7 @@ TEST_P(D3D11EmulatedIndexedBufferTest, TestNativeToExpandedUsingGLubyteIndices)
 {
     rx::SourceIndexData srcData = {nullptr, mubyteIndices.data(),
                                    static_cast<unsigned int>(mubyteIndices.size()),
-                                   GL_UNSIGNED_BYTE, false};
+                                   gl::DrawElementsType::UnsignedByte, false};
     emulateAndCompare(&srcData);
 }
 
@@ -150,7 +146,7 @@ TEST_P(D3D11EmulatedIndexedBufferTest, TestNativeToExpandedUsingGLushortIndices)
 {
     rx::SourceIndexData srcData = {nullptr, mushortIndices.data(),
                                    static_cast<unsigned int>(mushortIndices.size()),
-                                   GL_UNSIGNED_SHORT, false};
+                                   gl::DrawElementsType::UnsignedShort, false};
     emulateAndCompare(&srcData);
 }
 
@@ -159,8 +155,8 @@ TEST_P(D3D11EmulatedIndexedBufferTest, TestNativeToExpandedUsingGLushortIndices)
 TEST_P(D3D11EmulatedIndexedBufferTest, TestNativeToExpandedUsingGLuintIndices)
 {
     rx::SourceIndexData srcData = {nullptr, muintIndices.data(),
-                                   static_cast<unsigned int>(muintIndices.size()), GL_UNSIGNED_INT,
-                                   false};
+                                   static_cast<unsigned int>(muintIndices.size()),
+                                   gl::DrawElementsType::UnsignedInt, false};
     emulateAndCompare(&srcData);
 }
 
@@ -171,27 +167,22 @@ TEST_P(D3D11EmulatedIndexedBufferTest, TestSourceBufferRemainsUntouchedAfterExpa
     // Copy the original source buffer before any expand calls have been made
     gl::BufferState cleanSourceState;
     rx::Buffer11 *cleanSourceBuffer = new rx::Buffer11(cleanSourceState, mRenderer);
-    ASSERT_FALSE(
-        cleanSourceBuffer->copySubData(nullptr, mSourceBuffer, 0, 0, mSourceBuffer->getSize())
-            .isError());
+    ASSERT_EQ(angle::Result::Continue, cleanSourceBuffer->copySubData(nullptr, mSourceBuffer, 0, 0,
+                                                                      mSourceBuffer->getSize()));
 
     // Do a basic exanded and compare test.
     rx::SourceIndexData srcData = {nullptr, muintIndices.data(),
-                                   static_cast<unsigned int>(muintIndices.size()), GL_UNSIGNED_INT,
-                                   false};
+                                   static_cast<unsigned int>(muintIndices.size()),
+                                   gl::DrawElementsType::UnsignedInt, false};
     emulateAndCompare(&srcData);
 
     const uint8_t *sourceBufferMem = nullptr;
     const uint8_t *cleanBufferMem  = nullptr;
 
-    angle::Result error = mSourceBuffer->getData(mContext, &sourceBufferMem);
-    ASSERT_EQ(angle::Result::Continue(), error);
+    ASSERT_EQ(angle::Result::Continue, mSourceBuffer->getData(mContext, &sourceBufferMem));
+    ASSERT_EQ(angle::Result::Continue, cleanSourceBuffer->getData(mContext, &cleanBufferMem));
 
-    error = cleanSourceBuffer->getData(mContext, &cleanBufferMem);
-    ASSERT_FALSE(error.isError());
-
-    int result = memcmp(sourceBufferMem, cleanBufferMem, cleanSourceBuffer->getSize());
-    ASSERT_EQ(result, 0);
+    ASSERT_EQ(0, memcmp(sourceBufferMem, cleanBufferMem, cleanSourceBuffer->getSize()));
 
     SafeDelete(cleanSourceBuffer);
 }

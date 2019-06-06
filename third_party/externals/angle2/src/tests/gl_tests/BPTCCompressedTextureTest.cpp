@@ -21,7 +21,7 @@ const unsigned int kPixelTolerance = 1u;
 const std::array<GLubyte, 16> kBC7Data4x4 = {0x50, 0x1f, 0xfc, 0xf, 0x0,  0xf0, 0xe3, 0xe1,
                                              0xe1, 0xe1, 0xc1, 0xf, 0xfc, 0xc0, 0xf,  0xfc};
 
-};  // anonymous namespace
+}  // anonymous namespace
 
 class BPTCCompressedTextureTest : public ANGLETest
 {
@@ -36,33 +36,29 @@ class BPTCCompressedTextureTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
+        constexpr char kVS[] = R"(precision highp float;
+attribute vec4 position;
+varying vec2 texcoord;
 
-        const std::string vsSource =
-            R"(precision highp float;
-            attribute vec4 position;
-            varying vec2 texcoord;
+void main()
+{
+    gl_Position = position;
+    texcoord = (position.xy * 0.5) + 0.5;
+    texcoord.y = 1.0 - texcoord.y;
+})";
 
-            void main()
-            {
-                gl_Position = position;
-                texcoord = (position.xy * 0.5) + 0.5;
-                texcoord.y = 1.0 - texcoord.y;
-            })";
+        constexpr char kFS[] = R"(precision highp float;
+uniform sampler2D tex;
+varying vec2 texcoord;
 
-        const std::string textureFSSource =
-            R"(precision highp float;
-            uniform sampler2D tex;
-            varying vec2 texcoord;
+void main()
+{
+    gl_FragColor = texture2D(tex, texcoord);
+})";
 
-            void main()
-            {
-                gl_FragColor = texture2D(tex, texcoord);
-            })";
-
-        mTextureProgram = CompileProgram(vsSource, textureFSSource);
+        mTextureProgram = CompileProgram(kVS, kFS);
         if (mTextureProgram == 0)
         {
             FAIL() << "shader compilation failed.";
@@ -73,12 +69,7 @@ class BPTCCompressedTextureTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mTextureProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mTextureProgram); }
 
     void setupTextureParameters(GLuint texture)
     {
@@ -110,7 +101,7 @@ class BPTCCompressedTextureTestES3 : public BPTCCompressedTextureTest
 // Test sampling from a BC7 non-SRGB image.
 TEST_P(BPTCCompressedTextureTest, CompressedTexImageBC7)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -132,7 +123,7 @@ TEST_P(BPTCCompressedTextureTest, CompressedTexImageBC7)
 // Test sampling from a BC7 SRGB image.
 TEST_P(BPTCCompressedTextureTest, CompressedTexImageBC7SRGB)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -154,7 +145,7 @@ TEST_P(BPTCCompressedTextureTest, CompressedTexImageBC7SRGB)
 // Test that using the BC6H floating point formats doesn't crash.
 TEST_P(BPTCCompressedTextureTest, CompressedTexImageBC6HNoCrash)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -178,7 +169,7 @@ TEST_P(BPTCCompressedTextureTest, CompressedTexImageBC6HNoCrash)
 // Test texStorage2D with a BPTC format.
 TEST_P(BPTCCompressedTextureTestES3, CompressedTexStorage)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3);
 
@@ -203,7 +194,7 @@ TEST_P(BPTCCompressedTextureTestES3, CompressedTexStorage)
 // Test validation of glCompressedTexSubImage2D with BPTC formats
 TEST_P(BPTCCompressedTextureTest, CompressedTexSubImageValidation)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -236,7 +227,7 @@ TEST_P(BPTCCompressedTextureTest, CompressedTexSubImageValidation)
 // EXT_texture_compression_bptc, and not in the ARB variant.
 TEST_P(BPTCCompressedTextureTest, CopyTexImage2DDisallowed)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -249,7 +240,7 @@ TEST_P(BPTCCompressedTextureTest, CopyTexImage2DDisallowed)
 // EXT_texture_compression_bptc, and not in the ARB variant.
 TEST_P(BPTCCompressedTextureTest, CopyTexSubImage2DDisallowed)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -266,7 +257,7 @@ TEST_P(BPTCCompressedTextureTest, CopyTexSubImage2DDisallowed)
 // EXT_texture_compression_bptc, and not in the ARB variant.
 TEST_P(BPTCCompressedTextureTestES3, CopyTexSubImage3DDisallowed)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
@@ -281,7 +272,7 @@ TEST_P(BPTCCompressedTextureTestES3, CopyTexSubImage3DDisallowed)
 // Test uploading texture data from a PBO to a texture.
 TEST_P(BPTCCompressedTextureTestES3, PBOCompressedTexImage)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -307,7 +298,7 @@ TEST_P(BPTCCompressedTextureTestES3, PBOCompressedTexImage)
 // Test uploading texture data from a PBO to a texture allocated with texStorage2D.
 TEST_P(BPTCCompressedTextureTestES3, PBOCompressedTexStorage)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     setupTextureParameters(texture);
@@ -337,7 +328,7 @@ TEST_P(BPTCCompressedTextureTestES3, PBOCompressedTexStorage)
 // Test validation of glCompressedTexSubImage3D with BPTC formats
 TEST_P(BPTCCompressedTextureTestES3, CompressedTexSubImage3DValidation)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_bptc"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_bptc"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D_ARRAY, texture.get());

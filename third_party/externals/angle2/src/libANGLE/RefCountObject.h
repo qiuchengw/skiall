@@ -53,17 +53,14 @@ class RefCountObject : angle::NonCopyable
     mutable size_t mRefCount;
 };
 
-template <class ObjectType, typename ContextT, typename ErrorT>
+template <class ObjectType, typename ContextT, typename ErrorT = angle::Result>
 class BindingPointer
 {
   public:
     using ContextType = ContextT;
     using ErrorType   = ErrorT;
 
-    BindingPointer()
-        : mObject(nullptr)
-    {
-    }
+    BindingPointer() : mObject(nullptr) {}
 
     BindingPointer(ObjectType *object) : mObject(object)
     {
@@ -89,7 +86,8 @@ class BindingPointer
 
     virtual ~BindingPointer()
     {
-        // Objects have to be released before the resource manager is destroyed, so they must be explicitly cleaned up.
+        // Objects have to be released before the resource manager is destroyed, so they must be
+        // explicitly cleaned up.
         ASSERT(mObject == nullptr);
     }
 
@@ -104,7 +102,7 @@ class BindingPointer
         // Store the old pointer in a temporary so we can set the pointer before calling release.
         // Otherwise the object could still be referenced when its destructor is called.
         ObjectType *oldObject = mObject;
-        mObject = newObject;
+        mObject               = newObject;
         if (oldObject != nullptr)
         {
             reinterpret_cast<RefCountObject<ContextType, ErrorType> *>(oldObject)->release(context);
@@ -135,7 +133,7 @@ class Context;
 template <class ObjectType>
 class BindingPointer;
 
-using RefCountObjectNoID = angle::RefCountObject<Context, Error>;
+using RefCountObjectNoID = angle::RefCountObject<Context, angle::Result>;
 
 class RefCountObject : public gl::RefCountObjectNoID
 {
@@ -152,17 +150,15 @@ class RefCountObject : public gl::RefCountObjectNoID
 };
 
 template <class ObjectType>
-class BindingPointer : public angle::BindingPointer<ObjectType, Context, Error>
+class BindingPointer : public angle::BindingPointer<ObjectType, Context>
 {
   public:
-    using ContextType = typename angle::BindingPointer<ObjectType, Context, Error>::ContextType;
-    using ErrorType   = typename angle::BindingPointer<ObjectType, Context, Error>::ErrorType;
+    using ContextType = typename angle::BindingPointer<ObjectType, Context>::ContextType;
+    using ErrorType   = typename angle::BindingPointer<ObjectType, Context>::ErrorType;
 
     BindingPointer() {}
 
-    BindingPointer(ObjectType *object) : angle::BindingPointer<ObjectType, Context, Error>(object)
-    {
-    }
+    BindingPointer(ObjectType *object) : angle::BindingPointer<ObjectType, Context>(object) {}
 
     GLuint id() const
     {
@@ -178,13 +174,13 @@ class OffsetBindingPointer : public BindingPointer<ObjectType>
     using ContextType = typename BindingPointer<ObjectType>::ContextType;
     using ErrorType   = typename BindingPointer<ObjectType>::ErrorType;
 
-    OffsetBindingPointer() : mOffset(0), mSize(0) { }
+    OffsetBindingPointer() : mOffset(0), mSize(0) {}
 
     void set(const ContextType *context, ObjectType *newObject, GLintptr offset, GLsizeiptr size)
     {
         set(context, newObject);
         mOffset = offset;
-        mSize = size;
+        mSize   = size;
     }
 
     GLintptr getOffset() const { return mOffset; }
@@ -222,8 +218,7 @@ class SubjectBindingPointer : protected BindingPointer<SubjectT>, public angle::
   public:
     SubjectBindingPointer(angle::ObserverInterface *observer, angle::SubjectIndex index)
         : ObserverBindingBase(observer, index)
-    {
-    }
+    {}
     ~SubjectBindingPointer() {}
     SubjectBindingPointer(const SubjectBindingPointer &other) = default;
     SubjectBindingPointer &operator=(const SubjectBindingPointer &other) = default;
@@ -264,4 +259,4 @@ using BindingPointer = angle::BindingPointer<ObjectType, Display, Error>;
 
 }  // namespace egl
 
-#endif   // LIBANGLE_REFCOUNTOBJECT_H_
+#endif  // LIBANGLE_REFCOUNTOBJECT_H_

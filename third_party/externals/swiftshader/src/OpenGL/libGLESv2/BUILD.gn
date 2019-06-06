@@ -62,12 +62,14 @@ config("swiftshader_libGLESv2_private_config") {
 
 swiftshader_static_library("swiftshader_libGLESv2_static") {
   deps = [
+    "../../OpenGL/common:swiftshader_opengl_common",
     "../../OpenGL/compiler:swiftshader_opengl_compiler",
     "../../Reactor:swiftshader_reactor",
     "../../Renderer:swiftshader_renderer",
   ]
 
   sources = [
+    "../../Common/SharedLibrary.cpp",
     "Buffer.cpp",
     "Context.cpp",
     "Device.cpp",
@@ -122,13 +124,11 @@ swiftshader_shared_library("swiftshader_libGLESv2") {
     "libGLESv2.rc",
   ]
 
-  if (is_win) {
-    ldflags = [ "/DEF:" + rebase_path("libGLESv2.def", root_build_dir) ]
-  } else if (is_mac) {
+  if (is_mac) {
     ldflags = [ "-Wl,-install_name,@rpath/libswiftshader_libGLESv2.dylib" ]
   } else if (is_linux) {
-    ldflags =
-        [ "-Wl,--version-script=" + rebase_path("libGLESv2.lds", root_build_dir) ]
+    ldflags = [ "-Wl,--version-script=" +
+                rebase_path("libGLESv2.lds", root_build_dir) ]
   }
 
   configs = [ ":swiftshader_libGLESv2_private_config" ]

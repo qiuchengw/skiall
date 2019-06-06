@@ -24,8 +24,7 @@ Query9::Query9(Renderer9 *renderer, gl::QueryType type)
       mQueryFinished(false),
       mRenderer(renderer),
       mQuery(nullptr)
-{
-}
+{}
 
 Query9::~Query9()
 {
@@ -50,7 +49,7 @@ angle::Result Query9::begin(const gl::Context *context)
         ANGLE_TRY_HR(context9, result, "Failed to begin internal query");
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Query9::end(const gl::Context *context)
@@ -62,9 +61,9 @@ angle::Result Query9::end(const gl::Context *context)
     ASSERT(SUCCEEDED(result));
     ANGLE_TRY_HR(context9, result, "Failed to end internal query");
     mQueryFinished = false;
-    mResult = GL_FALSE;
+    mResult        = GL_FALSE;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Query9::queryCounter(const gl::Context *context)
@@ -87,7 +86,7 @@ angle::Result Query9::getResultBase(Context9 *context9, T *params)
 
     ASSERT(mQueryFinished);
     *params = static_cast<T>(mResult);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Query9::getResult(const gl::Context *context, GLint *params)
@@ -114,7 +113,7 @@ angle::Result Query9::isResultAvailable(const gl::Context *context, bool *availa
 {
     ANGLE_TRY(testQuery(GetImplAs<Context9>(context)));
     *available = mQueryFinished;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Query9::testQuery(Context9 *context9)
@@ -130,7 +129,7 @@ angle::Result Query9::testQuery(Context9 *context9)
             case gl::QueryType::AnySamplesConservative:
             {
                 DWORD numPixels = 0;
-                result = mQuery->GetData(&numPixels, sizeof(numPixels), D3DGETDATA_FLUSH);
+                result          = mQuery->GetData(&numPixels, sizeof(numPixels), D3DGETDATA_FLUSH);
                 if (result == S_OK)
                 {
                     mQueryFinished = true;
@@ -142,7 +141,7 @@ angle::Result Query9::testQuery(Context9 *context9)
             case gl::QueryType::CommandsCompleted:
             {
                 BOOL completed = FALSE;
-                result = mQuery->GetData(&completed, sizeof(completed), D3DGETDATA_FLUSH);
+                result         = mQuery->GetData(&completed, sizeof(completed), D3DGETDATA_FLUSH);
                 if (result == S_OK)
                 {
                     mQueryFinished = true;
@@ -171,7 +170,7 @@ angle::Result Query9::testQuery(Context9 *context9)
         }
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-}
+}  // namespace rx

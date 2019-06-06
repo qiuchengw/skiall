@@ -38,11 +38,11 @@ function rewrite_data_makefile {
 }
 
 # Rebuild the ICU data. 'make' has to be run twice because of
-# http://bugs.icu-project.org/trac/ticket/10570
+# https://unicode-org.atlassian.net/browse/ICU-10570
 function build_data {
   make clean
   make
-  sed -i 's/css3transform.res/root.res/' out/tmp/icudata.lst
+  sed -i 's/root_subset.res/root.res/' out/tmp/icudata.lst
   make
 }
 

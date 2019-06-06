@@ -26,11 +26,9 @@ class BuiltinVariableVertexIdTest : public ANGLETest
         setConfigDepthBits(24);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
-        const std::string vsSource =
+        constexpr char kVS[] =
             "#version 300 es\n"
             "precision highp float;\n"
             "in vec4 position;\n"
@@ -43,7 +41,7 @@ class BuiltinVariableVertexIdTest : public ANGLETest
             "    color = vec4(gl_VertexID != expectedID, gl_VertexID == expectedID, 0.0, 1.0);"
             "}\n";
 
-        const std::string fsSource =
+        constexpr char kFS[] =
             "#version 300 es\n"
             "precision highp float;\n"
             "in vec4 color;\n"
@@ -53,7 +51,7 @@ class BuiltinVariableVertexIdTest : public ANGLETest
             "    fragColor = color;\n"
             "}\n";
 
-        mProgram = CompileProgram(vsSource, fsSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mProgram);
 
         mPositionLocation = glGetAttribLocation(mProgram, "position");
@@ -61,13 +59,7 @@ class BuiltinVariableVertexIdTest : public ANGLETest
         mExpectedIdLocation = glGetAttribLocation(mProgram, "expectedID");
         ASSERT_NE(-1, mExpectedIdLocation);
 
-        static const float positions[] =
-        {
-             0.5,  0.5,
-            -0.5,  0.5,
-             0.5, -0.5,
-            -0.5, -0.5
-        };
+        static const float positions[] = {0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5};
         glGenBuffers(1, &mPositionBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, mPositionBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
@@ -75,14 +67,12 @@ class BuiltinVariableVertexIdTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mPositionBuffer);
         glDeleteBuffers(1, &mExpectedIdBuffer);
         glDeleteBuffers(1, &mIndexBuffer);
         glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
     }
 
     // Renders a primitive using the specified mode, each vertex color will
@@ -210,14 +200,12 @@ ANGLE_INSTANTIATE_TEST(BuiltinVariableVertexIdTest, ES3_D3D11(), ES3_OPENGL(), E
 class BuiltinVariableFragDepthClampingFloatRBOTest : public ANGLETest
 {
   protected:
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         // Writes a fixed detph value and green.
         // Section 15.2.3 of the GL 4.5 specification says that conversion is not
         // done but clamping is so the output depth should be in [0.0, 1.0]
-        const std::string depthFs =
+        constexpr char kFS[] =
             R"(#version 300 es
             precision highp float;
             layout(location = 0) out vec4 fragColor;
@@ -227,7 +215,7 @@ class BuiltinVariableFragDepthClampingFloatRBOTest : public ANGLETest
                 fragColor = vec4(0.0, 1.0, 0.0, 1.0);
             })";
 
-        mProgram = CompileProgram(essl3_shaders::vs::Simple(), depthFs);
+        mProgram = CompileProgram(essl3_shaders::vs::Simple(), kFS);
         ASSERT_NE(0u, mProgram);
 
         mDepthLocation = glGetUniformLocation(mProgram, "u_depth");
@@ -253,12 +241,7 @@ class BuiltinVariableFragDepthClampingFloatRBOTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     void CheckDepthWritten(float expectedDepth, float fsDepth)
     {

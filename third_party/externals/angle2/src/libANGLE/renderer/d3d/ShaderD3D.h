@@ -17,7 +17,7 @@ namespace angle
 {
 struct CompilerWorkaroundsD3D;
 struct WorkaroundsD3D;
-}
+}  // namespace angle
 
 namespace gl
 {
@@ -38,11 +38,10 @@ class ShaderD3D : public ShaderImpl
               const gl::Extensions &extensions);
     ~ShaderD3D() override;
 
-    // ShaderImpl implementation
-    ShCompileOptions prepareSourceAndReturnOptions(const gl::Context *context,
-                                                   std::stringstream *sourceStream,
-                                                   std::string *sourcePath) override;
-    bool postTranslateCompile(gl::ShCompilerInstance *compiler, std::string *infoLog) override;
+    std::shared_ptr<WaitableCompileEvent> compile(const gl::Context *context,
+                                                  gl::ShCompilerInstance *compilerInstance,
+                                                  ShCompileOptions options) override;
+
     std::string getDebugInfo() const override;
 
     // D3D-specific methods
@@ -56,6 +55,9 @@ class ShaderD3D : public ShaderImpl
 
     unsigned int getUniformBlockRegister(const std::string &blockName) const;
     unsigned int getShaderStorageBlockRegister(const std::string &blockName) const;
+    unsigned int getReadonlyImage2DRegisterIndex() const { return mReadonlyImage2DRegisterIndex; }
+    unsigned int getImage2DRegisterIndex() const { return mImage2DRegisterIndex; }
+    bool useImage2DFunction(const std::string &functionName) const;
     void appendDebugInfo(const std::string &info) const { mDebugInfo += info; }
 
     void generateWorkarounds(angle::CompilerWorkaroundsD3D *workarounds) const;
@@ -63,12 +65,14 @@ class ShaderD3D : public ShaderImpl
     bool usesMultipleRenderTargets() const { return mUsesMultipleRenderTargets; }
     bool usesFragColor() const { return mUsesFragColor; }
     bool usesFragData() const { return mUsesFragData; }
+    bool usesSecondaryColor() const { return mUsesSecondaryColor; }
     bool usesFragCoord() const { return mUsesFragCoord; }
     bool usesFrontFacing() const { return mUsesFrontFacing; }
     bool usesPointSize() const { return mUsesPointSize; }
     bool usesPointCoord() const { return mUsesPointCoord; }
     bool usesDepthRange() const { return mUsesDepthRange; }
     bool usesFragDepth() const { return mUsesFragDepth; }
+    bool usesVertexID() const { return mUsesVertexID; }
     bool usesViewID() const { return mUsesViewID; }
     bool hasANGLEMultiviewEnabled() const { return mHasANGLEMultiviewEnabled; }
 
@@ -78,6 +82,7 @@ class ShaderD3D : public ShaderImpl
     bool mUsesMultipleRenderTargets;
     bool mUsesFragColor;
     bool mUsesFragData;
+    bool mUsesSecondaryColor;
     bool mUsesFragCoord;
     bool mUsesFrontFacing;
     bool mUsesPointSize;
@@ -85,6 +90,7 @@ class ShaderD3D : public ShaderImpl
     bool mUsesDepthRange;
     bool mUsesFragDepth;
     bool mHasANGLEMultiviewEnabled;
+    bool mUsesVertexID;
     bool mUsesViewID;
     bool mUsesDiscardRewriting;
     bool mUsesNestedBreak;
@@ -95,6 +101,9 @@ class ShaderD3D : public ShaderImpl
     std::map<std::string, unsigned int> mUniformRegisterMap;
     std::map<std::string, unsigned int> mUniformBlockRegisterMap;
     std::map<std::string, unsigned int> mShaderStorageBlockRegisterMap;
+    unsigned int mReadonlyImage2DRegisterIndex;
+    unsigned int mImage2DRegisterIndex;
+    std::set<std::string> mUsedImage2DFunctionNames;
     ShCompileOptions mAdditionalOptions;
 };
 }  // namespace rx

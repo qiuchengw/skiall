@@ -21,10 +21,8 @@ class FramebufferRenderMipmapTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    virtual void SetUp()
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
         if (mProgram == 0)
         {
@@ -45,12 +43,7 @@ class FramebufferRenderMipmapTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    virtual void TearDown()
-    {
-        glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
-    }
+    void testTearDown() override { glDeleteProgram(mProgram); }
 
     GLuint mProgram;
     GLint mColorLocation;
@@ -61,7 +54,7 @@ class FramebufferRenderMipmapTest : public ANGLETest
 TEST_P(FramebufferRenderMipmapTest, Validation)
 {
     bool renderToMipmapSupported =
-        extensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
+        IsGLExtensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
 
     GLuint tex = 0;
     glGenTextures(1, &tex);
@@ -100,21 +93,17 @@ TEST_P(FramebufferRenderMipmapTest, Validation)
     glDeleteTextures(1, &tex);
 }
 
-// Render to various levels of a texture and check that they have the correct color data via ReadPixels
+// Render to various levels of a texture and check that they have the correct color data via
+// ReadPixels
 TEST_P(FramebufferRenderMipmapTest, RenderToMipmap)
 {
     bool renderToMipmapSupported =
-        extensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
+        IsGLExtensionEnabled("GL_OES_fbo_render_mipmap") || getClientMajorVersion() > 2;
     ANGLE_SKIP_TEST_IF(!renderToMipmapSupported);
 
-    const GLfloat levelColors[] =
-    {
-        1.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 1.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 1.0f,
-        0.0f, 1.0f, 1.0f, 1.0f,
+    const GLfloat levelColors[] = {
+        1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
     };
     const GLint testLevels = static_cast<GLint>(ArraySize(levelColors) / 4);
 
@@ -164,7 +153,8 @@ TEST_P(FramebufferRenderMipmapTest, RenderToMipmap)
     EXPECT_GL_NO_ERROR();
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
+// Use this to select which configurations (e.g. which renderer, which GLES major version) these
+// tests should be run against.
 ANGLE_INSTANTIATE_TEST(FramebufferRenderMipmapTest,
                        ES2_D3D9(),
                        ES2_D3D11(),

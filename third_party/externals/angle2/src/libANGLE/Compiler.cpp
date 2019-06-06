@@ -9,7 +9,7 @@
 #include "libANGLE/Compiler.h"
 
 #include "common/debug.h"
-#include "libANGLE/ContextState.h"
+#include "libANGLE/State.h"
 #include "libANGLE/renderer/CompilerImpl.h"
 #include "libANGLE/renderer/GLImplFactory.h"
 
@@ -47,7 +47,7 @@ ShShaderSpec SelectShaderSpec(GLint majorVersion, GLint minorVersion, bool isWeb
 
 }  // anonymous namespace
 
-Compiler::Compiler(rx::GLImplFactory *implFactory, const ContextState &state)
+Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     : mImplementation(implFactory->createCompiler()),
       mSpec(SelectShaderSpec(state.getClientMajorVersion(),
                              state.getClientMinorVersion(),
@@ -94,7 +94,10 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const ContextState &state)
 
     // OVR_multiview state
     mResources.OVR_multiview = extensions.multiview;
-    mResources.MaxViewsOVR   = extensions.maxViews;
+
+    // OVR_multiview2 state
+    mResources.OVR_multiview2 = extensions.multiview2;
+    mResources.MaxViewsOVR    = extensions.maxViews;
 
     // GLSL ES 3.0 constants
     mResources.MaxVertexOutputVectors  = caps.maxVertexOutputComponents / 4;
@@ -218,16 +221,13 @@ void Compiler::putInstance(ShCompilerInstance &&instance)
     }
 }
 
-ShCompilerInstance::ShCompilerInstance() : mHandle(nullptr)
-{
-}
+ShCompilerInstance::ShCompilerInstance() : mHandle(nullptr) {}
 
 ShCompilerInstance::ShCompilerInstance(ShHandle handle,
                                        ShShaderOutput outputType,
                                        ShaderType shaderType)
     : mHandle(handle), mOutputType(outputType), mShaderType(shaderType)
-{
-}
+{}
 
 ShCompilerInstance::~ShCompilerInstance()
 {

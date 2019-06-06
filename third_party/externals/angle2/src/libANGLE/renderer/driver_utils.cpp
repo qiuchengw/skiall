@@ -47,9 +47,7 @@ const uint32_t Kabylake[] = {0x5916, 0x5913, 0x5906, 0x5926, 0x5921, 0x5915, 0x5
 
 }  // anonymous namespace
 
-IntelDriverVersion::IntelDriverVersion(uint16_t lastPart) : mVersionPart(lastPart)
-{
-}
+IntelDriverVersion::IntelDriverVersion(uint16_t lastPart) : mVersionPart(lastPart) {}
 
 bool IntelDriverVersion::operator==(const IntelDriverVersion &version)
 {
@@ -129,6 +127,8 @@ const char *GetVendorString(uint32_t vendorId)
             return "Intel";
         case VENDOR_ID_QUALCOMM:
             return "Qualcomm";
+        case VENDOR_ID_ARM:
+            return "ARM";
         default:
             // TODO(jmadill): More vendor IDs.
             ASSERT(vendorId == 0xba5eba11);  // Mock vendor ID used for tests.

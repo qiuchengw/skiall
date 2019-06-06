@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <vector>
+#include <atomic>
 
 namespace rr
 {
@@ -53,7 +54,7 @@ namespace rr
 
 		virtual ~Nucleus();
 
-		Routine *acquireRoutine(const wchar_t *name, bool runOptimizations = true);
+		Routine *acquireRoutine(const char *name, bool runOptimizations = true);
 
 		static Value *allocateStackVariable(Type *type, int arraySize = 0);
 		static BasicBlock *createBasicBlock();
@@ -62,6 +63,26 @@ namespace rr
 
 		static void createFunction(Type *ReturnType, std::vector<Type*> &Params);
 		static Value *getArgument(unsigned int index);
+
+		// Coroutines
+		using CoroutineHandle = void*;
+
+		template <typename... ARGS>
+		using CoroutineBegin = CoroutineHandle(ARGS...);
+		using CoroutineAwait = bool(CoroutineHandle, void* yieldValue);
+		using CoroutineDestroy = void(CoroutineHandle);
+
+		enum CoroutineEntries
+		{
+			CoroutineEntryBegin = 0,
+			CoroutineEntryAwait,
+			CoroutineEntryDestroy,
+			CoroutineEntryCount
+		};
+
+		static void createCoroutine(Type *ReturnType, std::vector<Type*> &Params);
+		Routine *acquireCoroutine(const char *name, bool runOptimizations = true);
+		static void yield(Value*);
 
 		// Terminators
 		static void createRetVoid();
@@ -95,12 +116,29 @@ namespace rr
 		static Value *createNot(Value *V);
 
 		// Memory instructions
-		static Value *createLoad(Value *ptr, Type *type, bool isVolatile = false, unsigned int align = 0);
-		static Value *createStore(Value *value, Value *ptr, Type *type, bool isVolatile = false, unsigned int align = 0);
+		static Value *createLoad(Value *ptr, Type *type, bool isVolatile = false, unsigned int alignment = 0, bool atomic = false , std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createStore(Value *value, Value *ptr, Type *type, bool isVolatile = false, unsigned int aligment = 0, bool atomic = false, std::memory_order memoryOrder = std::memory_order_relaxed);
 		static Value *createGEP(Value *ptr, Type *type, Value *index, bool unsignedIndex);
 
+		// Scatter / Gather instructions
+		static Value *createGather(Value *base, Type *elementType, Value *offsets, Value *mask, unsigned int alignment);
+		static void createScatter(Value *base, Value *value, Value *offsets, Value *mask, unsigned int alignment);
+
+		// Barrier instructions
+		static void createFence(std::memory_order memoryOrder);
+
 		// Atomic instructions
-		static Value *createAtomicAdd(Value *ptr, Value *value);
+		static Value *createAtomicAdd(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicSub(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicAnd(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicOr(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicXor(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicMin(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicMax(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicUMin(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicUMax(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicExchange(Value *ptr, Value *value, std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createAtomicCompareExchange(Value *ptr, Value *value, Value *compare, std::memory_order memoryOrderEqual, std::memory_order memoryOrderUnequal);
 
 		// Cast/Conversion Operators
 		static Value *createTrunc(Value *V, Type *destType);

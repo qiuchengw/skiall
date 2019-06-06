@@ -166,7 +166,6 @@ TParseContext::TParseContext(TSymbolTable &symt,
                              TExtensionBehavior &ext,
                              sh::GLenum type,
                              ShShaderSpec spec,
-                             ShCompileOptions options,
                              bool checksPrecErrors,
                              TDiagnostics *diagnostics,
                              const ShBuiltInResources &resources)
@@ -174,7 +173,6 @@ TParseContext::TParseContext(TSymbolTable &symt,
       mDeferredNonEmptyDeclarationErrorCheck(false),
       mShaderType(type),
       mShaderSpec(spec),
-      mCompileOptions(options),
       mShaderVersion(100),
       mTreeRoot(nullptr),
       mLoopNestingLevel(0),
@@ -216,12 +214,16 @@ TParseContext::TParseContext(TSymbolTable &symt,
       mGeometryShaderInvocations(0),
       mGeometryShaderMaxVertices(-1),
       mMaxGeometryShaderInvocations(resources.MaxGeometryShaderInvocations),
-      mMaxGeometryShaderMaxVertices(resources.MaxGeometryOutputVertices)
-{
-}
+      mMaxGeometryShaderMaxVertices(resources.MaxGeometryOutputVertices),
+      mFunctionBodyNewScope(false)
+{}
 
-TParseContext::~TParseContext()
+TParseContext::~TParseContext() {}
+
+bool TParseContext::anyMultiviewExtensionAvailable()
 {
+    return isExtensionEnabled(TExtension::OVR_multiview) ||
+           isExtensionEnabled(TExtension::OVR_multiview2);
 }
 
 bool TParseContext::parseVectorFields(const TSourceLoc &line,
@@ -614,7 +616,7 @@ bool TParseContext::checkCanBeLValue(const TSourceLoc &line, const char *op, TIn
         return true;
     }
 
-    std::stringstream reasonStream;
+    std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
     reasonStream << "l-value required";
     if (!message.empty())
     {
@@ -905,7 +907,7 @@ bool TParseContext::checkIsNotOpaqueType(const TSourceLoc &line,
     {
         if (ContainsSampler(pType.userDef))
         {
-            std::stringstream reasonStream;
+            std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
             reasonStream << reason << " (structure contains a sampler)";
             std::string reasonStr = reasonStream.str();
             error(line, reasonStr.c_str(), getBasicString(pType.type));
@@ -1350,8 +1352,7 @@ void TParseContext::declarationQualifierErrorCheck(const sh::TQualifier qualifie
 
     // If multiview extension is enabled, "in" qualifier is allowed in the vertex shader in previous
     // parsing steps. So it needs to be checked here.
-    if (isExtensionEnabled(TExtension::OVR_multiview) && mShaderVersion < 300 &&
-        qualifier == EvqVertexIn)
+    if (anyMultiviewExtensionAvailable() && mShaderVersion < 300 && qualifier == EvqVertexIn)
     {
         error(location, "storage qualifier supported in GLSL ES 3.00 and above only", "in");
     }
@@ -2369,11 +2370,6 @@ void TParseContext::checkAtomicCounterOffsetDoesNotOverlap(bool forceAppend,
                                                            const TSourceLoc &loc,
                                                            TType *type)
 {
-    if (!IsAtomicCounter(type->getBasicType()))
-    {
-        return;
-    }
-
     const size_t size = type->isArray() ? kAtomicCounterArrayStride * type->getArraySizeProduct()
                                         : kAtomicCounterSize;
     TLayoutQualifier layoutQualifier = type->getLayoutQualifier();
@@ -2394,6 +2390,17 @@ void TParseContext::checkAtomicCounterOffsetDoesNotOverlap(bool forceAppend,
     }
     layoutQualifier.offset = offset;
     type->setLayoutQualifier(layoutQualifier);
+}
+
+void TParseContext::checkAtomicCounterOffsetAlignment(const TSourceLoc &location, const TType &type)
+{
+    TLayoutQualifier layoutQualifier = type.getLayoutQualifier();
+
+    // OpenGL ES 3.1 Table 6.5, Atomic counter offset must be a multiple of 4
+    if (layoutQualifier.offset % 4 != 0)
+    {
+        error(location, "Offset must be multiple of 4", "atomic counter");
+    }
 }
 
 void TParseContext::checkGeometryShaderInputAndSetArraySize(const TSourceLoc &location,
@@ -2440,32 +2447,6 @@ TIntermDeclaration *TParseContext::parseSingleDeclaration(
     const ImmutableString &identifier)
 {
     TType *type = new TType(publicType);
-    if ((mCompileOptions & SH_FLATTEN_PRAGMA_STDGL_INVARIANT_ALL) &&
-        mDirectiveHandler.pragma().stdgl.invariantAll)
-    {
-        TQualifier qualifier = type->getQualifier();
-
-        // The directive handler has already taken care of rejecting invalid uses of this pragma
-        // (for example, in ESSL 3.00 fragment shaders), so at this point, flatten it into all
-        // affected variable declarations:
-        //
-        // 1. Built-in special variables which are inputs to the fragment shader. (These are handled
-        // elsewhere, in TranslatorGLSL.)
-        //
-        // 2. Outputs from vertex shaders in ESSL 1.00 and 3.00 (EvqVaryingOut and EvqVertexOut). It
-        // is actually less likely that there will be bugs in the handling of ESSL 3.00 shaders, but
-        // the way this is currently implemented we have to enable this compiler option before
-        // parsing the shader and determining the shading language version it uses. If this were
-        // implemented as a post-pass, the workaround could be more targeted.
-        //
-        // 3. Inputs in ESSL 1.00 fragment shaders (EvqVaryingIn). This is somewhat in violation of
-        // the specification, but there are desktop OpenGL drivers that expect that this is the
-        // behavior of the #pragma when specified in ESSL 1.00 fragment shaders.
-        if (qualifier == EvqVaryingOut || qualifier == EvqVertexOut || qualifier == EvqVaryingIn)
-        {
-            type->setInvariant(true);
-        }
-    }
 
     checkGeometryShaderInputAndSetArraySize(identifierOrTypeLocation, identifier, type);
 
@@ -2498,7 +2479,12 @@ TIntermDeclaration *TParseContext::parseSingleDeclaration(
 
         checkCanBeDeclaredWithoutInitializer(identifierOrTypeLocation, identifier, type);
 
-        checkAtomicCounterOffsetDoesNotOverlap(false, identifierOrTypeLocation, type);
+        if (IsAtomicCounter(type->getBasicType()))
+        {
+            checkAtomicCounterOffsetDoesNotOverlap(false, identifierOrTypeLocation, type);
+
+            checkAtomicCounterOffsetAlignment(identifierOrTypeLocation, *type);
+        }
 
         TVariable *variable = nullptr;
         if (declareVariable(identifierOrTypeLocation, identifier, type, &variable))
@@ -2540,7 +2526,12 @@ TIntermDeclaration *TParseContext::parseSingleArrayDeclaration(
 
     checkCanBeDeclaredWithoutInitializer(identifierLocation, identifier, arrayType);
 
-    checkAtomicCounterOffsetDoesNotOverlap(false, identifierLocation, arrayType);
+    if (IsAtomicCounter(arrayType->getBasicType()))
+    {
+        checkAtomicCounterOffsetDoesNotOverlap(false, identifierLocation, arrayType);
+
+        checkAtomicCounterOffsetAlignment(identifierLocation, *arrayType);
+    }
 
     TIntermDeclaration *declaration = new TIntermDeclaration();
     declaration->setLine(identifierLocation);
@@ -2698,7 +2689,12 @@ void TParseContext::parseDeclarator(TPublicType &publicType,
 
     checkCanBeDeclaredWithoutInitializer(identifierLocation, identifier, type);
 
-    checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, type);
+    if (IsAtomicCounter(type->getBasicType()))
+    {
+        checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, type);
+
+        checkAtomicCounterOffsetAlignment(identifierLocation, *type);
+    }
 
     TVariable *variable = nullptr;
     if (declareVariable(identifierLocation, identifier, type, &variable))
@@ -2735,7 +2731,12 @@ void TParseContext::parseArrayDeclarator(TPublicType &elementType,
 
         checkCanBeDeclaredWithoutInitializer(identifierLocation, identifier, arrayType);
 
-        checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, arrayType);
+        if (IsAtomicCounter(arrayType->getBasicType()))
+        {
+            checkAtomicCounterOffsetDoesNotOverlap(true, identifierLocation, arrayType);
+
+            checkAtomicCounterOffsetAlignment(identifierLocation, *arrayType);
+        }
 
         TVariable *variable = nullptr;
         if (declareVariable(identifierLocation, identifier, arrayType, &variable))
@@ -3069,7 +3070,7 @@ void TParseContext::parseGlobalLayoutQualifier(const TTypeQualifierBuilder &type
                 if (mComputeShaderLocalSize[i] < 1 ||
                     mComputeShaderLocalSize[i] > maxComputeWorkGroupSizeValue)
                 {
-                    std::stringstream reasonStream;
+                    std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
                     reasonStream << "invalid value: Value must be at least 1 and no greater than "
                                  << maxComputeWorkGroupSizeValue;
                     const std::string &reason = reasonStream.str();
@@ -3109,8 +3110,7 @@ void TParseContext::parseGlobalLayoutQualifier(const TTypeQualifierBuilder &type
             return;
         }
     }
-    else if (isExtensionEnabled(TExtension::OVR_multiview) &&
-             typeQualifier.qualifier == EvqVertexIn)
+    else if (anyMultiviewExtensionAvailable() && typeQualifier.qualifier == EvqVertexIn)
     {
         // This error is only specified in WebGL, but tightens unspecified behavior in the native
         // specification.
@@ -3263,6 +3263,13 @@ TIntermFunctionDefinition *TParseContext::addFunctionDefinition(
     TIntermBlock *functionBody,
     const TSourceLoc &location)
 {
+    // Undo push at end of parseFunctionDefinitionHeader() below for ESSL1.00 case
+    if (mFunctionBodyNewScope)
+    {
+        mFunctionBodyNewScope = false;
+        symbolTable.pop();
+    }
+
     // Check that non-void functions have at least one return statement.
     if (mCurrentFunctionType->getBasicType() != EbtVoid && !mFunctionReturnsValue)
     {
@@ -3302,6 +3309,13 @@ void TParseContext::parseFunctionDefinitionHeader(const TSourceLoc &location,
 
     *prototypeOut = createPrototypeNodeFromFunction(*function, location, true);
     setLoopNestingLevel(0);
+
+    // ESSL 1.00 spec allows for variable in function body to redefine parameter
+    if (IsSpecWithFunctionBodyNewScope(mShaderSpec, mShaderVersion))
+    {
+        mFunctionBodyNewScope = true;
+        symbolTable.push();
+    }
 }
 
 TFunction *TParseContext::parseFunctionDeclarator(const TSourceLoc &location, TFunction *function)
@@ -3894,7 +3908,7 @@ void TParseContext::checkIsBelowStructNestingLimit(const TSourceLoc &line, const
     // one to the field's struct nesting.
     if (1 + field.type()->getDeepestStructNesting() > kWebGLMaxStructNesting)
     {
-        std::stringstream reasonStream;
+        std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
         if (field.type()->getStruct()->symbolType() == SymbolType::Empty)
         {
             // This may happen in case there are nested struct definitions. While they are also
@@ -4088,7 +4102,7 @@ int TParseContext::checkIndexLessThan(bool outOfRangeIndexIsError,
     ASSERT(index >= 0);
     if (index >= arraySize)
     {
-        std::stringstream reasonStream;
+        std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
         reasonStream << reason << " '" << index << "'";
         std::string token = reasonStream.str();
         outOfRangeError(outOfRangeIndexIsError, location, reason, "[]");
@@ -4390,7 +4404,7 @@ void TParseContext::parseLocalSize(const ImmutableString &qualifierType,
     checkLayoutQualifierSupported(qualifierTypeLine, qualifierType, 310);
     if (intValue < 1)
     {
-        std::stringstream reasonStream;
+        std::stringstream reasonStream = sh::InitializeStream<std::stringstream>();
         reasonStream << "out of range: " << getWorkGroupSizeString(index) << " must be positive";
         std::string reason = reasonStream.str();
         error(intValueLine, reason.c_str(), intValueString.c_str());
@@ -4538,7 +4552,9 @@ TLayoutQualifier TParseContext::parseLayoutQualifier(const ImmutableString &qual
     }
     else if (qualifierType == "num_views" && mShaderType == GL_VERTEX_SHADER)
     {
-        if (checkCanUseExtension(qualifierTypeLine, TExtension::OVR_multiview))
+        if (checkCanUseOneOfExtensions(
+                qualifierTypeLine, std::array<TExtension, 2u>{
+                                       {TExtension::OVR_multiview, TExtension::OVR_multiview2}}))
         {
             parseNumViews(intValue, intValueLine, intValueString, &qualifier.numViews);
         }
@@ -4600,7 +4616,7 @@ TStorageQualifierWrapper *TParseContext::parseInQualifier(const TSourceLoc &loc)
     {
         case GL_VERTEX_SHADER:
         {
-            if (mShaderVersion < 300 && !isExtensionEnabled(TExtension::OVR_multiview))
+            if (mShaderVersion < 300 && !anyMultiviewExtensionAvailable())
             {
                 error(loc, "storage qualifier supported in GLSL ES 3.00 and above only", "in");
             }
@@ -4962,7 +4978,7 @@ TIntermTyped *TParseContext::createUnaryMath(TOperator op,
         case EOpPositive:
             if (child->getBasicType() == EbtStruct || child->isInterfaceBlock() ||
                 child->getBasicType() == EbtBool || child->isArray() ||
-                IsOpaqueType(child->getBasicType()))
+                child->getBasicType() == EbtVoid || IsOpaqueType(child->getBasicType()))
             {
                 unaryOpError(loc, GetOperatorString(op), child->getType());
                 return nullptr;
@@ -5675,7 +5691,7 @@ void TParseContext::checkTextureOffsetConst(TIntermAggregate *functionCall)
                 int offsetValue = values[i].getIConst();
                 if (offsetValue > maxOffsetValue || offsetValue < minOffsetValue)
                 {
-                    std::stringstream tokenStream;
+                    std::stringstream tokenStream = sh::InitializeStream<std::stringstream>();
                     tokenStream << offsetValue;
                     std::string token = tokenStream.str();
                     error(offset->getLine(), "Texture offset value out of valid range",
@@ -5851,6 +5867,7 @@ TIntermTyped *TParseContext::addMethod(TFunctionLookup *fnCall, const TSourceLoc
     else
     {
         TIntermUnary *node = new TIntermUnary(EOpArrayLength, thisNode, nullptr);
+        markStaticReadIfSymbol(thisNode);
         node->setLine(loc);
         return node->fold(mDiagnostics);
     }

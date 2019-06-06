@@ -1,8 +1,12 @@
-/********************************************************************
+/*************************************************************************
+ *   © 2016 and later: Unicode, Inc. and others.
+ *   License & terms of use: http://www.unicode.org/copyright.html#License
+ *************************************************************************
+ *************************************************************************
  * COPYRIGHT:
  * Copyright (c) 1999-2003, International Business Machines Corporation and
  * others. All Rights Reserved.
- ********************************************************************/
+ *************************************************************************/
 
 #include "unicode/unistr.h"
 #include "unicode/calendar.h"
@@ -10,6 +14,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util.h"
+
+using namespace icu;
 
 /**
  * If the ID supplied to TimeZone is not a valid system ID,

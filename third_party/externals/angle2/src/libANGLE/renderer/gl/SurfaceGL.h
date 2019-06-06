@@ -26,11 +26,8 @@ class SurfaceGL : public SurfaceImpl
 
     angle::Result initializeContents(const gl::Context *context,
                                      const gl::ImageIndex &imageIndex) override;
-
-    virtual egl::Error makeCurrent() = 0;
-    virtual egl::Error unMakeCurrent();
 };
 
-}
+}  // namespace rx
 
-#endif // LIBANGLE_RENDERER_GL_SURFACEGL_H_
+#endif  // LIBANGLE_RENDERER_GL_SURFACEGL_H_

@@ -16,6 +16,8 @@
 #define VK_BUFFER_VIEW_HPP_
 
 #include "VkObject.hpp"
+#include "VkFormat.h"
+#include "VkImageView.hpp"
 
 namespace vk
 {
@@ -23,18 +25,19 @@ namespace vk
 class BufferView : public Object<BufferView, VkBufferView>
 {
 public:
-	BufferView(const VkBufferViewCreateInfo* pCreateInfo, void* mem) :
-		buffer(pCreateInfo->buffer), format(pCreateInfo->format), offset(pCreateInfo->offset), range(pCreateInfo->range)
-	{
-	}
-
-	~BufferView() = delete;
+	BufferView(const VkBufferViewCreateInfo* pCreateInfo, void* mem);
 
 	static size_t ComputeRequiredAllocationSize(const VkBufferViewCreateInfo* pCreateInfo)
 	{
 		return 0;
 	}
 
+	void *getPointer() const;
+	uint32_t getElementCount() const { return range / Format(format).bytes(); }
+	uint32_t getRangeInBytes() const { return range; }
+	VkFormat getFormat() const { return format; }
+
+	const uint32_t id = ImageView::nextID++;	// ID space for sampling function cache, shared with imageviews
 private:
 	VkBuffer     buffer;
 	VkFormat     format;
@@ -44,7 +47,7 @@ private:
 
 static inline BufferView* Cast(VkBufferView object)
 {
-	return reinterpret_cast<BufferView*>(object);
+	return reinterpret_cast<BufferView*>(object.get());
 }
 
 } // namespace vk

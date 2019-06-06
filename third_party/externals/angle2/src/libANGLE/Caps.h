@@ -23,8 +23,6 @@ namespace gl
 
 struct Extensions;
 
-typedef std::set<GLuint> SupportedSampleSet;
-
 struct TextureCaps
 {
     TextureCaps();
@@ -85,9 +83,14 @@ void InitMinimumTextureCapsMap(const Version &clientVersion,
                                const Extensions &extensions,
                                TextureCapsMap *capsMap);
 
+// Returns true if all the formats required to support GL_CHROMIUM_compressed_texture_etc are
+// present. Does not determine if they are natively supported without decompression.
+bool DetermineCompressedTextureETCSupport(const TextureCapsMap &textureCaps);
+
 struct Extensions
 {
     Extensions();
+    Extensions(const Extensions &other);
 
     // Generate a vector of supported extension strings
     std::vector<std::string> getStrings() const;
@@ -111,6 +114,9 @@ struct Extensions
     // GL_EXT_texture_norm16
     // GL_EXT_texture_compression_bptc
     void setTextureExtensionSupport(const TextureCapsMap &textureCaps);
+
+    // indicate if any depth texture extension is available
+    bool depthTextureAny() const { return (depthTextureANGLE || depthTextureOES); }
 
     // ES2 Extension support
 
@@ -220,13 +226,23 @@ struct Extensions
     // OES_compressed_EAC_RG11_signed_texture
     bool compressedEACRG11SignedTexture;
 
+    // GL_CHROMIUM_compressed_texture_etc
+    // ONLY exposed if ETC texture formats are natively supported without decompression
+    // Backends should enable this extension explicitly. It is not enabled with
+    // setTextureExtensionSupport, use DetermineCompressedTextureETCSupport to check if all of the
+    // individual formats required to support this extension are available.
+    bool compressedTextureETC;
+
     // GL_EXT_sRGB
     // Implies that TextureCaps for GL_SRGB8_ALPHA8 and GL_SRGB8 exist
     // TODO: Don't advertise this extension in ES3
     bool sRGB;
 
     // GL_ANGLE_depth_texture
-    bool depthTextures;
+    bool depthTextureANGLE;
+
+    // OES_depth_texture
+    bool depthTextureOES;
 
     // GL_OES_depth32
     // Allows DEPTH_COMPONENT32_OES as a valid Renderbuffer format.
@@ -272,7 +288,11 @@ struct Extensions
     bool framebufferMultisample;
 
     // GL_ANGLE_instanced_arrays
-    bool instancedArrays;
+    bool instancedArraysANGLE;
+    // GL_EXT_instanced_arrays
+    bool instancedArraysEXT;
+    // Any version of the instanced arrays extension
+    bool instancedArraysAny() const { return (instancedArraysANGLE || instancedArraysEXT); }
 
     // GL_ANGLE_pack_reverse_row_order
     bool packReverseRowOrder;
@@ -286,9 +306,12 @@ struct Extensions
     // GL_EXT_frag_depth
     bool fragDepth;
 
-    // ANGLE_multiview
+    // OVR_multiview
     bool multiview;
     GLuint maxViews;
+
+    // OVR_multiview2
+    bool multiview2;
 
     // GL_ANGLE_texture_usage
     bool textureUsage;
@@ -313,6 +336,21 @@ struct Extensions
 
     // GL_OES_EGL_image_external_essl3
     bool eglImageExternalEssl3;
+
+    // GL_OES_EGL_sync
+    bool eglSync;
+
+    // GL_EXT_memory_object
+    bool memoryObject;
+
+    // GL_EXT_memory_object_fd
+    bool memoryObjectFd;
+
+    // GL_EXT_semaphore
+    bool semaphore;
+
+    // GL_EXT_semaphore_fd
+    bool semaphoreFd;
 
     // NV_EGL_stream_consumer_external
     bool eglStreamConsumerExternal;
@@ -447,6 +485,9 @@ struct Extensions
     bool blendFuncExtended;
     GLuint maxDualSourceDrawBuffers;
 
+    // GL_EXT_float_blend
+    bool floatBlend;
+
     // GL_ANGLE_memory_size
     bool memorySize;
 
@@ -455,6 +496,12 @@ struct Extensions
 
     // GL_ANGLE_multi_draw
     bool multiDraw;
+
+    // GL_ANGLE_provoking_vertex
+    bool provokingVertex = false;
+
+    // GL_CHROMIUM_lose_context
+    bool loseContextCHROMIUM = false;
 };
 
 struct ExtensionInfo
@@ -495,6 +542,12 @@ struct Limitations
 
     // D3D9 does not support flexible varying register packing.
     bool noFlexibleVaryingPacking;
+
+    // D3D does not support having multiple transform feedback outputs go to the same buffer.
+    bool noDoubleBoundTransformFeedbackBuffers;
+
+    // D3D does not support vertex attribute aliasing
+    bool noVertexAttributeAliasing;
 };
 
 struct TypePrecision
@@ -653,6 +706,8 @@ struct Caps
     GLuint maxGeometryTotalOutputComponents;
     GLuint maxGeometryShaderInvocations;
 
+    GLuint subPixelBits;
+
     // GLES1 emulation: Caps for ES 1.1. Taken from Table 6.20 / 6.22 in the OpenGL ES 1.1 spec.
     GLuint maxMultitextureUnits;
     GLuint maxClipPlanes;
@@ -668,7 +723,7 @@ struct Caps
 };
 
 Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensions);
-}
+}  // namespace gl
 
 namespace egl
 {
@@ -769,6 +824,12 @@ struct DisplayExtensions
     // EGL_ANGLE_stream_producer_d3d_texture
     bool streamProducerD3DTexture;
 
+    // EGL_KHR_fence_sync
+    bool fenceSync;
+
+    // EGL_KHR_wait_sync
+    bool waitSync;
+
     // EGL_ANGLE_create_context_webgl_compatibility
     bool createContextWebGLCompatibility;
 
@@ -816,6 +877,15 @@ struct DisplayExtensions
 
     // EGL_ANDROID_get_frame_timestamps
     bool getFrameTimestamps;
+
+    // EGL_ANDROID_recordable
+    bool recordable;
+
+    // EGL_ANGLE_power_preference
+    bool powerPreference;
+
+    // EGL_ANGLE_feature_control
+    bool featureControlANGLE;
 };
 
 struct DeviceExtensions

@@ -31,14 +31,31 @@ bool IsInContainer(const HaystackT &haystack, const NeedleT &needle)
 
 using SubjectIndex = size_t;
 
+// Messages are used to distinguish different Subject events that get sent to a single Observer.
+// It could be possible to improve the handling by using different callback functions instead
+// of a single handler function. But in some cases we want to share a single binding between
+// Observer and Subject and handle different types of events.
 enum class SubjectMessage
 {
-    CONTENTS_CHANGED,
-    STORAGE_CHANGED,
-    BINDING_CHANGED,
-    DEPENDENT_DIRTY_BITS,
-    RESOURCE_MAPPED,
-    RESOURCE_UNMAPPED,
+    // Used by the VertexArray class to notify a binding count change might need to update the
+    // validation cache.
+    BindingChanged,
+
+    // Only the contents (pixels, bytes, etc) changed in this Subject. Rather than the storage for
+    // the subject.
+    ContentsChanged,
+
+    // Used by Samplers, Textures and Framebuffers to indicate to the Observer (Context) that it
+    // will need to call syncState.
+    DirtyBitsFlagged,
+
+    // Generic state change message. Used in multiple places.
+    SubjectChanged,
+
+    // Special events passed from Buffers, through VertexArrays into the Context to indicate a bound
+    // Buffer is now mapped.
+    SubjectMapped,
+    SubjectUnmapped,
 };
 
 // The observing class inherits from this interface class.
@@ -56,8 +73,7 @@ class ObserverBindingBase
   public:
     ObserverBindingBase(ObserverInterface *observer, SubjectIndex subjectIndex)
         : mObserver(observer), mIndex(subjectIndex)
-    {
-    }
+    {}
     virtual ~ObserverBindingBase() {}
 
     ObserverInterface *getObserver() const { return mObserver; }
@@ -94,7 +110,6 @@ class Subject : NonCopyable
     }
 
   private:
-
     // Keep a short list of observers so we can allocate/free them quickly. But since we support
     // unlimited bindings, have a spill-over list of that uses dynamic allocation.
     static constexpr size_t kMaxFixedObservers = 8;
@@ -117,7 +132,9 @@ class ObserverBinding final : public ObserverBindingBase
     void onStateChange(const gl::Context *context, SubjectMessage message) const;
     void onSubjectReset() override;
 
-    const Subject *getSubject() const;
+    ANGLE_INLINE const Subject *getSubject() const { return mSubject; }
+
+    ANGLE_INLINE void assignSubject(Subject *subject) { mSubject = subject; }
 
   private:
     Subject *mSubject;

@@ -92,7 +92,7 @@ int32_t FontHeaderTable::GlyphDataFormat() {
 
 FontHeaderTable::FontHeaderTable(Header* header, ReadableFontData* data)
     : Table(header, data) {
-  IntegerList checksum_ranges;
+  std::vector<int32_t> checksum_ranges;
   checksum_ranges.push_back(0);
   checksum_ranges.push_back(Offset::kCheckSumAdjustment);
   checksum_ranges.push_back(Offset::kMagicNumber);
@@ -239,7 +239,10 @@ void FontHeaderTable::Builder::SetFontDirectionHint(int32_t hint) {
 }
 
 int32_t FontHeaderTable::Builder::IndexToLocFormat() {
-  return down_cast<FontHeaderTable*>(GetTable())->IndexToLocFormat();
+  Table* table = GetTable();
+  if (!table)
+    return IndexToLocFormat::kInvalidOffset;
+  return down_cast<FontHeaderTable*>(table)->IndexToLocFormat();
 }
 
 void FontHeaderTable::Builder::SetIndexToLocFormat(int32_t format) {

@@ -7,18 +7,22 @@
 #ifndef SAMPLE_UTIL_SAMPLE_APPLICATION_H
 #define SAMPLE_UTIL_SAMPLE_APPLICATION_H
 
+#include <stdint.h>
 #include <list>
 #include <memory>
-#include <stdint.h>
 #include <string>
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-#include "OSWindow.h"
-#include "Timer.h"
+#include "util/EGLPlatformParameters.h"
+#include "util/OSWindow.h"
+#include "util/Timer.h"
+#include "util/egl_loader_autogen.h"
 
 class EGLWindow;
+
+namespace angle
+{
+class Library;
+}  // namespace angle
 
 class SampleApplication
 {
@@ -58,8 +62,13 @@ class SampleApplication
     bool mRunning;
 
     std::unique_ptr<Timer> mTimer;
-    std::unique_ptr<EGLWindow> mEGLWindow;
-    std::unique_ptr<OSWindow> mOSWindow;
+    EGLWindow *mEGLWindow;
+    OSWindow *mOSWindow;
+
+    EGLPlatformParameters mPlatformParams;
+
+    // Handle to the entry point binding library.
+    std::unique_ptr<angle::Library> mEntryPointsLib;
 };
 
-#endif // SAMPLE_UTIL_SAMPLE_APPLICATION_H
+#endif  // SAMPLE_UTIL_SAMPLE_APPLICATION_H

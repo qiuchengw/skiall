@@ -37,8 +37,7 @@ class DeclareStructTypesTraverser : public TIntermTraverser
   public:
     explicit DeclareStructTypesTraverser(TOutputVulkanGLSL *outputVulkanGLSL)
         : TIntermTraverser(true, false, false), mOutputVulkanGLSL(outputVulkanGLSL)
-    {
-    }
+    {}
 
     bool visitDeclaration(Visit visit, TIntermDeclaration *node) override
     {
@@ -89,8 +88,7 @@ class DeclareDefaultUniformsTraverser : public TIntermTraverser
           mHashFunction(hashFunction),
           mNameMap(nameMap),
           mInDefaultUniform(false)
-    {
-    }
+    {}
 
     bool visitDeclaration(Visit visit, TIntermDeclaration *node) override
     {
@@ -101,7 +99,8 @@ class DeclareDefaultUniformsTraverser : public TIntermTraverser
 
         TIntermTyped *variable = sequence.front()->getAsTyped();
         const TType &type      = variable->getType();
-        bool isUniform = (type.getQualifier() == EvqUniform) && !IsOpaqueType(type.getBasicType());
+        bool isUniform         = type.getQualifier() == EvqUniform && !type.isInterfaceBlock() &&
+                         !IsOpaqueType(type.getBasicType());
 
         if (visit == PreVisit)
         {
@@ -150,7 +149,7 @@ class DeclareDefaultUniformsTraverser : public TIntermTraverser
     bool mInDefaultUniform;
 };
 
-constexpr ImmutableString kFlippedPointCoordName = ImmutableString("flippedPointCoord");
+constexpr ImmutableString kFlippedPointCoordName    = ImmutableString("flippedPointCoord");
 constexpr ImmutableString kFlippedFragCoordName     = ImmutableString("flippedFragCoord");
 constexpr ImmutableString kEmulatedDepthRangeParams = ImmutableString("ANGLEDepthRangeParams");
 
@@ -313,6 +312,15 @@ void AppendVertexShaderDepthCorrectionToMain(TIntermBlock *root, TSymbolTable *s
     RunAtTheEndOfShader(root, assignment, symbolTable);
 }
 
+void AppendVertexShaderTransformFeedbackOutputToMain(TIntermBlock *root, TSymbolTable *symbolTable)
+{
+    TVariable *xfbPlaceholder = new TVariable(symbolTable, ImmutableString("@@ XFB-OUT @@"),
+                                              new TType(), SymbolType::AngleInternal);
+
+    // Append the assignment as a statement at the end of the shader.
+    RunAtTheEndOfShader(root, new TIntermSymbol(xfbPlaceholder), symbolTable);
+}
+
 // The AddDriverUniformsToShader operation adds an internal uniform block to a shader. The driver
 // block is used to implement Vulkan-specific features and workarounds. Returns the driver uniforms
 // variable.
@@ -347,8 +355,12 @@ const TVariable *AddDriverUniformsToShader(TIntermBlock *root, TSymbolTable *sym
     TFieldList *driverFieldList = new TFieldList;
 
     const std::array<TType *, kNumDriverUniforms> kDriverUniformTypes = {{
-        new TType(EbtFloat, 4), new TType(EbtFloat), new TType(EbtFloat), new TType(EbtFloat),
-        new TType(EbtFloat), emulatedDepthRangeType,
+        new TType(EbtFloat, 4),
+        new TType(EbtFloat),
+        new TType(EbtFloat),
+        new TType(EbtFloat),
+        new TType(EbtFloat),
+        emulatedDepthRangeType,
     }};
 
     for (size_t uniformIndex = 0; uniformIndex < kNumDriverUniforms; ++uniformIndex)
@@ -620,8 +632,7 @@ void AddLineSegmentRasterizationEmulation(TInfoSinkBase &sink,
 
 TranslatorVulkan::TranslatorVulkan(sh::GLenum type, ShShaderSpec spec)
     : TCompiler(type, spec, SH_GLSL_450_CORE_OUTPUT)
-{
-}
+{}
 
 void TranslatorVulkan::translate(TIntermBlock *root,
                                  ShCompileOptions compileOptions,
@@ -666,7 +677,7 @@ void TranslatorVulkan::translate(TIntermBlock *root,
 
     if (defaultUniformCount > 0)
     {
-        sink << "\nlayout(@@ DEFAULT-UNIFORMS-SET-BINDING @@) uniform defaultUniforms\n{\n";
+        sink << "\n@@ LAYOUT-defaultUniforms(std140) @@ uniform defaultUniforms\n{\n";
 
         DeclareDefaultUniformsTraverser defaultTraverser(&sink, getHashFunction(), &getNameMap());
         root->traverse(&defaultTraverser);
@@ -758,6 +769,12 @@ void TranslatorVulkan::translate(TIntermBlock *root,
         ASSERT(getShaderType() == GL_VERTEX_SHADER);
 
         AddANGLEPositionVarying(root, &getSymbolTable());
+
+        // Add a macro to declare transform feedback buffers.
+        sink << "@@ XFB-DECL @@\n\n";
+
+        // Append a macro for transform feedback substitution prior to modifying depth.
+        AppendVertexShaderTransformFeedbackOutputToMain(root, &getSymbolTable());
 
         // Append depth range translation to main.
         AppendVertexShaderDepthCorrectionToMain(root, &getSymbolTable());

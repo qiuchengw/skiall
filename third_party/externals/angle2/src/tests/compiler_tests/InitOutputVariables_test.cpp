@@ -158,8 +158,7 @@ class FindStructByName final : public TIntermTraverser
   public:
     FindStructByName(const ImmutableString &structName)
         : TIntermTraverser(true, false, false), mStructName(structName), mStructure(nullptr)
-    {
-    }
+    {}
 
     void visitSymbol(TIntermSymbol *symbol) override
     {
@@ -177,7 +176,7 @@ class FindStructByName final : public TIntermTraverser
         }
     }
 
-    bool isStructureFound() const { return mStructure != nullptr; };
+    bool isStructureFound() const { return mStructure != nullptr; }
     const TStructure *getStructure() const { return mStructure; }
 
   private:

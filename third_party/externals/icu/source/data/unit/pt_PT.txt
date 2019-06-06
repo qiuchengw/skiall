@@ -1,13 +1,7 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/pt_PT.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 pt_PT{
-    Version{"2.1.19.79"}
+    Version{"2.1.44.9"}
     units{
         acceleration{
             g-force{
@@ -26,6 +20,19 @@ pt_PT{
                 dnam{"quilómetros quadrados"}
                 one{"{0} quilómetro quadrado"}
                 other{"{0} quilómetros quadrados"}
+                per{"{0} por quilómetro quadrado"}
+            }
+        }
+        concentr{
+            karat{
+                dnam{"quilates"}
+                one{"{0} quilate"}
+                other{"{0} quilates"}
+            }
+            millimole-per-liter{
+                dnam{"milimoles por litro"}
+                one{"{0} milimole por litro"}
+                other{"{0} milimoles por litro"}
             }
         }
         consumption{
@@ -40,8 +47,15 @@ pt_PT{
                 other{"{0} litros por quilómetro"}
             }
         }
+        coordinate{
+            east{"{0} este"}
+            north{"{0} norte"}
+            south{"{0} sul"}
+            west{"{0} Oeste"}
+        }
         duration{
             century{
+                one{"{0} século"}
                 other{"{0} séculos"}
             }
             hour{
@@ -89,13 +103,6 @@ pt_PT{
                 other{"{0} picómetros"}
             }
         }
-        proportion{
-            karat{
-                dnam{"quilates"}
-                one{"{0} quilate"}
-                other{"{0} quilates"}
-            }
-        }
         speed{
             kilometer-per-hour{
                 dnam{"quilómetros por hora"}
@@ -109,9 +116,6 @@ pt_PT{
             }
         }
         volume{
-            cubic-centimeter{
-                per{"{0} por centímetro cúbico"}
-            }
             cubic-kilometer{
                 dnam{"quilómetros cúbicos"}
                 one{"{0} quilómetro cúbico"}
@@ -121,6 +125,11 @@ pt_PT{
                 dnam{"chávenas"}
                 one{"{0} chávena"}
                 other{"{0} chávenas"}
+            }
+            cup-metric{
+                dnam{"chávenas métricas"}
+                one{"{0} chávena métrica"}
+                other{"{0} chávenas métricas"}
             }
         }
     }
@@ -132,14 +141,24 @@ pt_PT{
             }
         }
         duration{
+            day{
+                per{"{0}/d"}
+            }
             second{
                 dnam{"s"}
+                per{"{0}/s"}
             }
         }
         length{
             foot{
                 one{"{0}′"}
                 other{"{0}′"}
+            }
+        }
+        temperature{
+            celsius{
+                one{"{0}°C"}
+                other{"{0}°C"}
             }
         }
     }
@@ -188,6 +207,16 @@ pt_PT{
                 dnam{"yd²"}
             }
         }
+        concentr{
+            karat{
+                dnam{"quilates"}
+                one{"{0} kt"}
+                other{"{0} kt"}
+            }
+            millimole-per-liter{
+                dnam{"milimole/litro"}
+            }
+        }
         consumption{
             liter-per-100kilometers{
                 dnam{"l/100km"}
@@ -197,6 +226,15 @@ pt_PT{
             mile-per-gallon{
                 dnam{"milhas/galão"}
             }
+            mile-per-gallon-imperial{
+                dnam{"milhas/gal imp."}
+            }
+        }
+        coordinate{
+            east{"{0} E"}
+            north{"{0} N"}
+            south{"{0} S"}
+            west{"{0} O"}
         }
         duration{
             minute{
@@ -248,19 +286,15 @@ pt_PT{
         pressure{
             inch-hg{
                 dnam{"in Hg"}
-                one{"{0} inHg"}
-                other{"{0} inHg"}
             }
             millibar{
                 one{"{0} mb"}
                 other{"{0} mb"}
             }
-        }
-        proportion{
-            karat{
-                dnam{"quilates"}
-                one{"{0} kt"}
-                other{"{0} kt"}
+            millimeter-of-mercury{
+                dnam{"mm Hg"}
+                one{"{0} mm Hg"}
+                other{"{0} mm Hg"}
             }
         }
         speed{
@@ -276,8 +310,6 @@ pt_PT{
         temperature{
             celsius{
                 dnam{"graus Celsius"}
-                one{"{0} °C"}
-                other{"{0} °C"}
             }
             fahrenheit{
                 dnam{"graus Fahrenheit"}
@@ -304,6 +336,17 @@ pt_PT{
                 dnam{"chávenas"}
                 one{"{0} cháv."}
                 other{"{0} cháv."}
+            }
+            cup-metric{
+                dnam{"chám"}
+                one{"{0} chám"}
+                other{"{0} chám"}
+            }
+            gallon-imperial{
+                dnam{"gal imp."}
+                one{"{0} gal imp."}
+                other{"{0} gal imp."}
+                per{"{0}/gal imp."}
             }
             tablespoon{
                 dnam{"cs"}

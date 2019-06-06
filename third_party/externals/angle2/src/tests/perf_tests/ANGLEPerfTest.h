@@ -10,31 +10,28 @@
 #ifndef PERF_TESTS_ANGLE_PERF_TEST_H_
 #define PERF_TESTS_ANGLE_PERF_TEST_H_
 
+#include <gtest/gtest.h>
+
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
-#include "EGLWindow.h"
-#include "OSWindow.h"
-#include "Timer.h"
-#include "common/angleutils.h"
-#include "common/debug.h"
 #include "platform/Platform.h"
 #include "test_utils/angle_test_configs.h"
 #include "test_utils/angle_test_instantiate.h"
+#include "util/EGLWindow.h"
+#include "util/OSWindow.h"
+#include "util/Timer.h"
+#include "util/util_gl.h"
 
 class Event;
 
 #if !defined(ASSERT_GL_NO_ERROR)
-#define ASSERT_GL_NO_ERROR() ASSERT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError())
+#    define ASSERT_GL_NO_ERROR() ASSERT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError())
 #endif  // !defined(ASSERT_GL_NO_ERROR)
 
 #if !defined(ASSERT_GLENUM_EQ)
-#define ASSERT_GLENUM_EQ(expected, actual) \
-    ASSERT_EQ(static_cast<GLenum>(expected), static_cast<GLenum>(actual))
+#    define ASSERT_GLENUM_EQ(expected, actual) \
+        ASSERT_EQ(static_cast<GLenum>(expected), static_cast<GLenum>(actual))
 #endif  // !defined(ASSERT_GLENUM_EQ)
 
 // These are trace events according to Google's "Trace Event Format".
@@ -46,13 +43,12 @@ struct TraceEvent final
 
     TraceEvent(char phaseIn, const char *categoryNameIn, const char *nameIn, double timestampIn)
         : phase(phaseIn), categoryName(categoryNameIn), name(nameIn), timestamp(timestampIn)
-    {
-    }
+    {}
 
-    char phase       = 0;
+    char phase               = 0;
     const char *categoryName = nullptr;
-    const char *name = nullptr;
-    double timestamp = 0;
+    const char *name         = nullptr;
+    double timestamp         = 0;
 };
 
 class ANGLEPerfTest : public testing::Test, angle::NonCopyable
@@ -65,6 +61,8 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
 
     virtual void step() = 0;
 
+    // Called right after the timer starts to let the test initialize other metrics if necessary
+    virtual void startTest() {}
     // Called right before timer is stopped to let the test wait for asynchronous operations.
     virtual void finishTest() {}
 
@@ -72,8 +70,14 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
 
   protected:
     void run();
-    void printResult(const std::string &trace, double value, const std::string &units, bool important) const;
-    void printResult(const std::string &trace, size_t value, const std::string &units, bool important) const;
+    void printResult(const std::string &trace,
+                     double value,
+                     const std::string &units,
+                     bool important) const;
+    void printResult(const std::string &trace,
+                     size_t value,
+                     const std::string &units,
+                     bool important) const;
     void SetUp() override;
     void TearDown() override;
 
@@ -89,11 +93,13 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
     std::string mName;
     std::string mSuffix;
     Timer *mTimer;
+    uint64_t mGPUTimeNs;
     bool mSkipTest;
 
   private:
-    void printResults();
+    double printResults();
 
+    unsigned int mStepsToRun;
     unsigned int mNumStepsPerformed;
     unsigned int mIterationsPerStep;
     bool mRunning;
@@ -101,11 +107,14 @@ class ANGLEPerfTest : public testing::Test, angle::NonCopyable
 
 struct RenderTestParams : public angle::PlatformParameters
 {
+    virtual ~RenderTestParams() {}
+
     virtual std::string suffix() const;
 
-    EGLint windowWidth  = 64;
-    EGLint windowHeight = 64;
+    EGLint windowWidth             = 64;
+    EGLint windowHeight            = 64;
     unsigned int iterationsPerStep = 0;
+    bool trackGpuTime              = false;
 };
 
 class ANGLERenderTest : public ANGLEPerfTest
@@ -116,8 +125,8 @@ class ANGLERenderTest : public ANGLEPerfTest
 
     void addExtensionPrerequisite(const char *extensionName);
 
-    virtual void initializeBenchmark() { }
-    virtual void destroyBenchmark() { }
+    virtual void initializeBenchmark() {}
+    virtual void destroyBenchmark() {}
 
     virtual void drawBenchmark() = 0;
 
@@ -135,26 +144,32 @@ class ANGLERenderTest : public ANGLEPerfTest
     void setWebGLCompatibilityEnabled(bool webglCompatibility);
     void setRobustResourceInit(bool enabled);
 
+    void startGpuTimer();
+    void stopGpuTimer();
+
   private:
     void SetUp() override;
     void TearDown() override;
 
     void step() override;
+    void startTest() override;
     void finishTest() override;
 
     bool areExtensionPrerequisitesFulfilled() const;
 
-    static EGLWindow *createEGLWindow(const RenderTestParams &testParams);
-
-    EGLWindow *mEGLWindow;
+    GLWindowBase *mGLWindow;
     OSWindow *mOSWindow;
     std::vector<const char *> mExtensionPrerequisites;
     angle::PlatformMethods mPlatformMethods;
+    ConfigParameters mConfigParams;
+
+    GLuint mTimestampQuery;
 
     // Trace event record that can be output.
     std::vector<TraceEvent> mTraceEventBuffer;
+
+    // Handle to the entry point binding library.
+    std::unique_ptr<angle::Library> mEntryPointsLib;
 };
 
-extern bool g_OnlyOneRunFrame;
-
-#endif // PERF_TESTS_ANGLE_PERF_TEST_H_
+#endif  // PERF_TESTS_ANGLE_PERF_TEST_H_

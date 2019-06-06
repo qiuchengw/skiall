@@ -82,12 +82,13 @@ class NullFactory : public GLImplFactory
 class MockGLFactory : public GLImplFactory
 {
   public:
-    MOCK_METHOD1(createContext, ContextImpl *(const gl::ContextState &));
+    MOCK_METHOD1(createContext, ContextImpl *(const gl::State &));
     MOCK_METHOD0(createCompiler, CompilerImpl *());
     MOCK_METHOD1(createShader, ShaderImpl *(const gl::ShaderState &));
     MOCK_METHOD1(createProgram, ProgramImpl *(const gl::ProgramState &));
     MOCK_METHOD1(createProgramPipeline, ProgramPipelineImpl *(const gl::ProgramPipelineState &));
     MOCK_METHOD1(createFramebuffer, FramebufferImpl *(const gl::FramebufferState &));
+    MOCK_METHOD0(createMemoryObject, MemoryObjectImpl *());
     MOCK_METHOD1(createTexture, TextureImpl *(const gl::TextureState &));
     MOCK_METHOD1(createRenderbuffer, RenderbufferImpl *(const gl::RenderbufferState &));
     MOCK_METHOD1(createBuffer, BufferImpl *(const gl::BufferState &));
@@ -99,6 +100,7 @@ class MockGLFactory : public GLImplFactory
                  TransformFeedbackImpl *(const gl::TransformFeedbackState &));
     MOCK_METHOD1(createSampler, SamplerImpl *(const gl::SamplerState &));
     MOCK_METHOD1(createPaths, std::vector<PathImpl *>(GLsizei));
+    MOCK_METHOD0(createSemaphore, SemaphoreImpl *());
 };
 
 class MockEGLFactory : public EGLImplFactory
@@ -124,8 +126,9 @@ class MockEGLFactory : public EGLImplFactory
                              const gl::Context *,
                              EGLenum,
                              const egl::AttributeMap &));
-    MOCK_METHOD4(createContext,
-                 ContextImpl *(const gl::ContextState &,
+    MOCK_METHOD5(createContext,
+                 ContextImpl *(const gl::State &,
+                               gl::ErrorSet *,
                                const egl::Config *,
                                const gl::Context *,
                                const egl::AttributeMap &));
@@ -135,4 +138,4 @@ class MockEGLFactory : public EGLImplFactory
 
 }  // namespace rx
 
-#endif // TESTS_ANGLE_UNITTESTS_UTILS_H_
+#endif  // TESTS_ANGLE_UNITTESTS_UTILS_H_

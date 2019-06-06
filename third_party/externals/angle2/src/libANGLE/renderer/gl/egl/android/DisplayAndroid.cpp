@@ -47,12 +47,9 @@ DisplayAndroid::DisplayAndroid(const egl::DisplayState &state)
       mVirtualizedContexts(kDefaultEGLVirtualizedContexts),
       mSupportsSurfaceless(false),
       mDummyPbuffer(EGL_NO_SURFACE)
-{
-}
+{}
 
-DisplayAndroid::~DisplayAndroid()
-{
-}
+DisplayAndroid::~DisplayAndroid() {}
 
 egl::Error DisplayAndroid::initialize(egl::Display *display)
 {
@@ -61,7 +58,7 @@ egl::Error DisplayAndroid::initialize(egl::Display *display)
         ShouldUseVirtualizedContexts(mDisplayAttributes, kDefaultEGLVirtualizedContexts);
 
     FunctionsEGLDL *egl = new FunctionsEGLDL();
-    mEGL = egl;
+    mEGL                = egl;
     void *eglHandle =
         reinterpret_cast<void *>(mDisplayAttributes.get(EGL_PLATFORM_ANGLE_EGL_HANDLE_ANGLE, 0));
     ANGLE_TRY(egl->initialize(display->getNativeDisplayId(), GetEGLPath(), eglHandle));
@@ -183,7 +180,7 @@ void DisplayAndroid::terminate()
 
     if (mDummyPbuffer != EGL_NO_SURFACE)
     {
-        success = mEGL->destroySurface(mDummyPbuffer);
+        success       = mEGL->destroySurface(mDummyPbuffer);
         mDummyPbuffer = EGL_NO_SURFACE;
         if (success == EGL_FALSE)
         {
@@ -212,7 +209,7 @@ SurfaceImpl *DisplayAndroid::createWindowSurface(const egl::SurfaceState &state,
     EGLBoolean success;
 
     const EGLint configAttribList[] = {EGL_CONFIG_ID, mConfigIds[state.config->configID], EGL_NONE};
-    success = mEGL->chooseConfig(configAttribList, &config, 1, &numConfig);
+    success                         = mEGL->chooseConfig(configAttribList, &config, 1, &numConfig);
     ASSERT(success && numConfig == 1);
 
     return new WindowSurfaceEGL(state, mEGL, config, window);
@@ -226,7 +223,7 @@ SurfaceImpl *DisplayAndroid::createPbufferSurface(const egl::SurfaceState &state
     EGLBoolean success;
 
     const EGLint configAttribList[] = {EGL_CONFIG_ID, mConfigIds[state.config->configID], EGL_NONE};
-    success = mEGL->chooseConfig(configAttribList, &config, 1, &numConfig);
+    success                         = mEGL->chooseConfig(configAttribList, &config, 1, &numConfig);
     ASSERT(success && numConfig == 1);
 
     return new PbufferSurfaceEGL(state, mEGL, config);
@@ -249,7 +246,8 @@ SurfaceImpl *DisplayAndroid::createPixmapSurface(const egl::SurfaceState &state,
     return nullptr;
 }
 
-ContextImpl *DisplayAndroid::createContext(const gl::ContextState &state,
+ContextImpl *DisplayAndroid::createContext(const gl::State &state,
+                                           gl::ErrorSet *errorSet,
                                            const egl::Config *configuration,
                                            const gl::Context *shareContext,
                                            const egl::AttributeMap &attribs)
@@ -279,7 +277,7 @@ ContextImpl *DisplayAndroid::createContext(const gl::ContextState &state,
         }
     }
 
-    return new ContextEGL(state, renderer);
+    return new ContextEGL(state, errorSet, renderer);
 }
 
 template <typename T>
@@ -428,10 +426,10 @@ egl::ConfigSet DisplayAndroid::generateConfigs()
             UNREACHABLE();
         }
 
-        config.matchNativePixmap = EGL_NONE;
+        config.matchNativePixmap  = EGL_NONE;
         config.optimalOrientation = 0;
 
-        int internalId = configSet.add(config);
+        int internalId         = configSet.add(config);
         mConfigIds[internalId] = config.configID;
     }
 
@@ -604,7 +602,8 @@ egl::Error DisplayAndroid::createRenderer(EGLContext shareContext,
                                           std::shared_ptr<RendererEGL> *outRenderer)
 {
     EGLContext context = EGL_NO_CONTEXT;
-    ANGLE_TRY(initializeContext(shareContext, mDisplayAttributes, &context));
+    native_egl::AttributeVector attribs;
+    ANGLE_TRY(initializeContext(shareContext, mDisplayAttributes, &context, &attribs));
 
     if (mEGL->makeCurrent(mDummyPbuffer, context) == EGL_FALSE)
     {
@@ -615,7 +614,8 @@ egl::Error DisplayAndroid::createRenderer(EGLContext shareContext,
     std::unique_ptr<FunctionsGL> functionsGL(mEGL->makeFunctionsGL());
     functionsGL->initialize(mDisplayAttributes);
 
-    outRenderer->reset(new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context));
+    outRenderer->reset(
+        new RendererEGL(std::move(functionsGL), mDisplayAttributes, this, context, attribs));
 
     CurrentNativeContext &currentContext = mCurrentNativeContext[std::this_thread::get_id()];
     if (makeNewContextCurrent)
@@ -634,6 +634,65 @@ egl::Error DisplayAndroid::createRenderer(EGLContext shareContext,
     }
 
     return egl::NoError();
+}
+
+class WorkerContextAndroid final : public WorkerContext
+{
+  public:
+    WorkerContextAndroid(EGLContext context, FunctionsEGL *functions, EGLSurface pbuffer);
+    ~WorkerContextAndroid() override;
+
+    bool makeCurrent() override;
+    void unmakeCurrent() override;
+
+  private:
+    EGLContext mContext;
+    FunctionsEGL *mFunctions;
+    EGLSurface mPbuffer;
+};
+
+WorkerContextAndroid::WorkerContextAndroid(EGLContext context,
+                                           FunctionsEGL *functions,
+                                           EGLSurface pbuffer)
+    : mContext(context), mFunctions(functions), mPbuffer(pbuffer)
+{}
+
+WorkerContextAndroid::~WorkerContextAndroid()
+{
+    mFunctions->destroyContext(mContext);
+}
+
+bool WorkerContextAndroid::makeCurrent()
+{
+    if (mFunctions->makeCurrent(mPbuffer, mContext) == EGL_FALSE)
+    {
+        ERR() << "Unable to make the EGL context current.";
+        return false;
+    }
+    return true;
+}
+
+void WorkerContextAndroid::unmakeCurrent()
+{
+    mFunctions->makeCurrent(EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+WorkerContext *DisplayAndroid::createWorkerContext(std::string *infoLog,
+                                                   EGLContext sharedContext,
+                                                   const native_egl::AttributeVector workerAttribs)
+{
+    EGLContext context = mEGL->createContext(mConfig, sharedContext, workerAttribs.data());
+    if (context == EGL_NO_CONTEXT)
+    {
+        *infoLog += "Unable to create the EGL context.";
+        return nullptr;
+    }
+    return new WorkerContextAndroid(context, mEGL, mDummyPbuffer);
+}
+
+void DisplayAndroid::populateFeatureList(angle::FeatureList *features)
+{
+    mRenderer->getWorkarounds().populateFeatureList(features);
 }
 
 }  // namespace rx

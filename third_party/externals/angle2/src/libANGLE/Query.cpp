@@ -11,9 +11,7 @@
 
 namespace gl
 {
-Query::Query(rx::QueryImpl *impl, GLuint id) : RefCountObject(id), mQuery(impl), mLabel()
-{
-}
+Query::Query(rx::QueryImpl *impl, GLuint id) : RefCountObject(id), mQuery(impl), mLabel() {}
 
 Query::~Query()
 {
@@ -26,7 +24,7 @@ void Query::onDestroy(const Context *context)
     mQuery->onDestroy(context);
 }
 
-void Query::setLabel(const std::string &label)
+void Query::setLabel(const Context *context, const std::string &label)
 {
     mLabel = label;
 }
@@ -90,4 +88,4 @@ const rx::QueryImpl *Query::getImplementation() const
 {
     return mQuery;
 }
-}
+}  // namespace gl

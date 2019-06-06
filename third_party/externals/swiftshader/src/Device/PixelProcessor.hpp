@@ -34,76 +34,36 @@ namespace sw
 
 			int shaderID;
 
-			bool depthOverride                        : 1;   // TODO: Eliminate by querying shader.
-			bool shaderContainsKill                   : 1;   // TODO: Eliminate by querying shader.
+			VkCompareOp depthCompareMode;
+			bool depthWriteEnable;
+			bool quadLayoutDepthBuffer;
 
-			DepthCompareMode depthCompareMode         : BITS(DEPTH_LAST);
-			AlphaCompareMode alphaCompareMode         : BITS(ALPHA_LAST);
-			bool depthWriteEnable                     : 1;
-			bool quadLayoutDepthBuffer                : 1;
+			bool stencilActive;
+			bool twoSidedStencil;
+			VkStencilOpState frontStencil;
+			VkStencilOpState backStencil;
 
-			bool stencilActive                        : 1;
-			StencilCompareMode stencilCompareMode     : BITS(STENCIL_LAST);
-			StencilOperation stencilFailOperation     : BITS(OPERATION_LAST);
-			StencilOperation stencilPassOperation     : BITS(OPERATION_LAST);
-			StencilOperation stencilZFailOperation    : BITS(OPERATION_LAST);
-			bool noStencilMask                        : 1;
-			bool noStencilWriteMask                   : 1;
-			bool stencilWriteMasked                   : 1;
-			bool twoSidedStencil                      : 1;
-			StencilCompareMode stencilCompareModeCCW  : BITS(STENCIL_LAST);
-			StencilOperation stencilFailOperationCCW  : BITS(OPERATION_LAST);
-			StencilOperation stencilPassOperationCCW  : BITS(OPERATION_LAST);
-			StencilOperation stencilZFailOperationCCW : BITS(OPERATION_LAST);
-			bool noStencilMaskCCW                     : 1;
-			bool noStencilWriteMaskCCW                : 1;
-			bool stencilWriteMaskedCCW                : 1;
+			bool depthTestActive;
+			bool occlusionEnabled;
+			bool perspective;
+			bool depthClamp;
 
-			bool depthTestActive                      : 1;
-			bool occlusionEnabled                     : 1;
-			bool perspective                          : 1;
-			bool depthClamp                           : 1;
+			bool alphaBlendActive;
+			VkBlendFactor sourceBlendFactor;
+			VkBlendFactor destBlendFactor;
+			VkBlendOp blendOperation;
+			VkBlendFactor sourceBlendFactorAlpha;
+			VkBlendFactor destBlendFactorAlpha;
+			VkBlendOp blendOperationAlpha;
 
-			bool alphaBlendActive                     : 1;
-			BlendFactor sourceBlendFactor             : BITS(BLEND_LAST);
-			BlendFactor destBlendFactor               : BITS(BLEND_LAST);
-			BlendOperation blendOperation             : BITS(BLENDOP_LAST);
-			BlendFactor sourceBlendFactorAlpha        : BITS(BLEND_LAST);
-			BlendFactor destBlendFactorAlpha          : BITS(BLEND_LAST);
-			BlendOperation blendOperationAlpha        : BITS(BLENDOP_LAST);
-
-			unsigned int colorWriteMask                       : RENDERTARGETS * 4;   // Four component bit masks
-			Format targetFormat[RENDERTARGETS];
-			bool writeSRGB                                    : 1;
-			unsigned int multiSample                          : 3;
-			unsigned int multiSampleMask                      : 4;
-			TransparencyAntialiasing transparencyAntialiasing : BITS(TRANSPARENCY_LAST);
-			bool centroid                                     : 1;
-			bool frontFaceCCW                                 : 1;
-
-			LogicalOperation logicalOperation : BITS(LOGICALOP_LAST);
-
-			Sampler::State sampler[TEXTURE_IMAGE_UNITS];
-
-			struct Interpolant
-			{
-				unsigned char component : 4;
-				unsigned char flat : 4;
-				unsigned char project : 2;
-				bool centroid : 1;
-			};
-
-			union
-			{
-				struct
-				{
-					Interpolant color[2];
-					Interpolant texture[8];
-					Interpolant fog;
-				};
-
-				Interpolant interpolant[MAX_FRAGMENT_INPUTS];
-			};
+			unsigned int colorWriteMask;
+			VkFormat targetFormat[RENDERTARGETS];
+			unsigned int multiSample;
+			unsigned int multiSampleMask;
+			bool alphaToCoverage;
+			bool centroid;
+			bool frontFaceCCW;
+			VkFormat depthFormat;
 		};
 
 		struct State : States
@@ -115,11 +75,6 @@ namespace sw
 			int colorWriteActive(int index) const
 			{
 				return (colorWriteMask >> (index * 4)) & 0xF;
-			}
-
-			bool alphaTestActive() const
-			{
-				return (alphaCompareMode != ALPHA_ALWAYS) || (transparencyAntialiasing != TRANSPARENCY_NONE);
 			}
 
 			unsigned int hash;
@@ -165,124 +120,22 @@ namespace sw
 	public:
 		typedef void (*RoutinePointer)(const Primitive *primitive, int count, int thread, DrawData *draw);
 
-		PixelProcessor(Context *context);
+		PixelProcessor();
 
 		virtual ~PixelProcessor();
 
-		void setFloatConstant(unsigned int index, const float value[4]);
-		void setIntegerConstant(unsigned int index, const int value[4]);
-		void setBooleanConstant(unsigned int index, int boolean);
-
-		void setUniformBuffer(int index, sw::Resource* buffer, int offset);
-		void lockUniformBuffers(byte** u, sw::Resource* uniformBuffers[]);
-
-		void setRenderTarget(int index, Surface *renderTarget, unsigned int layer = 0);
-		void setDepthBuffer(Surface *depthBuffer, unsigned int layer = 0);
-		void setStencilBuffer(Surface *stencilBuffer, unsigned int layer = 0);
-
-		void setTexCoordIndex(unsigned int stage, int texCoordIndex);
-		void setConstantColor(unsigned int stage, const Color<float> &constantColor);
-		void setBumpmapMatrix(unsigned int stage, int element, float value);
-		void setLuminanceScale(unsigned int stage, float value);
-		void setLuminanceOffset(unsigned int stage, float value);
-
-		void setTextureFilter(unsigned int sampler, FilterType textureFilter);
-		void setMipmapFilter(unsigned int sampler, MipmapType mipmapFilter);
-		void setGatherEnable(unsigned int sampler, bool enable);
-		void setAddressingModeU(unsigned int sampler, AddressingMode addressingMode);
-		void setAddressingModeV(unsigned int sampler, AddressingMode addressingMode);
-		void setAddressingModeW(unsigned int sampler, AddressingMode addressingMode);
-		void setReadSRGB(unsigned int sampler, bool sRGB);
-		void setMipmapLOD(unsigned int sampler, float bias);
-		void setBorderColor(unsigned int sampler, const Color<float> &borderColor);
-		void setMaxAnisotropy(unsigned int sampler, float maxAnisotropy);
-		void setHighPrecisionFiltering(unsigned int sampler, bool highPrecisionFiltering);
-		void setSwizzleR(unsigned int sampler, SwizzleType swizzleR);
-		void setSwizzleG(unsigned int sampler, SwizzleType swizzleG);
-		void setSwizzleB(unsigned int sampler, SwizzleType swizzleB);
-		void setSwizzleA(unsigned int sampler, SwizzleType swizzleA);
-		void setCompareFunc(unsigned int sampler, CompareFunc compare);
-		void setBaseLevel(unsigned int sampler, int baseLevel);
-		void setMaxLevel(unsigned int sampler, int maxLevel);
-		void setMinLod(unsigned int sampler, float minLod);
-		void setMaxLod(unsigned int sampler, float maxLod);
-
-		void setWriteSRGB(bool sRGB);
-		void setDepthBufferEnable(bool depthBufferEnable);
-		void setDepthCompare(DepthCompareMode depthCompareMode);
-		void setAlphaCompare(AlphaCompareMode alphaCompareMode);
-		void setDepthWriteEnable(bool depthWriteEnable);
-		void setAlphaTestEnable(bool alphaTestEnable);
-		void setCullMode(CullMode cullMode, bool frontFacingCCW);
-		void setColorWriteMask(int index, int rgbaMask);
-
-		void setColorLogicOpEnabled(bool colorLogicOpEnabled);
-		void setLogicalOperation(LogicalOperation logicalOperation);
-
-		void setStencilEnable(bool stencilEnable);
-		void setStencilCompare(StencilCompareMode stencilCompareMode);
-		void setStencilReference(int stencilReference);
-		void setStencilMask(int stencilMask);
-		void setStencilFailOperation(StencilOperation stencilFailOperation);
-		void setStencilPassOperation(StencilOperation stencilPassOperation);
-		void setStencilZFailOperation(StencilOperation stencilZFailOperation);
-		void setStencilWriteMask(int stencilWriteMask);
-		void setTwoSidedStencil(bool enable);
-		void setStencilCompareCCW(StencilCompareMode stencilCompareMode);
-		void setStencilReferenceCCW(int stencilReference);
-		void setStencilMaskCCW(int stencilMask);
-		void setStencilFailOperationCCW(StencilOperation stencilFailOperation);
-		void setStencilPassOperationCCW(StencilOperation stencilPassOperation);
-		void setStencilZFailOperationCCW(StencilOperation stencilZFailOperation);
-		void setStencilWriteMaskCCW(int stencilWriteMask);
-
 		void setBlendConstant(const Color<float> &blendConstant);
 
-		void setAlphaBlendEnable(bool alphaBlendEnable);
-		void setSourceBlendFactor(BlendFactor sourceBlendFactor);
-		void setDestBlendFactor(BlendFactor destBlendFactor);
-		void setBlendOperation(BlendOperation blendOperation);
-
-		void setSeparateAlphaBlendEnable(bool separateAlphaBlendEnable);
-		void setSourceBlendFactorAlpha(BlendFactor sourceBlendFactorAlpha);
-		void setDestBlendFactorAlpha(BlendFactor destBlendFactorAlpha);
-		void setBlendOperationAlpha(BlendOperation blendOperationAlpha);
-
-		void setAlphaReference(float alphaReference);
-
-		void setPerspectiveCorrection(bool perspectiveCorrection);
-
-		void setOcclusionEnabled(bool enable);
-
 	protected:
-		const State update() const;
-		Routine *routine(const State &state);
+		const State update(const Context* context) const;
+		Routine *routine(const State &state, vk::PipelineLayout const *pipelineLayout,
+		                 SpirvShader const *pixelShader, const vk::DescriptorSet::Bindings &descriptorSets);
 		void setRoutineCacheSize(int routineCacheSize);
 
-		// Shader constants
-		float4 c[FRAGMENT_UNIFORM_VECTORS];
-		int4 i[16];
-		bool b[16];
-
 		// Other semi-constants
-		Stencil stencil;
-		Stencil stencilCCW;
 		Factor factor;
 
 	private:
-		struct UniformBufferInfo
-		{
-			UniformBufferInfo();
-
-			Resource* buffer;
-			int offset;
-		};
-		UniformBufferInfo uniformBufferInfo[MAX_UNIFORM_BUFFER_BINDINGS];
-
-		void setFogRanges(float start, float end);
-
-		Context *const context;
-
 		RoutineCache<State> *routineCache;
 	};
 }

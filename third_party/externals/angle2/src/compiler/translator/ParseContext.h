@@ -37,12 +37,12 @@ class TParseContext : angle::NonCopyable
                   TExtensionBehavior &ext,
                   sh::GLenum type,
                   ShShaderSpec spec,
-                  ShCompileOptions options,
                   bool checksPrecErrors,
                   TDiagnostics *diagnostics,
                   const ShBuiltInResources &resources);
     ~TParseContext();
 
+    bool anyMultiviewExtensionAvailable();
     const angle::pp::Preprocessor &getPreprocessor() const { return mPreprocessor; }
     angle::pp::Preprocessor &getPreprocessor() { return mPreprocessor; }
     void *getScanner() const { return mScanner; }
@@ -459,7 +459,7 @@ class TParseContext : angle::NonCopyable
     }
 
     // TODO(jmadill): make this private
-    TSymbolTable &symbolTable;   // symbol table that goes with the language currently being parsed
+    TSymbolTable &symbolTable;  // symbol table that goes with the language currently being parsed
 
   private:
     class AtomicCounterBindingState;
@@ -515,6 +515,8 @@ class TParseContext : angle::NonCopyable
     void checkAtomicCounterOffsetDoesNotOverlap(bool forceAppend,
                                                 const TSourceLoc &loc,
                                                 TType *type);
+    void checkAtomicCounterOffsetAlignment(const TSourceLoc &location, const TType &type);
+
     void checkIndexIsNotSpecified(const TSourceLoc &location, int index);
     void checkBindingIsValid(const TSourceLoc &identifierLocation, const TType &type);
     void checkBindingIsNotSpecified(const TSourceLoc &location, int binding);
@@ -595,7 +597,6 @@ class TParseContext : angle::NonCopyable
 
     sh::GLenum mShaderType;    // vertex or fragment language (future: pack or unpack)
     ShShaderSpec mShaderSpec;  // The language specification compiler conforms to - GLES2 or WebGL.
-    ShCompileOptions mCompileOptions;  // Options passed to TCompiler
     int mShaderVersion;
     TIntermBlock *mTreeRoot;  // root of parse tree being created
     int mLoopNestingLevel;    // 0 if outside all loops
@@ -649,6 +650,9 @@ class TParseContext : angle::NonCopyable
     int mGeometryShaderMaxVertices;
     int mMaxGeometryShaderInvocations;
     int mMaxGeometryShaderMaxVertices;
+
+    // Track when we add new scope for func body in ESSL 1.00 spec
+    bool mFunctionBodyNewScope;
 };
 
 int PaParseStrings(size_t count,

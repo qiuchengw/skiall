@@ -19,16 +19,25 @@
 #include "common/debug.h"
 #include "common/platform.h"
 #include "common/string_utils.h"
-#include "gpu_test_expectations_parser.h"
 #include "platform/Platform.h"
-#include "system_utils.h"
+#include "tests/test_expectations/GPUTestConfig.h"
+#include "tests/test_expectations/GPUTestExpectationsParser.h"
+#include "util/system_utils.h"
 
+namespace angle
+{
 namespace
 {
 bool gGlobalError = false;
 bool gExpectError = false;
 
-void HandlePlatformError(angle::PlatformMethods *platform, const char *errorMessage)
+constexpr char kInfoTag[] = "*RESULT";
+
+// Stored as globals to work around a Clang bug. http://crbug.com/951458
+std::vector<std::string> gUnexpectedFailed;
+std::vector<std::string> gUnexpectedPasses;
+
+void HandlePlatformError(PlatformMethods *platform, const char *errorMessage)
 {
     if (!gExpectError)
     {
@@ -48,34 +57,41 @@ std::string DrawElementsToGoogleTestName(const std::string &dEQPName)
 }
 
 const char *gCaseListSearchPaths[] = {
-    "/../../third_party/deqp/src/android/cts/master/",
-    "/../../third_party/angle/third_party/deqp/src/android/cts/master/",
-    "/../../sdcard/chromium_tests_root/third_party/angle/third_party/deqp/src/android/cts/master/",
+    "/../../sdcard/chromium_tests_root/third_party/angle/third_party/deqp/src",
+    "/../../third_party/deqp/src",
+    "/../../third_party/angle/third_party/deqp/src",
 };
 
 const char *gTestExpectationsSearchPaths[] = {
-    "/../../src/tests/deqp_support/", "/../../third_party/angle/src/tests/deqp_support/",
-    "/deqp_support/", "/../../sdcard/chromium_tests_root/third_party/angle/src/tests/deqp_support/",
+    "/../../src/tests/deqp_support/",
+    "/../../third_party/angle/src/tests/deqp_support/",
+    "/deqp_support/",
+    "/../../sdcard/chromium_tests_root/third_party/angle/src/tests/deqp_support/",
 };
 
-const char *gCaseListFiles[] = {
-    "gles2-master.txt", "gles3-master.txt", "gles31-master.txt", "egl-master.txt",
-};
+#define OPENGL_CTS_DIR(PATH) "/external/openglcts/data/mustpass/gles/" PATH
+
+const char *gCaseListFiles[] = {OPENGL_CTS_DIR("aosp_mustpass/master/gles2-master.txt"),
+                                OPENGL_CTS_DIR("aosp_mustpass/master/gles3-master.txt"),
+                                OPENGL_CTS_DIR("aosp_mustpass/master/gles31-master.txt"),
+                                "/android/cts/master/egl-master.txt",
+                                OPENGL_CTS_DIR("khronos_mustpass/master/gles2-khr-master.txt"),
+                                OPENGL_CTS_DIR("khronos_mustpass/master/gles3-khr-master.txt")};
+
+#undef OPENGL_CTS_DIR
 
 const char *gTestExpectationsFiles[] = {
-    "deqp_gles2_test_expectations.txt", "deqp_gles3_test_expectations.txt",
-    "deqp_gles31_test_expectations.txt", "deqp_egl_test_expectations.txt",
+    "deqp_gles2_test_expectations.txt",     "deqp_gles3_test_expectations.txt",
+    "deqp_gles31_test_expectations.txt",    "deqp_egl_test_expectations.txt",
+    "deqp_khr_gles2_test_expectations.txt", "deqp_khr_gles3_test_expectations.txt",
 };
 
-using APIInfo = std::pair<const char *, gpu::GPUTestConfig::API>;
+using APIInfo = std::pair<const char *, GPUTestConfig::API>;
 
 const APIInfo gEGLDisplayAPIs[] = {
-    {"angle-d3d9", gpu::GPUTestConfig::kAPID3D9},
-    {"angle-d3d11", gpu::GPUTestConfig::kAPID3D11},
-    {"angle-gl", gpu::GPUTestConfig::kAPIGLDesktop},
-    {"angle-gles", gpu::GPUTestConfig::kAPIGLES},
-    {"angle-null", gpu::GPUTestConfig::kAPIUnknown},
-    {"angle-vulkan", gpu::GPUTestConfig::kAPIVulkan},
+    {"angle-d3d9", GPUTestConfig::kAPID3D9},    {"angle-d3d11", GPUTestConfig::kAPID3D11},
+    {"angle-gl", GPUTestConfig::kAPIGLDesktop}, {"angle-gles", GPUTestConfig::kAPIGLES},
+    {"angle-null", GPUTestConfig::kAPIUnknown}, {"angle-vulkan", GPUTestConfig::kAPIVulkan},
 };
 
 const char *gdEQPEGLString  = "--deqp-egl-display-type=";
@@ -101,7 +117,7 @@ const char *GetDefaultAPIName()
 #elif defined(ANGLE_PLATFORM_ANDROID)
     return "angle-gles";
 #else
-#error Unknown platform.
+#    error Unknown platform.
 #endif
 }
 
@@ -124,6 +140,11 @@ const APIInfo *GetDefaultAPIInfo()
     return defaultInfo;
 }
 
+std::string GetTestStatLine(const std::string &key, const std::string &value)
+{
+    return std::string(kInfoTag) + ": " + key + ": " + value + "\n";
+}
+
 // During the CaseList initialization we cannot use the GTEST FAIL macro to quit the program because
 // the initialization is called outside of tests the first time.
 void Die()
@@ -139,10 +160,10 @@ Optional<std::string> FindFileFromPaths(const char *paths[],
     for (size_t pathIndex = 0; pathIndex < numPaths; ++pathIndex)
     {
         const char *testPath = paths[pathIndex];
-        std::stringstream testExpectationsPathStr;
-        testExpectationsPathStr << exeDir << testPath << searchFile;
+        std::stringstream pathStringStream;
+        pathStringStream << exeDir << testPath << searchFile;
 
-        std::string path = testExpectationsPathStr.str();
+        std::string path = pathStringStream.str();
         std::ifstream inFile(path.c_str());
         if (!inFile.fail())
         {
@@ -175,8 +196,7 @@ class dEQPCaseList
     {
         CaseInfo(const std::string &dEQPName, const std::string &gTestName, int expectation)
             : mDEQPName(dEQPName), mGTestName(gTestName), mExpectation(expectation)
-        {
-        }
+        {}
 
         std::string mDEQPName;
         std::string mGTestName;
@@ -200,16 +220,12 @@ class dEQPCaseList
 
   private:
     std::vector<CaseInfo> mCaseInfoList;
-    gpu::GPUTestExpectationsParser mTestExpectationsParser;
-    gpu::GPUTestBotConfig mTestConfig;
+    GPUTestExpectationsParser mTestExpectationsParser;
     size_t mTestModuleIndex;
-    bool mInitialized;
+    bool mInitialized = false;
 };
 
-dEQPCaseList::dEQPCaseList(size_t testModuleIndex)
-    : mTestModuleIndex(testModuleIndex), mInitialized(false)
-{
-}
+dEQPCaseList::dEQPCaseList(size_t testModuleIndex) : mTestModuleIndex(testModuleIndex) {}
 
 void dEQPCaseList::initialize()
 {
@@ -220,7 +236,7 @@ void dEQPCaseList::initialize()
 
     mInitialized = true;
 
-    std::string exeDir = angle::GetExecutableDirectory();
+    std::string exeDir = GetExecutableDirectory();
 
     Optional<std::string> caseListPath = FindCaseListPath(exeDir, mTestModuleIndex);
     if (!caseListPath.valid())
@@ -236,32 +252,26 @@ void dEQPCaseList::initialize()
         Die();
     }
 
-    if (!mTestExpectationsParser.LoadTestExpectationsFromFile(testExpectationsPath.value()))
+    GPUTestConfig::API api = GetDefaultAPIInfo()->second;
+    // Set the API from the command line, or using the default platform API.
+    if (gInitAPI)
+    {
+        api = gInitAPI->second;
+    }
+
+    GPUTestConfig testConfig = GPUTestConfig(api);
+
+    if (!mTestExpectationsParser.loadTestExpectationsFromFile(testConfig,
+                                                              testExpectationsPath.value()))
     {
         std::stringstream errorMsgStream;
-        for (const auto &message : mTestExpectationsParser.GetErrorMessages())
+        for (const auto &message : mTestExpectationsParser.getErrorMessages())
         {
             errorMsgStream << std::endl << " " << message;
         }
 
         std::cerr << "Failed to load test expectations." << errorMsgStream.str() << std::endl;
         Die();
-    }
-
-    if (!mTestConfig.LoadCurrentConfig(nullptr))
-    {
-        std::cerr << "Failed to load test configuration." << std::endl;
-        Die();
-    }
-
-    // Set the API from the command line, or using the default platform API.
-    if (gInitAPI)
-    {
-        mTestConfig.set_api(gInitAPI->second);
-    }
-    else
-    {
-        mTestConfig.set_api(GetDefaultAPIInfo()->second);
     }
 
     std::ifstream caseListStream(caseListPath.value());
@@ -276,35 +286,28 @@ void dEQPCaseList::initialize()
         std::string inString;
         std::getline(caseListStream, inString);
 
-        std::string dEQPName = angle::TrimString(inString, angle::kWhitespaceASCII);
+        std::string dEQPName = TrimString(inString, kWhitespaceASCII);
         if (dEQPName.empty())
             continue;
         std::string gTestName = DrawElementsToGoogleTestName(dEQPName);
         if (gTestName.empty())
             continue;
 
-        int expectation = mTestExpectationsParser.GetTestExpectation(dEQPName, mTestConfig);
-        if (expectation != gpu::GPUTestExpectationsParser::kGpuTestSkip)
-        {
-            mCaseInfoList.push_back(CaseInfo(dEQPName, gTestName, expectation));
-        }
+        int expectation = mTestExpectationsParser.getTestExpectation(dEQPName);
+        mCaseInfoList.push_back(CaseInfo(dEQPName, gTestName, expectation));
     }
-}
 
-bool TestPassed(TestResult result)
-{
-    switch (result)
+    std::stringstream unusedMsgStream;
+    bool anyUnused = false;
+    for (const auto &message : mTestExpectationsParser.getUnusedExpectationsMessages())
     {
-        case TestResult::Pass:
-            return true;
-        case TestResult::Fail:
-            return false;
-        case TestResult::NotSupported:
-            return true;
-        case TestResult::Exception:
-            return false;
-        default:
-            return false;
+        anyUnused = true;
+        unusedMsgStream << std::endl << " " << message;
+    }
+    if (anyUnused)
+    {
+        std::cerr << "Failed to validate test expectations." << unusedMsgStream.str() << std::endl;
+        Die();
     }
 }
 
@@ -336,7 +339,7 @@ class dEQPTest : public testing::TestWithParam<size_t>
   protected:
     void runTest() const
     {
-        if (sExceptions > 1)
+        if (sTestExceptionCount > 1)
         {
             std::cout << "Too many exceptions, skipping all remaining tests." << std::endl;
             return;
@@ -345,62 +348,135 @@ class dEQPTest : public testing::TestWithParam<size_t>
         const auto &caseInfo = GetCaseList().getCaseInfo(GetParam());
         std::cout << caseInfo.mDEQPName << std::endl;
 
-        gExpectError      = (caseInfo.mExpectation != gpu::GPUTestExpectationsParser::kGpuTestPass);
+        // Tests that crash exit the harness before collecting the result. To tally the number of
+        // crashed tests we track how many tests we "tried" to run.
+        sTestCount++;
+
+        if (caseInfo.mExpectation == GPUTestExpectationsParser::kGpuTestSkip)
+        {
+            sSkippedTestCount++;
+            std::cout << "Test skipped.\n";
+            return;
+        }
+
+        gExpectError      = (caseInfo.mExpectation != GPUTestExpectationsParser::kGpuTestPass);
         TestResult result = deqp_libtester_run(caseInfo.mDEQPName.c_str());
 
-        bool testPassed = TestPassed(result);
+        bool testSucceeded = countTestResultAndReturnSuccess(result);
 
         // Check the global error flag for unexpected platform errors.
         if (gGlobalError)
         {
-            testPassed   = false;
-            gGlobalError = false;
+            testSucceeded = false;
+            gGlobalError  = false;
         }
 
-        if (caseInfo.mExpectation == gpu::GPUTestExpectationsParser::kGpuTestPass)
+        if (caseInfo.mExpectation == GPUTestExpectationsParser::kGpuTestPass)
         {
-            EXPECT_TRUE(testPassed);
-            sPasses += (testPassed ? 1u : 0u);
-            sFails += (!testPassed ? 1u : 0u);
+            EXPECT_TRUE(testSucceeded);
+
+            if (!testSucceeded)
+            {
+                gUnexpectedFailed.push_back(caseInfo.mDEQPName);
+            }
         }
-        else if (testPassed)
+        else if (testSucceeded)
         {
             std::cout << "Test expected to fail but passed!" << std::endl;
-            sUnexpectedPasses++;
-        }
-        else
-        {
-            sFails++;
-        }
-
-        if (result == TestResult::Exception)
-        {
-            sExceptions++;
+            gUnexpectedPasses.push_back(caseInfo.mDEQPName);
         }
     }
 
-    static unsigned int sPasses;
-    static unsigned int sFails;
-    static unsigned int sUnexpectedPasses;
-    static unsigned int sExceptions;
+    bool countTestResultAndReturnSuccess(TestResult result) const
+    {
+        switch (result)
+        {
+            case TestResult::Pass:
+                sPassedTestCount++;
+                return true;
+            case TestResult::Fail:
+                sFailedTestCount++;
+                return false;
+            case TestResult::NotSupported:
+                sNotSupportedTestCount++;
+                return true;
+            case TestResult::Exception:
+                sTestExceptionCount++;
+                return false;
+            default:
+                std::cerr << "Unexpected test result code: " << static_cast<int>(result) << "\n";
+                return false;
+        }
+    }
+
+    static void PrintTestStats()
+    {
+        uint32_t crashedCount =
+            sTestCount - (sPassedTestCount + sFailedTestCount + sNotSupportedTestCount +
+                          sTestExceptionCount + sSkippedTestCount);
+
+        std::cout << GetTestStatLine("Total", std::to_string(sTestCount));
+        std::cout << GetTestStatLine("Passed", std::to_string(sPassedTestCount));
+        std::cout << GetTestStatLine("Failed", std::to_string(sFailedTestCount));
+        std::cout << GetTestStatLine("Skipped", std::to_string(sSkippedTestCount));
+        std::cout << GetTestStatLine("Not Supported", std::to_string(sNotSupportedTestCount));
+        std::cout << GetTestStatLine("Exception", std::to_string(sTestExceptionCount));
+        std::cout << GetTestStatLine("Crashed", std::to_string(crashedCount));
+
+        if (!gUnexpectedPasses.empty())
+        {
+            std::cout << GetTestStatLine("Unexpected Passed Count",
+                                         std::to_string(gUnexpectedPasses.size()));
+            for (const std::string &testName : gUnexpectedPasses)
+            {
+                std::cout << GetTestStatLine("Unexpected Passed Tests", testName);
+            }
+        }
+
+        if (!gUnexpectedFailed.empty())
+        {
+            std::cout << GetTestStatLine("Unexpected Failed Count",
+                                         std::to_string(gUnexpectedFailed.size()));
+            for (const std::string &testName : gUnexpectedFailed)
+            {
+                std::cout << GetTestStatLine("Unexpected Failed Tests", testName);
+            }
+        }
+    }
+
+    static uint32_t sTestCount;
+    static uint32_t sPassedTestCount;
+    static uint32_t sFailedTestCount;
+    static uint32_t sTestExceptionCount;
+    static uint32_t sNotSupportedTestCount;
+    static uint32_t sSkippedTestCount;
 };
 
 template <size_t TestModuleIndex>
-unsigned int dEQPTest<TestModuleIndex>::sPasses = 0;
+uint32_t dEQPTest<TestModuleIndex>::sTestCount = 0;
 template <size_t TestModuleIndex>
-unsigned int dEQPTest<TestModuleIndex>::sFails = 0;
+uint32_t dEQPTest<TestModuleIndex>::sPassedTestCount = 0;
 template <size_t TestModuleIndex>
-unsigned int dEQPTest<TestModuleIndex>::sUnexpectedPasses = 0;
+uint32_t dEQPTest<TestModuleIndex>::sFailedTestCount = 0;
 template <size_t TestModuleIndex>
-unsigned int dEQPTest<TestModuleIndex>::sExceptions = 0;
+uint32_t dEQPTest<TestModuleIndex>::sTestExceptionCount = 0;
+template <size_t TestModuleIndex>
+uint32_t dEQPTest<TestModuleIndex>::sNotSupportedTestCount = 0;
+template <size_t TestModuleIndex>
+uint32_t dEQPTest<TestModuleIndex>::sSkippedTestCount = 0;
 
 // static
 template <size_t TestModuleIndex>
 void dEQPTest<TestModuleIndex>::SetUpTestCase()
 {
-    sPasses           = 0;
-    sFails            = 0;
-    sUnexpectedPasses = 0;
+    sPassedTestCount       = 0;
+    sFailedTestCount       = 0;
+    sNotSupportedTestCount = 0;
+    sTestExceptionCount    = 0;
+    sTestCount             = 0;
+    sSkippedTestCount      = 0;
+    gUnexpectedPasses.clear();
+    gUnexpectedFailed.clear();
 
     std::vector<const char *> argv;
 
@@ -430,34 +506,19 @@ void dEQPTest<TestModuleIndex>::SetUpTestCase()
 template <size_t TestModuleIndex>
 void dEQPTest<TestModuleIndex>::TearDownTestCase()
 {
-    unsigned int total = sPasses + sFails;
-    float passFrac     = static_cast<float>(sPasses) / static_cast<float>(total) * 100.0f;
-    float failFrac     = static_cast<float>(sFails) / static_cast<float>(total) * 100.0f;
-    std::cout << "Passed: " << sPasses << "/" << total << " tests. (" << passFrac << "%)"
-              << std::endl;
-    if (sFails > 0)
-    {
-        std::cout << "Failed: " << sFails << "/" << total << " tests. (" << failFrac << "%)"
-                  << std::endl;
-    }
-    if (sUnexpectedPasses > 0)
-    {
-        std::cout << sUnexpectedPasses << " tests unexpectedly passed." << std::endl;
-    }
-
+    PrintTestStats();
     deqp_libtester_shutdown_platform();
 }
 
-#define ANGLE_INSTANTIATE_DEQP_TEST_CASE(API, N)                             \
-    class dEQP : public dEQPTest<N>                                          \
-    {                                                                        \
-    };                                                                       \
-    TEST_P(dEQP, API) { runTest(); }                                         \
-                                                                             \
-    INSTANTIATE_TEST_CASE_P(, dEQP, dEQP::GetTestingRange(),                 \
-                            [](const testing::TestParamInfo<size_t> &info) { \
-                                return dEQP::GetCaseGTestName(info.param);   \
-                            })
+#define ANGLE_INSTANTIATE_DEQP_TEST_CASE(API, N)                              \
+    class dEQP : public dEQPTest<N>                                           \
+    {};                                                                       \
+    TEST_P(dEQP, API) { runTest(); }                                          \
+                                                                              \
+    INSTANTIATE_TEST_SUITE_P(, dEQP, dEQP::GetTestingRange(),                 \
+                             [](const testing::TestParamInfo<size_t> &info) { \
+                                 return dEQP::GetCaseGTestName(info.param);   \
+                             })
 
 #ifdef ANGLE_DEQP_GLES2_TESTS
 ANGLE_INSTANTIATE_DEQP_TEST_CASE(GLES2, 0);
@@ -473,6 +534,14 @@ ANGLE_INSTANTIATE_DEQP_TEST_CASE(GLES31, 2);
 
 #ifdef ANGLE_DEQP_EGL_TESTS
 ANGLE_INSTANTIATE_DEQP_TEST_CASE(EGL, 3);
+#endif
+
+#ifdef ANGLE_DEQP_KHR_GLES2_TESTS
+ANGLE_INSTANTIATE_DEQP_TEST_CASE(KHR_GLES2, 4);
+#endif
+
+#ifdef ANGLE_DEQP_KHR_GLES3_TESTS
+ANGLE_INSTANTIATE_DEQP_TEST_CASE(KHR_GLES3, 5);
 #endif
 
 void HandleDisplayType(const char *displayTypeString)
@@ -533,12 +602,9 @@ void DeleteArg(int *argc, int argIndex, char **argv)
         argv[moveIndex] = argv[moveIndex + 1];
     }
 }
-
 }  // anonymous namespace
 
 // Called from main() to process command-line arguments.
-namespace angle
-{
 void InitTestHarness(int *argc, char **argv)
 {
     int argIndex = 0;

@@ -18,13 +18,9 @@
 namespace rx
 {
 
-SurfaceGL::SurfaceGL(const egl::SurfaceState &state) : SurfaceImpl(state)
-{
-}
+SurfaceGL::SurfaceGL(const egl::SurfaceState &state) : SurfaceImpl(state) {}
 
-SurfaceGL::~SurfaceGL()
-{
-}
+SurfaceGL::~SurfaceGL() {}
 
 FramebufferImpl *SurfaceGL::createDefaultFramebuffer(const gl::Context *context,
                                                      const gl::FramebufferState &data)
@@ -38,11 +34,6 @@ egl::Error SurfaceGL::getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuin
     return egl::EglBadSurface();
 }
 
-egl::Error SurfaceGL::unMakeCurrent()
-{
-    return egl::NoError();
-}
-
 angle::Result SurfaceGL::initializeContents(const gl::Context *context,
                                             const gl::ImageIndex &imageIndex)
 {
@@ -52,7 +43,7 @@ angle::Result SurfaceGL::initializeContents(const gl::Context *context,
     BlitGL *blitter = GetBlitGL(context);
     ANGLE_TRY(blitter->clearFramebuffer(framebufferGL));
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

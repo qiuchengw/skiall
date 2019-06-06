@@ -14,8 +14,8 @@
 #include <random>
 #include <sstream>
 
-#include "Matrix.h"
-#include "shader_utils.h"
+#include "util/Matrix.h"
+#include "util/shader_utils.h"
 
 using namespace angle;
 
@@ -62,8 +62,8 @@ struct UniformsParams final : public RenderTestParams
     size_t numVertexUniforms   = 200;
     size_t numFragmentUniforms = 200;
 
-    DataType dataType = DataType::VEC4;
-    DataMode dataMode = DataMode::REPEAT;
+    DataType dataType       = DataType::VEC4;
+    DataMode dataMode       = DataMode::REPEAT;
     ProgramMode programMode = ProgramMode::SINGLE;
 };
 
@@ -90,7 +90,6 @@ std::string UniformsParams::suffix() const
     }
     else
     {
-        ASSERT(dataType == DataType::MAT4);
         strstr << "_matrix";
     }
 
@@ -152,9 +151,7 @@ std::vector<Matrix4> GenMatrixData(size_t count, int parity)
     return data;
 }
 
-UniformsBenchmark::UniformsBenchmark() : ANGLERenderTest("Uniforms", GetParam()), mPrograms({})
-{
-}
+UniformsBenchmark::UniformsBenchmark() : ANGLERenderTest("Uniforms", GetParam()), mPrograms({}) {}
 
 void UniformsBenchmark::initializeBenchmark()
 {
@@ -281,9 +278,9 @@ void UniformsBenchmark::initShaders()
     }
     fstrstr << "}";
 
-    mPrograms[0] = CompileProgram(vstrstr.str(), fstrstr.str());
+    mPrograms[0] = CompileProgram(vstrstr.str().c_str(), fstrstr.str().c_str());
     ASSERT_NE(0u, mPrograms[0]);
-    mPrograms[1] = CompileProgram(vstrstr.str(), fstrstr.str());
+    mPrograms[1] = CompileProgram(vstrstr.str().c_str(), fstrstr.str().c_str());
     ASSERT_NE(0u, mPrograms[1]);
 
     for (size_t i = 0; i < params.numVertexUniforms; ++i)

@@ -52,7 +52,7 @@ const size_t g_shaderSize[] = {
     sizeof(g_ps20_componentmaskpremultps),
     sizeof(g_ps20_componentmaskunmultps),
 };
-}
+}  // namespace
 
 namespace rx
 {
@@ -85,7 +85,7 @@ angle::Result Blit9::initialize(Context9 *context9)
 {
     if (mGeometryLoaded)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     static const float quad[] = {-1, -1, -1, 1, 1, -1, 1, 1};
@@ -113,14 +113,14 @@ angle::Result Blit9::initialize(Context9 *context9)
     ANGLE_TRY_HR(context9, result, "Failed to create internal blit vertex shader declaration");
 
     mGeometryLoaded = true;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 template <class D3DShaderType>
 angle::Result Blit9::setShader(Context9 *context9,
                                ShaderId source,
                                const char *profile,
-                               angle::Result (Renderer9::*createShader)(Context9 *,
+                               angle::Result (Renderer9::*createShader)(d3d::Context *,
                                                                         const DWORD *,
                                                                         size_t length,
                                                                         D3DShaderType **outShader),
@@ -145,7 +145,7 @@ angle::Result Blit9::setShader(Context9 *context9,
 
     HRESULT hr = (device->*setShader)(shader);
     ANGLE_TRY_HR(context9, hr, "Failed to set shader for blit operation");
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Blit9::setVertexShader(Context9 *context9, ShaderId shader)
@@ -214,7 +214,7 @@ angle::Result Blit9::boxFilter(Context9 *context9,
 
     restoreState();
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Blit9::copy2D(const gl::Context *context,
@@ -247,7 +247,7 @@ angle::Result Blit9::copy2D(const gl::Context *context,
 
     ANGLE_TRY(copy(context9, source.Get(), nullptr, sourceRect, destFormat, destOffset,
                    destSurface.Get(), false, false, false));
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Blit9::copyCube(const gl::Context *context,
@@ -354,7 +354,7 @@ angle::Result Blit9::copy(Context9 *context9,
                          destOffset.y + (sourceRect.bottom - sourceRect.top)};
         HRESULT result = device->StretchRect(source, &sourceRect, dest, &destRect, D3DTEXF_POINT);
         ANGLE_TRY_HR(context9, result, "StretchRect failed to blit between textures");
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     angle::ComPtr<IDirect3DBaseTexture9> texture = sourceTexture;
@@ -378,7 +378,7 @@ angle::Result Blit9::copy(Context9 *context9,
 
     ANGLE_TRY(formatConvert(context9, texture.Get(), adjustedSourceRect, sourceSize, destFormat,
                             destOffset, dest, flipY, premultiplyAlpha, unmultiplyAlpha));
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Blit9::formatConvert(Context9 *context9,
@@ -413,7 +413,7 @@ angle::Result Blit9::formatConvert(Context9 *context9,
 
     angle::Result result =
         setFormatConvertShaders(context9, destFormat, flipY, premultiplyAlpha, unmultiplyAlpha);
-    if (result == angle::Result::Continue())
+    if (result == angle::Result::Continue)
     {
         render();
     }
@@ -576,7 +576,7 @@ angle::Result Blit9::setFormatConvertShaders(Context9 *context9,
 
     mRenderer->getDevice()->SetPixelShaderConstantF(0, psConst, 2);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Blit9::copySurfaceToTexture(Context9 *context9,
@@ -607,7 +607,7 @@ angle::Result Blit9::copySurfaceToTexture(Context9 *context9,
     ANGLE_TRY_HR(context9, result, "Failed to copy between internal blit textures");
     *outTexture = texture;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Blit9::setViewportAndShaderConstants(const RECT &sourceRect,
@@ -628,7 +628,10 @@ void Blit9::setViewportAndShaderConstants(const RECT &sourceRect,
 
     float vertexConstants[8] = {
         // halfPixelAdjust
-        -1.0f / vp.Width, 1.0f / vp.Height, 0, 0,
+        -1.0f / vp.Width,
+        1.0f / vp.Height,
+        0,
+        0,
         // texcoordOffset
         static_cast<float>(sourceRect.left) / sourceSize.width,
         static_cast<float>(flipY ? sourceRect.bottom : sourceRect.top) / sourceSize.height,
@@ -754,4 +757,4 @@ void Blit9::restoreState()
         mSavedStateBlock->Apply();
     }
 }
-}
+}  // namespace rx

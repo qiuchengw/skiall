@@ -11,6 +11,7 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/Debug.h"
 #include "libANGLE/Error.h"
+#include "libANGLE/ErrorStrings.h"
 
 namespace egl
 {
@@ -20,8 +21,7 @@ Thread::Thread()
       mError(EGL_SUCCESS),
       mAPI(EGL_OPENGL_ES_API),
       mContext(static_cast<gl::Context *>(EGL_NO_CONTEXT))
-{
-}
+{}
 
 void Thread::setLabel(EGLLabelKHR label)
 {
@@ -100,7 +100,7 @@ gl::Context *Thread::getValidContext() const
 {
     if (mContext && mContext->isContextLost())
     {
-        mContext->handleError(GL_OUT_OF_MEMORY, "Context has been lost.", __FILE__, ANGLE_FUNCTION,
+        mContext->handleError(GL_OUT_OF_MEMORY, gl::err::kContextLost, __FILE__, ANGLE_FUNCTION,
                               __LINE__);
         return nullptr;
     }
@@ -108,11 +108,11 @@ gl::Context *Thread::getValidContext() const
     return mContext;
 }
 
-Display *Thread::getCurrentDisplay() const
+Display *Thread::getDisplay() const
 {
     if (mContext)
     {
-        return mContext->getCurrentDisplay();
+        return mContext->getDisplay();
     }
     return nullptr;
 }

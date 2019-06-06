@@ -1,14 +1,8 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/es_GT.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 es_GT{
     %%Parent{"es_419"}
-    Version{"2.1.20.32"}
+    Version{"2.1.38.39"}
     units{
         duration{
             day{
@@ -53,11 +47,6 @@ es_GT{
                 other{"{0} kilojulios"}
             }
         }
-        length{
-            mile-scandinavian{
-                dnam{"milla escandinava"}
-            }
-        }
         power{
             horsepower{
                 one{"{0} caballos de fuerza"}
@@ -78,6 +67,12 @@ es_GT{
         }
     }
     unitsShort{
+        concentr{
+            karat{
+                one{"{0} ct"}
+                other{"{0} ct"}
+            }
+        }
         electric{
             volt{
                 dnam{"voltios"}
@@ -91,12 +86,6 @@ es_GT{
         power{
             watt{
                 dnam{"vatios"}
-            }
-        }
-        proportion{
-            karat{
-                one{"{0} ct"}
-                other{"{0} ct"}
             }
         }
         volume{

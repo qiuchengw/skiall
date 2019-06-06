@@ -54,13 +54,13 @@
 #include "third_party/trace_event/trace_event.h"
 
 #if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
-#define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
+#    define ANGLE_COMPILE_OPTIMIZATION_LEVEL D3DCOMPILE_OPTIMIZATION_LEVEL3
 #endif
 
 // Enable ANGLE_SUPPORT_SHADER_MODEL_2 if you wish devices with only shader model 2.
 // Such a device would not be conformant.
 #ifndef ANGLE_SUPPORT_SHADER_MODEL_2
-#define ANGLE_SUPPORT_SHADER_MODEL_2 0
+#    define ANGLE_SUPPORT_SHADER_MODEL_2 0
 #endif
 
 namespace rx
@@ -89,6 +89,11 @@ static void DrawPoints(IDirect3DDevice9 *device, GLsizei count, const void *indi
         device->DrawPrimitive(D3DPT_POINTLIST, indexValue, 1);
     }
 }
+
+// A hard limit on buffer size. This works around a problem in the NVIDIA drivers where buffer sizes
+// close to MAX_UINT would give undefined results. The limit of MAX_UINT/2 should be generous enough
+// for almost any demanding application.
+constexpr UINT kMaximumBufferSizeHardLimit = std::numeric_limits<UINT>::max() >> 1;
 }  // anonymous namespace
 
 Renderer9::Renderer9(egl::Display *display) : RendererD3D(display), mStateManager(this)
@@ -189,7 +194,7 @@ void Renderer9::release()
 egl::Error Renderer9::initialize()
 {
     TRACE_EVENT0("gpu.angle", "GetModuleHandle_d3d9");
-    mD3d9Module = GetModuleHandle(TEXT("d3d9.dll"));
+    mD3d9Module = ::LoadLibrary(TEXT("d3d9.dll"));
 
     if (mD3d9Module == nullptr)
     {
@@ -423,7 +428,9 @@ D3DPRESENT_PARAMETERS Renderer9::getDefaultPresentParameters()
 egl::ConfigSet Renderer9::generateConfigs()
 {
     static const GLenum colorBufferFormats[] = {
-        GL_BGR5_A1_ANGLEX, GL_BGRA8_EXT, GL_RGB565,
+        GL_BGR5_A1_ANGLEX,
+        GL_BGRA8_EXT,
+        GL_RGB565,
 
     };
 
@@ -627,7 +634,7 @@ angle::Result Renderer9::flush(const gl::Context *context)
     freeEventQuery(query);
     ANGLE_TRY_HR(context9, result, "Failed to get event query data");
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::finish(const gl::Context *context)
@@ -679,7 +686,7 @@ angle::Result Renderer9::finish(const gl::Context *context)
 
     freeEventQuery(query);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 bool Renderer9::isValidNativeWindow(EGLNativeWindowType window) const
@@ -805,9 +812,9 @@ egl::Error Renderer9::validateShareHandle(const egl::Config *config,
     return egl::NoError();
 }
 
-ContextImpl *Renderer9::createContext(const gl::ContextState &state)
+ContextImpl *Renderer9::createContext(const gl::State &state, gl::ErrorSet *errorSet)
 {
-    return new Context9(state, this);
+    return new Context9(state, errorSet, this);
 }
 
 void *Renderer9::getD3DDevice()
@@ -828,7 +835,7 @@ angle::Result Renderer9::allocateEventQuery(const gl::Context *context, IDirect3
         mEventQueryPool.pop_back();
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Renderer9::freeEventQuery(IDirect3DQuery9 *query)
@@ -843,26 +850,32 @@ void Renderer9::freeEventQuery(IDirect3DQuery9 *query)
     }
 }
 
-angle::Result Renderer9::createVertexShader(Context9 *context9,
+angle::Result Renderer9::createVertexShader(d3d::Context *context,
                                             const DWORD *function,
                                             size_t length,
                                             IDirect3DVertexShader9 **outShader)
 {
-    return mVertexShaderCache.create(context9, function, length, outShader);
+    return mVertexShaderCache.create(context, function, length, outShader);
 }
 
-angle::Result Renderer9::createPixelShader(Context9 *context9,
+angle::Result Renderer9::createPixelShader(d3d::Context *context,
                                            const DWORD *function,
                                            size_t length,
                                            IDirect3DPixelShader9 **outShader)
 {
-    return mPixelShaderCache.create(context9, function, length, outShader);
+    return mPixelShaderCache.create(context, function, length, outShader);
 }
 
 HRESULT Renderer9::createVertexBuffer(UINT Length,
                                       DWORD Usage,
                                       IDirect3DVertexBuffer9 **ppVertexBuffer)
 {
+    // Force buffers to be limited to a fixed max size.
+    if (Length > kMaximumBufferSizeHardLimit)
+    {
+        return E_OUTOFMEMORY;
+    }
+
     D3DPOOL Pool = getBufferPool(Usage);
     return mDevice->CreateVertexBuffer(Length, Usage, 0, Pool, ppVertexBuffer, nullptr);
 }
@@ -877,6 +890,12 @@ HRESULT Renderer9::createIndexBuffer(UINT Length,
                                      D3DFORMAT Format,
                                      IDirect3DIndexBuffer9 **ppIndexBuffer)
 {
+    // Force buffers to be limited to a fixed max size.
+    if (Length > kMaximumBufferSizeHardLimit)
+    {
+        return E_OUTOFMEMORY;
+    }
+
     D3DPOOL Pool = getBufferPool(Usage);
     return mDevice->CreateIndexBuffer(Length, Usage, Format, Pool, ppIndexBuffer, nullptr);
 }
@@ -911,7 +930,7 @@ angle::Result Renderer9::fastCopyBufferToTexture(const gl::Context *context,
 {
     // Pixel buffer objects are not supported in D3D9, since D3D9 is ES2-only and PBOs are ES3.
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Renderer9::setSamplerState(const gl::Context *context,
@@ -974,7 +993,7 @@ angle::Result Renderer9::setSamplerState(const gl::Context *context,
     appliedSampler.samplerState = samplerState;
     appliedSampler.baseLevel    = baseLevel;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::setTexture(const gl::Context *context,
@@ -1018,12 +1037,12 @@ angle::Result Renderer9::setTexture(const gl::Context *context,
 
     appliedTextures[index] = reinterpret_cast<uintptr_t>(d3dTexture);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::updateState(const gl::Context *context, gl::PrimitiveMode drawMode)
 {
-    const auto &glState = context->getGLState();
+    const auto &glState = context->getState();
 
     // Applies the render target surface, depth stencil surface, viewport rectangle and
     // scissor rectangle to the renderer
@@ -1063,7 +1082,7 @@ angle::Result Renderer9::updateState(const gl::Context *context, gl::PrimitiveMo
 
     mStateManager.resetDirtyBits();
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Renderer9::setScissorRectangle(const gl::Rectangle &scissor, bool enabled)
@@ -1074,7 +1093,7 @@ void Renderer9::setScissorRectangle(const gl::Rectangle &scissor, bool enabled)
 angle::Result Renderer9::setBlendDepthRasterStates(const gl::Context *context,
                                                    gl::PrimitiveMode drawMode)
 {
-    const auto &glState              = context->getGLState();
+    const auto &glState              = context->getState();
     gl::Framebuffer *drawFramebuffer = glState.getDrawFramebuffer();
     ASSERT(!drawFramebuffer->hasAnyDirtyBit());
     // Since framebuffer->getSamples will return the original samples which may be different with
@@ -1095,7 +1114,7 @@ angle::Result Renderer9::setBlendDepthRasterStates(const gl::Context *context,
 
     unsigned int mask = GetBlendSampleMask(glState, samples);
     mStateManager.setBlendDepthRasterStates(glState, mask);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Renderer9::setViewport(const gl::Rectangle &viewport,
@@ -1166,7 +1185,7 @@ angle::Result Renderer9::getNullColorRenderTarget(const gl::Context *context,
         {
             mNullRenderTargetCache[i].lruCount = ++mMaxNullColorbufferLRU;
             *outColorRenderTarget              = mNullRenderTargetCache[i].renderTarget;
-            return angle::Result::Continue();
+            return angle::Result::Continue;
         }
     }
 
@@ -1190,7 +1209,7 @@ angle::Result Renderer9::getNullColorRenderTarget(const gl::Context *context,
     oldest->height       = size.height;
 
     *outColorRenderTarget = oldest->renderTarget;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::applyRenderTarget(const gl::Context *context,
@@ -1275,7 +1294,7 @@ angle::Result Renderer9::applyRenderTarget(const gl::Context *context,
         mRenderTargetDescInitialized = true;
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::applyVertexBuffer(const gl::Context *context,
@@ -1285,7 +1304,7 @@ angle::Result Renderer9::applyVertexBuffer(const gl::Context *context,
                                            GLsizei instances,
                                            TranslatedIndexData * /*indexInfo*/)
 {
-    const gl::State &state = context->getGLState();
+    const gl::State &state = context->getState();
     ANGLE_TRY(mVertexDataManager->prepareVertexData(context, first, count, &mTranslatedAttribCache,
                                                     instances));
 
@@ -1299,13 +1318,13 @@ angle::Result Renderer9::applyIndexBuffer(const gl::Context *context,
                                           const void *indices,
                                           GLsizei count,
                                           gl::PrimitiveMode mode,
-                                          GLenum type,
+                                          gl::DrawElementsType type,
                                           TranslatedIndexData *indexInfo)
 {
-    gl::VertexArray *vao           = context->getGLState().getVertexArray();
+    gl::VertexArray *vao           = context->getState().getVertexArray();
     gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
 
-    GLenum dstType = GL_NONE;
+    gl::DrawElementsType dstType = gl::DrawElementsType::InvalidEnum;
     ANGLE_TRY(GetIndexTranslationDestType(context, count, type, indices, false, &dstType));
 
     ANGLE_TRY(mIndexDataManager->prepareIndexData(context, type, dstType, count, elementArrayBuffer,
@@ -1322,7 +1341,7 @@ angle::Result Renderer9::applyIndexBuffer(const gl::Context *context,
         mAppliedIBSerial = indexInfo->serial;
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::drawArraysImpl(const gl::Context *context,
@@ -1331,13 +1350,13 @@ angle::Result Renderer9::drawArraysImpl(const gl::Context *context,
                                         GLsizei count,
                                         GLsizei instances)
 {
-    ASSERT(!context->getGLState().isTransformFeedbackActiveUnpaused());
+    ASSERT(!context->getState().isTransformFeedbackActiveUnpaused());
 
     startScene();
 
     if (mode == gl::PrimitiveMode::LineLoop)
     {
-        return drawLineLoop(context, count, GL_NONE, nullptr, 0, nullptr);
+        return drawLineLoop(context, count, gl::DrawElementsType::InvalidEnum, nullptr, 0, nullptr);
     }
 
     if (instances > 0)
@@ -1358,18 +1377,18 @@ angle::Result Renderer9::drawArraysImpl(const gl::Context *context,
             mDevice->DrawIndexedPrimitive(mPrimitiveType, 0, 0, count, 0, mPrimitiveCount);
         }
 
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     // Regular case
     mDevice->DrawPrimitive(mPrimitiveType, 0, mPrimitiveCount);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::drawElementsImpl(const gl::Context *context,
                                           gl::PrimitiveMode mode,
                                           GLsizei count,
-                                          GLenum type,
+                                          gl::DrawElementsType type,
                                           const void *indices,
                                           GLsizei instances)
 {
@@ -1378,8 +1397,8 @@ angle::Result Renderer9::drawElementsImpl(const gl::Context *context,
     ANGLE_TRY(applyIndexBuffer(context, indices, count, mode, type, &indexInfo));
 
     gl::IndexRange indexRange;
-    ANGLE_TRY(context->getGLState().getVertexArray()->getIndexRange(context, type, count, indices,
-                                                                    &indexRange));
+    ANGLE_TRY(context->getState().getVertexArray()->getIndexRange(context, type, count, indices,
+                                                                  &indexRange));
 
     size_t vertexCount = indexRange.vertexCount();
     ANGLE_TRY(applyVertexBuffer(context, mode, static_cast<GLsizei>(indexRange.start),
@@ -1389,7 +1408,7 @@ angle::Result Renderer9::drawElementsImpl(const gl::Context *context,
 
     int minIndex = static_cast<int>(indexRange.start);
 
-    gl::VertexArray *vao           = context->getGLState().getVertexArray();
+    gl::VertexArray *vao           = context->getState().getVertexArray();
     gl::Buffer *elementArrayBuffer = vao->getElementArrayBuffer();
 
     if (mode == gl::PrimitiveMode::Points)
@@ -1408,18 +1427,18 @@ angle::Result Renderer9::drawElementsImpl(const gl::Context *context,
                                       static_cast<UINT>(vertexCount), indexInfo.startIndex,
                                       mPrimitiveCount);
     }
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::drawLineLoop(const gl::Context *context,
                                       GLsizei count,
-                                      GLenum type,
+                                      gl::DrawElementsType type,
                                       const void *indices,
                                       int minIndex,
                                       gl::Buffer *elementArrayBuffer)
 {
     // Get the raw indices for an indexed draw
-    if (type != GL_NONE && elementArrayBuffer)
+    if (type != gl::DrawElementsType::InvalidEnum && elementArrayBuffer)
     {
         BufferD3D *storage        = GetImplAs<BufferD3D>(elementArrayBuffer);
         intptr_t offset           = reinterpret_cast<intptr_t>(indices);
@@ -1437,7 +1456,7 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
         {
             mLineLoopIB = new StreamingIndexBufferInterface(this);
             ANGLE_TRY(mLineLoopIB->reserveBufferSpace(context, INITIAL_INDEX_BUFFER_SIZE,
-                                                      GL_UNSIGNED_INT));
+                                                      gl::DrawElementsType::UnsignedInt));
         }
 
         // Checked by Renderer9::applyPrimitiveType
@@ -1452,7 +1471,8 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
 
         const unsigned int spaceNeeded =
             (static_cast<unsigned int>(count) + 1) * sizeof(unsigned int);
-        ANGLE_TRY(mLineLoopIB->reserveBufferSpace(context, spaceNeeded, GL_UNSIGNED_INT));
+        ANGLE_TRY(mLineLoopIB->reserveBufferSpace(context, spaceNeeded,
+                                                  gl::DrawElementsType::UnsignedInt));
 
         void *mappedMemory  = nullptr;
         unsigned int offset = 0;
@@ -1463,28 +1483,28 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
 
         switch (type)
         {
-            case GL_NONE:  // Non-indexed draw
+            case gl::DrawElementsType::InvalidEnum:  // Non-indexed draw
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = i;
                 }
                 data[count] = 0;
                 break;
-            case GL_UNSIGNED_BYTE:
+            case gl::DrawElementsType::UnsignedByte:
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<const GLubyte *>(indices)[i];
                 }
                 data[count] = static_cast<const GLubyte *>(indices)[0];
                 break;
-            case GL_UNSIGNED_SHORT:
+            case gl::DrawElementsType::UnsignedShort:
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<const GLushort *>(indices)[i];
                 }
                 data[count] = static_cast<const GLushort *>(indices)[0];
                 break;
-            case GL_UNSIGNED_INT:
+            case gl::DrawElementsType::UnsignedInt:
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<const GLuint *>(indices)[i];
@@ -1503,7 +1523,7 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
         {
             mLineLoopIB = new StreamingIndexBufferInterface(this);
             ANGLE_TRY(mLineLoopIB->reserveBufferSpace(context, INITIAL_INDEX_BUFFER_SIZE,
-                                                      GL_UNSIGNED_SHORT));
+                                                      gl::DrawElementsType::UnsignedShort));
         }
 
         // Checked by Renderer9::applyPrimitiveType
@@ -1518,7 +1538,8 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
 
         const unsigned int spaceNeeded =
             (static_cast<unsigned int>(count) + 1) * sizeof(unsigned short);
-        ANGLE_TRY(mLineLoopIB->reserveBufferSpace(context, spaceNeeded, GL_UNSIGNED_SHORT));
+        ANGLE_TRY(mLineLoopIB->reserveBufferSpace(context, spaceNeeded,
+                                                  gl::DrawElementsType::UnsignedShort));
 
         void *mappedMemory = nullptr;
         unsigned int offset;
@@ -1529,28 +1550,28 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
 
         switch (type)
         {
-            case GL_NONE:  // Non-indexed draw
+            case gl::DrawElementsType::InvalidEnum:  // Non-indexed draw
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<unsigned short>(i);
                 }
                 data[count] = 0;
                 break;
-            case GL_UNSIGNED_BYTE:
+            case gl::DrawElementsType::UnsignedByte:
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<const GLubyte *>(indices)[i];
                 }
                 data[count] = static_cast<const GLubyte *>(indices)[0];
                 break;
-            case GL_UNSIGNED_SHORT:
+            case gl::DrawElementsType::UnsignedShort:
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<const GLushort *>(indices)[i];
                 }
                 data[count] = static_cast<const GLushort *>(indices)[0];
                 break;
-            case GL_UNSIGNED_INT:
+            case gl::DrawElementsType::UnsignedInt:
                 for (int i = 0; i < count; i++)
                 {
                     data[i] = static_cast<unsigned short>(static_cast<const GLuint *>(indices)[i]);
@@ -1574,12 +1595,12 @@ angle::Result Renderer9::drawLineLoop(const gl::Context *context,
 
     mDevice->DrawIndexedPrimitive(D3DPT_LINESTRIP, -minIndex, minIndex, count, startIndex, count);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::drawIndexedPoints(const gl::Context *context,
                                            GLsizei count,
-                                           GLenum type,
+                                           gl::DrawElementsType type,
                                            const void *indices,
                                            int minIndex,
                                            gl::Buffer *elementArrayBuffer)
@@ -1599,15 +1620,15 @@ angle::Result Renderer9::drawIndexedPoints(const gl::Context *context,
 
     switch (type)
     {
-        case GL_UNSIGNED_BYTE:
+        case gl::DrawElementsType::UnsignedByte:
             DrawPoints<GLubyte>(mDevice, count, indices, minIndex);
-            return angle::Result::Continue();
-        case GL_UNSIGNED_SHORT:
+            return angle::Result::Continue;
+        case gl::DrawElementsType::UnsignedShort:
             DrawPoints<GLushort>(mDevice, count, indices, minIndex);
-            return angle::Result::Continue();
-        case GL_UNSIGNED_INT:
+            return angle::Result::Continue;
+        case gl::DrawElementsType::UnsignedInt:
             DrawPoints<GLuint>(mDevice, count, indices, minIndex);
-            return angle::Result::Continue();
+            return angle::Result::Continue;
         default:
             ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
     }
@@ -1626,7 +1647,8 @@ angle::Result Renderer9::getCountingIB(const gl::Context *context,
         {
             SafeDelete(mCountingIB);
             mCountingIB = new StaticIndexBufferInterface(this);
-            ANGLE_TRY(mCountingIB->reserveBufferSpace(context, spaceNeeded, GL_UNSIGNED_SHORT));
+            ANGLE_TRY(mCountingIB->reserveBufferSpace(context, spaceNeeded,
+                                                      gl::DrawElementsType::UnsignedShort));
 
             void *mappedMemory = nullptr;
             ANGLE_TRY(mCountingIB->mapBuffer(context, spaceNeeded, &mappedMemory, nullptr));
@@ -1648,7 +1670,8 @@ angle::Result Renderer9::getCountingIB(const gl::Context *context,
         {
             SafeDelete(mCountingIB);
             mCountingIB = new StaticIndexBufferInterface(this);
-            ANGLE_TRY(mCountingIB->reserveBufferSpace(context, spaceNeeded, GL_UNSIGNED_INT));
+            ANGLE_TRY(mCountingIB->reserveBufferSpace(context, spaceNeeded,
+                                                      gl::DrawElementsType::UnsignedInt));
 
             void *mappedMemory = nullptr;
             ANGLE_TRY(mCountingIB->mapBuffer(context, spaceNeeded, &mappedMemory, nullptr));
@@ -1669,12 +1692,12 @@ angle::Result Renderer9::getCountingIB(const gl::Context *context,
     }
 
     *outIB = mCountingIB;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::applyShaders(const gl::Context *context, gl::PrimitiveMode drawMode)
 {
-    const gl::State &state   = context->getContextState().getState();
+    const gl::State &state   = context->getState();
     d3d::Context *contextD3D = GetImplAs<ContextD3D>(context);
 
     // This method is called single-threaded.
@@ -1728,7 +1751,7 @@ angle::Result Renderer9::applyShaders(const gl::Context *context, gl::PrimitiveM
     // Driver uniforms
     mStateManager.setShaderConstants();
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Renderer9::applyUniforms(ProgramD3D *programD3D)
@@ -2412,7 +2435,7 @@ angle::Result Renderer9::copyImage3D(const gl::Context *context,
 {
     // 3D textures are not available in the D3D9 backend.
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Renderer9::copyImage2DArray(const gl::Context *context,
@@ -2425,7 +2448,7 @@ angle::Result Renderer9::copyImage2DArray(const gl::Context *context,
 {
     // 2D array textures are not available in the D3D9 backend.
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Renderer9::copyTexture(const gl::Context *context,
@@ -2461,7 +2484,7 @@ angle::Result Renderer9::copyCompressedTexture(const gl::Context *context,
                                                GLint destLevel)
 {
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Renderer9::createRenderTarget(const gl::Context *context,
@@ -2528,7 +2551,7 @@ angle::Result Renderer9::createRenderTarget(const gl::Context *context,
 
     *outRT = new TextureRenderTarget9(texture, 0, renderTarget, format, width, height, 1,
                                       supportedSamples);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::createRenderTargetCopy(const gl::Context *context,
@@ -2549,7 +2572,7 @@ angle::Result Renderer9::createRenderTargetCopy(const gl::Context *context,
     ANGLE_TRY_HR(GetImplAs<Context9>(context), result, "Failed to copy render target");
 
     *outRT = newRT;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::loadExecutable(d3d::Context *context,
@@ -2563,21 +2586,19 @@ angle::Result Renderer9::loadExecutable(d3d::Context *context,
     // Transform feedback is not supported in ES2 or D3D9
     ASSERT(streamOutVaryings.empty());
 
-    Context9 *context9 = static_cast<Context9 *>(context);
-
     switch (type)
     {
         case gl::ShaderType::Vertex:
         {
             IDirect3DVertexShader9 *vshader = nullptr;
-            ANGLE_TRY(createVertexShader(context9, (DWORD *)function, length, &vshader));
+            ANGLE_TRY(createVertexShader(context, (DWORD *)function, length, &vshader));
             *outExecutable = new ShaderExecutable9(function, length, vshader);
         }
         break;
         case gl::ShaderType::Fragment:
         {
             IDirect3DPixelShader9 *pshader = nullptr;
-            ANGLE_TRY(createPixelShader(context9, (DWORD *)function, length, &pshader));
+            ANGLE_TRY(createPixelShader(context, (DWORD *)function, length, &pshader));
             *outExecutable = new ShaderExecutable9(function, length, pshader);
         }
         break;
@@ -2585,7 +2606,7 @@ angle::Result Renderer9::loadExecutable(d3d::Context *context,
             ANGLE_HR_UNREACHABLE(context);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::compileToExecutable(d3d::Context *context,
@@ -2660,7 +2681,7 @@ angle::Result Renderer9::compileToExecutable(d3d::Context *context,
     if (!binary)
     {
         *outExectuable = nullptr;
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     error = loadExecutable(context, reinterpret_cast<const uint8_t *>(binary->GetBufferPointer()),
@@ -2675,7 +2696,7 @@ angle::Result Renderer9::compileToExecutable(d3d::Context *context,
         (*outExectuable)->appendDebugInfo(debugInfo);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::ensureHLSLCompilerInitialized(d3d::Context *context)
@@ -2746,7 +2767,7 @@ angle::Result Renderer9::copyToRenderTarget(const gl::Context *context,
     }
 
     ANGLE_TRY_HR(context9, result, "Failed to blit internal texture");
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 RendererClass Renderer9::getRendererClass() const
@@ -2771,7 +2792,7 @@ angle::Result Renderer9::generateMipmapUsingD3D(const gl::Context *context,
                                                 const gl::TextureState &textureState)
 {
     ANGLE_HR_UNREACHABLE(GetImplAs<Context9>(context));
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Renderer9::copyImage(const gl::Context *context,
@@ -2916,10 +2937,10 @@ angle::Result Renderer9::getVertexSpaceRequired(const gl::Context *context,
     if (!attrib.enabled)
     {
         *bytesRequiredOut = 16u;
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
-    angle::FormatID vertexFormatID = gl::GetVertexFormatID(attrib, GL_FLOAT);
+    angle::FormatID vertexFormatID = gl::GetVertexFormatID(attrib, gl::VertexAttribType::Float);
     const d3d9::VertexFormat &d3d9VertexInfo =
         d3d9::GetVertexFormatInfo(getCapsDeclTypes(), vertexFormatID);
 
@@ -2941,7 +2962,7 @@ angle::Result Renderer9::getVertexSpaceRequired(const gl::Context *context,
                 "New vertex buffer size would result in an overflow.", GL_OUT_OF_MEMORY);
 
     *bytesRequiredOut = static_cast<unsigned int>(d3d9VertexInfo.outputElementSize) * elementCount;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Renderer9::generateCaps(gl::Caps *outCaps,
@@ -2953,9 +2974,9 @@ void Renderer9::generateCaps(gl::Caps *outCaps,
                           outExtensions, outLimitations);
 }
 
-angle::WorkaroundsD3D Renderer9::generateWorkarounds() const
+void Renderer9::generateWorkarounds(angle::WorkaroundsD3D *workarounds) const
 {
-    return d3d9::GenerateWorkarounds();
+    d3d9::GenerateWorkarounds(workarounds);
 }
 
 DeviceImpl *Renderer9::createEGLDevice()
@@ -2965,18 +2986,17 @@ DeviceImpl *Renderer9::createEGLDevice()
 
 Renderer9::CurSamplerState::CurSamplerState()
     : forceSet(true), baseLevel(std::numeric_limits<size_t>::max()), samplerState()
-{
-}
+{}
 
 angle::Result Renderer9::genericDrawElements(const gl::Context *context,
                                              gl::PrimitiveMode mode,
                                              GLsizei count,
-                                             GLenum type,
+                                             gl::DrawElementsType type,
                                              const void *indices,
                                              GLsizei instances)
 {
-    const auto &data     = context->getContextState();
-    gl::Program *program = context->getGLState().getProgram();
+    const gl::State &state = context->getState();
+    gl::Program *program   = context->getState().getProgram();
     ASSERT(program != nullptr);
     ProgramD3D *programD3D = GetImplAs<ProgramD3D>(program);
     bool usesPointSize     = programD3D->usesPointSize();
@@ -2985,19 +3005,19 @@ angle::Result Renderer9::genericDrawElements(const gl::Context *context,
 
     if (!applyPrimitiveType(mode, count, usesPointSize))
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     ANGLE_TRY(updateState(context, mode));
     ANGLE_TRY(applyTextures(context));
     ANGLE_TRY(applyShaders(context, mode));
 
-    if (!skipDraw(data.getState(), mode))
+    if (!skipDraw(state, mode))
     {
         ANGLE_TRY(drawElementsImpl(context, mode, count, type, indices, instances));
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::genericDrawArrays(const gl::Context *context,
@@ -3006,7 +3026,7 @@ angle::Result Renderer9::genericDrawArrays(const gl::Context *context,
                                            GLsizei count,
                                            GLsizei instances)
 {
-    gl::Program *program = context->getGLState().getProgram();
+    gl::Program *program = context->getState().getProgram();
     ASSERT(program != nullptr);
     ProgramD3D *programD3D = GetImplAs<ProgramD3D>(program);
     bool usesPointSize     = programD3D->usesPointSize();
@@ -3015,7 +3035,7 @@ angle::Result Renderer9::genericDrawArrays(const gl::Context *context,
 
     if (!applyPrimitiveType(mode, count, usesPointSize))
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     ANGLE_TRY(updateState(context, mode));
@@ -3023,12 +3043,12 @@ angle::Result Renderer9::genericDrawArrays(const gl::Context *context,
     ANGLE_TRY(applyTextures(context));
     ANGLE_TRY(applyShaders(context, mode));
 
-    if (!skipDraw(context->getGLState(), mode))
+    if (!skipDraw(context->getState(), mode))
     {
         ANGLE_TRY(drawArraysImpl(context, mode, first, count, instances));
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 FramebufferImpl *Renderer9::createDefaultFramebuffer(const gl::FramebufferState &state)
@@ -3093,7 +3113,7 @@ angle::Result Renderer9::clearRenderTarget(const gl::Context *context,
 
     markAllStateDirty();
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 bool Renderer9::canSelectViewInVertexShader() const
@@ -3107,7 +3127,7 @@ bool Renderer9::canSelectViewInVertexShader() const
 // Sampler mapping needs to be up-to-date on the program object before this is called.
 angle::Result Renderer9::applyTextures(const gl::Context *context, gl::ShaderType shaderType)
 {
-    const auto &glState    = context->getGLState();
+    const auto &glState    = context->getState();
     const auto &caps       = context->getCaps();
     ProgramD3D *programD3D = GetImplAs<ProgramD3D>(glState.getProgram());
 
@@ -3161,14 +3181,14 @@ angle::Result Renderer9::applyTextures(const gl::Context *context, gl::ShaderTyp
         ANGLE_TRY(setTexture(context, shaderType, static_cast<int>(samplerIndex), nullptr));
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::applyTextures(const gl::Context *context)
 {
     ANGLE_TRY(applyTextures(context, gl::ShaderType::Vertex));
     ANGLE_TRY(applyTextures(context, gl::ShaderType::Fragment));
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Renderer9::getIncompleteTexture(const gl::Context *context,
@@ -3186,6 +3206,6 @@ angle::Result Renderer9::ensureVertexDataManagerInitialized(const gl::Context *c
         ANGLE_TRY(mVertexDataManager->initialize(context));
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 }  // namespace rx

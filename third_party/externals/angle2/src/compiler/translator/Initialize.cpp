@@ -65,6 +65,10 @@ void InitExtensionBehavior(const ShBuiltInResources &resources, TExtensionBehavi
     {
         extBehavior[TExtension::OVR_multiview] = EBhUndefined;
     }
+    if (resources.OVR_multiview2)
+    {
+        extBehavior[TExtension::OVR_multiview2] = EBhUndefined;
+    }
     if (resources.EXT_YUV_target)
     {
         extBehavior[TExtension::EXT_YUV_target] = EBhUndefined;

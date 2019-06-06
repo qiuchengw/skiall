@@ -32,10 +32,8 @@ class StateChangeTest : public ANGLETest
         setNoErrorEnabled(true);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenFramebuffers(1, &mFramebuffer);
         glGenTextures(2, mTextures.data());
         glGenRenderbuffers(1, &mRenderbuffer);
@@ -43,7 +41,7 @@ class StateChangeTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mFramebuffer != 0)
         {
@@ -58,8 +56,6 @@ class StateChangeTest : public ANGLETest
         }
 
         glDeleteRenderbuffers(1, &mRenderbuffer);
-
-        ANGLETest::TearDown();
     }
 
     GLuint mFramebuffer           = 0;
@@ -158,7 +154,7 @@ TEST_P(StateChangeTest, FramebufferIncompleteColorAttachment)
 // Test that caching works when color attachments change with TexStorage.
 TEST_P(StateChangeTest, FramebufferIncompleteWithTexStorage)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
@@ -254,7 +250,7 @@ TEST_P(StateChangeTest, FramebufferIncompleteStencilAttachment)
 TEST_P(StateChangeTest, FramebufferIncompleteDepthStencilAttachment)
 {
     ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
-                       !extensionEnabled("GL_OES_packed_depth_stencil"));
+                       !IsGLExtensionEnabled("GL_OES_packed_depth_stencil"));
 
     glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
@@ -331,6 +327,131 @@ TEST_P(StateChangeTest, DisablingBufferedVertexAttribute)
     glBufferData(GL_ARRAY_BUFFER, blue.size() * sizeof(GLColor), blue.data(), GL_STATIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+}
+
+// Tests that setting value for a subset of default attributes doesn't affect others.
+TEST_P(StateChangeTest, SetCurrentAttribute)
+{
+    constexpr char kVS[] = R"(attribute vec4 position;
+attribute mat4 testAttrib;  // Note that this generates 4 attributes
+varying vec4 testVarying;
+void main (void)
+{
+    gl_Position = position;
+
+    testVarying = position.y < 0.0 ?
+                    position.x < 0.0 ? testAttrib[0] : testAttrib[1] :
+                    position.x < 0.0 ? testAttrib[2] : testAttrib[3];
+})";
+
+    ANGLE_GL_PROGRAM(program, kVS, kSimpleAttributeFS);
+    glUseProgram(program);
+    GLint attribLoc   = glGetAttribLocation(program, "testAttrib");
+    GLint positionLoc = glGetAttribLocation(program, "position");
+    ASSERT_NE(-1, attribLoc);
+    ASSERT_NE(-1, positionLoc);
+
+    // Set the current value of two of the test attributes, while leaving the other two as default.
+    glVertexAttrib4f(attribLoc + 1, 0.0f, 1.0f, 0.0f, 1.0f);
+    glVertexAttrib4f(attribLoc + 2, 0.0f, 0.0f, 1.0f, 1.0f);
+
+    // Set up the position attribute.
+    setupQuadVertexBuffer(0.5f, 1.0f);
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    // Draw and verify the four section in the output:
+    //
+    //  +---------------+
+    //  | Black | Green |
+    //  +-------+-------+
+    //  | Blue  | Black |
+    //  +---------------+
+    //
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    const int w                            = getWindowWidth();
+    const int h                            = getWindowHeight();
+    constexpr unsigned int kPixelTolerance = 5u;
+    EXPECT_PIXEL_COLOR_NEAR(0, 0, GLColor::black, kPixelTolerance);
+    EXPECT_PIXEL_COLOR_NEAR(w - 1, 0, GLColor::green, kPixelTolerance);
+    EXPECT_PIXEL_COLOR_NEAR(0, h - 1, GLColor::blue, kPixelTolerance);
+    EXPECT_PIXEL_COLOR_NEAR(w - 1, h - 1, GLColor::black, kPixelTolerance);
+}
+
+// Tests that vertex attribute value is preserved across context switches.
+TEST_P(StateChangeTest, MultiContextVertexAttribute)
+{
+    EGLWindow *window   = getEGLWindow();
+    EGLDisplay display  = window->getDisplay();
+    EGLConfig config    = window->getConfig();
+    EGLSurface surface  = window->getSurface();
+    EGLContext context1 = window->getContext();
+
+    // Set up program in primary context
+    ANGLE_GL_PROGRAM(program1, kSimpleAttributeVS, kSimpleAttributeFS);
+    glUseProgram(program1);
+    GLint attribLoc   = glGetAttribLocation(program1, "testAttrib");
+    GLint positionLoc = glGetAttribLocation(program1, "position");
+    ASSERT_NE(-1, attribLoc);
+    ASSERT_NE(-1, positionLoc);
+
+    // Set up the position attribute in primary context
+    setupQuadVertexBuffer(0.5f, 1.0f);
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    // Set primary context attribute to green and draw quad
+    glVertexAttrib4f(attribLoc, 0.0f, 1.0f, 0.0f, 1.0f);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Set up and switch to secondary context
+    EGLint contextAttributes[] = {
+        EGL_CONTEXT_MAJOR_VERSION_KHR,
+        GetParam().majorVersion,
+        EGL_CONTEXT_MINOR_VERSION_KHR,
+        GetParam().minorVersion,
+        EGL_NONE,
+    };
+    EGLContext context2 = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributes);
+    ASSERT_NE(context2, EGL_NO_CONTEXT);
+    eglMakeCurrent(display, surface, surface, context2);
+
+    // Set up program in secondary context
+    ANGLE_GL_PROGRAM(program2, kSimpleAttributeVS, kSimpleAttributeFS);
+    glUseProgram(program2);
+    ASSERT_EQ(attribLoc, glGetAttribLocation(program2, "testAttrib"));
+    ASSERT_EQ(positionLoc, glGetAttribLocation(program2, "position"));
+
+    // Set up the position attribute in secondary context
+    setupQuadVertexBuffer(0.5f, 1.0f);
+    glEnableVertexAttribArray(positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    // attribLoc current value should be default - (0,0,0,1)
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Restore primary context
+    eglMakeCurrent(display, surface, surface, context1);
+    // ReadPixels to ensure context is switched
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Switch to secondary context second time
+    eglMakeCurrent(display, surface, surface, context2);
+    // Check that it still draws black
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+
+    // Restore primary context second time
+    eglMakeCurrent(display, surface, surface, context1);
+    // Check if it still draws green
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Clean up
+    eglDestroyContext(display, context2);
 }
 
 // Ensure that CopyTexSubImage3D syncs framebuffer changes.
@@ -482,33 +603,33 @@ class StateChangeRenderTest : public StateChangeTest
   protected:
     StateChangeRenderTest() : mProgram(0), mRenderbuffer(0) {}
 
-    void SetUp() override
+    void testSetUp() override
     {
-        StateChangeTest::SetUp();
+        StateChangeTest::testSetUp();
 
-        const std::string vertexShaderSource =
+        constexpr char kVS[] =
             "attribute vec2 position;\n"
             "void main() {\n"
             "    gl_Position = vec4(position, 0, 1);\n"
             "}";
-        const std::string fragmentShaderSource =
+        constexpr char kFS[] =
             "uniform highp vec4 uniformColor;\n"
             "void main() {\n"
             "    gl_FragColor = uniformColor;\n"
             "}";
 
-        mProgram = CompileProgram(vertexShaderSource, fragmentShaderSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mProgram);
 
         glGenRenderbuffers(1, &mRenderbuffer);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteProgram(mProgram);
         glDeleteRenderbuffers(1, &mRenderbuffer);
 
-        StateChangeTest::TearDown();
+        StateChangeTest::testTearDown();
     }
 
     void setUniformColor(const GLColor &color)
@@ -699,7 +820,7 @@ TEST_P(StateChangeTest, VertexBufferUpdatedAfterDraw)
     // http://anglebug.com/2664.
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel());
 
-    const std::string vs =
+    constexpr char kVS[] =
         "attribute vec2 position;\n"
         "attribute vec4 color;\n"
         "varying vec4 outcolor;\n"
@@ -708,14 +829,14 @@ TEST_P(StateChangeTest, VertexBufferUpdatedAfterDraw)
         "    gl_Position = vec4(position, 0, 1);\n"
         "    outcolor = color;\n"
         "}";
-    const std::string fs =
+    constexpr char kFS[] =
         "varying mediump vec4 outcolor;\n"
         "void main()\n"
         "{\n"
         "    gl_FragColor = outcolor;\n"
         "}";
 
-    ANGLE_GL_PROGRAM(program, vs, fs);
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
     glUseProgram(program);
 
     GLint colorLoc = glGetAttribLocation(program, "color");
@@ -755,12 +876,11 @@ TEST_P(StateChangeTest, VertexBufferUpdatedAfterDraw)
 // Test that switching VAOs keeps the disabled "current value" attributes up-to-date.
 TEST_P(StateChangeTestES3, VertexArrayObjectAndDisabledAttributes)
 {
-    const std::string singleVertexShader =
-        "attribute vec4 position; void main() { gl_Position = position; }";
-    const std::string singleFragmentShader = "void main() { gl_FragColor = vec4(1, 0, 0, 1); }";
-    ANGLE_GL_PROGRAM(singleProgram, singleVertexShader, singleFragmentShader);
+    constexpr char kSingleVS[] = "attribute vec4 position; void main() { gl_Position = position; }";
+    constexpr char kSingleFS[] = "void main() { gl_FragColor = vec4(1, 0, 0, 1); }";
+    ANGLE_GL_PROGRAM(singleProgram, kSingleVS, kSingleFS);
 
-    const std::string dualVertexShader =
+    constexpr char kDualVS[] =
         "#version 300 es\n"
         "in vec4 position;\n"
         "in vec4 color;\n"
@@ -770,7 +890,7 @@ TEST_P(StateChangeTestES3, VertexArrayObjectAndDisabledAttributes)
         "    gl_Position = position;\n"
         "    varyColor = color;\n"
         "}";
-    const std::string dualFragmentShader =
+    constexpr char kDualFS[] =
         "#version 300 es\n"
         "precision mediump float;\n"
         "in vec4 varyColor;\n"
@@ -779,7 +899,7 @@ TEST_P(StateChangeTestES3, VertexArrayObjectAndDisabledAttributes)
         "{\n"
         "    colorOut = varyColor;\n"
         "}";
-    ANGLE_GL_PROGRAM(dualProgram, dualVertexShader, dualFragmentShader);
+    ANGLE_GL_PROGRAM(dualProgram, kDualVS, kDualFS);
     GLint positionLocation = glGetAttribLocation(dualProgram, "position");
     ASSERT_NE(-1, positionLocation);
     GLint colorLocation = glGetAttribLocation(dualProgram, "color");
@@ -1022,7 +1142,7 @@ class LineLoopStateChangeTest : public StateChangeTest
         setConfigAlphaBits(8);
     }
 
-    void validateSquareAndHourglass()
+    void validateSquareAndHourglass() const
     {
         ASSERT_GL_NO_ERROR();
 
@@ -1045,25 +1165,26 @@ class LineLoopStateChangeTest : public StateChangeTest
         // Verify line is closed between the 2 last vertices
         EXPECT_PIXEL_COLOR_EQ((quarterWidth * 2), quarterHeight, GLColor::blue);
     }
-
-    GLint mPositionLocation;
 };
 
 // Draw an hourglass with a drawElements call followed by a square with drawArrays.
 TEST_P(LineLoopStateChangeTest, DrawElementsThenDrawArrays)
 {
+    // http://anglebug.com/3361
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsVulkan() && IsWindows());
+
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Blue());
     glUseProgram(program);
 
     // We expect to draw a square with these 4 vertices with a drawArray call.
     std::vector<Vector3> vertices;
-    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 8}, {24, 24}}, getWindowWidth(),
+    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 24}, {24, 8}}, getWindowWidth(),
                                   getWindowHeight(), &vertices);
 
     // If we use these indices to draw however, we should be drawing an hourglass.
     auto indices = std::vector<GLushort>{0, 2, 1, 3};
 
-    mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    GLint mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
     ASSERT_NE(-1, mPositionLocation);
 
     GLBuffer vertexBuffer;
@@ -1098,13 +1219,13 @@ TEST_P(LineLoopStateChangeTest, DrawArraysThenDrawElements)
 
     // We expect to draw a square with these 4 vertices with a drawArray call.
     std::vector<Vector3> vertices;
-    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 8}, {24, 24}}, getWindowWidth(),
+    CreatePixelCenterWindowCoords({{8, 8}, {8, 24}, {24, 24}, {24, 8}}, getWindowWidth(),
                                   getWindowHeight(), &vertices);
 
     // If we use these indices to draw however, we should be drawing an hourglass.
     auto indices = std::vector<GLushort>{0, 2, 1, 3};
 
-    mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    GLint mPositionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
     ASSERT_NE(-1, mPositionLocation);
 
     GLBuffer vertexBuffer;
@@ -1146,10 +1267,69 @@ class SimpleStateChangeTest : public ANGLETest
 
     void simpleDrawWithBuffer(GLBuffer *buffer);
     void simpleDrawWithColor(const GLColor &color);
+
+    using UpdateFunc = std::function<void(GLenum, GLTexture *, GLint, GLint, const GLColor &)>;
+    void updateTextureBoundToFramebufferHelper(UpdateFunc updateFunc);
+    void bindTextureToFbo(GLFramebuffer &fbo, GLTexture &texture);
+    void drawToFboWithCulling(const GLenum frontFace, bool earlyFrontFaceDirty);
 };
 
 class SimpleStateChangeTestES3 : public SimpleStateChangeTest
+{};
+
+class SimpleStateChangeTestES31 : public SimpleStateChangeTest
 {
+  protected:
+    void testSetUp() override
+    {
+        glGenFramebuffers(1, &mFramebuffer);
+        glGenTextures(1, &mTexture);
+
+        glBindTexture(GL_TEXTURE_2D, mTexture);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+        EXPECT_GL_NO_ERROR();
+
+        constexpr char kCS[] = R"(#version 310 es
+layout(local_size_x=2, local_size_y=2) in;
+layout (rgba8, binding = 0) readonly uniform highp image2D srcImage;
+layout (rgba8, binding = 1) writeonly uniform highp image2D dstImage;
+void main()
+{
+    imageStore(dstImage, ivec2(gl_LocalInvocationID.xy),
+               imageLoad(srcImage, ivec2(gl_LocalInvocationID.xy)));
+})";
+
+        mProgram = CompileComputeProgram(kCS);
+        ASSERT_NE(mProgram, 0u);
+
+        glBindImageTexture(1, mTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, mFramebuffer);
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture,
+                               0);
+
+        ASSERT_GL_NO_ERROR();
+    }
+
+    void testTearDown() override
+    {
+        if (mFramebuffer != 0)
+        {
+            glDeleteFramebuffers(1, &mFramebuffer);
+            mFramebuffer = 0;
+        }
+
+        if (mTexture != 0)
+        {
+            glDeleteTextures(1, &mTexture);
+            mTexture = 0;
+        }
+        glDeleteProgram(mProgram);
+    }
+
+    GLuint mProgram;
+    GLuint mFramebuffer = 0;
+    GLuint mTexture     = 0;
 };
 
 constexpr char kSimpleVertexShader[] = R"(attribute vec2 position;
@@ -1295,6 +1475,8 @@ TEST_P(SimpleStateChangeTest, RedefineBufferInUse)
 // Tests updating a buffer's contents while in use, without redefining it.
 TEST_P(SimpleStateChangeTest, UpdateBufferInUse)
 {
+    // tobine: Started failing w/ custom cmd buffers. http://anglebug.com/3255
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsVulkan());
     std::vector<GLColor> redColorData(6, GLColor::red);
 
     GLBuffer buffer;
@@ -1610,6 +1792,95 @@ TEST_P(SimpleStateChangeTest, UpdateTextureInUse)
     EXPECT_PIXEL_COLOR_EQ(0, h, GLColor::green);
     EXPECT_PIXEL_COLOR_EQ(w, h, GLColor::red);
     ASSERT_GL_NO_ERROR();
+}
+
+void SimpleStateChangeTest::updateTextureBoundToFramebufferHelper(UpdateFunc updateFunc)
+{
+    std::vector<GLColor> red(4, GLColor::red);
+    std::vector<GLColor> green(4, GLColor::green);
+
+    GLTexture renderTarget;
+    glBindTexture(GL_TEXTURE_2D, renderTarget);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTarget,
+                           0);
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_DRAW_FRAMEBUFFER);
+    glViewport(0, 0, 2, 2);
+    ASSERT_GL_NO_ERROR();
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Draw once to flush dirty state bits.
+    draw2DTexturedQuad(0.5f, 1.0f, true);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Update the (0, 1) pixel to be blue
+    updateFunc(GL_TEXTURE_2D, &renderTarget, 0, 1, GLColor::blue);
+
+    // Draw green to the right half of the Framebuffer.
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, green.data());
+    glViewport(1, 0, 1, 2);
+    draw2DTexturedQuad(0.5f, 1.0f, true);
+
+    // Update the (1, 1) pixel to be yellow
+    updateFunc(GL_TEXTURE_2D, &renderTarget, 1, 1, GLColor::yellow);
+
+    ASSERT_GL_NO_ERROR();
+
+    // Verify we have a quad with the right colors in the FBO.
+    std::vector<GLColor> expected = {
+        {GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+    std::vector<GLColor> actual(4);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glReadPixels(0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, actual.data());
+    EXPECT_EQ(expected, actual);
+}
+
+// Tests that TexSubImage updates are flushed before rendering.
+TEST_P(SimpleStateChangeTest, TexSubImageOnTextureBoundToFrambuffer)
+{
+    auto updateFunc = [](GLenum textureBinding, GLTexture *tex, GLint x, GLint y,
+                         const GLColor &color) {
+        glBindTexture(textureBinding, *tex);
+        glTexSubImage2D(textureBinding, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, color.data());
+    };
+
+    updateTextureBoundToFramebufferHelper(updateFunc);
+}
+
+// Tests that CopyTexSubImage updates are flushed before rendering.
+TEST_P(SimpleStateChangeTest, CopyTexSubImageOnTextureBoundToFrambuffer)
+{
+    GLTexture copySource;
+    glBindTexture(GL_TEXTURE_2D, copySource);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer copyFBO;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, copyFBO);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, copySource, 0);
+
+    ASSERT_GL_NO_ERROR();
+    ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_READ_FRAMEBUFFER);
+
+    auto updateFunc = [&copySource](GLenum textureBinding, GLTexture *tex, GLint x, GLint y,
+                                    const GLColor &color) {
+        glBindTexture(GL_TEXTURE_2D, copySource);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, color.data());
+
+        glBindTexture(textureBinding, *tex);
+        glCopyTexSubImage2D(textureBinding, 0, x, y, 0, 0, 1, 1);
+    };
+
+    updateTextureBoundToFramebufferHelper(updateFunc);
 }
 
 // Tests deleting a Framebuffer that is in use.
@@ -2175,6 +2446,165 @@ void main()
     EXPECT_PIXEL_RECT_EQ(kHalfSize, kHalfSize, kHalfSize, kHalfSize, GLColor::yellow);
 }
 
+// Tests that deleting an in-flight image texture does not immediately delete the resource.
+TEST_P(SimpleStateChangeTestES31, DeleteImageTextureInUse)
+{
+    std::array<GLColor, 4> colors = {
+        {GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+    GLTexture texRead;
+    glBindTexture(GL_TEXTURE_2D, texRead);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+    EXPECT_GL_NO_ERROR();
+
+    glUseProgram(mProgram);
+
+    glBindImageTexture(0, texRead, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+    texRead.reset();
+
+    std::array<GLColor, 4> results;
+    glReadPixels(0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, results.data());
+    EXPECT_GL_NO_ERROR();
+
+    for (int i = 0; i < 4; i++)
+    {
+        EXPECT_EQ(colors[i], results[i]);
+    }
+}
+
+// Tests that bind the same image texture all the time between different dispatch calls.
+TEST_P(SimpleStateChangeTestES31, RebindImageTextureDispatchAgain)
+{
+    std::array<GLColor, 4> colors = {{GLColor::cyan, GLColor::cyan, GLColor::cyan, GLColor::cyan}};
+    GLTexture texRead;
+    glBindTexture(GL_TEXTURE_2D, texRead);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+
+    glUseProgram(mProgram);
+
+    glBindImageTexture(0, texRead, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+
+    // Bind again
+    glBindImageTexture(0, texRead, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, 2, 2, GLColor::cyan);
+}
+
+// Tests that we can dispatch with an image texture, modify the image texture with a texSubImage,
+// and then dispatch again correctly.
+TEST_P(SimpleStateChangeTestES31, DispatchWithImageTextureTexSubImageThenDispatchAgain)
+{
+    std::array<GLColor, 4> colors    = {{GLColor::red, GLColor::red, GLColor::red, GLColor::red}};
+    std::array<GLColor, 4> subColors = {
+        {GLColor::green, GLColor::green, GLColor::green, GLColor::green}};
+
+    GLTexture texRead;
+    glBindTexture(GL_TEXTURE_2D, texRead);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+
+    glUseProgram(mProgram);
+
+    glBindImageTexture(0, texRead, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+
+    // Update bottom-half of image texture with green.
+    glBindTexture(GL_TEXTURE_2D, texRead);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 1, GL_RGBA, GL_UNSIGNED_BYTE, subColors.data());
+    ASSERT_GL_NO_ERROR();
+
+    // Dispatch again, should still work.
+    glDispatchCompute(1, 1, 1);
+    ASSERT_GL_NO_ERROR();
+
+    // Validate first half of the image is red and the bottom is green.
+    std::array<GLColor, 4> results;
+    glReadPixels(0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, results.data());
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_EQ(GLColor::green, results[0]);
+    EXPECT_EQ(GLColor::green, results[1]);
+    EXPECT_EQ(GLColor::red, results[2]);
+    EXPECT_EQ(GLColor::red, results[3]);
+}
+
+// Test updating an image texture's contents while in use by GL works as expected.
+TEST_P(SimpleStateChangeTestES31, UpdateImageTextureInUse)
+{
+    std::array<GLColor, 4> rgby = {{GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+
+    GLTexture texRead;
+    glBindTexture(GL_TEXTURE_2D, texRead);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, rgby.data());
+
+    glUseProgram(mProgram);
+
+    glBindImageTexture(0, texRead, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+
+    // Update the texture to be YBGR, while the Texture is in-use. Should not affect the dispatch.
+    std::array<GLColor, 4> ybgr = {{GLColor::yellow, GLColor::blue, GLColor::green, GLColor::red}};
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, ybgr.data());
+    ASSERT_GL_NO_ERROR();
+
+    // Check the Framebuffer. The dispatch call should have completed with the original RGBY data.
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(1, 0, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(0, 1, GLColor::blue);
+    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::yellow);
+
+    // Dispatch again. The second dispatch call should use the updated YBGR data.
+    glDispatchCompute(1, 1, 1);
+
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::yellow);
+    EXPECT_PIXEL_COLOR_EQ(1, 0, GLColor::blue);
+    EXPECT_PIXEL_COLOR_EQ(0, 1, GLColor::green);
+    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::red);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Test that we can alternate between image textures between different dispatchs.
+TEST_P(SimpleStateChangeTestES31, DispatchImageTextureAThenTextureBThenTextureA)
+{
+    // TODO(syoussefi): Flaky, needs investigation. http://anglebug.com/3044
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsDesktopOpenGL());
+
+    std::array<GLColor, 4> colorsTexA = {
+        {GLColor::cyan, GLColor::cyan, GLColor::cyan, GLColor::cyan}};
+
+    std::array<GLColor, 4> colorsTexB = {
+        {GLColor::magenta, GLColor::magenta, GLColor::magenta, GLColor::magenta}};
+
+    GLTexture texA;
+    glBindTexture(GL_TEXTURE_2D, texA);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, colorsTexA.data());
+    GLTexture texB;
+    glBindTexture(GL_TEXTURE_2D, texB);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, colorsTexB.data());
+
+    glUseProgram(mProgram);
+
+    glBindImageTexture(0, texA, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+
+    glBindImageTexture(0, texB, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+
+    glBindImageTexture(0, texA, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    glDispatchCompute(1, 1, 1);
+
+    EXPECT_PIXEL_RECT_EQ(0, 0, 2, 2, GLColor::cyan);
+    ASSERT_GL_NO_ERROR();
+}
+
 static constexpr char kColorVS[] = R"(attribute vec2 position;
 attribute vec4 color;
 varying vec4 vColor;
@@ -2212,7 +2642,12 @@ class WebGL2ValidationStateChangeTest : public ValidationStateChangeTest
 };
 
 class ValidationStateChangeTestES31 : public ANGLETest
+{};
+
+class WebGLComputeValidationStateChangeTest : public ANGLETest
 {
+  public:
+    WebGLComputeValidationStateChangeTest() { setWebGLCompatibilityEnabled(true); }
 };
 
 // Tests that mapping and unmapping an array buffer in various ways causes rendering to fail.
@@ -2361,7 +2796,7 @@ TEST_P(ValidationStateChangeTestES31, MapBufferAndDrawWithDivisor)
 }
 
 // Tests that changing a vertex binding with glVertexAttribDivisor updates the buffer size check.
-TEST_P(ValidationStateChangeTestES31, DrawPastEndOfBufferWithDivisor)
+TEST_P(WebGLComputeValidationStateChangeTest, DrawPastEndOfBufferWithDivisor)
 {
     // Initialize program and set up state.
     ANGLE_GL_PROGRAM(program, kColorVS, kColorFS);
@@ -2686,6 +3121,16 @@ void main()
     ASSERT_GL_NO_ERROR() << "Draw to float texture with invalid mask";
     glDrawArrays(GL_TRIANGLES, 0, 6);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    // Set all 4 channels of color mask to false. Validate success.
+    glColorMask(false, false, false, false);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_NO_ERROR();
+    glColorMask(false, true, false, false);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+    glColorMask(true, true, true, true);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
     // Restore state.
     glDrawBuffers(2, kColor0Enabled);
@@ -2755,11 +3200,9 @@ void main()
     glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, transformFeedbackBuffer);
 
     // Set up uniform buffer.
-    std::vector<GLColor32F> redData(1, kFloatGreen);
-
     GLBuffer uniformBuffer;
     glBindBuffer(GL_UNIFORM_BUFFER, uniformBuffer);
-    glBufferData(GL_UNIFORM_BUFFER, 128, &kFloatGreen.R, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(GLColor32F), &kFloatGreen.R, GL_STATIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBuffer);
 
     ASSERT_GL_NO_ERROR();
@@ -2810,10 +3253,155 @@ void main()
     EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Simultaneous pack buffer binding should fail";
 }
 
+// Test sampler format validation caching works.
+TEST_P(WebGL2ValidationStateChangeTest, SamplerFormatCache)
+{
+    constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+uniform sampler2D sampler;
+out vec4 colorOut;
+void main()
+{
+    colorOut = texture(sampler, vec2(0));
+})";
+
+    std::vector<std::string> tfVaryings = {"gl_Position"};
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+
+    std::array<GLColor, 4> colors = {
+        {GLColor::red, GLColor::green, GLColor::blue, GLColor::yellow}};
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, colors.data());
+
+    const auto &quadVertices = GetQuadVertices();
+
+    GLBuffer arrayBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(Vector3), quadVertices.data(),
+                 GL_STATIC_DRAW);
+
+    GLint samplerLoc = glGetUniformLocation(program, "sampler");
+    ASSERT_NE(-1, samplerLoc);
+    glUniform1i(samplerLoc, 0);
+
+    GLint positionLoc = glGetAttribLocation(program, essl3_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    ASSERT_GL_NO_ERROR();
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR();
+
+    // TexImage2D should update the sampler format cache.
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, 2, 2, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE,
+                 colors.data());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Sampling integer texture with a float sampler.";
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 2, 2, 0, GL_DEPTH_COMPONENT,
+                 GL_UNSIGNED_INT, colors.data());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT_GL_NO_ERROR() << "Depth texture with no compare mode.";
+
+    // TexParameteri should update the sampler format cache.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Depth texture with compare mode set.";
+}
+
+// Tests that we retain the correct draw mode settings with transform feedback changes.
+TEST_P(ValidationStateChangeTest, TransformFeedbackDrawModes)
+{
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsOSX());
+
+    std::vector<std::string> tfVaryings = {"gl_Position"};
+    ANGLE_GL_PROGRAM_TRANSFORM_FEEDBACK(program, essl3_shaders::vs::Simple(),
+                                        essl3_shaders::fs::Red(), tfVaryings,
+                                        GL_INTERLEAVED_ATTRIBS);
+    glUseProgram(program);
+
+    std::vector<Vector4> positionData;
+    for (const Vector3 &quadVertex : GetQuadVertices())
+    {
+        positionData.emplace_back(quadVertex.x(), quadVertex.y(), quadVertex.z(), 1.0f);
+    }
+
+    GLBuffer arrayBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
+    glBufferData(GL_ARRAY_BUFFER, positionData.size() * sizeof(Vector4), positionData.data(),
+                 GL_STATIC_DRAW);
+
+    GLint positionLoc = glGetAttribLocation(program, essl3_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+
+    glVertexAttribPointer(positionLoc, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    // Set up transform feedback.
+    GLTransformFeedback transformFeedback;
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transformFeedback);
+
+    constexpr size_t kTransformFeedbackSize = 6 * sizeof(Vector4);
+
+    GLBuffer transformFeedbackBuffer;
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, transformFeedbackBuffer);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, kTransformFeedbackSize * 2, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, transformFeedbackBuffer);
+
+    GLTransformFeedback pointsXFB;
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, pointsXFB);
+    GLBuffer pointsXFBBuffer;
+    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, pointsXFBBuffer);
+    glBufferData(GL_TRANSFORM_FEEDBACK_BUFFER, 1024, nullptr, GL_STREAM_DRAW);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, pointsXFBBuffer);
+
+    // Begin TRIANGLES, switch to paused POINTS, should be valid.
+    glBeginTransformFeedback(GL_POINTS);
+    glPauseTransformFeedback();
+    ASSERT_GL_NO_ERROR() << "Starting point transform feedback should succeed";
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transformFeedback);
+    glBeginTransformFeedback(GL_TRIANGLES);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_NO_ERROR() << "Triangle rendering should succeed";
+    glDrawArrays(GL_POINTS, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Point rendering should fail";
+    glDrawArrays(GL_LINES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Lines rendering should fail";
+    glPauseTransformFeedback();
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, pointsXFB);
+    glResumeTransformFeedback();
+    glDrawArrays(GL_POINTS, 0, 6);
+    EXPECT_GL_NO_ERROR() << "Point rendering should succeed";
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Triangle rendering should fail";
+    glDrawArrays(GL_LINES, 0, 6);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION) << "Lines rendering should fail";
+
+    glEndTransformFeedback();
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, transformFeedback);
+    glEndTransformFeedback();
+    ASSERT_GL_NO_ERROR() << "Ending transform feeback should pass";
+
+    glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+
+    glDrawArrays(GL_POINTS, 0, 6);
+    EXPECT_GL_NO_ERROR() << "Point rendering should succeed";
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    EXPECT_GL_NO_ERROR() << "Triangle rendering should succeed";
+    glDrawArrays(GL_LINES, 0, 6);
+    EXPECT_GL_NO_ERROR() << "Line rendering should succeed";
+}
+
 // Tests a valid rendering setup with two textures. Followed by a draw with conflicting samplers.
 TEST_P(ValidationStateChangeTest, TextureConflict)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     GLint maxTextures = 0;
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTextures);
@@ -2907,6 +3495,237 @@ void main()
     glDrawArrays(GL_TRIANGLES, 0, 6);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
+
+// Tests that mapping the element array buffer triggers errors.
+TEST_P(ValidationStateChangeTest, MapElementArrayBuffer)
+{
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
+    glUseProgram(program);
+
+    std::array<GLushort, 6> quadIndices = GetQuadIndices();
+    std::array<Vector3, 4> quadVertices = GetIndexedQuadVertices();
+
+    GLsizei elementBufferSize = sizeof(quadIndices[0]) * quadIndices.size();
+
+    GLBuffer elementArrayBuffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementArrayBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBufferSize, quadIndices.data(), GL_STATIC_DRAW);
+
+    GLBuffer arrayBuffer;
+    glBindBuffer(GL_ARRAY_BUFFER, arrayBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices[0]) * quadVertices.size(),
+                 quadVertices.data(), GL_STATIC_DRAW);
+
+    GLint positionLoc = glGetAttribLocation(program, essl3_shaders::PositionAttrib());
+    ASSERT_NE(-1, positionLoc);
+    glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(positionLoc);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
+    ASSERT_GL_NO_ERROR();
+
+    void *ptr = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, elementBufferSize, GL_MAP_READ_BIT);
+    ASSERT_NE(nullptr, ptr);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+
+    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Tests that deleting a non-active texture does not reset the current texture cache.
+TEST_P(SimpleStateChangeTest, DeleteNonActiveTextureThenDraw)
+{
+    constexpr char kFS[] =
+        "uniform sampler2D us; void main() { gl_FragColor = texture2D(us, vec2(0)); }";
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+    GLint loc = glGetUniformLocation(program, "us");
+    ASSERT_EQ(0, loc);
+
+    auto quadVertices = GetQuadVertices();
+    GLint posLoc      = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_EQ(0, posLoc);
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(quadVertices[0]),
+                 quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posLoc);
+
+    constexpr size_t kSize = 2;
+    std::vector<GLColor> red(kSize * kSize, GLColor::red);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glUniform1i(loc, 0);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    // Deleting TEXTURE_CUBE_MAP[0] should not affect TEXTURE_2D[0].
+    GLTexture tex2;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, tex2);
+    tex2.reset();
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+
+    // Deleting TEXTURE_2D[0] should start "sampling" from the default/zero texture.
+    tex.reset();
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+}
+
+// Tests that deleting a texture successfully binds the zero texture.
+TEST_P(SimpleStateChangeTest, DeleteTextureThenDraw)
+{
+    constexpr char kFS[] =
+        "uniform sampler2D us; void main() { gl_FragColor = texture2D(us, vec2(0)); }";
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFS);
+    glUseProgram(program);
+    GLint loc = glGetUniformLocation(program, "us");
+    ASSERT_EQ(0, loc);
+
+    auto quadVertices = GetQuadVertices();
+    GLint posLoc      = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_EQ(0, posLoc);
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(quadVertices[0]),
+                 quadVertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(posLoc);
+
+    constexpr size_t kSize = 2;
+    std::vector<GLColor> red(kSize * kSize, GLColor::red);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kSize, kSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, red.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glUniform1i(loc, 1);
+    tex.reset();
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
+}
+
+void SimpleStateChangeTest::bindTextureToFbo(GLFramebuffer &fbo, GLTexture &texture)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWindowWidth(), getWindowHeight(), 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+}
+
+void SimpleStateChangeTest::drawToFboWithCulling(const GLenum frontFace, bool earlyFrontFaceDirty)
+{
+    // Render to an FBO
+    GLFramebuffer fbo1;
+    GLTexture texture1;
+
+    ANGLE_GL_PROGRAM(greenProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Green());
+    ANGLE_GL_PROGRAM(textureProgram, essl1_shaders::vs::Texture(), essl1_shaders::fs::Texture());
+
+    bindTextureToFbo(fbo1, texture1);
+
+    // Clear the surface FBO to initialize it to a known value
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(GLColor::red.R, GLColor::red.G, GLColor::red.B, GLColor::red.A);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    glFlush();
+
+    // Draw to FBO 1 to initialize it to a known value
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo1);
+
+    if (earlyFrontFaceDirty)
+    {
+        glEnable(GL_CULL_FACE);
+        // Make sure we don't cull
+        glCullFace(frontFace == GL_CCW ? GL_BACK : GL_FRONT);
+        glFrontFace(frontFace);
+    }
+    else
+    {
+        glDisable(GL_CULL_FACE);
+    }
+
+    glUseProgram(greenProgram);
+    drawQuad(greenProgram.get(), std::string(essl1_shaders::PositionAttrib()), 0.0f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Draw into FBO 0 using FBO 1's texture to determine if culling is working or not
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+    glCullFace(GL_BACK);
+    if (!earlyFrontFaceDirty)
+    {
+        // Set the culling we want to test
+        glEnable(GL_CULL_FACE);
+        glFrontFace(frontFace);
+    }
+
+    glUseProgram(textureProgram);
+    drawQuad(textureProgram.get(), std::string(essl1_shaders::PositionAttrib()), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    if (frontFace == GL_CCW)
+    {
+        EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+    }
+    else
+    {
+        EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+// Validates if culling rasterization states work with FBOs using CCW winding.
+TEST_P(SimpleStateChangeTest, FboEarlyCullFaceBackCCWState)
+{
+    drawToFboWithCulling(GL_CCW, true);
+}
+
+// Validates if culling rasterization states work with FBOs using CW winding.
+TEST_P(SimpleStateChangeTest, FboEarlyCullFaceBackCWState)
+{
+    drawToFboWithCulling(GL_CW, true);
+}
+
+TEST_P(SimpleStateChangeTest, FboLateCullFaceBackCCWState)
+{
+    drawToFboWithCulling(GL_CCW, false);
+}
+
+// Validates if culling rasterization states work with FBOs using CW winding.
+TEST_P(SimpleStateChangeTest, FboLateCullFaceBackCWState)
+{
+    drawToFboWithCulling(GL_CW, false);
+}
 }  // anonymous namespace
 
 ANGLE_INSTANTIATE_TEST(StateChangeTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_VULKAN());
@@ -2915,15 +3734,12 @@ ANGLE_INSTANTIATE_TEST(LineLoopStateChangeTest,
                        ES2_D3D11(),
                        ES2_OPENGL(),
                        ES2_VULKAN());
-ANGLE_INSTANTIATE_TEST(StateChangeRenderTest,
-                       ES2_D3D9(),
-                       ES2_D3D11(),
-                       ES2_OPENGL(),
-                       ES2_D3D11_FL9_3(),
-                       ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST(StateChangeRenderTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(StateChangeTestES3, ES3_D3D11(), ES3_OPENGL());
-ANGLE_INSTANTIATE_TEST(SimpleStateChangeTest, ES2_VULKAN(), ES2_OPENGL());
+ANGLE_INSTANTIATE_TEST(SimpleStateChangeTest, ES2_D3D11(), ES2_VULKAN(), ES2_OPENGL());
 ANGLE_INSTANTIATE_TEST(SimpleStateChangeTestES3, ES3_OPENGL(), ES3_D3D11());
+ANGLE_INSTANTIATE_TEST(SimpleStateChangeTestES31, ES31_OPENGL(), ES31_D3D11());
 ANGLE_INSTANTIATE_TEST(ValidationStateChangeTest, ES3_D3D11(), ES3_OPENGL());
 ANGLE_INSTANTIATE_TEST(WebGL2ValidationStateChangeTest, ES3_D3D11(), ES3_OPENGL());
-ANGLE_INSTANTIATE_TEST(ValidationStateChangeTestES31, ES31_OPENGL());
+ANGLE_INSTANTIATE_TEST(ValidationStateChangeTestES31, ES31_OPENGL(), ES31_D3D11());
+ANGLE_INSTANTIATE_TEST(WebGLComputeValidationStateChangeTest, ES31_D3D11(), ES31_OPENGL());

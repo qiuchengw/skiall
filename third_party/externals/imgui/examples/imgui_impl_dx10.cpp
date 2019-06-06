@@ -1,4 +1,4 @@
-// ImGui Renderer for: DirectX10
+// dear imgui: Renderer for DirectX10
 // This needs to be used along with a Platform Binding (e.g. Win32)
 
 // Implemented features:
@@ -10,6 +10,8 @@
 
 // CHANGELOG 
 // (minor and older changes stripped away, please see git history for details)
+//  2018-12-03: Misc: Added #pragma comment statement to automatically link with d3dcompiler.lib when using D3DCompile().
+//  2018-11-30: Misc: Setting up io.BackendRendererName so it can be displayed in the About Window.
 //  2018-07-13: DirectX10: Fixed unreleased resources in Init and Shutdown functions.
 //  2018-06-08: Misc: Extracted imgui_impl_dx10.cpp/.h away from the old combined DX10+Win32 example.
 //  2018-06-08: DirectX10: Use draw_data->DisplayPos and draw_data->DisplaySize to setup projection matrix and clipping rectangle.
@@ -26,6 +28,9 @@
 #include <d3d10_1.h>
 #include <d3d10.h>
 #include <d3dcompiler.h>
+#ifdef _MSC_VER
+#pragma comment(lib, "d3dcompiler") // Automatically link with d3dcompiler.lib as we are using D3DCompile() below.
+#endif
 
 // DirectX data
 static ID3D10Device*            g_pd3dDevice = NULL;
@@ -213,7 +218,8 @@ void ImGui_ImplDX10_RenderDrawData(ImDrawData* draw_data)
                 ctx->RSSetScissorRects(1, &r);
 
                 // Bind texture, Draw
-                ctx->PSSetShaderResources(0, 1, (ID3D10ShaderResourceView**)&pcmd->TextureId);
+                ID3D10ShaderResourceView* texture_srv = (ID3D10ShaderResourceView*)pcmd->TextureId;
+                ctx->PSSetShaderResources(0, 1, &texture_srv);
                 ctx->DrawIndexed(pcmd->ElemCount, idx_offset, vtx_offset);
             }
             idx_offset += pcmd->ElemCount;
@@ -279,7 +285,7 @@ static void ImGui_ImplDX10_CreateFontsTexture()
     }
 
     // Store our identifier
-    io.Fonts->TexID = (void *)g_pFontTextureView;
+    io.Fonts->TexID = (ImTextureID)g_pFontTextureView;
 
     // Create texture sampler
     {
@@ -462,6 +468,9 @@ void    ImGui_ImplDX10_InvalidateDeviceObjects()
 
 bool    ImGui_ImplDX10_Init(ID3D10Device* device)
 {
+    ImGuiIO& io = ImGui::GetIO();
+    io.BackendRendererName = "imgui_impl_dx10";
+
     // Get factory from device
     IDXGIDevice* pDXGIDevice = NULL;
     IDXGIAdapter* pDXGIAdapter = NULL;

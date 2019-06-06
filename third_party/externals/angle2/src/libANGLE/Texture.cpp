@@ -12,8 +12,8 @@
 #include "common/utilities.h"
 #include "libANGLE/Config.h"
 #include "libANGLE/Context.h"
-#include "libANGLE/ContextState.h"
 #include "libANGLE/Image.h"
+#include "libANGLE/State.h"
 #include "libANGLE/Surface.h"
 #include "libANGLE/formatutils.h"
 #include "libANGLE/renderer/GLImplFactory.h"
@@ -43,7 +43,7 @@ InitState DetermineInitState(const Context *context, const uint8_t *pixels)
     if (!context || !context->isRobustResourceInitEnabled())
         return InitState::Initialized;
 
-    const auto &glState = context->getGLState();
+    const auto &glState = context->getState();
     return (pixels == nullptr && glState.getTargetBuffer(gl::BufferBinding::PixelUnpack) == nullptr)
                ? InitState::MayNeedInit
                : InitState::Initialized;
@@ -71,13 +71,11 @@ bool IsMipmapFiltered(const SamplerState &samplerState)
 
 SwizzleState::SwizzleState()
     : swizzleRed(GL_RED), swizzleGreen(GL_GREEN), swizzleBlue(GL_BLUE), swizzleAlpha(GL_ALPHA)
-{
-}
+{}
 
 SwizzleState::SwizzleState(GLenum red, GLenum green, GLenum blue, GLenum alpha)
     : swizzleRed(red), swizzleGreen(green), swizzleBlue(blue), swizzleAlpha(alpha)
-{
-}
+{}
 
 bool SwizzleState::swizzleRequired() const
 {
@@ -108,13 +106,13 @@ TextureState::TextureState(TextureType type)
       mImageDescs((IMPLEMENTATION_MAX_TEXTURE_LEVELS + 1) * (type == TextureType::CubeMap ? 6 : 1)),
       mCropRect(0, 0, 0, 0),
       mGenerateMipmapHint(GL_FALSE),
-      mInitState(InitState::MayNeedInit)
-{
-}
+      mInitState(InitState::MayNeedInit),
+      mCachedSamplerFormat(SamplerFormat::InvalidEnum),
+      mCachedSamplerCompareMode(GL_NONE),
+      mCachedSamplerFormatValid(false)
+{}
 
-TextureState::~TextureState()
-{
-}
+TextureState::~TextureState() {}
 
 bool TextureState::swizzleRequired() const
 {
@@ -244,8 +242,35 @@ GLenum TextureState::getGenerateMipmapHint() const
     return mGenerateMipmapHint;
 }
 
+SamplerFormat TextureState::computeRequiredSamplerFormat(const SamplerState &samplerState) const
+{
+    const ImageDesc &baseImageDesc = getImageDesc(getBaseImageTarget(), getEffectiveBaseLevel());
+    if ((baseImageDesc.format.info->format == GL_DEPTH_COMPONENT ||
+         baseImageDesc.format.info->format == GL_DEPTH_STENCIL) &&
+        samplerState.getCompareMode() != GL_NONE)
+    {
+        return SamplerFormat::Shadow;
+    }
+    else
+    {
+        switch (baseImageDesc.format.info->componentType)
+        {
+            case GL_UNSIGNED_NORMALIZED:
+            case GL_SIGNED_NORMALIZED:
+            case GL_FLOAT:
+                return SamplerFormat::Float;
+            case GL_INT:
+                return SamplerFormat::Signed;
+            case GL_UNSIGNED_INT:
+                return SamplerFormat::Unsigned;
+            default:
+                return SamplerFormat::InvalidEnum;
+        }
+    }
+}
+
 bool TextureState::computeSamplerCompleteness(const SamplerState &samplerState,
-                                              const ContextState &data) const
+                                              const State &data) const
 {
     if (mBaseLevel > mMaxLevel)
     {
@@ -474,13 +499,11 @@ TextureTarget TextureState::getBaseImageTarget() const
 
 ImageDesc::ImageDesc()
     : ImageDesc(Extents(0, 0, 0), Format::Invalid(), 0, GL_TRUE, InitState::Initialized)
-{
-}
+{}
 
 ImageDesc::ImageDesc(const Extents &size, const Format &format, const InitState initState)
     : size(size), format(format), samples(0), fixedSampleLocations(GL_TRUE), initState(initState)
-{
-}
+{}
 
 ImageDesc::ImageDesc(const Extents &size,
                      const Format &format,
@@ -492,8 +515,7 @@ ImageDesc::ImageDesc(const Extents &size,
       samples(samples),
       fixedSampleLocations(fixedSampleLocations),
       initState(initState)
-{
-}
+{}
 
 GLint ImageDesc::getMemorySize() const
 {
@@ -635,10 +657,10 @@ Texture::~Texture()
     SafeDelete(mTexture);
 }
 
-void Texture::setLabel(const std::string &label)
+void Texture::setLabel(const Context *context, const std::string &label)
 {
     mLabel = label;
-    mDirtyBits.set(DIRTY_BIT_LABEL);
+    signalDirtyState(context, DIRTY_BIT_LABEL);
 }
 
 const std::string &Texture::getLabel() const
@@ -646,10 +668,10 @@ const std::string &Texture::getLabel() const
     return mLabel;
 }
 
-void Texture::setSwizzleRed(GLenum swizzleRed)
+void Texture::setSwizzleRed(const Context *context, GLenum swizzleRed)
 {
     mState.mSwizzleState.swizzleRed = swizzleRed;
-    mDirtyBits.set(DIRTY_BIT_SWIZZLE_RED);
+    signalDirtyState(context, DIRTY_BIT_SWIZZLE_RED);
 }
 
 GLenum Texture::getSwizzleRed() const
@@ -657,10 +679,10 @@ GLenum Texture::getSwizzleRed() const
     return mState.mSwizzleState.swizzleRed;
 }
 
-void Texture::setSwizzleGreen(GLenum swizzleGreen)
+void Texture::setSwizzleGreen(const Context *context, GLenum swizzleGreen)
 {
     mState.mSwizzleState.swizzleGreen = swizzleGreen;
-    mDirtyBits.set(DIRTY_BIT_SWIZZLE_GREEN);
+    signalDirtyState(context, DIRTY_BIT_SWIZZLE_GREEN);
 }
 
 GLenum Texture::getSwizzleGreen() const
@@ -668,10 +690,10 @@ GLenum Texture::getSwizzleGreen() const
     return mState.mSwizzleState.swizzleGreen;
 }
 
-void Texture::setSwizzleBlue(GLenum swizzleBlue)
+void Texture::setSwizzleBlue(const Context *context, GLenum swizzleBlue)
 {
     mState.mSwizzleState.swizzleBlue = swizzleBlue;
-    mDirtyBits.set(DIRTY_BIT_SWIZZLE_BLUE);
+    signalDirtyState(context, DIRTY_BIT_SWIZZLE_BLUE);
 }
 
 GLenum Texture::getSwizzleBlue() const
@@ -679,10 +701,10 @@ GLenum Texture::getSwizzleBlue() const
     return mState.mSwizzleState.swizzleBlue;
 }
 
-void Texture::setSwizzleAlpha(GLenum swizzleAlpha)
+void Texture::setSwizzleAlpha(const Context *context, GLenum swizzleAlpha)
 {
     mState.mSwizzleState.swizzleAlpha = swizzleAlpha;
-    mDirtyBits.set(DIRTY_BIT_SWIZZLE_ALPHA);
+    signalDirtyState(context, DIRTY_BIT_SWIZZLE_ALPHA);
 }
 
 GLenum Texture::getSwizzleAlpha() const
@@ -690,10 +712,10 @@ GLenum Texture::getSwizzleAlpha() const
     return mState.mSwizzleState.swizzleAlpha;
 }
 
-void Texture::setMinFilter(GLenum minFilter)
+void Texture::setMinFilter(const Context *context, GLenum minFilter)
 {
     mState.mSamplerState.setMinFilter(minFilter);
-    mDirtyBits.set(DIRTY_BIT_MIN_FILTER);
+    signalDirtyState(context, DIRTY_BIT_MIN_FILTER);
 }
 
 GLenum Texture::getMinFilter() const
@@ -701,10 +723,10 @@ GLenum Texture::getMinFilter() const
     return mState.mSamplerState.getMinFilter();
 }
 
-void Texture::setMagFilter(GLenum magFilter)
+void Texture::setMagFilter(const Context *context, GLenum magFilter)
 {
     mState.mSamplerState.setMagFilter(magFilter);
-    mDirtyBits.set(DIRTY_BIT_MAG_FILTER);
+    signalDirtyState(context, DIRTY_BIT_MAG_FILTER);
 }
 
 GLenum Texture::getMagFilter() const
@@ -712,10 +734,10 @@ GLenum Texture::getMagFilter() const
     return mState.mSamplerState.getMagFilter();
 }
 
-void Texture::setWrapS(GLenum wrapS)
+void Texture::setWrapS(const Context *context, GLenum wrapS)
 {
     mState.mSamplerState.setWrapS(wrapS);
-    mDirtyBits.set(DIRTY_BIT_WRAP_S);
+    signalDirtyState(context, DIRTY_BIT_WRAP_S);
 }
 
 GLenum Texture::getWrapS() const
@@ -723,10 +745,10 @@ GLenum Texture::getWrapS() const
     return mState.mSamplerState.getWrapS();
 }
 
-void Texture::setWrapT(GLenum wrapT)
+void Texture::setWrapT(const Context *context, GLenum wrapT)
 {
     mState.mSamplerState.setWrapT(wrapT);
-    mDirtyBits.set(DIRTY_BIT_WRAP_T);
+    signalDirtyState(context, DIRTY_BIT_WRAP_T);
 }
 
 GLenum Texture::getWrapT() const
@@ -734,10 +756,10 @@ GLenum Texture::getWrapT() const
     return mState.mSamplerState.getWrapT();
 }
 
-void Texture::setWrapR(GLenum wrapR)
+void Texture::setWrapR(const Context *context, GLenum wrapR)
 {
     mState.mSamplerState.setWrapR(wrapR);
-    mDirtyBits.set(DIRTY_BIT_WRAP_R);
+    signalDirtyState(context, DIRTY_BIT_WRAP_R);
 }
 
 GLenum Texture::getWrapR() const
@@ -745,10 +767,10 @@ GLenum Texture::getWrapR() const
     return mState.mSamplerState.getWrapR();
 }
 
-void Texture::setMaxAnisotropy(float maxAnisotropy)
+void Texture::setMaxAnisotropy(const Context *context, float maxAnisotropy)
 {
     mState.mSamplerState.setMaxAnisotropy(maxAnisotropy);
-    mDirtyBits.set(DIRTY_BIT_MAX_ANISOTROPY);
+    signalDirtyState(context, DIRTY_BIT_MAX_ANISOTROPY);
 }
 
 float Texture::getMaxAnisotropy() const
@@ -756,10 +778,10 @@ float Texture::getMaxAnisotropy() const
     return mState.mSamplerState.getMaxAnisotropy();
 }
 
-void Texture::setMinLod(GLfloat minLod)
+void Texture::setMinLod(const Context *context, GLfloat minLod)
 {
     mState.mSamplerState.setMinLod(minLod);
-    mDirtyBits.set(DIRTY_BIT_MIN_LOD);
+    signalDirtyState(context, DIRTY_BIT_MIN_LOD);
 }
 
 GLfloat Texture::getMinLod() const
@@ -767,10 +789,10 @@ GLfloat Texture::getMinLod() const
     return mState.mSamplerState.getMinLod();
 }
 
-void Texture::setMaxLod(GLfloat maxLod)
+void Texture::setMaxLod(const Context *context, GLfloat maxLod)
 {
     mState.mSamplerState.setMaxLod(maxLod);
-    mDirtyBits.set(DIRTY_BIT_MAX_LOD);
+    signalDirtyState(context, DIRTY_BIT_MAX_LOD);
 }
 
 GLfloat Texture::getMaxLod() const
@@ -778,10 +800,10 @@ GLfloat Texture::getMaxLod() const
     return mState.mSamplerState.getMaxLod();
 }
 
-void Texture::setCompareMode(GLenum compareMode)
+void Texture::setCompareMode(const Context *context, GLenum compareMode)
 {
     mState.mSamplerState.setCompareMode(compareMode);
-    mDirtyBits.set(DIRTY_BIT_COMPARE_MODE);
+    signalDirtyState(context, DIRTY_BIT_COMPARE_MODE);
 }
 
 GLenum Texture::getCompareMode() const
@@ -789,10 +811,10 @@ GLenum Texture::getCompareMode() const
     return mState.mSamplerState.getCompareMode();
 }
 
-void Texture::setCompareFunc(GLenum compareFunc)
+void Texture::setCompareFunc(const Context *context, GLenum compareFunc)
 {
     mState.mSamplerState.setCompareFunc(compareFunc);
-    mDirtyBits.set(DIRTY_BIT_COMPARE_FUNC);
+    signalDirtyState(context, DIRTY_BIT_COMPARE_FUNC);
 }
 
 GLenum Texture::getCompareFunc() const
@@ -800,10 +822,10 @@ GLenum Texture::getCompareFunc() const
     return mState.mSamplerState.getCompareFunc();
 }
 
-void Texture::setSRGBDecode(GLenum sRGBDecode)
+void Texture::setSRGBDecode(const Context *context, GLenum sRGBDecode)
 {
     mState.mSamplerState.setSRGBDecode(sRGBDecode);
-    mDirtyBits.set(DIRTY_BIT_SRGB_DECODE);
+    signalDirtyState(context, DIRTY_BIT_SRGB_DECODE);
 }
 
 GLenum Texture::getSRGBDecode() const
@@ -821,11 +843,10 @@ angle::Result Texture::setBaseLevel(const Context *context, GLuint baseLevel)
     if (mState.setBaseLevel(baseLevel))
     {
         ANGLE_TRY(mTexture->setBaseLevel(context, mState.getEffectiveBaseLevel()));
-        mDirtyBits.set(DIRTY_BIT_BASE_LEVEL);
-        invalidateCompletenessCache();
+        signalDirtyState(context, DIRTY_BIT_BASE_LEVEL);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 GLuint Texture::getBaseLevel() const
@@ -833,12 +854,11 @@ GLuint Texture::getBaseLevel() const
     return mState.mBaseLevel;
 }
 
-void Texture::setMaxLevel(GLuint maxLevel)
+void Texture::setMaxLevel(const Context *context, GLuint maxLevel)
 {
     if (mState.setMaxLevel(maxLevel))
     {
-        mDirtyBits.set(DIRTY_BIT_MAX_LEVEL);
-        invalidateCompletenessCache();
+        signalDirtyState(context, DIRTY_BIT_MAX_LEVEL);
     }
 }
 
@@ -847,13 +867,12 @@ GLuint Texture::getMaxLevel() const
     return mState.mMaxLevel;
 }
 
-void Texture::setDepthStencilTextureMode(GLenum mode)
+void Texture::setDepthStencilTextureMode(const Context *context, GLenum mode)
 {
     if (mState.mDepthStencilTextureMode != mode)
     {
         mState.mDepthStencilTextureMode = mode;
-        mDirtyBits.set(DIRTY_BIT_DEPTH_STENCIL_TEXTURE_MODE);
-        invalidateCompletenessCache();
+        signalDirtyState(context, DIRTY_BIT_DEPTH_STENCIL_TEXTURE_MODE);
     }
 }
 
@@ -872,10 +891,10 @@ GLuint Texture::getImmutableLevels() const
     return mState.mImmutableLevels;
 }
 
-void Texture::setUsage(GLenum usage)
+void Texture::setUsage(const Context *context, GLenum usage)
 {
     mState.mUsage = usage;
-    mDirtyBits.set(DIRTY_BIT_USAGE);
+    signalDirtyState(context, DIRTY_BIT_USAGE);
 }
 
 GLenum Texture::getUsage() const
@@ -971,14 +990,23 @@ GLint Texture::getLevelMemorySize(TextureTarget target, GLint level) const
     return mState.getImageDesc(target, level).getMemorySize();
 }
 
-void Texture::signalDirty(const Context *context, InitState initState)
+void Texture::signalDirtyStorage(const Context *context, InitState initState)
 {
     mState.mInitState = initState;
-    onStorageChange(context);
     invalidateCompletenessCache();
+    mState.mCachedSamplerFormatValid = false;
+    onStateChange(context, angle::SubjectMessage::SubjectChanged);
 }
 
-angle::Result Texture::setImage(const Context *context,
+void Texture::signalDirtyState(const Context *context, size_t dirtyBit)
+{
+    mDirtyBits.set(dirtyBit);
+    invalidateCompletenessCache();
+    mState.mCachedSamplerFormatValid = false;
+    onStateChange(context, angle::SubjectMessage::DirtyBitsFlagged);
+}
+
+angle::Result Texture::setImage(Context *context,
                                 const PixelUnpackState &unpackState,
                                 TextureTarget target,
                                 GLint level,
@@ -1004,12 +1032,12 @@ angle::Result Texture::setImage(const Context *context,
 
     ANGLE_TRY(handleMipmapGenerationHint(context, level));
 
-    signalDirty(context, initState);
+    signalDirtyStorage(context, initState);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::setSubImage(const Context *context,
+angle::Result Texture::setSubImage(Context *context,
                                    const PixelUnpackState &unpackState,
                                    Buffer *unpackBuffer,
                                    TextureTarget target,
@@ -1030,10 +1058,12 @@ angle::Result Texture::setSubImage(const Context *context,
 
     ANGLE_TRY(handleMipmapGenerationHint(context, level));
 
-    return angle::Result::Continue();
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::setCompressedImage(const Context *context,
+angle::Result Texture::setCompressedImage(Context *context,
                                           const PixelUnpackState &unpackState,
                                           TextureTarget target,
                                           GLint level,
@@ -1055,9 +1085,9 @@ angle::Result Texture::setCompressedImage(const Context *context,
 
     InitState initState = DetermineInitState(context, pixels);
     mState.setImageDesc(target, level, ImageDesc(size, Format(internalFormat), initState));
-    signalDirty(context, initState);
+    signalDirtyStorage(context, initState);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Texture::setCompressedSubImage(const Context *context,
@@ -1075,11 +1105,15 @@ angle::Result Texture::setCompressedSubImage(const Context *context,
 
     ImageIndex index = ImageIndex::MakeFromTarget(target, level);
 
-    return mTexture->setCompressedSubImage(context, index, area, format, unpackState, imageSize,
-                                           pixels);
+    ANGLE_TRY(mTexture->setCompressedSubImage(context, index, area, format, unpackState, imageSize,
+                                              pixels));
+
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::copyImage(const Context *context,
+angle::Result Texture::copyImage(Context *context,
                                  TextureTarget target,
                                  GLint level,
                                  const Rectangle &sourceArea,
@@ -1091,9 +1125,6 @@ angle::Result Texture::copyImage(const Context *context,
     // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
     ANGLE_TRY(releaseTexImageInternal(context));
     ANGLE_TRY(orphanImages(context));
-
-    // Ensure source FBO is initialized.
-    ANGLE_TRY(source->ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
 
     // Use the source FBO size as the init image area.
     Box destBox(0, 0, 0, sourceArea.width, sourceArea.height, 1);
@@ -1113,35 +1144,32 @@ angle::Result Texture::copyImage(const Context *context,
     ANGLE_TRY(handleMipmapGenerationHint(context, level));
 
     // We need to initialize this texture only if the source attachment is not initialized.
-    signalDirty(context, InitState::Initialized);
+    signalDirtyStorage(context, InitState::Initialized);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::copySubImage(const Context *context,
-                                    TextureTarget target,
-                                    GLint level,
+angle::Result Texture::copySubImage(Context *context,
+                                    const ImageIndex &index,
                                     const Offset &destOffset,
                                     const Rectangle &sourceArea,
                                     Framebuffer *source)
 {
-    ASSERT(TextureTargetToType(target) == mState.mType);
+    ASSERT(TextureTargetToType(index.getTarget()) == mState.mType);
 
-    // Ensure source FBO is initialized.
-    ANGLE_TRY(source->ensureReadAttachmentInitialized(context, GL_COLOR_BUFFER_BIT));
-
-    Box destBox(destOffset.x, destOffset.y, destOffset.y, sourceArea.width, sourceArea.height, 1);
-    ANGLE_TRY(ensureSubImageInitialized(context, target, level, destBox));
-
-    ImageIndex index = ImageIndex::MakeFromTarget(target, level);
+    Box destBox(destOffset.x, destOffset.y, destOffset.z, sourceArea.width, sourceArea.height, 1);
+    ANGLE_TRY(
+        ensureSubImageInitialized(context, index.getTarget(), index.getLevelIndex(), destBox));
 
     ANGLE_TRY(mTexture->copySubImage(context, index, destOffset, sourceArea, source));
-    ANGLE_TRY(handleMipmapGenerationHint(context, level));
+    ANGLE_TRY(handleMipmapGenerationHint(context, index.getLevelIndex()));
 
-    return angle::Result::Continue();
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::copyTexture(const Context *context,
+angle::Result Texture::copyTexture(Context *context,
                                    TextureTarget target,
                                    GLint level,
                                    GLenum internalFormat,
@@ -1175,9 +1203,9 @@ angle::Result Texture::copyTexture(const Context *context,
         target, level,
         ImageDesc(sourceDesc.size, Format(internalFormatInfo), InitState::Initialized));
 
-    signalDirty(context, InitState::Initialized);
+    signalDirtyStorage(context, InitState::Initialized);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result Texture::copySubTexture(const Context *context,
@@ -1202,11 +1230,16 @@ angle::Result Texture::copySubTexture(const Context *context,
 
     ImageIndex index = ImageIndex::MakeFromTarget(target, level);
 
-    return mTexture->copySubTexture(context, index, destOffset, sourceLevel, sourceBox, unpackFlipY,
-                                    unpackPremultiplyAlpha, unpackUnmultiplyAlpha, source);
+    ANGLE_TRY(mTexture->copySubTexture(context, index, destOffset, sourceLevel, sourceBox,
+                                       unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha,
+                                       source));
+
+    onStateChange(context, angle::SubjectMessage::ContentsChanged);
+
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::copyCompressedTexture(const Context *context, const Texture *source)
+angle::Result Texture::copyCompressedTexture(Context *context, const Texture *source)
 {
     // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
     ANGLE_TRY(releaseTexImageInternal(context));
@@ -1219,10 +1252,10 @@ angle::Result Texture::copyCompressedTexture(const Context *context, const Textu
         source->mState.getImageDesc(NonCubeTextureTypeToTarget(source->getType()), 0);
     mState.setImageDesc(NonCubeTextureTypeToTarget(getType()), 0, sourceDesc);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::setStorage(const Context *context,
+angle::Result Texture::setStorage(Context *context,
                                   TextureType type,
                                   GLsizei levels,
                                   GLenum internalFormat,
@@ -1249,12 +1282,12 @@ angle::Result Texture::setStorage(const Context *context,
     mDirtyBits.set(DIRTY_BIT_BASE_LEVEL);
     mDirtyBits.set(DIRTY_BIT_MAX_LEVEL);
 
-    signalDirty(context, InitState::MayNeedInit);
+    signalDirtyStorage(context, InitState::MayNeedInit);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::setStorageMultisample(const Context *context,
+angle::Result Texture::setStorageMultisample(Context *context,
                                              TextureType type,
                                              GLsizei samples,
                                              GLint internalFormat,
@@ -1276,12 +1309,47 @@ angle::Result Texture::setStorageMultisample(const Context *context,
     mState.setImageDescChainMultisample(size, Format(internalFormat), samples, fixedSampleLocations,
                                         InitState::MayNeedInit);
 
-    signalDirty(context, InitState::MayNeedInit);
+    signalDirtyStorage(context, InitState::MayNeedInit);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::generateMipmap(const Context *context)
+angle::Result Texture::setStorageExternalMemory(Context *context,
+                                                TextureType type,
+                                                GLsizei levels,
+                                                GLenum internalFormat,
+                                                const Extents &size,
+                                                MemoryObject *memoryObject,
+                                                GLuint64 offset)
+{
+    ASSERT(type == mState.mType);
+
+    // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
+    ANGLE_TRY(releaseTexImageInternal(context));
+    ANGLE_TRY(orphanImages(context));
+
+    ANGLE_TRY(mTexture->setStorageExternalMemory(context, type, levels, internalFormat, size,
+                                                 memoryObject, offset));
+
+    mState.mImmutableFormat = true;
+    mState.mImmutableLevels = static_cast<GLuint>(levels);
+    mState.clearImageDescs();
+    mState.setImageDescChain(0, static_cast<GLuint>(levels - 1), size, Format(internalFormat),
+                             InitState::MayNeedInit);
+
+    // Changing the texture to immutable can trigger a change in the base and max levels:
+    // GLES 3.0.4 section 3.8.10 pg 158:
+    // "For immutable-format textures, levelbase is clamped to the range[0;levels],levelmax is then
+    // clamped to the range[levelbase;levels].
+    mDirtyBits.set(DIRTY_BIT_BASE_LEVEL);
+    mDirtyBits.set(DIRTY_BIT_MAX_LEVEL);
+
+    signalDirtyStorage(context, InitState::Initialized);
+
+    return angle::Result::Continue;
+}
+
+angle::Result Texture::generateMipmap(Context *context)
 {
     // Release from previous calls to eglBindTexImage, to avoid calling the Impl after
     ANGLE_TRY(releaseTexImageInternal(context));
@@ -1298,7 +1366,7 @@ angle::Result Texture::generateMipmap(const Context *context)
 
     if (maxLevel <= baseLevel)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     if (hasAnyDirtyBit())
@@ -1332,12 +1400,12 @@ angle::Result Texture::generateMipmap(const Context *context)
     mState.setImageDescChain(baseLevel, maxLevel, baseImageInfo.size, baseImageInfo.format,
                              InitState::Initialized);
 
-    signalDirty(context, InitState::Initialized);
+    signalDirtyStorage(context, InitState::Initialized);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::bindTexImageFromSurface(const Context *context, egl::Surface *surface)
+angle::Result Texture::bindTexImageFromSurface(Context *context, egl::Surface *surface)
 {
     ASSERT(surface);
 
@@ -1354,8 +1422,8 @@ angle::Result Texture::bindTexImageFromSurface(const Context *context, egl::Surf
     Extents size(surface->getWidth(), surface->getHeight(), 1);
     ImageDesc desc(size, surface->getBindTexImageFormat(), InitState::Initialized);
     mState.setImageDesc(NonCubeTextureTypeToTarget(mState.mType), 0, desc);
-    signalDirty(context, InitState::Initialized);
-    return angle::Result::Continue();
+    signalDirtyStorage(context, InitState::Initialized);
+    return angle::Result::Continue;
 }
 
 angle::Result Texture::releaseTexImageFromSurface(const Context *context)
@@ -1367,8 +1435,8 @@ angle::Result Texture::releaseTexImageFromSurface(const Context *context)
     // Erase the image info for level 0
     ASSERT(mState.mType == TextureType::_2D || mState.mType == TextureType::Rectangle);
     mState.clearImageDesc(NonCubeTextureTypeToTarget(mState.mType), 0);
-    signalDirty(context, InitState::Initialized);
-    return angle::Result::Continue();
+    signalDirtyStorage(context, InitState::Initialized);
+    return angle::Result::Continue;
 }
 
 void Texture::bindStream(egl::Stream *stream)
@@ -1398,8 +1466,8 @@ angle::Result Texture::acquireImageFromStream(const Context *context,
     Extents size(desc.width, desc.height, 1);
     mState.setImageDesc(NonCubeTextureTypeToTarget(mState.mType), 0,
                         ImageDesc(size, Format(desc.internalFormat), InitState::Initialized));
-    signalDirty(context, InitState::Initialized);
-    return angle::Result::Continue();
+    signalDirtyStorage(context, InitState::Initialized);
+    return angle::Result::Continue;
 }
 
 angle::Result Texture::releaseImageFromStream(const Context *context)
@@ -1410,29 +1478,30 @@ angle::Result Texture::releaseImageFromStream(const Context *context)
 
     // Set to incomplete
     mState.clearImageDesc(NonCubeTextureTypeToTarget(mState.mType), 0);
-    signalDirty(context, InitState::Initialized);
-    return angle::Result::Continue();
+    signalDirtyStorage(context, InitState::Initialized);
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::releaseTexImageInternal(const Context *context)
+angle::Result Texture::releaseTexImageInternal(Context *context)
 {
     if (mBoundSurface)
     {
         // Notify the surface
         egl::Error eglErr = mBoundSurface->releaseTexImageFromTexture(context);
-        // TODO(jmadill): Remove this once refactor is complete. http://anglebug.com/2491
+        // TODO(jmadill): Remove this once refactor is complete. http://anglebug.com/3041
         if (eglErr.isError())
         {
-            context->handleError(Error(eglErr));
+            context->handleError(GL_INVALID_OPERATION, "Error releasing tex image from texture",
+                                 __FILE__, ANGLE_FUNCTION, __LINE__);
         }
 
         // Then, call the same method as from the surface
         ANGLE_TRY(releaseTexImageFromSurface(context));
     }
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::setEGLImageTarget(const Context *context,
+angle::Result Texture::setEGLImageTarget(Context *context,
                                          TextureType type,
                                          egl::Image *imageTarget)
 {
@@ -1455,9 +1524,9 @@ angle::Result Texture::setEGLImageTarget(const Context *context,
     mState.clearImageDescs();
     mState.setImageDesc(NonCubeTextureTypeToTarget(type), 0,
                         ImageDesc(size, imageTarget->getFormat(), initState));
-    signalDirty(context, initState);
+    signalDirtyStorage(context, initState);
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 Extents Texture::getAttachmentSize(const ImageIndex &imageIndex) const
@@ -1534,10 +1603,10 @@ bool Texture::getAttachmentFixedSampleLocations(const ImageIndex &imageIndex) co
     return getFixedSampleLocations(imageIndex.getTarget(), imageIndex.getLevelIndex());
 }
 
-void Texture::setBorderColor(const ColorGeneric &color)
+void Texture::setBorderColor(const Context *context, const ColorGeneric &color)
 {
     mState.mSamplerState.setBorderColor(color);
-    mDirtyBits.set(DIRTY_BIT_BORDER_COLOR);
+    signalDirtyState(context, DIRTY_BIT_BORDER_COLOR);
 }
 
 const ColorGeneric &Texture::getBorderColor() const
@@ -1585,7 +1654,7 @@ angle::Result Texture::syncState(const Context *context)
     ASSERT(hasAnyDirtyBit());
     ANGLE_TRY(mTexture->syncState(context, mDirtyBits));
     mDirtyBits.reset();
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 rx::FramebufferAttachmentObjectImpl *Texture::getAttachmentImpl() const
@@ -1597,12 +1666,12 @@ bool Texture::isSamplerComplete(const Context *context, const Sampler *optionalS
 {
     const auto &samplerState =
         optionalSampler ? optionalSampler->getSamplerState() : mState.mSamplerState;
-    const auto &contextState = context->getContextState();
+    const auto &contextState = context->getState();
 
     if (contextState.getContextID() != mCompletenessCache.context ||
         !mCompletenessCache.samplerState.sameCompleteness(samplerState))
     {
-        mCompletenessCache.context      = context->getContextState().getContextID();
+        mCompletenessCache.context      = context->getState().getContextID();
         mCompletenessCache.samplerState = samplerState;
         mCompletenessCache.samplerComplete =
             mState.computeSamplerCompleteness(samplerState, contextState);
@@ -1613,8 +1682,7 @@ bool Texture::isSamplerComplete(const Context *context, const Sampler *optionalS
 
 Texture::SamplerCompletenessCache::SamplerCompletenessCache()
     : context(0), samplerState(), samplerComplete(false)
-{
-}
+{}
 
 void Texture::invalidateCompletenessCache() const
 {
@@ -1625,7 +1693,7 @@ angle::Result Texture::ensureInitialized(const Context *context)
 {
     if (!context->isRobustResourceInitEnabled() || mState.mInitState == InitState::Initialized)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     bool anyDirty = false;
@@ -1648,11 +1716,11 @@ angle::Result Texture::ensureInitialized(const Context *context)
     }
     if (anyDirty)
     {
-        signalDirty(context, InitState::Initialized);
+        signalDirtyStorage(context, InitState::Initialized);
     }
     mState.mInitState = InitState::Initialized;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 InitState Texture::initState(const ImageIndex &imageIndex) const
@@ -1702,7 +1770,7 @@ angle::Result Texture::ensureSubImageInitialized(const Context *context,
 {
     if (!context->isRobustResourceInitEnabled() || mState.mInitState == InitState::Initialized)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     // Pre-initialize the texture contents if necessary.
@@ -1722,10 +1790,10 @@ angle::Result Texture::ensureSubImageInitialized(const Context *context,
         setInitState(imageIndex, InitState::Initialized);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-angle::Result Texture::handleMipmapGenerationHint(const Context *context, int level)
+angle::Result Texture::handleMipmapGenerationHint(Context *context, int level)
 {
 
     if (getGenerateMipmapHint() == GL_TRUE && level == 0)
@@ -1733,16 +1801,15 @@ angle::Result Texture::handleMipmapGenerationHint(const Context *context, int le
         ANGLE_TRY(generateMipmap(context));
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Texture::onSubjectStateChange(const gl::Context *context,
                                    angle::SubjectIndex index,
                                    angle::SubjectMessage message)
 {
-    if (message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS)
-    {
-        mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
-    }
+    ASSERT(message == angle::SubjectMessage::SubjectChanged);
+    mDirtyBits.set(DIRTY_BIT_IMPLEMENTATION);
+    signalDirtyState(context, DIRTY_BIT_IMPLEMENTATION);
 }
 }  // namespace gl

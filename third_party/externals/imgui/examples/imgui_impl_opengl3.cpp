@@ -1,4 +1,4 @@
-// ImGui Renderer for: OpenGL3 (modern OpenGL with shaders / programmatic pipeline)
+// dear imgui: Renderer for OpenGL3 / OpenGL ES2 / OpenGL ES3 (modern OpenGL with shaders / programmatic pipeline)
 // This needs to be used along with a Platform Binding (e.g. GLFW, SDL, Win32, custom..)
 // (Note: We are using GL3W as a helper library to access OpenGL functions since there is no standard header to access modern OpenGL functions easily. Alternatives are GLEW, Glad, etc..)
 
@@ -9,8 +9,12 @@
 // If you are new to dear imgui, read examples/README.txt and read the documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
-// CHANGELOG 
+// CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
+//  2018-11-30: Misc: Setting up io.BackendRendererName so it can be displayed in the About Window.
+//  2018-11-13: OpenGL: Support for GL 4.5's glClipControl(GL_UPPER_LEFT).
+//  2018-08-29: OpenGL: Added support for more OpenGL loaders: glew and glad, with comments indicative that any loader can be used.
+//  2018-08-09: OpenGL: Default to OpenGL ES 3 on iOS and Android. GLSL version default to "#version 300 ES".
 //  2018-07-30: OpenGL: Support for GLSL 300 ES and 410 core. Fixes for Emscripten compilation.
 //  2018-07-10: OpenGL: Support for more GLSL versions (based on the GLSL version string). Added error output when shaders fail to compile/link.
 //  2018-06-08: Misc: Extracted imgui_impl_opengl3.cpp/.h away from the old combined GLFW/SDL+OpenGL3 examples.
@@ -57,18 +61,33 @@
 #else
 #include <stdint.h>     // intptr_t
 #endif
+#if defined(__APPLE__)
+#include "TargetConditionals.h"
+#endif
 
-#ifdef __EMSCRIPTEN__
+// iOS, Android and Emscripten can use GL ES 3
+// Call ImGui_ImplOpenGL3_Init() with "#version 300 es"
+#if (defined(__APPLE__) && TARGET_OS_IOS) || (defined(__ANDROID__)) || (defined(__EMSCRIPTEN__))
+#define USE_GL_ES3
+#endif
+
+#ifdef USE_GL_ES3
+// OpenGL ES 3
 #include <GLES3/gl3.h>  // Use GL ES 3
 #else
-// About OpenGL function loaders:
-// Modern OpenGL requires individual functions to be loaded manually. Helper libraries are often used for this purpose.
-// Here we are using gl3w.h, which requires a call to gl3wInit(). 
-// You may use another any other loader/header of your choice, such as glew, glext, glad, glLoadGen, etc.
+// Regular OpenGL
+// About OpenGL function loaders: modern OpenGL doesn't have a standard header file and requires individual function pointers to be loaded manually. 
+// Helper libraries are often used for this purpose! Here we are supporting a few common ones: gl3w, glew, glad.
+// You may use another loader/header of your choice (glext, glLoadGen, etc.), or chose to manually implement your own.
+#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>
-//#include <glew.h>
-//#include <glext.h>
-//#include <glad/glad.h>
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
+#include <GL/glew.h>
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+#include <glad/glad.h>
+#else
+#include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
+#endif
 #endif
 
 // OpenGL Data
@@ -82,12 +101,21 @@ static unsigned int g_VboHandle = 0, g_ElementsHandle = 0;
 // Functions
 bool    ImGui_ImplOpenGL3_Init(const char* glsl_version)
 {
+    ImGuiIO& io = ImGui::GetIO();
+    io.BackendRendererName = "imgui_impl_opengl3";
+
     // Store GLSL version string so we can refer to it later in case we recreate shaders. Note: GLSL version is NOT the same as GL version. Leave this to NULL if unsure.
+#ifdef USE_GL_ES3
+    if (glsl_version == NULL)
+        glsl_version = "#version 300 es";
+#else
     if (glsl_version == NULL)
         glsl_version = "#version 130";
+#endif
     IM_ASSERT((int)strlen(glsl_version) + 2 < IM_ARRAYSIZE(g_GlslVersionString));
     strcpy(g_GlslVersionString, glsl_version);
     strcat(g_GlslVersionString, "\n");
+
     return true;
 }
 
@@ -104,7 +132,7 @@ void    ImGui_ImplOpenGL3_NewFrame()
 
 // OpenGL3 Render function.
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
-// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
+// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
 void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
@@ -120,7 +148,9 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     glActiveTexture(GL_TEXTURE0);
     GLint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
     GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+#ifdef GL_SAMPLER_BINDING
     GLint last_sampler; glGetIntegerv(GL_SAMPLER_BINDING, &last_sampler);
+#endif
     GLint last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
     GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
 #ifdef GL_POLYGON_MODE
@@ -138,6 +168,12 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
     GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
     GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+    bool clip_origin_lower_left = true;
+#ifdef GL_CLIP_ORIGIN
+    GLenum last_clip_origin = 0; glGetIntegerv(GL_CLIP_ORIGIN, (GLint*)&last_clip_origin); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
+    if (last_clip_origin == GL_UPPER_LEFT)
+        clip_origin_lower_left = false;
+#endif
 
     // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, polygon fill
     glEnable(GL_BLEND);
@@ -151,7 +187,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 #endif
 
     // Setup viewport, orthographic projection matrix
-    // Our visible imgui space lies from draw_data->DisplayPps (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayMin is typically (0,0) for single viewport apps.
+    // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayMin is typically (0,0) for single viewport apps.
     glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
     float L = draw_data->DisplayPos.x;
     float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
@@ -170,7 +206,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 #ifdef GL_SAMPLER_BINDING
     glBindSampler(0, 0); // We use combined texture/sampler state. Applications using GL 3.3 may set that otherwise.
 #endif
-    // Recreate the VAO every time 
+    // Recreate the VAO every time
     // (This is to easily allow multiple GL contexts. VAO are not shared among GL contexts, and we don't track creation/deletion of windows so we don't have an obvious key to use to cache them.)
     GLuint vao_handle = 0;
     glGenVertexArrays(1, &vao_handle);
@@ -210,7 +246,10 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                 if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
                 {
                     // Apply scissor/clipping rectangle
-                    glScissor((int)clip_rect.x, (int)(fb_height - clip_rect.w), (int)(clip_rect.z - clip_rect.x), (int)(clip_rect.w - clip_rect.y));
+                    if (clip_origin_lower_left)
+                        glScissor((int)clip_rect.x, (int)(fb_height - clip_rect.w), (int)(clip_rect.z - clip_rect.x), (int)(clip_rect.w - clip_rect.y));
+                    else
+                        glScissor((int)clip_rect.x, (int)clip_rect.y, (int)clip_rect.z, (int)clip_rect.w); // Support for GL 4.5's glClipControl(GL_UPPER_LEFT)
 
                     // Bind texture, Draw
                     glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
@@ -263,7 +302,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     // Store our identifier
-    io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+    io.Fonts->TexID = (ImTextureID)(intptr_t)g_FontTexture;
 
     // Restore state
     glBindTexture(GL_TEXTURE_2D, last_texture);
@@ -282,13 +321,13 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
     }
 }
 
-// If you get an error please report on github. You may try different GL context version or GLSL version.
+// If you get an error please report on github. You may try different GL context version or GLSL version. See GL<>GLSL version table at the top of this file.
 static bool CheckShader(GLuint handle, const char* desc)
 {
     GLint status = 0, log_length = 0;
     glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
     glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
-    if (status == GL_FALSE)
+    if ((GLboolean)status == GL_FALSE)
         fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to compile %s!\n", desc);
     if (log_length > 0)
     {
@@ -297,17 +336,17 @@ static bool CheckShader(GLuint handle, const char* desc)
         glGetShaderInfoLog(handle, log_length, NULL, (GLchar*)buf.begin());
         fprintf(stderr, "%s\n", buf.begin());
     }
-    return status == GL_TRUE;
+    return (GLboolean)status == GL_TRUE;
 }
 
-// If you get an error please report on github. You may try different GL context version or GLSL version.
+// If you get an error please report on GitHub. You may try different GL context version or GLSL version.
 static bool CheckProgram(GLuint handle, const char* desc)
 {
     GLint status = 0, log_length = 0;
     glGetProgramiv(handle, GL_LINK_STATUS, &status);
     glGetProgramiv(handle, GL_INFO_LOG_LENGTH, &log_length);
-    if (status == GL_FALSE)
-        fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to link %s!\n", desc);
+    if ((GLboolean)status == GL_FALSE)
+        fprintf(stderr, "ERROR: ImGui_ImplOpenGL3_CreateDeviceObjects: failed to link %s! (with GLSL '%s')\n", desc, g_GlslVersionString);
     if (log_length > 0)
     {
         ImVector<char> buf;
@@ -315,7 +354,7 @@ static bool CheckProgram(GLuint handle, const char* desc)
         glGetProgramInfoLog(handle, log_length, NULL, (GLchar*)buf.begin());
         fprintf(stderr, "%s\n", buf.begin());
     }
-    return status == GL_TRUE;
+    return (GLboolean)status == GL_TRUE;
 }
 
 bool    ImGui_ImplOpenGL3_CreateDeviceObjects()

@@ -79,9 +79,7 @@ void ClipChannelsAlpha(gl::ColorF *color)
     color->blue  = 0.0f;
 }
 
-void ClipChannelsNoOp(gl::ColorF *color)
-{
-}
+void ClipChannelsNoOp(gl::ColorF *color) {}
 
 void WriteUintColor(const gl::ColorF &color,
                     PixelWriteFunction colorWriteFunction,
@@ -100,71 +98,81 @@ void WriteFloatColor(const gl::ColorF &color,
     colorWriteFunction(reinterpret_cast<const uint8_t *>(&color), destPixelData);
 }
 
-template <typename T, int cols, int rows>
-bool TransposeExpandMatrix(T *target, const GLfloat *value)
+template <int cols, int rows>
+int GetFlattenedIndex(bool isColumnMajor, int col, int row)
 {
-    constexpr int targetWidth  = 4;
-    constexpr int targetHeight = rows;
-    constexpr int srcWidth     = rows;
-    constexpr int srcHeight    = cols;
-
-    constexpr int copyWidth  = std::min(targetHeight, srcWidth);
-    constexpr int copyHeight = std::min(targetWidth, srcHeight);
-
-    T staging[targetWidth * targetHeight] = {0};
-
-    for (int x = 0; x < copyWidth; x++)
+    if (isColumnMajor)
     {
-        for (int y = 0; y < copyHeight; y++)
+        return col * rows + row;
+    }
+    else
+    {
+        return row * cols + col;
+    }
+}
+
+template <typename T, int colsSrc, int rowsSrc, bool IsDstColumnMajor, int colsDst, int rowsDst>
+bool ExpandMatrix(T *target, const GLfloat *value, bool isSrcColumnMajor)
+{
+    static_assert(colsSrc <= colsDst && rowsSrc <= rowsDst, "Can only expand!");
+
+    constexpr int kDstFlatSize = colsDst * rowsDst;
+    T staging[kDstFlatSize]    = {0};
+
+    for (int r = 0; r < rowsSrc; r++)
+    {
+        for (int c = 0; c < colsSrc; c++)
         {
-            staging[x * targetWidth + y] = static_cast<T>(value[y * srcWidth + x]);
+            int srcIndex = GetFlattenedIndex<colsSrc, rowsSrc>(isSrcColumnMajor, c, r);
+            int dstIndex = GetFlattenedIndex<colsDst, rowsDst>(IsDstColumnMajor, c, r);
+
+            staging[dstIndex] = static_cast<T>(value[srcIndex]);
         }
     }
 
-    if (memcmp(target, staging, targetWidth * targetHeight * sizeof(T)) == 0)
+    if (memcmp(target, staging, kDstFlatSize * sizeof(T)) == 0)
     {
         return false;
     }
 
-    memcpy(target, staging, targetWidth * targetHeight * sizeof(T));
+    memcpy(target, staging, kDstFlatSize * sizeof(T));
     return true;
 }
 
-template <typename T, int cols, int rows>
-bool ExpandMatrix(T *target, const GLfloat *value)
+template <int colsSrc, int rowsSrc, bool IsDstColumnMajor, int colsDst, int rowsDst>
+bool SetFloatUniformMatrix(unsigned int arrayElementOffset,
+                           unsigned int elementCount,
+                           GLsizei countIn,
+                           GLboolean transpose,
+                           const GLfloat *value,
+                           uint8_t *targetData)
 {
-    constexpr int kTargetWidth  = 4;
-    constexpr int kTargetHeight = rows;
-    constexpr int kSrcWidth     = cols;
-    constexpr int kSrcHeight    = rows;
+    unsigned int count =
+        std::min(elementCount - arrayElementOffset, static_cast<unsigned int>(countIn));
 
-    constexpr int kCopyWidth  = std::min(kTargetWidth, kSrcWidth);
-    constexpr int kCopyHeight = std::min(kTargetHeight, kSrcHeight);
+    const unsigned int targetMatrixStride = colsDst * rowsDst;
+    GLfloat *target                       = reinterpret_cast<GLfloat *>(
+        targetData + arrayElementOffset * sizeof(GLfloat) * targetMatrixStride);
 
-    T staging[kTargetWidth * kTargetHeight] = {0};
+    bool dirty = false;
 
-    for (int y = 0; y < kCopyHeight; y++)
+    for (unsigned int i = 0; i < count; i++)
     {
-        for (int x = 0; x < kCopyWidth; x++)
-        {
-            staging[y * kTargetWidth + x] = static_cast<T>(value[y * kSrcWidth + x]);
-        }
+        const bool isSrcColumnMajor = !transpose;
+        dirty = ExpandMatrix<GLfloat, colsSrc, rowsSrc, IsDstColumnMajor, colsDst, rowsDst>(
+                    target, value, isSrcColumnMajor) ||
+                dirty;
+        target += targetMatrixStride;
+        value += colsSrc * rowsSrc;
     }
 
-    if (memcmp(target, staging, kTargetWidth * kTargetHeight * sizeof(T)) == 0)
-    {
-        return false;
-    }
-
-    memcpy(target, staging, kTargetWidth * kTargetHeight * sizeof(T));
-    return true;
+    return dirty;
 }
 }  // anonymous namespace
 
 PackPixelsParams::PackPixelsParams()
     : destFormat(nullptr), outputPitch(0), packBuffer(nullptr), offset(0)
-{
-}
+{}
 
 PackPixelsParams::PackPixelsParams(const gl::Rectangle &areaIn,
                                    const angle::Format &destFormat,
@@ -178,8 +186,7 @@ PackPixelsParams::PackPixelsParams(const gl::Rectangle &areaIn,
       packBuffer(packBufferIn),
       reverseRowOrder(reverseRowOrderIn),
       offset(offsetIn)
-{
-}
+{}
 
 void PackPixels(const PackPixelsParams &params,
                 const angle::Format &sourceFormat,
@@ -392,13 +399,9 @@ void CopyImageCHROMIUM(const uint8_t *sourceData,
 }
 
 // IncompleteTextureSet implementation.
-IncompleteTextureSet::IncompleteTextureSet()
-{
-}
+IncompleteTextureSet::IncompleteTextureSet() {}
 
-IncompleteTextureSet::~IncompleteTextureSet()
-{
-}
+IncompleteTextureSet::~IncompleteTextureSet() {}
 
 void IncompleteTextureSet::onDestroy(const gl::Context *context)
 {
@@ -422,7 +425,7 @@ angle::Result IncompleteTextureSet::getIncompleteTexture(
     *textureOut = mIncompleteTextures[type].get();
     if (*textureOut != nullptr)
     {
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     ContextImpl *implFactory = context->getImplementation();
@@ -439,20 +442,24 @@ angle::Result IncompleteTextureSet::getIncompleteTexture(
     gl::Texture *tex = new gl::Texture(implFactory, std::numeric_limits<GLuint>::max(), createType);
     angle::UniqueObjectPointer<gl::Texture, gl::Context> t(tex, context);
 
+    // This is a bit of a kludge but is necessary to consume the error.
+    gl::Context *mutableContext = const_cast<gl::Context *>(context);
+
     if (createType == gl::TextureType::_2DMultisample)
     {
-        ANGLE_TRY(t->setStorageMultisample(context, createType, 1, GL_RGBA8, colorSize, true));
+        ANGLE_TRY(
+            t->setStorageMultisample(mutableContext, createType, 1, GL_RGBA8, colorSize, true));
     }
     else
     {
-        ANGLE_TRY(t->setStorage(context, createType, 1, GL_RGBA8, colorSize));
+        ANGLE_TRY(t->setStorage(mutableContext, createType, 1, GL_RGBA8, colorSize));
     }
 
     if (type == gl::TextureType::CubeMap)
     {
         for (gl::TextureTarget face : gl::AllCubeFaceTextureTargets())
         {
-            ANGLE_TRY(t->setSubImage(context, unpack, nullptr, face, 0, area, GL_RGBA,
+            ANGLE_TRY(t->setSubImage(mutableContext, unpack, nullptr, face, 0, area, GL_RGBA,
                                      GL_UNSIGNED_BYTE, color));
         }
     }
@@ -463,7 +470,7 @@ angle::Result IncompleteTextureSet::getIncompleteTexture(
     }
     else
     {
-        ANGLE_TRY(t->setSubImage(context, unpack, nullptr,
+        ANGLE_TRY(t->setSubImage(mutableContext, unpack, nullptr,
                                  gl::NonCubeTextureTypeToTarget(createType), 0, area, GL_RGBA,
                                  GL_UNSIGNED_BYTE, color));
     }
@@ -472,57 +479,60 @@ angle::Result IncompleteTextureSet::getIncompleteTexture(
 
     mIncompleteTextures[type].set(context, t.release());
     *textureOut = mIncompleteTextures[type].get();
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-#define ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(cols, rows)                            \
-    template bool SetFloatUniformMatrix<cols, rows>(unsigned int, unsigned int, GLsizei, \
-                                                    GLboolean, const GLfloat *, uint8_t *)
+#define ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(api, cols, rows)                            \
+    template bool SetFloatUniformMatrix##api<cols, rows>(unsigned int, unsigned int, GLsizei, \
+                                                         GLboolean, const GLfloat *, uint8_t *)
 
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(2, 2);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(3, 3);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(4, 4);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(2, 3);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(3, 2);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(2, 4);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(4, 2);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(3, 4);
-ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(4, 3);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 2, 2);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 3, 3);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 4, 4);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 2, 3);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 3, 2);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 2, 4);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 4, 2);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 3, 4);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(GLSL, 4, 3);
+
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 2, 2);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 3, 3);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 4, 4);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 2, 3);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 3, 2);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 2, 4);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 4, 2);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 3, 4);
+ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC(HLSL, 4, 3);
 
 #undef ANGLE_INSTANTIATE_SET_UNIFORM_MATRIX_FUNC
 
 template <int cols, int rows>
-bool SetFloatUniformMatrix(unsigned int arrayElementOffset,
-                           unsigned int elementCount,
-                           GLsizei countIn,
-                           GLboolean transpose,
-                           const GLfloat *value,
-                           uint8_t *targetData)
+bool SetFloatUniformMatrixGLSL(unsigned int arrayElementOffset,
+                               unsigned int elementCount,
+                               GLsizei countIn,
+                               GLboolean transpose,
+                               const GLfloat *value,
+                               uint8_t *targetData)
 {
-    unsigned int count =
-        std::min(elementCount - arrayElementOffset, static_cast<unsigned int>(countIn));
+    // GLSL expects matrix uniforms to be column-major, and each column is padded to 4 rows.
+    return SetFloatUniformMatrix<cols, rows, true, cols, 4>(arrayElementOffset, elementCount,
+                                                            countIn, transpose, value, targetData);
+}
 
-    const unsigned int targetMatrixStride = (4 * rows);
-    GLfloat *target                       = reinterpret_cast<GLfloat *>(
-        targetData + arrayElementOffset * sizeof(GLfloat) * targetMatrixStride);
-
-    bool dirty = false;
-
-    for (unsigned int i = 0; i < count; i++)
-    {
-        if (transpose == GL_FALSE)
-        {
-            dirty = ExpandMatrix<GLfloat, cols, rows>(target, value) || dirty;
-        }
-        else
-        {
-            dirty = TransposeExpandMatrix<GLfloat, cols, rows>(target, value) || dirty;
-        }
-        target += targetMatrixStride;
-        value += cols * rows;
-    }
-
-    return dirty;
+template <int cols, int rows>
+bool SetFloatUniformMatrixHLSL(unsigned int arrayElementOffset,
+                               unsigned int elementCount,
+                               GLsizei countIn,
+                               GLboolean transpose,
+                               const GLfloat *value,
+                               uint8_t *targetData)
+{
+    // Internally store matrices as row-major to accomodate HLSL matrix indexing.  Each row is
+    // padded to 4 columns.
+    return SetFloatUniformMatrix<cols, rows, false, 4, rows>(arrayElementOffset, elementCount,
+                                                             countIn, transpose, value, targetData);
 }
 
 template void GetMatrixUniform<GLint>(GLenum, GLint *, const GLint *, bool);
@@ -581,26 +591,26 @@ angle::Result ComputeStartVertex(ContextImpl *contextImpl,
     // unsigned integers(with wrapping on overflow conditions)." ANGLE does not fully handle
     // these rules, an overflow error is returned if the start vertex cannot be stored in a
     // 32-bit signed integer.
-    ANGLE_CHECK_GL_MATH(contextImpl, startVertexInt64 <= std::numeric_limits<GLint>::max())
+    ANGLE_CHECK_GL_MATH(contextImpl, startVertexInt64 <= std::numeric_limits<GLint>::max());
 
     *firstVertexOut = static_cast<GLint>(startVertexInt64);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result GetVertexRangeInfo(const gl::Context *context,
                                  GLint firstVertex,
                                  GLsizei vertexOrIndexCount,
-                                 GLenum indexTypeOrNone,
+                                 gl::DrawElementsType indexTypeOrInvalid,
                                  const void *indices,
                                  GLint baseVertex,
                                  GLint *startVertexOut,
                                  size_t *vertexCountOut)
 {
-    if (indexTypeOrNone != GL_NONE)
+    if (indexTypeOrInvalid != gl::DrawElementsType::InvalidEnum)
     {
         gl::IndexRange indexRange;
-        ANGLE_TRY(context->getGLState().getVertexArray()->getIndexRange(
-            context, indexTypeOrNone, vertexOrIndexCount, indices, &indexRange));
+        ANGLE_TRY(context->getState().getVertexArray()->getIndexRange(
+            context, indexTypeOrInvalid, vertexOrIndexCount, indices, &indexRange));
         ANGLE_TRY(ComputeStartVertex(context->getImplementation(), indexRange, baseVertex,
                                      startVertexOut));
         *vertexCountOut = indexRange.vertexCount();
@@ -610,6 +620,34 @@ angle::Result GetVertexRangeInfo(const gl::Context *context,
         *startVertexOut = firstVertex;
         *vertexCountOut = vertexOrIndexCount;
     }
-    return angle::Result::Continue();
+    return angle::Result::Continue;
+}
+
+gl::Rectangle ClipRectToScissor(const gl::State &glState, const gl::Rectangle &rect, bool invertY)
+{
+    if (glState.isScissorTestEnabled())
+    {
+        gl::Rectangle clippedRect;
+        if (!gl::ClipRectangle(glState.getScissor(), rect, &clippedRect))
+        {
+            return gl::Rectangle();
+        }
+
+        if (invertY)
+        {
+            clippedRect.y = rect.height - clippedRect.y - clippedRect.height;
+        }
+
+        return clippedRect;
+    }
+
+    // If the scissor test isn't enabled, assume it has infinite size.  Its intersection with the
+    // rect would be the rect itself.
+    //
+    // Note that on Vulkan, returning this (as opposed to a fixed max-int-sized rect) could lead to
+    // unnecessary pipeline creations if two otherwise identical pipelines are used on framebuffers
+    // with different sizes.  If such usage is observed in an application, we should investigate
+    // possible optimizations.
+    return rect;
 }
 }  // namespace rx

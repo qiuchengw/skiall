@@ -23,20 +23,18 @@ class DrawBuffersTest : public ANGLETest
         setConfigDepthBits(24);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteFramebuffers(1, &mFBO);
         glDeleteFramebuffers(1, &mReadFramebuffer);
         glDeleteTextures(4, mTextures);
-
-        ANGLETest::TearDown();
     }
 
     // We must call a different DrawBuffers method depending on extension support. Use this
     // method instead of calling on directly.
     void setDrawBuffers(GLsizei n, const GLenum *drawBufs)
     {
-        if (extensionEnabled("GL_EXT_draw_buffers"))
+        if (IsGLExtensionEnabled("GL_EXT_draw_buffers"))
         {
             glDrawBuffersEXT(n, drawBufs);
         }
@@ -50,14 +48,14 @@ class DrawBuffersTest : public ANGLETest
     // Use this method to filter if we can support these tests.
     bool setupTest()
     {
-        if (getClientMajorVersion() < 3 && (!ensureExtensionEnabled("GL_EXT_draw_buffers") ||
-                                            !ensureExtensionEnabled("GL_ANGLE_framebuffer_blit")))
+        if (getClientMajorVersion() < 3 && (!EnsureGLExtensionEnabled("GL_EXT_draw_buffers") ||
+                                            !EnsureGLExtensionEnabled("GL_ANGLE_framebuffer_blit")))
         {
             return false;
         }
 
         // This test seems to fail on an nVidia machine when the window is hidden
-        SetWindowVisible(true);
+        setWindowVisible(true);
 
         glGenFramebuffers(1, &mFBO);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO);
@@ -90,8 +88,10 @@ class DrawBuffersTest : public ANGLETest
         {
             if (bufferEnabled[index])
             {
-                strstr << "layout(location = " << index << ") "
-                          "out vec4 value" << index << ";\n";
+                strstr << "layout(location = " << index
+                       << ") "
+                          "out vec4 value"
+                       << index << ";\n";
             }
         }
 
@@ -106,15 +106,14 @@ class DrawBuffersTest : public ANGLETest
                 unsigned int g = (index + 1) & 2;
                 unsigned int b = (index + 1) & 4;
 
-                strstr << "    value" << index << " = vec4("
-                       << r << ".0, " << g << ".0, "
-                       << b << ".0, 1.0);\n";
+                strstr << "    value" << index << " = vec4(" << r << ".0, " << g << ".0, " << b
+                       << ".0, 1.0);\n";
             }
         }
 
         strstr << "}\n";
 
-        *programOut = CompileProgram(essl3_shaders::vs::Simple(), strstr.str());
+        *programOut = CompileProgram(essl3_shaders::vs::Simple(), strstr.str().c_str());
         if (*programOut == 0)
         {
             FAIL() << "shader compilation failed.";
@@ -138,15 +137,14 @@ class DrawBuffersTest : public ANGLETest
                 unsigned int g = (index + 1) & 2;
                 unsigned int b = (index + 1) & 4;
 
-                strstr << "    gl_FragData[" << index << "] = vec4("
-                    << r << ".0, " << g << ".0, "
-                    << b << ".0, 1.0);\n";
+                strstr << "    gl_FragData[" << index << "] = vec4(" << r << ".0, " << g << ".0, "
+                       << b << ".0, 1.0);\n";
             }
         }
 
         strstr << "}\n";
 
-        *programOut = CompileProgram(essl1_shaders::vs::Simple(), strstr.str());
+        *programOut = CompileProgram(essl1_shaders::vs::Simple(), strstr.str().c_str());
         if (*programOut == 0)
         {
             FAIL() << "shader compilation failed.";
@@ -258,19 +256,19 @@ TEST_P(DrawBuffersTest, Gaps)
     // TODO(ynovikov): Investigate the failure (http://anglebug.com/1535)
     ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsDesktopOpenGL());
 
+    // TODO(syoussefi): Qualcomm driver crashes in the presence of VK_ATTACHMENT_UNUSED.
+    // http://anglebug.com/3423
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mTextures[0], 0);
 
-    bool flags[8] = { false, true };
+    bool flags[8] = {false, true};
 
     GLuint program;
     setupMRTProgram(flags, &program);
 
-    const GLenum bufs[] =
-    {
-        GL_NONE,
-        GL_COLOR_ATTACHMENT1
-    };
+    const GLenum bufs[] = {GL_NONE, GL_COLOR_ATTACHMENT1};
     setDrawBuffers(2, bufs);
     drawQuad(program, positionAttrib(), 0.5);
 
@@ -286,24 +284,22 @@ TEST_P(DrawBuffersTest, FirstAndLast)
     // TODO(ynovikov): Investigate the failure (https://anglebug.com/1533)
     ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsDesktopOpenGL());
 
+    // TODO(syoussefi): Qualcomm driver crashes in the presence of VK_ATTACHMENT_UNUSED.
+    // http://anglebug.com/3423
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+
     glBindTexture(GL_TEXTURE_2D, mTextures[0]);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTextures[0], 0);
 
     glBindTexture(GL_TEXTURE_2D, mTextures[1]);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, mTextures[1], 0);
 
-    bool flags[8] = { true, false, false, true };
+    bool flags[8] = {true, false, false, true};
 
     GLuint program;
     setupMRTProgram(flags, &program);
 
-    const GLenum bufs[] =
-    {
-        GL_COLOR_ATTACHMENT0,
-        GL_NONE,
-        GL_NONE,
-        GL_COLOR_ATTACHMENT3
-    };
+    const GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT3};
 
     setDrawBuffers(4, bufs);
     drawQuad(program, positionAttrib(), 0.5);
@@ -323,17 +319,22 @@ TEST_P(DrawBuffersTest, FirstHalfNULL)
     // TODO(ynovikov): Investigate the failure (https://anglebug.com/1533)
     ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsDesktopOpenGL());
 
-    bool flags[8] = { false };
-    GLenum bufs[8] = { GL_NONE };
+    // TODO(syoussefi): Qualcomm driver crashes in the presence of VK_ATTACHMENT_UNUSED.
+    // http://anglebug.com/3423
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+
+    bool flags[8]  = {false};
+    GLenum bufs[8] = {GL_NONE};
 
     GLuint halfMaxDrawBuffers = static_cast<GLuint>(mMaxDrawBuffers) / 2;
 
     for (GLuint texIndex = 0; texIndex < halfMaxDrawBuffers; texIndex++)
     {
         glBindTexture(GL_TEXTURE_2D, mTextures[texIndex]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + halfMaxDrawBuffers + texIndex, GL_TEXTURE_2D, mTextures[texIndex], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + halfMaxDrawBuffers + texIndex,
+                               GL_TEXTURE_2D, mTextures[texIndex], 0);
         flags[texIndex + halfMaxDrawBuffers] = true;
-        bufs[texIndex + halfMaxDrawBuffers] = GL_COLOR_ATTACHMENT0 + halfMaxDrawBuffers + texIndex;
+        bufs[texIndex + halfMaxDrawBuffers]  = GL_COLOR_ATTACHMENT0 + halfMaxDrawBuffers + texIndex;
     }
 
     GLuint program;
@@ -366,53 +367,6 @@ TEST_P(DrawBuffersTest, DefaultFramebufferDrawBufferQuery)
     EXPECT_EQ(GL_NONE, drawbuffer);
 }
 
-// Tests masking out some of the draw buffers by not writing to them in the program.
-TEST_P(DrawBuffersWebGL2Test, SomeProgramOutputsDisabled)
-{
-    ANGLE_SKIP_TEST_IF(!setupTest());
-
-    // TODO(ynovikov): Investigate the failure (https://anglebug.com/1533)
-    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsDesktopOpenGL());
-
-    bool flags[8]  = {false};
-    GLenum bufs[4] = {GL_NONE};
-
-    constexpr GLuint kMaxBuffers     = 4;
-    constexpr GLuint kHalfMaxBuffers = 2;
-
-    // Enable all draw buffers.
-    for (GLuint texIndex = 0; texIndex < kMaxBuffers; texIndex++)
-    {
-        glBindTexture(GL_TEXTURE_2D, mTextures[texIndex]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + texIndex, GL_TEXTURE_2D,
-                               mTextures[texIndex], 0);
-        bufs[texIndex] = GL_COLOR_ATTACHMENT0 + texIndex;
-
-        // Mask out the first two buffers.
-        flags[texIndex] = texIndex >= kHalfMaxBuffers;
-    }
-
-    GLuint program;
-    setupMRTProgram(flags, &program);
-
-    setDrawBuffers(kMaxBuffers, bufs);
-    drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
-
-    for (GLuint texIndex = 0; texIndex < kHalfMaxBuffers; texIndex++)
-    {
-        verifyAttachment2DUnwritten(texIndex, mTextures[texIndex], GL_TEXTURE_2D, 0);
-    }
-
-    for (GLuint texIndex = kHalfMaxBuffers; texIndex < kMaxBuffers; texIndex++)
-    {
-        verifyAttachment2D(texIndex, mTextures[texIndex], GL_TEXTURE_2D, 0);
-    }
-
-    EXPECT_GL_NO_ERROR();
-
-    glDeleteProgram(program);
-}
-
 // Same as above but adds a state change from a program with different masks after a clear.
 TEST_P(DrawBuffersWebGL2Test, TwoProgramsWithDifferentOutputsAndClear)
 {
@@ -421,6 +375,10 @@ TEST_P(DrawBuffersWebGL2Test, TwoProgramsWithDifferentOutputsAndClear)
 
     // TODO(ynovikov): Investigate the failure (https://anglebug.com/1533)
     ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsDesktopOpenGL());
+
+    // TODO(syoussefi): Qualcomm driver crashes in the presence of VK_ATTACHMENT_UNUSED.
+    // http://anglebug.com/3423
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
 
     ANGLE_SKIP_TEST_IF(!setupTest());
 
@@ -472,7 +430,7 @@ TEST_P(DrawBuffersWebGL2Test, TwoProgramsWithDifferentOutputsAndClear)
     verifyAttachment2DColor(3, mTextures[3], GL_TEXTURE_2D, 0, GLColor::green);
 
     // Draw with MRT program.
-    setDrawBuffers(kMaxBuffers, allBufs);
+    setDrawBuffers(kMaxBuffers, someBufs);
     drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
     ASSERT_GL_NO_ERROR();
 
@@ -481,6 +439,26 @@ TEST_P(DrawBuffersWebGL2Test, TwoProgramsWithDifferentOutputsAndClear)
     verifyAttachment2DColor(1, mTextures[1], GL_TEXTURE_2D, 0, GLColor::transparentBlack);
     verifyAttachment2D(2, mTextures[2], GL_TEXTURE_2D, 0);
     verifyAttachment2D(3, mTextures[3], GL_TEXTURE_2D, 0);
+
+    // Active draw buffers with no fragment output is not allowed.
+    setDrawBuffers(kMaxBuffers, allBufs);
+    drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
+    ASSERT_GL_ERROR(GL_INVALID_OPERATION);
+    // Exception: when RASTERIZER_DISCARD is enabled.
+    glEnable(GL_RASTERIZER_DISCARD);
+    drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
+    ASSERT_GL_NO_ERROR();
+    glDisable(GL_RASTERIZER_DISCARD);
+    // Exception: when all 4 channels of color mask are set to false.
+    glColorMask(false, false, false, false);
+    drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
+    ASSERT_GL_NO_ERROR();
+    glColorMask(false, true, false, false);
+    drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
+    ASSERT_GL_ERROR(GL_INVALID_OPERATION);
+    glColorMask(true, true, true, true);
+    drawQuad(program, positionAttrib(), 0.5, 1.0f, true);
+    ASSERT_GL_ERROR(GL_INVALID_OPERATION);
 
     // Clear again. All attachments should be cleared.
     glClear(GL_COLOR_BUFFER_BIT);
@@ -503,13 +481,12 @@ TEST_P(DrawBuffersTest, UnwrittenOutputVariablesShouldNotCrash)
     glBindTexture(GL_TEXTURE_2D, mTextures[1]);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, mTextures[1], 0);
 
-    bool flags[8] = { true, false };
+    bool flags[8] = {true, false};
 
     GLuint program;
     setupMRTProgram(flags, &program);
 
-    const GLenum bufs[] =
-    {
+    const GLenum bufs[] = {
         GL_COLOR_ATTACHMENT0,
         GL_COLOR_ATTACHMENT1,
         GL_NONE,
@@ -543,7 +520,7 @@ TEST_P(DrawBuffersTest, BroadcastGLFragColor)
 
     const GLenum bufs[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
-    const std::string fragmentShaderSource =
+    constexpr char kFS[] =
         "#extension GL_EXT_draw_buffers : enable\n"
         "precision highp float;\n"
         "uniform float u_zero;\n"
@@ -556,7 +533,7 @@ TEST_P(DrawBuffersTest, BroadcastGLFragColor)
         "    }\n"
         "}\n";
 
-    GLuint program = CompileProgram(essl1_shaders::vs::Simple(), fragmentShaderSource);
+    GLuint program = CompileProgram(essl1_shaders::vs::Simple(), kFS);
     if (program == 0)
     {
         FAIL() << "shader compilation failed.";
@@ -574,8 +551,7 @@ TEST_P(DrawBuffersTest, BroadcastGLFragColor)
 }
 
 class DrawBuffersTestES3 : public DrawBuffersTest
-{
-};
+{};
 
 // Test that binding multiple layers of a 3D texture works correctly
 TEST_P(DrawBuffersTestES3, 3DTextures)
@@ -598,7 +574,10 @@ TEST_P(DrawBuffersTestES3, 3DTextures)
     setupMRTProgram(flags, &program);
 
     const GLenum bufs[] = {
-        GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+        GL_COLOR_ATTACHMENT3,
     };
 
     glDrawBuffers(4, bufs);
@@ -635,7 +614,10 @@ TEST_P(DrawBuffersTestES3, 2DArrayTextures)
     setupMRTProgram(flags, &program);
 
     const GLenum bufs[] = {
-        GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+        GL_COLOR_ATTACHMENT0,
+        GL_COLOR_ATTACHMENT1,
+        GL_COLOR_ATTACHMENT2,
+        GL_COLOR_ATTACHMENT3,
     };
 
     glDrawBuffers(4, bufs);
@@ -651,7 +633,8 @@ TEST_P(DrawBuffersTestES3, 2DArrayTextures)
     glDeleteProgram(program);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
+// Use this to select which configurations (e.g. which renderer, which GLES major version) these
+// tests should be run against.
 ANGLE_INSTANTIATE_TEST(DrawBuffersTest,
                        ES2_D3D11(),
                        ES3_D3D11(),
@@ -659,8 +642,9 @@ ANGLE_INSTANTIATE_TEST(DrawBuffersTest,
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
                        ES3_OPENGLES(),
-                       ES2_VULKAN());
+                       ES2_VULKAN(),
+                       ES3_VULKAN());
 
-ANGLE_INSTANTIATE_TEST(DrawBuffersWebGL2Test, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(DrawBuffersWebGL2Test, ES3_D3D11(), ES3_OPENGL(), ES3_VULKAN());
 
 ANGLE_INSTANTIATE_TEST(DrawBuffersTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());

@@ -57,6 +57,13 @@
         "Exp2": "GL_EXP2",
         "Linear": "GL_LINEAR"
     },
+    "GraphicsResetStatus":
+    {
+        "NoError": "GL_NO_ERROR",
+        "GuiltyContextReset": "GL_GUILTY_CONTEXT_RESET",
+        "InnocentContextReset": "GL_INNOCENT_CONTEXT_RESET",
+        "UnknownContextReset": "GL_UNKNOWN_CONTEXT_RESET"
+    },
     "HintSetting":
     {
         "DontCare": "GL_DONT_CARE",
@@ -229,20 +236,6 @@
         "SpotDirection": "GL_SPOT_DIRECTION",
         "SpotExponent": "GL_SPOT_EXPONENT"
     },
-    "PrimitiveMode":
-    {
-        "Points": "GL_POINTS",
-        "Lines": "GL_LINES",
-        "LineLoop": "GL_LINE_LOOP",
-        "LineStrip": "GL_LINE_STRIP",
-        "Triangles": "GL_TRIANGLES",
-        "TriangleStrip": "GL_TRIANGLE_STRIP",
-        "TriangleFan": "GL_TRIANGLE_FAN",
-        "LinesAdjacency": "GL_LINES_ADJACENCY_EXT",
-        "LineStripAdjacency": "GL_LINE_STRIP_ADJACENCY_EXT",
-        "TrianglesAdjacency": "GL_TRIANGLES_ADJACENCY_EXT",
-        "TriangleStripAdjacency": "GL_TRIANGLE_STRIP_ADJACENCY_EXT"
-    },
     "PointParameter":
     {
         "PointSizeMin" : "GL_POINT_SIZE_MIN",
@@ -264,5 +257,26 @@
         "ClampToBorder": "GL_CLAMP_TO_BORDER",
         "MirroredRepeat": "GL_MIRRORED_REPEAT",
         "Repeat": "GL_REPEAT"
+    },
+    "ProvokingVertex":
+    {
+        "FirstVertexConvention": "GL_FIRST_VERTEX_CONVENTION",
+        "LastVertexConvention": "GL_LAST_VERTEX_CONVENTION"
+    },
+    "HandleType":
+    {
+        "OpaqueFd": "GL_HANDLE_TYPE_OPAQUE_FD_EXT"
+    },
+    "ImageLayout":
+    {
+        "General": "GL_LAYOUT_GENERAL_EXT",
+        "ColorAttachment": "GL_LAYOUT_COLOR_ATTACHMENT_EXT",
+        "DepthStencilAttachment": "GL_LAYOUT_DEPTH_STENCIL_ATTACHMENT_EXT",
+        "DepthStencilReadOnlyAttachment": "GL_LAYOUT_DEPTH_STENCIL_READ_ONLY_EXT",
+        "ShaderReadOnly": "GL_LAYOUT_SHADER_READ_ONLY_EXT",
+        "TransferSrc": "GL_LAYOUT_TRANSFER_SRC_EXT",
+        "TransferDst": "GL_LAYOUT_TRANSFER_DST_EXT",
+        "DepthReadOnlyStencilAttachment": "GL_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_EXT",
+        "DepthAttachmentStencilReadOnly": "GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT"
     }
 }

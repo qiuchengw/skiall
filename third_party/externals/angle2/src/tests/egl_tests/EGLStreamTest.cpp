@@ -11,10 +11,11 @@
 
 #include <vector>
 
-#include "OSWindow.h"
 #include "media/yuvtest.inl"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
+#include "util/OSWindow.h"
 
 using namespace angle;
 
@@ -100,7 +101,9 @@ TEST_P(EGLStreamTest, StreamValidationTest)
     ASSERT_EQ(EGL_NO_STREAM_KHR, stream);
 
     const EGLint streamAttributes[] = {
-        EGL_CONSUMER_LATENCY_USEC_KHR, 0, EGL_NONE,
+        EGL_CONSUMER_LATENCY_USEC_KHR,
+        0,
+        EGL_NONE,
     };
 
     stream = eglCreateStreamKHR(EGL_NO_DISPLAY, streamAttributes);
@@ -368,13 +371,11 @@ TEST_P(EGLStreamTest, StreamConsumerGLTextureYUVDeletionTest)
 class D3D11TextureStreamSamplingTest : public ANGLETest
 {
   protected:
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         EGLWindow *window = getEGLWindow();
         mDisplay          = window->getDisplay();
-        if (!eglDisplayExtensionEnabled(mDisplay, "EGL_ANGLE_stream_producer_d3d_texture"))
+        if (!IsEGLDisplayExtensionEnabled(mDisplay, "EGL_ANGLE_stream_producer_d3d_texture"))
         {
             std::cout << "Stream producer d3d texture not supported" << std::endl;
             return;
@@ -407,7 +408,7 @@ class D3D11TextureStreamSamplingTest : public ANGLETest
         eglQueryDeviceAttribEXT(eglDevice, EGL_D3D11_DEVICE_ANGLE, (EGLAttrib *)&mD3D);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         EGLBoolean result = eglDestroyStreamKHR(mDisplay, mStream);
         ASSERT_EGL_TRUE(result);
@@ -415,8 +416,6 @@ class D3D11TextureStreamSamplingTest : public ANGLETest
 
         glDeleteRenderbuffers(1, &mRB);
         glDeleteFramebuffers(1, &mFB);
-
-        ANGLETest::TearDown();
     }
 
     EGLDisplay mDisplay  = 0;
@@ -432,7 +431,7 @@ TEST_P(D3D11TextureStreamSamplingTest, RGBA)
     EGLWindow *window  = getEGLWindow();
     EGLDisplay display = window->getDisplay();
     ANGLE_SKIP_TEST_IF(
-        !eglDisplayExtensionEnabled(display, "EGL_ANGLE_stream_producer_d3d_texture"));
+        !IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_stream_producer_d3d_texture"));
 
     constexpr char kVertShader[] = R"(
         attribute vec4 aPos;
@@ -522,7 +521,7 @@ TEST_P(D3D11TextureStreamSamplingTest, NV12)
     EGLWindow *window  = getEGLWindow();
     EGLDisplay display = window->getDisplay();
     ANGLE_SKIP_TEST_IF(
-        !eglDisplayExtensionEnabled(display, "EGL_ANGLE_stream_producer_d3d_texture"));
+        !IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_stream_producer_d3d_texture"));
     ANGLE_SKIP_TEST_IF(!CheckNV12TextureSupport(mD3D));
 
     constexpr char kVertShader[] = R"(
@@ -647,16 +646,17 @@ TEST_P(D3D11TextureStreamSamplingTest, NV12)
 // ensures they are correct
 TEST_P(EGLStreamTest, StreamProducerTextureNV12End2End)
 {
-    EGLWindow *window            = getEGLWindow();
-    EGLDisplay display           = window->getDisplay();
+    EGLWindow *window  = getEGLWindow();
+    EGLDisplay display = window->getDisplay();
     ANGLE_SKIP_TEST_IF(
-        !eglDisplayExtensionEnabled(display, "EGL_ANGLE_stream_producer_d3d_texture"));
+        !IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_stream_producer_d3d_texture"));
 
     bool useESSL3Shaders =
-        getClientMajorVersion() >= 3 && extensionEnabled("GL_OES_EGL_image_external_essl3");
+        getClientMajorVersion() >= 3 && IsGLExtensionEnabled("GL_OES_EGL_image_external_essl3");
 
     // yuv to rgb conversion shader using Microsoft's given conversion formulas
-    std::string yuvVS, yuvPS;
+    const char *yuvVS = nullptr;
+    const char *yuvPS = nullptr;
     if (useESSL3Shaders)
     {
         yuvVS =
@@ -719,8 +719,7 @@ TEST_P(EGLStreamTest, StreamProducerTextureNV12End2End)
             "}\n";
     }
 
-    GLuint program = CompileProgram(yuvVS, yuvPS);
-    ASSERT_NE(0u, program);
+    ANGLE_GL_PROGRAM(program, yuvVS, yuvPS);
     GLuint yUniform  = glGetUniformLocation(program, "y");
     GLuint uvUniform = glGetUniformLocation(program, "uv");
 
@@ -801,7 +800,9 @@ TEST_P(EGLStreamTest, StreamProducerTextureNV12End2End)
 
     // Insert the frame
     EGLAttrib frameAttributes[] = {
-        EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE, 0, EGL_NONE,
+        EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE,
+        0,
+        EGL_NONE,
     };
     result = eglStreamPostD3DTextureANGLE(display, stream, (void *)texture, frameAttributes);
     ASSERT_EGL_TRUE(result);

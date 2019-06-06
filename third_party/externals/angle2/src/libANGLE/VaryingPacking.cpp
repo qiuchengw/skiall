@@ -30,9 +30,9 @@ bool ComparePackedVarying(const PackedVarying &x, const PackedVarying &y)
     const sh::ShaderVariable *px, *py;
     if (x.isArrayElement())
     {
-        vx           = *x.varying;
+        vx = *x.varying;
         vx.arraySizes.clear();
-        px           = &vx;
+        px = &vx;
     }
     else
     {
@@ -41,9 +41,9 @@ bool ComparePackedVarying(const PackedVarying &x, const PackedVarying &y)
 
     if (y.isArrayElement())
     {
-        vy           = *y.varying;
+        vy = *y.varying;
         vy.arraySizes.clear();
-        py           = &vy;
+        py = &vy;
     }
     else
     {
@@ -58,8 +58,7 @@ bool ComparePackedVarying(const PackedVarying &x, const PackedVarying &y)
 // Implementation of VaryingPacking
 VaryingPacking::VaryingPacking(GLuint maxVaryingVectors, PackMode packMode)
     : mRegisterMap(maxVaryingVectors), mPackMode(packMode)
-{
-}
+{}
 
 VaryingPacking::~VaryingPacking() = default;
 
@@ -189,12 +188,12 @@ bool VaryingPacking::packVarying(const PackedVarying &packedVarying)
                 {
                     // If varyingRows > 1, it must be an array.
                     PackedVaryingRegister registerInfo;
-                    registerInfo.packedVarying     = &packedVarying;
-                    registerInfo.registerRow       = row + arrayIndex;
-                    registerInfo.registerColumn    = bestColumn;
+                    registerInfo.packedVarying  = &packedVarying;
+                    registerInfo.registerRow    = row + arrayIndex;
+                    registerInfo.registerColumn = bestColumn;
                     registerInfo.varyingArrayIndex =
                         (packedVarying.isArrayElement() ? packedVarying.arrayIndex : arrayIndex);
-                    registerInfo.varyingRowIndex   = 0;
+                    registerInfo.varyingRowIndex = 0;
                     // Do not record register info for builtins.
                     // TODO(jmadill): Clean this up.
                     if (!packedVarying.varying->isBuiltIn())
@@ -315,10 +314,13 @@ bool VaryingPacking::collectAndPackUserVaryings(gl::InfoLog &infoLog,
                 if (varying->isStruct())
                 {
                     ASSERT(!varying->isArray());
-                    for (const auto &field : varying->fields)
+                    for (GLuint fieldIndex = 0; fieldIndex < varying->fields.size(); ++fieldIndex)
                     {
+                        const sh::ShaderVariable &field = varying->fields[fieldIndex];
+
                         ASSERT(!field.isStruct() && !field.isArray());
-                        mPackedVaryings.emplace_back(field, interpolation, varying->name);
+                        mPackedVaryings.emplace_back(field, interpolation, varying->name,
+                                                     fieldIndex);
                         uniqueFullNames.insert(mPackedVaryings.back().fullName());
                     }
                 }
@@ -355,11 +357,14 @@ bool VaryingPacking::collectAndPackUserVaryings(gl::InfoLog &infoLog,
             }
             if (input->isStruct())
             {
-                const sh::ShaderVariable *field = FindShaderVarField(*input, tfVarying);
+                GLuint fieldIndex = 0;
+                const sh::ShaderVariable *field =
+                    FindShaderVarField(*input, tfVarying, &fieldIndex);
                 if (field != nullptr)
                 {
                     ASSERT(!field->isStruct() && !field->isArray());
-                    mPackedVaryings.emplace_back(*field, input->interpolation, input->name);
+                    mPackedVaryings.emplace_back(*field, input->interpolation, input->name,
+                                                 fieldIndex);
                     mPackedVaryings.back().vertexOnly = true;
                     mPackedVaryings.back().arrayIndex = GL_INVALID_INDEX;
                     uniqueFullNames.insert(tfVarying);
@@ -426,9 +431,4 @@ bool VaryingPacking::packUserVaryings(gl::InfoLog &infoLog,
 
     return true;
 }
-
-const std::vector<std::string> &VaryingPacking::getInactiveVaryingNames() const
-{
-    return mInactiveVaryingNames;
-}
-}  // namespace rx
+}  // namespace gl

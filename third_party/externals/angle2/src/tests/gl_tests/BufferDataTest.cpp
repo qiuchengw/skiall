@@ -7,7 +7,7 @@
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
 
-#include "random_utils.h"
+#include "util/random_utils.h"
 
 #include <stdint.h>
 
@@ -26,37 +26,33 @@ class BufferDataTest : public ANGLETest
         setConfigAlphaBits(8);
         setConfigDepthBits(24);
 
-        mBuffer = 0;
-        mProgram = 0;
+        mBuffer         = 0;
+        mProgram        = 0;
         mAttribLocation = -1;
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
+        constexpr char kVS[] = R"(attribute vec4 position;
+attribute float in_attrib;
+varying float v_attrib;
+void main()
+{
+    v_attrib = in_attrib;
+    gl_Position = position;
+})";
 
-        const char *vsSource =
-            R"(attribute vec4 position;
-            attribute float in_attrib;
-            varying float v_attrib;
-            void main()
-            {
-                v_attrib = in_attrib;
-                gl_Position = position;
-            })";
-
-        const char *fsSource =
-            R"(precision mediump float;
-            varying float v_attrib;
-            void main()
-            {
-                gl_FragColor = vec4(v_attrib, 0, 0, 1);
-            })";
+        constexpr char kFS[] = R"(precision mediump float;
+varying float v_attrib;
+void main()
+{
+    gl_FragColor = vec4(v_attrib, 0, 0, 1);
+})";
 
         glGenBuffers(1, &mBuffer);
         ASSERT_NE(mBuffer, 0U);
 
-        mProgram = CompileProgram(vsSource, fsSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(mProgram, 0U);
 
         mAttribLocation = glGetAttribLocation(mProgram, "in_attrib");
@@ -71,12 +67,10 @@ class BufferDataTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(1, &mBuffer);
         glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
     }
 
     GLuint mBuffer;
@@ -119,7 +113,7 @@ TEST_P(BufferDataTest, ZeroNonNULLData)
     glBufferSubData(GL_ARRAY_BUFFER, 0, 0, zeroData);
     EXPECT_GL_NO_ERROR();
 
-    delete [] zeroData;
+    delete[] zeroData;
 }
 
 TEST_P(BufferDataTest, NULLResolvedData)
@@ -210,7 +204,7 @@ TEST_P(BufferDataTest, RepeatedDrawDynamicBug)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
 
     // Set up color value so black is drawn
-    std::fill(data.begin(), data.end(), 0);
+    std::fill(data.begin(), data.end(), 0.0f);
 
     // Update the data, changing back to DYNAMIC mode.
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * data.size(), data.data(), GL_DYNAMIC_DRAW);
@@ -235,27 +229,23 @@ class IndexedBufferCopyTest : public ANGLETest
         setConfigDepthBits(24);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
+        constexpr char kVS[] = R"(attribute vec3 in_attrib;
+varying vec3 v_attrib;
+void main()
+{
+    v_attrib = in_attrib;
+    gl_Position = vec4(0.0, 0.0, 0.5, 1.0);
+    gl_PointSize = 100.0;
+})";
 
-        const char *vsSource =
-            R"(attribute vec3 in_attrib;
-            varying vec3 v_attrib;
-            void main()
-            {
-                v_attrib = in_attrib;
-                gl_Position = vec4(0.0, 0.0, 0.5, 1.0);
-                gl_PointSize = 100.0;
-            })";
-
-        const char *fsSource =
-            R"(precision mediump float;
-            varying vec3 v_attrib;
-            void main()
-            {
-                gl_FragColor = vec4(v_attrib, 1);
-            })";
+        constexpr char kFS[] = R"(precision mediump float;
+varying vec3 v_attrib;
+void main()
+{
+    gl_FragColor = vec4(v_attrib, 1);
+})";
 
         glGenBuffers(2, mBuffers);
         ASSERT_NE(mBuffers[0], 0U);
@@ -264,7 +254,7 @@ class IndexedBufferCopyTest : public ANGLETest
         glGenBuffers(1, &mElementBuffer);
         ASSERT_NE(mElementBuffer, 0U);
 
-        mProgram = CompileProgram(vsSource, fsSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(mProgram, 0U);
 
         mAttribLocation = glGetAttribLocation(mProgram, "in_attrib");
@@ -277,13 +267,11 @@ class IndexedBufferCopyTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteBuffers(2, mBuffers);
         glDeleteBuffers(1, &mElementBuffer);
         glDeleteProgram(mProgram);
-
-        ANGLETest::TearDown();
     }
 
     GLuint mBuffers[2];
@@ -300,8 +288,8 @@ TEST_P(IndexedBufferCopyTest, IndexRangeBug)
     // TODO(geofflang): Figure out why this fails on AMD OpenGL (http://anglebug.com/1291)
     ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL());
 
-    unsigned char vertexData[] = { 255, 0, 0, 0, 0, 0 };
-    unsigned int indexData[] = { 0, 1 };
+    unsigned char vertexData[] = {255, 0, 0, 0, 0, 0};
+    unsigned int indexData[]   = {0, 1};
 
     glBindBuffer(GL_ARRAY_BUFFER, mBuffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(char) * 6, vertexData, GL_STATIC_DRAW);
@@ -336,7 +324,7 @@ TEST_P(IndexedBufferCopyTest, IndexRangeBug)
     glClear(GL_COLOR_BUFFER_BIT);
     EXPECT_PIXEL_EQ(0, 0, 0, 0, 0, 0);
 
-    unsigned char newData[] = { 0, 255, 0 };
+    unsigned char newData[] = {0, 255, 0};
     glBufferSubData(GL_ARRAY_BUFFER, 3, 3, newData);
 
     glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, nullptr);
@@ -346,8 +334,7 @@ TEST_P(IndexedBufferCopyTest, IndexRangeBug)
 }
 
 class BufferDataTestES3 : public BufferDataTest
-{
-};
+{};
 
 // The following test covers an ANGLE bug where the buffer storage
 // is not resized by Buffer11::getLatestBufferStorage when needed.
@@ -358,13 +345,13 @@ TEST_P(BufferDataTestES3, BufferResizing)
     ASSERT_GL_NO_ERROR();
 
     // Allocate a buffer with one byte
-    uint8_t singleByte[] = { 0xaa };
+    uint8_t singleByte[] = {0xaa};
     glBufferData(GL_ARRAY_BUFFER, 1, singleByte, GL_STATIC_DRAW);
 
     // Resize the buffer
     // To trigger the bug, the buffer need to be big enough because some hardware copy buffers
     // by chunks of pages instead of the minimum number of bytes neeeded.
-    const size_t numBytes = 4096*4;
+    const size_t numBytes = 4096 * 4;
     glBufferData(GL_ARRAY_BUFFER, numBytes, nullptr, GL_STATIC_DRAW);
 
     // Copy the original data to the buffer
@@ -374,7 +361,8 @@ TEST_P(BufferDataTestES3, BufferResizing)
         srcBytes[i] = static_cast<uint8_t>(i);
     }
 
-    void *dest = glMapBufferRange(GL_ARRAY_BUFFER, 0, numBytes, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    void *dest = glMapBufferRange(GL_ARRAY_BUFFER, 0, numBytes,
+                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
 
     ASSERT_GL_NO_ERROR();
 
@@ -398,7 +386,8 @@ TEST_P(BufferDataTestES3, BufferResizing)
     ASSERT_GL_NO_ERROR();
 
     // Read back the data and compare it to the original
-    uint8_t *data = reinterpret_cast<uint8_t*>(glMapBufferRange(GL_COPY_WRITE_BUFFER, 0, numBytes, GL_MAP_READ_BIT));
+    uint8_t *data = reinterpret_cast<uint8_t *>(
+        glMapBufferRange(GL_COPY_WRITE_BUFFER, 0, numBytes, GL_MAP_READ_BIT));
 
     ASSERT_GL_NO_ERROR();
 
@@ -416,16 +405,16 @@ TEST_P(BufferDataTestES3, BufferResizing)
 // Verify OES_mapbuffer is present if EXT_map_buffer_range is.
 TEST_P(BufferDataTest, ExtensionDependency)
 {
-    if (extensionEnabled("GL_EXT_map_buffer_range"))
+    if (IsGLExtensionEnabled("GL_EXT_map_buffer_range"))
     {
-        ASSERT_TRUE(extensionEnabled("GL_OES_mapbuffer"));
+        ASSERT_TRUE(IsGLExtensionEnabled("GL_OES_mapbuffer"));
     }
 }
 
 // Test mapping with the OES extension.
 TEST_P(BufferDataTest, MapBufferOES)
 {
-    if (!extensionEnabled("GL_EXT_map_buffer_range"))
+    if (!IsGLExtensionEnabled("GL_EXT_map_buffer_range"))
     {
         // Needed for test validation.
         return;
@@ -478,7 +467,8 @@ TEST_P(BufferDataTestES3, NoBufferInitDataCopyBug)
     ASSERT_GL_NO_ERROR();
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
+// Use this to select which configurations (e.g. which renderer, which GLES major version) these
+// tests should be run against.
 ANGLE_INSTANTIATE_TEST(BufferDataTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
@@ -497,16 +487,14 @@ ANGLE_INSTANTIATE_TEST(IndexedBufferCopyTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPE
 class BufferDataOverflowTest : public ANGLETest
 {
   protected:
-    BufferDataOverflowTest()
-    {
-    }
+    BufferDataOverflowTest() {}
 };
 
 // See description above.
 TEST_P(BufferDataOverflowTest, VertexBufferIntegerOverflow)
 {
     // These values are special, to trigger the rounding bug.
-    unsigned int numItems = 0x7FFFFFE;
+    unsigned int numItems       = 0x7FFFFFE;
     constexpr GLsizei bufferCnt = 8;
 
     std::vector<GLBuffer> buffers(bufferCnt);
@@ -531,13 +519,13 @@ TEST_P(BufferDataOverflowTest, VertexBufferIntegerOverflow)
 
     vertexShaderStr << "}";
 
-    const std::string &fragmentShader =
+    constexpr char kFS[] =
         "varying highp float v_attrib;\n"
         "void main() {\n"
         "  gl_FragColor = vec4(v_attrib, 0, 0, 1);\n"
         "}";
 
-    ANGLE_GL_PROGRAM(program, vertexShaderStr.str(), fragmentShader);
+    ANGLE_GL_PROGRAM(program, vertexShaderStr.str().c_str(), kFS);
     glUseProgram(program.get());
 
     std::vector<GLfloat> data(numItems, 1.0f);
@@ -565,6 +553,19 @@ TEST_P(BufferDataOverflowTest, VertexBufferIntegerOverflow)
     EXPECT_GL_NO_ERROR();
     glDrawArrays(GL_TRIANGLES, 0, numItems);
     EXPECT_GL_ERROR(GL_OUT_OF_MEMORY);
+
+    // Test that a small draw still works.
+    for (GLsizei bufferIndex = 0; bufferIndex < bufferCnt; ++bufferIndex)
+    {
+        std::stringstream attribNameStr;
+        attribNameStr << "attrib" << bufferIndex;
+        GLint attribLocation = glGetAttribLocation(program.get(), attribNameStr.str().c_str());
+        ASSERT_NE(-1, attribLocation);
+        glDisableVertexAttribArray(attribLocation);
+    }
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    EXPECT_GL_ERROR(GL_NO_ERROR);
 }
 
 // Tests a security bug in our CopyBufferSubData validation (integer overflow).

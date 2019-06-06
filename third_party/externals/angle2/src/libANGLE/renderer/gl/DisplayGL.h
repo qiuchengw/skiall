@@ -39,17 +39,17 @@ class DisplayGL : public DisplayImpl
     StreamProducerImpl *createStreamProducerD3DTexture(egl::Stream::ConsumerType consumerType,
                                                        const egl::AttributeMap &attribs) override;
 
-    egl::Error makeCurrent(egl::Surface *drawSurface, egl::Surface *readSurface, gl::Context *context) override;
+    egl::Error makeCurrent(egl::Surface *drawSurface,
+                           egl::Surface *readSurface,
+                           gl::Context *context) override;
 
   protected:
     void generateExtensions(egl::DisplayExtensions *outExtensions) const override;
 
   private:
     virtual egl::Error makeCurrentSurfaceless(gl::Context *context);
-
-    egl::Surface *mCurrentDrawSurface;
 };
 
-}
+}  // namespace rx
 
-#endif // LIBANGLE_RENDERER_GL_DISPLAYGL_H_
+#endif  // LIBANGLE_RENDERER_GL_DISPLAYGL_H_

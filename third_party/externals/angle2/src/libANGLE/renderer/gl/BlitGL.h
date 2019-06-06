@@ -11,8 +11,8 @@
 
 #include "angle_gl.h"
 #include "common/angleutils.h"
-#include "libANGLE/angletypes.h"
 #include "libANGLE/Error.h"
+#include "libANGLE/angletypes.h"
 
 #include <map>
 
@@ -20,7 +20,7 @@ namespace gl
 {
 class Framebuffer;
 class ImageIndex;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -142,11 +142,15 @@ class BlitGL : angle::NonCopyable
     enum class BlitProgramType
     {
         FLOAT_TO_FLOAT,
+        FLOAT_TO_FLOAT_EXTERNAL,
         FLOAT_TO_UINT,
+        FLOAT_TO_UINT_EXTERNAL,
         UINT_TO_UINT,
     };
 
-    static BlitProgramType getBlitProgramType(GLenum sourceComponentType, GLenum destComponentType);
+    static BlitProgramType getBlitProgramType(gl::TextureType sourceTextureType,
+                                              GLenum sourceComponentType,
+                                              GLenum destComponentType);
     angle::Result getBlitProgram(const gl::Context *context,
                                  BlitProgramType type,
                                  BlitProgram **program);
@@ -159,6 +163,6 @@ class BlitGL : angle::NonCopyable
     GLuint mVAO;
     GLuint mVertexBuffer;
 };
-}
+}  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_GL_BLITGL_H_

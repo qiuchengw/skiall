@@ -8,8 +8,8 @@
 
 #include "test_utils/ANGLETest.h"
 
-#include "shader_utils.h"
 #include "test_utils/gl_raii.h"
+#include "util/shader_utils.h"
 
 using namespace angle;
 
@@ -42,24 +42,20 @@ class TextureMultisampleTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGenFramebuffers(1, &mFramebuffer);
         glGenTextures(1, &mTexture);
 
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteFramebuffers(1, &mFramebuffer);
         mFramebuffer = 0;
         glDeleteTextures(1, &mTexture);
         mTexture = 0;
-
-        ANGLETest::TearDown();
     }
 
     void texStorageMultisample(GLenum target,
@@ -71,6 +67,9 @@ class TextureMultisampleTest : public ANGLETest
 
     void getTexLevelParameterfv(GLenum target, GLint level, GLenum pname, GLfloat *params);
     void getTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint *params);
+
+    void getMultisamplefv(GLenum pname, GLuint index, GLfloat *val);
+    void sampleMaski(GLuint maskNumber, GLbitfield mask);
 
     GLuint mFramebuffer = 0;
     GLuint mTexture     = 0;
@@ -93,7 +92,7 @@ class TextureMultisampleTest : public ANGLETest
     bool lessThanES31MultisampleExtNotSupported()
     {
         return getClientMajorVersion() <= 3 && getClientMinorVersion() < 1 &&
-               !ensureExtensionEnabled("GL_ANGLE_texture_multisample");
+               !EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample");
     }
 
     const char *multisampleTextureFragmentShader()
@@ -115,7 +114,7 @@ void main() {
     my_FragColor = texelFetch(tex, sampleCoords, sampleNum);
 }
 )";
-    };
+    }
 
     const char *blitArrayTextureLayerFragmentShader()
     {
@@ -137,7 +136,7 @@ void main() {
     my_FragColor = texelFetch(tex, ivec3(sampleCoords, layer), sampleNum);
 }
 )";
-    };
+    }
 
     const char *blitIntArrayTextureLayerFragmentShader()
     {
@@ -159,7 +158,7 @@ void main() {
     my_FragColor = vec4(texelFetch(tex, ivec3(sampleCoords, layer), sampleNum));
 }
 )";
-    };
+    }
 };
 
 class NegativeTextureMultisampleTest : public TextureMultisampleTest
@@ -181,12 +180,12 @@ class TextureMultisampleArrayWebGLTest : public TextureMultisampleTest
     // succeeds.
     bool requestArrayExtension()
     {
-        if (extensionRequestable("GL_OES_texture_storage_multisample_2d_array"))
+        if (IsGLExtensionRequestable("GL_OES_texture_storage_multisample_2d_array"))
         {
             glRequestExtensionANGLE("GL_OES_texture_storage_multisample_2d_array");
         }
 
-        if (!extensionEnabled("GL_OES_texture_storage_multisample_2d_array"))
+        if (!IsGLExtensionEnabled("GL_OES_texture_storage_multisample_2d_array"))
         {
             return false;
         }
@@ -202,7 +201,7 @@ void TextureMultisampleTest::texStorageMultisample(GLenum target,
                                                    GLboolean fixedsamplelocations)
 {
     if (getClientMajorVersion() <= 3 && getClientMinorVersion() < 1 &&
-        ensureExtensionEnabled("GL_ANGLE_texture_multisample"))
+        EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"))
     {
         glTexStorage2DMultisampleANGLE(target, samples, internalformat, width, height,
                                        fixedsamplelocations);
@@ -220,7 +219,7 @@ void TextureMultisampleTest::getTexLevelParameterfv(GLenum target,
                                                     GLfloat *params)
 {
     if (getClientMajorVersion() <= 3 && getClientMinorVersion() < 1 &&
-        ensureExtensionEnabled("GL_ANGLE_texture_multisample"))
+        EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"))
     {
         glGetTexLevelParameterfvANGLE(target, level, pname, params);
     }
@@ -229,19 +228,46 @@ void TextureMultisampleTest::getTexLevelParameterfv(GLenum target,
         glGetTexLevelParameterfv(target, level, pname, params);
     }
 }
+
 void TextureMultisampleTest::getTexLevelParameteriv(GLenum target,
                                                     GLint level,
                                                     GLenum pname,
                                                     GLint *params)
 {
     if (getClientMajorVersion() <= 3 && getClientMinorVersion() < 1 &&
-        ensureExtensionEnabled("GL_ANGLE_texture_multisample"))
+        EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"))
     {
         glGetTexLevelParameterivANGLE(target, level, pname, params);
     }
     else
     {
         glGetTexLevelParameteriv(target, level, pname, params);
+    }
+}
+
+void TextureMultisampleTest::getMultisamplefv(GLenum pname, GLuint index, GLfloat *val)
+{
+    if (getClientMajorVersion() <= 3 && getClientMinorVersion() < 1 &&
+        EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"))
+    {
+        glGetMultisamplefvANGLE(pname, index, val);
+    }
+    else
+    {
+        glGetMultisamplefv(pname, index, val);
+    }
+}
+
+void TextureMultisampleTest::sampleMaski(GLuint maskNumber, GLbitfield mask)
+{
+    if (getClientMajorVersion() <= 3 && getClientMinorVersion() < 1 &&
+        EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"))
+    {
+        glSampleMaskiANGLE(maskNumber, mask);
+    }
+    else
+    {
+        glSampleMaski(maskNumber, mask);
     }
 }
 
@@ -380,7 +406,7 @@ TEST_P(TextureMultisampleTest, GetTexLevelParameter)
 // The value of sample position should be equal to standard pattern on D3D.
 TEST_P(TextureMultisampleTest, CheckSamplePositions)
 {
-    ANGLE_SKIP_TEST_IF(!IsD3D11() || (getClientMajorVersion() <= 3 && getClientMinorVersion() < 1));
+    ANGLE_SKIP_TEST_IF(!IsD3D11());
 
     GLsizei maxSamples = 0;
     glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -394,7 +420,7 @@ TEST_P(TextureMultisampleTest, CheckSamplePositions)
         GLTexture texture;
         size_t indexKey = static_cast<size_t>(ceil(log2(sampleCount)));
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
-        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, sampleCount, GL_RGBA8, 1, 1, GL_TRUE);
+        texStorageMultisample(GL_TEXTURE_2D_MULTISAMPLE, sampleCount, GL_RGBA8, 1, 1, GL_TRUE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE,
                                texture, 0);
         EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
@@ -402,7 +428,7 @@ TEST_P(TextureMultisampleTest, CheckSamplePositions)
 
         for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
         {
-            glGetMultisamplefv(GL_SAMPLE_POSITION, sampleIndex, samplePosition);
+            getMultisamplefv(GL_SAMPLE_POSITION, sampleIndex, samplePosition);
             EXPECT_EQ(samplePosition[0], kSamplePositions[indexKey][2 * sampleIndex]);
             EXPECT_EQ(samplePosition[1], kSamplePositions[indexKey][2 * sampleIndex + 1]);
         }
@@ -414,7 +440,7 @@ TEST_P(TextureMultisampleTest, CheckSamplePositions)
 // Test textureSize and texelFetch when using ANGLE_texture_multisample extension
 TEST_P(TextureMultisampleTest, SimpleTexelFetch)
 {
-    ANGLE_SKIP_TEST_IF(!ensureExtensionEnabled("GL_ANGLE_texture_multisample"));
+    ANGLE_SKIP_TEST_IF(!EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"));
 
     ANGLE_GL_PROGRAM(texelFetchProgram, essl3_shaders::vs::Passthrough(),
                      multisampleTextureFragmentShader());
@@ -461,11 +487,25 @@ TEST_P(TextureMultisampleTest, SimpleTexelFetch)
     }
 }
 
+TEST_P(TextureMultisampleTest, SampleMaski)
+{
+    ANGLE_SKIP_TEST_IF(lessThanES31MultisampleExtNotSupported());
+
+    GLint maxSampleMaskWords = 0;
+    glGetIntegerv(GL_MAX_SAMPLE_MASK_WORDS, &maxSampleMaskWords);
+    sampleMaski(maxSampleMaskWords - 1, 0x1);
+    ASSERT_GL_NO_ERROR();
+
+    glGetIntegerv(GL_MAX_SAMPLE_MASK_WORDS, &maxSampleMaskWords);
+    sampleMaski(maxSampleMaskWords, 0x1);
+    ASSERT_GL_ERROR(GL_INVALID_VALUE);
+}
+
 // Negative tests of multisample texture. When context less than ES 3.1 and ANGLE_texture_multsample
 // not enabled, the feature isn't supported.
 TEST_P(NegativeTextureMultisampleTest, Negtive)
 {
-    ANGLE_SKIP_TEST_IF(ensureExtensionEnabled("GL_ANGLE_texture_multisample"));
+    ANGLE_SKIP_TEST_IF(EnsureGLExtensionEnabled("GL_ANGLE_texture_multisample"));
 
     GLint maxSamples = 0;
     glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, GL_R8, GL_SAMPLES, 1, &maxSamples);
@@ -501,6 +541,12 @@ TEST_P(NegativeTextureMultisampleTest, Negtive)
     getTexLevelParameteriv(GL_TEXTURE_2D_MULTISAMPLE, 0, GL_TEXTURE_FIXED_SAMPLE_LOCATIONS,
                            &fixedSampleLocation);
     ASSERT_GL_ERROR(GL_INVALID_OPERATION);
+
+    GLint maxSampleMaskWords = 0;
+    glGetIntegerv(GL_MAX_SAMPLE_MASK_WORDS, &maxSampleMaskWords);
+    ASSERT_GL_ERROR(GL_INVALID_ENUM);
+    sampleMaski(maxSampleMaskWords - 1, 0x1);
+    ASSERT_GL_ERROR(GL_INVALID_OPERATION);
 }
 
 // Tests that GL_TEXTURE_2D_MULTISAMPLE_ARRAY is not supported in GetInternalformativ when the
@@ -524,30 +570,28 @@ TEST_P(TextureMultisampleArrayWebGLTest, BindMultisampleArrayTextureWithoutExten
 // not enabled.
 TEST_P(TextureMultisampleArrayWebGLTest, ShaderWithoutExtension)
 {
-    const std::string &fragmentShaderRequireExtension = R"(#version 310 es
-        #extension GL_OES_texture_storage_multisample_2d_array : require
-        out highp vec4 my_FragColor;
+    constexpr char kFSRequiresExtension[] = R"(#version 310 es
+#extension GL_OES_texture_storage_multisample_2d_array : require
+out highp vec4 my_FragColor;
 
-        void main() {
-             my_FragColor = vec4(0.0);
-        }
-    )";
+void main() {
+        my_FragColor = vec4(0.0);
+})";
 
-    GLuint program = CompileProgram(essl31_shaders::vs::Simple(), fragmentShaderRequireExtension);
+    GLuint program = CompileProgram(essl31_shaders::vs::Simple(), kFSRequiresExtension);
     EXPECT_EQ(0u, program);
 
-    const std::string &fragmentShaderEnableAndUseExtension = R"(#version 310 es
-        #extension GL_OES_texture_storage_multisample_2d_array : enable
+    constexpr char kFSEnableAndUseExtension[] = R"(#version 310 es
+#extension GL_OES_texture_storage_multisample_2d_array : enable
 
-        uniform highp sampler2DMSArray tex;
-        out highp ivec4 outSize;
+uniform highp sampler2DMSArray tex;
+out highp ivec4 outSize;
 
-        void main() {
-             outSize = ivec4(textureSize(tex), 0);
-        }
-    )";
+void main() {
+        outSize = ivec4(textureSize(tex), 0);
+})";
 
-    program = CompileProgram(essl31_shaders::vs::Simple(), fragmentShaderEnableAndUseExtension);
+    program = CompileProgram(essl31_shaders::vs::Simple(), kFSEnableAndUseExtension);
     EXPECT_EQ(0u, program);
 }
 
@@ -828,18 +872,17 @@ TEST_P(TextureMultisampleArrayWebGLTest, TextureSizeInShader)
 {
     ANGLE_SKIP_TEST_IF(!requestArrayExtension());
 
-    const std::string &fragmentShader = R"(#version 310 es
-        #extension GL_OES_texture_storage_multisample_2d_array : require
+    constexpr char kFS[] = R"(#version 310 es
+#extension GL_OES_texture_storage_multisample_2d_array : require
 
-        uniform highp sampler2DMSArray tex;
-        out highp vec4 my_FragColor;
+uniform highp sampler2DMSArray tex;
+out highp vec4 my_FragColor;
 
-        void main() {
-             my_FragColor = (textureSize(tex) == ivec3(8, 4, 2)) ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
-        }
-    )";
+void main() {
+        my_FragColor = (textureSize(tex) == ivec3(8, 4, 2)) ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);
+})";
 
-    ANGLE_GL_PROGRAM(texSizeProgram, essl31_shaders::vs::Simple(), fragmentShader);
+    ANGLE_GL_PROGRAM(texSizeProgram, essl31_shaders::vs::Simple(), kFS);
 
     GLint texLocation = glGetUniformLocation(texSizeProgram, "tex");
     ASSERT_GE(texLocation, 0);

@@ -3,6 +3,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -e
+
+# Remove entries currently not used in Chromium/V8.
+function filter_locale_data {
+  echo Removing unncessary categories in ${localedatapath}
+  for langpath in ${localedatapath}/*.txt
+  do
+    echo Overwriting ${langpath} ...
+    sed -r -i \
+      '/^    characterLabel\{$/,/^    \}$/d
+       /^    AuxExemplarCharacters\{.*\}$/d
+       /^    AuxExemplarCharacters\{$/, /^    \}$/d
+       /^    ExemplarCharacters\{.*\}$/d
+       /^    ExemplarCharacters\{$/, /^    \}$/d
+       /^    ExemplarCharactersNumbers\{.*\}$/d
+       /^    ExemplarCharactersPunctuation\{.*\}$/d
+       /^    ExemplarCharactersPunctuation\{$/, /^    \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{$/, /^        \}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)(|-short|-narrow)\{.*\}$/d
+       /^        (mon|tue|wed|thu|fri|sat|sun)-(short|narrow):alias\{.*\}$/d' ${langpath}
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/v8/8414 .
+    sed -r -i \
+      '/^    fields\{$/ {
+         N
+         /^    fields\{\n    \}/ d
+      }' "${langpath}"
+  done
+}
 
 # Remove display names for languages that are not listed in the accept-language
 # list of Chromium.
@@ -15,10 +44,10 @@ function filter_display_language_names {
   done
   ACCEPT_LANG_PATTERN="(${ACCEPT_LANG_PATTERN})[^a-z]"
 
-  echo "Filtering out display names for non-A-L languages ${langdatapath}"
-  for lang in $(grep -v '^#' "${scriptdir}/chrome_ui_languages.list")
+  echo "Filtering out display names for non-A-L languages in ${langdatapath}"
+  for langpath in ${langdatapath}/*.txt
   do
-    target=${langdatapath}/${lang}.txt
+    target=${langpath}
     echo Overwriting ${target} ...
     sed -r -i \
     '/^    Keys\{$/,/^    \}$/d
@@ -29,6 +58,8 @@ function filter_display_language_names {
        d
      }
      /^    Types\{$/,/^    \}$/d
+     /^    Types%short\{$/,/^    \}$/d
+     /^    characterLabelPattern\{$/,/^    \}$/d
      /^    Variants\{$/,/^    \}$/d' ${target}
 
     # Delete an empty "Languages" block. Otherwise, getting the display
@@ -39,7 +70,7 @@ function filter_display_language_names {
     '/^    Languages\{$/ {
        N
        /^    Languages\{\n    \}/ d
-     }' ${target}
+    }' ${target}
   done
 }
 
@@ -67,10 +98,6 @@ function abridge_locale_data_for_non_ui_languages {
     sed -n -r -i \
       '1, /^'${lang}'\{$/p
        /^    "%%ALIAS"\{/p
-       /^    AuxExemplarCharacters\{.*\}$/p
-       /^    AuxExemplarCharacters\{$/, /^    \}$/p
-       /^    ExemplarCharacters\{.*\}$/p
-       /^    ExemplarCharacters\{$/, /^    \}$/p
        /^    (LocaleScript|layout)\{$/, /^    \}$/p
        /^    Version\{.*$/p
        /^\}$/p' ${target}
@@ -115,8 +142,9 @@ function filter_currency_data {
     echo "Overwriting $i for $locale"
     sed -n -r -i \
       '1, /^'${locale}'\{$/ p
-       /^    "%%ALIAS"\{/p
-       /^    %%Parent\{/p
+       /^    "%%ALIAS"\{/ p
+       /^    ___\{..\}$/ p
+       /^    %%Parent\{/ p
        /^    Currencies\{$/, /^    \}$/ {
          /^    Currencies\{$/ p
          /^        '$KEEPLIST'\{$/, /^        \}$/ p
@@ -134,7 +162,15 @@ function filter_currency_data {
        }
        /^    [cC]urrency(Map|Meta|Spacing|UnitPatterns)\{$/, /^    \}$/ p
        /^    Version\{.*\}$/p
-       /^\}$/p' $i
+       /^\}$/p' "${i}"
+
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/791318.
+    sed -r -i \
+      '/^    Currenc(ie.*|yPlurals)\{$/ {
+         N
+         /^    Currenc(ie.*|yPlurals)\{\n    \}/ d
+      }' "${i}"
   done
 }
 
@@ -144,12 +180,13 @@ function filter_region_data {
   sed -i  '/[0-35-9][0-9][0-9]{/ d' ${dataroot}/region/*.txt
 }
 
-
-
+# This assumes that exemplar city ("ec") is only present in
+# non-meta zones and that meta zones are listed after non-meta
+# zones.
 function remove_exemplar_cities {
   for i in ${dataroot}/zone/*.txt
   do
-    [ $i != 'root.txt' ] && \
+    [ $i != "${dataroot}/zone/root.txt" ] && \
     sed -i '/^    zoneStrings/, /^        "meta:/ {
       /^    zoneStrings/ p
       /^        "meta:/ p
@@ -170,6 +207,14 @@ function filter_unit_data {
          /^    \}$/ p
          d
        }' ${i}
+
+    # Delete empty units,units{Narrow|Short} block. Otherwise, locale fallback
+    # fails. See crbug.com/707515.
+    sed -r -i \
+      '/^    units(|Narrow|Short)\{$/ {
+         N
+         /^    units(|Narrow|Short)\{\n    \}/ d
+      }' ${i}
   done
 }
 
@@ -187,8 +232,7 @@ scriptdir="${treeroot}/scripts"
 localedatapath="${dataroot}/locales"
 langdatapath="${dataroot}/lang"
 
-
-
+filter_locale_data
 filter_display_language_names
 abridge_locale_data_for_non_ui_languages
 filter_currency_data

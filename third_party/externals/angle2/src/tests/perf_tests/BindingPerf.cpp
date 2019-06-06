@@ -13,7 +13,7 @@
 #include <random>
 #include <sstream>
 
-#include "shader_utils.h"
+#include "util/shader_utils.h"
 
 namespace angle
 {
@@ -35,8 +35,8 @@ struct BindingsParams final : public RenderTestParams
         windowWidth  = 720;
         windowHeight = 720;
 
-        numObjects      = 100;
-        allocationStyle = EVERY_ITERATION;
+        numObjects        = 100;
+        allocationStyle   = EVERY_ITERATION;
         iterationsPerStep = kIterationsPerStep;
     }
 
@@ -67,7 +67,8 @@ std::string BindingsParams::suffix() const
             strstr << "_allocated_at_initialization";
             break;
         default:
-            UNREACHABLE();
+            strstr << "_err";
+            break;
     }
 
     return strstr.str();
@@ -89,9 +90,7 @@ class BindingsBenchmark : public ANGLERenderTest,
     std::vector<GLenum> mBindingPoints;
 };
 
-BindingsBenchmark::BindingsBenchmark() : ANGLERenderTest("Bindings", GetParam())
-{
-}
+BindingsBenchmark::BindingsBenchmark() : ANGLERenderTest("Bindings", GetParam()) {}
 
 void BindingsBenchmark::initializeBenchmark()
 {

@@ -23,12 +23,14 @@ constexpr uint32_t kCountY                 = 8;
 constexpr uint32_t kQuadCount              = kCountX * kCountY;
 constexpr uint32_t kTriCount               = kQuadCount * 2;
 constexpr std::array<GLfloat, 2> kTileSize = {
-    1.f / static_cast<GLfloat>(kCountX), 1.f / static_cast<GLfloat>(kCountY),
+    1.f / static_cast<GLfloat>(kCountX),
+    1.f / static_cast<GLfloat>(kCountY),
 };
 constexpr std::array<uint32_t, 2> kTilePixelSize  = {kWidth / kCountX, kHeight / kCountY};
 constexpr std::array<GLfloat, 2> kQuadRadius      = {0.25f * kTileSize[0], 0.25f * kTileSize[1]};
-constexpr std::array<uint32_t, 2> kPixelCheckSize = {kQuadRadius[0] * kWidth,
-                                                     kQuadRadius[1] * kHeight};
+constexpr std::array<uint32_t, 2> kPixelCheckSize = {
+    static_cast<uint32_t>(kQuadRadius[0] * kWidth),
+    static_cast<uint32_t>(kQuadRadius[1] * kHeight)};
 
 constexpr std::array<GLfloat, 2> getTileCenter(uint32_t x, uint32_t y)
 {
@@ -119,8 +121,8 @@ attribute vec2 vPosition;
 varying vec4 color;
 void main()
 {
-    int id = )"
-               << (IsDrawIDTest() ? "gl_DrawID" : "0") << ";"
+    int id = )" << (IsDrawIDTest() ? "gl_DrawID" : "0")
+               << ";"
                << R"(
     float quad_id = float(id / 2);
     float color_id = quad_id - (3.0 * floor(quad_id / 3.0));
@@ -133,7 +135,8 @@ void main()
     }
 
     mat3 transform = mat3(1.0);
-)" << (IsInstancedTest() ? R"(
+)"
+               << (IsInstancedTest() ? R"(
     transform[0][0] = 0.5;
     transform[1][1] = 0.5;
     if (vInstance == 0.0) {
@@ -146,7 +149,8 @@ void main()
         transform[2][0] = 0.5;
         transform[2][1] = 0.5;
     }
-)" : "")
+)"
+                                     : "")
                << R"(
     gl_Position = vec4(transform * vec3(vPosition, 1.0) * 2.0 - 1.0, 1);
 })";
@@ -236,7 +240,7 @@ void main()
     {
         if (getClientMajorVersion() <= 2)
         {
-            ASSERT(extensionEnabled("GL_ANGLE_instanced_arrays"));
+            ASSERT_TRUE(IsGLExtensionEnabled("GL_ANGLE_instanced_arrays"));
             glVertexAttribDivisorANGLE(location, divisor);
         }
         else
@@ -282,9 +286,9 @@ void main()
         glVertexAttribPointer(mPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         std::vector<GLsizei> counts(kTriCount, 3);
-        std::vector<GLsizei> offsets(kTriCount);
+        std::vector<const GLvoid *> indices(kTriCount);
         for (uint32_t i = 0; i < kTriCount; ++i)
-            offsets[i] = i * 3 * 2;
+            indices[i] = reinterpret_cast<GLvoid *>(static_cast<uintptr_t>(i * 3 * 2));
 
         if (IsInstancedTest())
         {
@@ -294,11 +298,11 @@ void main()
             DoVertexAttribDivisor(mInstanceLoc, 1);
             std::vector<GLsizei> instanceCounts(kTriCount, 4);
             glMultiDrawElementsInstancedANGLE(GL_TRIANGLES, counts.data(), GL_UNSIGNED_SHORT,
-                                              offsets.data(), instanceCounts.data(), kTriCount);
+                                              indices.data(), instanceCounts.data(), kTriCount);
         }
         else
         {
-            glMultiDrawElementsANGLE(GL_TRIANGLES, counts.data(), GL_UNSIGNED_SHORT, offsets.data(),
+            glMultiDrawElementsANGLE(GL_TRIANGLES, counts.data(), GL_UNSIGNED_SHORT, indices.data(),
                                      kTriCount);
         }
     }
@@ -369,12 +373,12 @@ void main()
 
     bool requestMultiDrawExtension()
     {
-        if (extensionRequestable("GL_ANGLE_multi_draw"))
+        if (IsGLExtensionRequestable("GL_ANGLE_multi_draw"))
         {
             glRequestExtensionANGLE("GL_ANGLE_multi_draw");
         }
 
-        if (!extensionEnabled("GL_ANGLE_multi_draw"))
+        if (!IsGLExtensionEnabled("GL_ANGLE_multi_draw"))
         {
             return false;
         }
@@ -384,12 +388,12 @@ void main()
 
     bool requestInstancedExtension()
     {
-        if (extensionRequestable("GL_ANGLE_instanced_arrays"))
+        if (IsGLExtensionRequestable("GL_ANGLE_instanced_arrays"))
         {
             glRequestExtensionANGLE("GL_ANGLE_instanced_arrays");
         }
 
-        if (!extensionEnabled("GL_ANGLE_instanced_arrays"))
+        if (!IsGLExtensionEnabled("GL_ANGLE_instanced_arrays"))
         {
             return false;
         }
@@ -469,14 +473,14 @@ TEST_P(MultiDrawTest, MultiDrawElements)
 // Check that glMultiDraw*Instanced without instancing support results in GL_INVALID_OPERATION
 TEST_P(MultiDrawNoInstancingSupportTest, InvalidOperation)
 {
-    ANGLE_SKIP_TEST_IF(extensionEnabled("GL_ANGLE_instanced_arrays"));
+    ANGLE_SKIP_TEST_IF(IsGLExtensionEnabled("GL_ANGLE_instanced_arrays"));
     requestMultiDrawExtension();
     SetupBuffers();
     SetupProgram();
 
     GLint first       = 0;
     GLsizei count     = 3;
-    GLsizei offset    = 0;
+    GLvoid *indices   = 0;
     GLsizei instances = 1;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -491,7 +495,7 @@ TEST_P(MultiDrawNoInstancingSupportTest, InvalidOperation)
     glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
     glEnableVertexAttribArray(mPositionLoc);
     glVertexAttribPointer(mPositionLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glMultiDrawElementsInstancedANGLE(GL_TRIANGLES, &count, GL_UNSIGNED_SHORT, &offset, &instances,
+    glMultiDrawElementsInstancedANGLE(GL_TRIANGLES, &count, GL_UNSIGNED_SHORT, &indices, &instances,
                                       1);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
@@ -502,10 +506,13 @@ const angle::PlatformParameters platforms[] = {
 };
 
 const angle::PlatformParameters es2_platforms[] = {
-    ES2_D3D9(), ES2_OPENGL(), ES2_OPENGLES(), ES2_VULKAN(),
+    ES2_D3D9(),
+    ES2_OPENGL(),
+    ES2_OPENGLES(),
+    ES2_VULKAN(),
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     MultiDrawTest,
     testing::Combine(testing::ValuesIn(::angle::FilterTestParams(platforms, ArraySize(platforms))),
@@ -514,7 +521,7 @@ INSTANTIATE_TEST_CASE_P(
                                      InstancingOption::UseInstancing)),
     PrintToStringParamName());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     MultiDrawNoInstancingSupportTest,
     testing::Combine(testing::ValuesIn(::angle::FilterTestParams(es2_platforms,

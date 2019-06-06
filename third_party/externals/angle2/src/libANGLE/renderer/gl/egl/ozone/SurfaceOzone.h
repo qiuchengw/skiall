@@ -18,15 +18,14 @@ namespace rx
 class SurfaceOzone : public SurfaceGL
 {
   public:
-    SurfaceOzone(const egl::SurfaceState &state,
-                 DisplayOzone::Buffer *buffer);
+    SurfaceOzone(const egl::SurfaceState &state, DisplayOzone::Buffer *buffer);
     ~SurfaceOzone() override;
 
     FramebufferImpl *createDefaultFramebuffer(const gl::Context *context,
                                               const gl::FramebufferState &state) override;
 
     egl::Error initialize(const egl::Display *display) override;
-    egl::Error makeCurrent() override;
+    egl::Error makeCurrent(const gl::Context *context) override;
 
     egl::Error swap(const gl::Context *context) override;
     egl::Error postSubBuffer(const gl::Context *context,

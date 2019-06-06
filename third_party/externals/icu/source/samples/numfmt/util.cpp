@@ -1,13 +1,19 @@
 /********************************************************************
+ *   © 2016 and later: Unicode, Inc. and others.
+ *   License & terms of use: http://www.unicode.org/copyright.html#License
+ *************************************************************************
+ *************************************************************************
  * COPYRIGHT:
- * Copyright (c) 1999-2003,2009, International Business Machines Corporation and
+ * Copyright (c) 1999-2009, International Business Machines Corporation and
  * others. All Rights Reserved.
- ********************************************************************/
+ *************************************************************************/
 
 #include "unicode/unistr.h"
 #include "unicode/fmtable.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+using namespace icu;
 
 enum {
     U_SPACE=0x20,

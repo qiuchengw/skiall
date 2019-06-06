@@ -25,114 +25,155 @@ constexpr unsigned int kComponentsPerVector = 4;
 
 namespace rx
 {
-namespace vk
-{
 
-void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
-                  const VkPhysicalDeviceFeatures &physicalDeviceFeatures,
-                  const VkQueueFamilyProperties &queueFamilyProperties,
-                  const gl::TextureCapsMap &textureCaps,
-                  gl::Caps *outCaps,
-                  gl::Extensions *outExtensions,
-                  gl::Limitations * /* outLimitations */)
+void RendererVk::ensureCapsInitialized() const
 {
-    outExtensions->setTextureExtensionSupport(textureCaps);
+    if (mCapsInitialized)
+        return;
+    mCapsInitialized = true;
+
+    ASSERT(mCurrentQueueFamilyIndex < mQueueFamilyProperties.size());
+    const VkQueueFamilyProperties &queueFamilyProperties =
+        mQueueFamilyProperties[mCurrentQueueFamilyIndex];
+
+    mNativeExtensions.setTextureExtensionSupport(mNativeTextureCaps);
 
     // Enable this for simple buffer readback testing, but some functionality is missing.
     // TODO(jmadill): Support full mapBufferRange extension.
-    outExtensions->mapBuffer      = true;
-    outExtensions->mapBufferRange = true;
-    outExtensions->textureStorage = true;
-    outExtensions->framebufferBlit = true;
-    outExtensions->copyTexture     = true;
-    outExtensions->debugMarker     = true;
-    outExtensions->robustness      = true;
-    outExtensions->textureBorderClamp = false;  // not implemented yet
+    mNativeExtensions.mapBuffer              = true;
+    mNativeExtensions.mapBufferRange         = true;
+    mNativeExtensions.textureStorage         = true;
+    mNativeExtensions.drawBuffers            = true;
+    mNativeExtensions.fragDepth              = true;
+    mNativeExtensions.framebufferBlit        = true;
+    mNativeExtensions.framebufferMultisample = true;
+    mNativeExtensions.copyTexture            = true;
+    mNativeExtensions.copyCompressedTexture  = true;
+    mNativeExtensions.debugMarker            = true;
+    mNativeExtensions.robustness             = true;
+    mNativeExtensions.textureBorderClamp     = false;  // not implemented yet
+    mNativeExtensions.translatedShaderSource = true;
+
+    // Enable EXT_blend_minmax
+    mNativeExtensions.blendMinMax = true;
+
+    mNativeExtensions.eglImage         = true;
+    mNativeExtensions.eglImageExternal = true;
+    // TODO(geofflang): Support GL_OES_EGL_image_external_essl3. http://anglebug.com/2668
+    mNativeExtensions.eglImageExternalEssl3 = false;
+
+    mNativeExtensions.memoryObject   = true;
+    mNativeExtensions.memoryObjectFd = getFeatures().supportsExternalMemoryFd.enabled;
+
+    mNativeExtensions.semaphore   = true;
+    mNativeExtensions.semaphoreFd = getFeatures().supportsExternalSemaphoreFd.enabled;
+
+    // TODO: Enable this always and emulate instanced draws if any divisor exceeds the maximum
+    // supported.  http://anglebug.com/2672
+    mNativeExtensions.instancedArraysANGLE = mMaxVertexAttribDivisor > 1;
+
+    // Only expose robust buffer access if the physical device supports it.
+    mNativeExtensions.robustBufferAccessBehavior = mPhysicalDeviceFeatures.robustBufferAccess;
+
+    mNativeExtensions.eglSync = true;
 
     // We use secondary command buffers almost everywhere and they require a feature to be
     // able to execute in the presence of queries.  As a result, we won't support queries
     // unless that feature is available.
-    outExtensions->occlusionQueryBoolean = physicalDeviceFeatures.inheritedQueries;
+    mNativeExtensions.occlusionQueryBoolean =
+        vk::CommandBuffer::SupportsQueries(mPhysicalDeviceFeatures);
 
     // From the Vulkan specs:
     // > The number of valid bits in a timestamp value is determined by the
     // > VkQueueFamilyProperties::timestampValidBits property of the queue on which the timestamp is
     // > written. Timestamps are supported on any queue which reports a non-zero value for
     // > timestampValidBits via vkGetPhysicalDeviceQueueFamilyProperties.
-    outExtensions->disjointTimerQuery          = queueFamilyProperties.timestampValidBits > 0;
-    outExtensions->queryCounterBitsTimeElapsed = queueFamilyProperties.timestampValidBits;
-    outExtensions->queryCounterBitsTimestamp   = queueFamilyProperties.timestampValidBits;
+    mNativeExtensions.disjointTimerQuery          = queueFamilyProperties.timestampValidBits > 0;
+    mNativeExtensions.queryCounterBitsTimeElapsed = queueFamilyProperties.timestampValidBits;
+    mNativeExtensions.queryCounterBitsTimestamp   = queueFamilyProperties.timestampValidBits;
 
-    outExtensions->textureFilterAnisotropic =
-        physicalDeviceFeatures.samplerAnisotropy &&
-        physicalDeviceProperties.limits.maxSamplerAnisotropy > 1.0f;
-    outExtensions->maxTextureAnisotropy = outExtensions->textureFilterAnisotropic
-                                              ? physicalDeviceProperties.limits.maxSamplerAnisotropy
-                                              : 0.0f;
+    mNativeExtensions.textureFilterAnisotropic =
+        mPhysicalDeviceFeatures.samplerAnisotropy &&
+        mPhysicalDeviceProperties.limits.maxSamplerAnisotropy > 1.0f;
+    mNativeExtensions.maxTextureAnisotropy =
+        mNativeExtensions.textureFilterAnisotropic
+            ? mPhysicalDeviceProperties.limits.maxSamplerAnisotropy
+            : 0.0f;
 
-    // TODO(lucferron): Eventually remove everything above this line in this function as the caps
-    // get implemented.
+    // Vulkan natively supports non power-of-two textures
+    mNativeExtensions.textureNPOT = true;
+
+    // Vulkan natively supports standard derivatives
+    mNativeExtensions.standardDerivatives = true;
+
+    // Vulkan natively supports 32-bit indices, entry in kIndexTypeMap
+    mNativeExtensions.elementIndexUint = true;
+
     // https://vulkan.lunarg.com/doc/view/1.0.30.0/linux/vkspec.chunked/ch31s02.html
-    outCaps->maxElementIndex       = std::numeric_limits<GLuint>::max() - 1;
-    outCaps->max3DTextureSize      = physicalDeviceProperties.limits.maxImageDimension3D;
-    outCaps->max2DTextureSize      = physicalDeviceProperties.limits.maxImageDimension2D;
-    outCaps->maxArrayTextureLayers = physicalDeviceProperties.limits.maxImageArrayLayers;
-    outCaps->maxLODBias            = physicalDeviceProperties.limits.maxSamplerLodBias;
-    outCaps->maxCubeMapTextureSize = physicalDeviceProperties.limits.maxImageDimensionCube;
-    outCaps->maxRenderbufferSize   = outCaps->max2DTextureSize;
-    outCaps->minAliasedPointSize =
-        std::max(1.0f, physicalDeviceProperties.limits.pointSizeRange[0]);
-    outCaps->maxAliasedPointSize   = physicalDeviceProperties.limits.pointSizeRange[1];
+    mNativeCaps.maxElementIndex       = std::numeric_limits<GLuint>::max() - 1;
+    mNativeCaps.max3DTextureSize      = mPhysicalDeviceProperties.limits.maxImageDimension3D;
+    mNativeCaps.max2DTextureSize      = mPhysicalDeviceProperties.limits.maxImageDimension2D;
+    mNativeCaps.maxArrayTextureLayers = mPhysicalDeviceProperties.limits.maxImageArrayLayers;
+    mNativeCaps.maxLODBias            = mPhysicalDeviceProperties.limits.maxSamplerLodBias;
+    mNativeCaps.maxCubeMapTextureSize = mPhysicalDeviceProperties.limits.maxImageDimensionCube;
+    mNativeCaps.maxRenderbufferSize   = mNativeCaps.max2DTextureSize;
+    mNativeCaps.minAliasedPointSize =
+        std::max(1.0f, mPhysicalDeviceProperties.limits.pointSizeRange[0]);
+    mNativeCaps.maxAliasedPointSize = mPhysicalDeviceProperties.limits.pointSizeRange[1];
 
-    outCaps->minAliasedLineWidth = 1.0f;
-    outCaps->maxAliasedLineWidth = 1.0f;
+    mNativeCaps.minAliasedLineWidth = 1.0f;
+    mNativeCaps.maxAliasedLineWidth = 1.0f;
 
-    outCaps->maxDrawBuffers =
-        std::min<uint32_t>(physicalDeviceProperties.limits.maxColorAttachments,
-                           physicalDeviceProperties.limits.maxFragmentOutputAttachments);
-    outCaps->maxFramebufferWidth    = physicalDeviceProperties.limits.maxFramebufferWidth;
-    outCaps->maxFramebufferHeight   = physicalDeviceProperties.limits.maxFramebufferHeight;
-    outCaps->maxColorAttachments    = physicalDeviceProperties.limits.maxColorAttachments;
-    outCaps->maxViewportWidth       = physicalDeviceProperties.limits.maxViewportDimensions[0];
-    outCaps->maxViewportHeight      = physicalDeviceProperties.limits.maxViewportDimensions[1];
-    outCaps->maxSampleMaskWords     = physicalDeviceProperties.limits.maxSampleMaskWords;
-    outCaps->maxColorTextureSamples = physicalDeviceProperties.limits.sampledImageColorSampleCounts;
-    outCaps->maxDepthTextureSamples = physicalDeviceProperties.limits.sampledImageDepthSampleCounts;
-    outCaps->maxIntegerSamples = physicalDeviceProperties.limits.sampledImageIntegerSampleCounts;
+    mNativeCaps.maxDrawBuffers =
+        std::min<uint32_t>(mPhysicalDeviceProperties.limits.maxColorAttachments,
+                           mPhysicalDeviceProperties.limits.maxFragmentOutputAttachments);
+    mNativeCaps.maxFramebufferWidth  = mPhysicalDeviceProperties.limits.maxFramebufferWidth;
+    mNativeCaps.maxFramebufferHeight = mPhysicalDeviceProperties.limits.maxFramebufferHeight;
+    mNativeCaps.maxColorAttachments  = mPhysicalDeviceProperties.limits.maxColorAttachments;
+    mNativeCaps.maxViewportWidth     = mPhysicalDeviceProperties.limits.maxViewportDimensions[0];
+    mNativeCaps.maxViewportHeight    = mPhysicalDeviceProperties.limits.maxViewportDimensions[1];
+    mNativeCaps.maxSampleMaskWords   = mPhysicalDeviceProperties.limits.maxSampleMaskWords;
+    mNativeCaps.maxColorTextureSamples =
+        mPhysicalDeviceProperties.limits.sampledImageColorSampleCounts;
+    mNativeCaps.maxDepthTextureSamples =
+        mPhysicalDeviceProperties.limits.sampledImageDepthSampleCounts;
+    mNativeCaps.maxIntegerSamples =
+        mPhysicalDeviceProperties.limits.sampledImageIntegerSampleCounts;
 
-    outCaps->maxVertexAttributes     = physicalDeviceProperties.limits.maxVertexInputAttributes;
-    outCaps->maxVertexAttribBindings = physicalDeviceProperties.limits.maxVertexInputBindings;
-    outCaps->maxVertexAttribRelativeOffset =
-        physicalDeviceProperties.limits.maxVertexInputAttributeOffset;
-    outCaps->maxVertexAttribStride = physicalDeviceProperties.limits.maxVertexInputBindingStride;
+    mNativeCaps.maxVertexAttributes     = mPhysicalDeviceProperties.limits.maxVertexInputAttributes;
+    mNativeCaps.maxVertexAttribBindings = mPhysicalDeviceProperties.limits.maxVertexInputBindings;
+    mNativeCaps.maxVertexAttribRelativeOffset =
+        mPhysicalDeviceProperties.limits.maxVertexInputAttributeOffset;
+    mNativeCaps.maxVertexAttribStride =
+        mPhysicalDeviceProperties.limits.maxVertexInputBindingStride;
 
-    outCaps->maxElementsIndices  = std::numeric_limits<GLuint>::max();
-    outCaps->maxElementsVertices = std::numeric_limits<GLuint>::max();
+    mNativeCaps.maxElementsIndices  = std::numeric_limits<GLuint>::max();
+    mNativeCaps.maxElementsVertices = std::numeric_limits<GLuint>::max();
 
     // Looks like all floats are IEEE according to the docs here:
     // https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/html/vkspec.html#spirvenv-precision-operation
-    outCaps->vertexHighpFloat.setIEEEFloat();
-    outCaps->vertexMediumpFloat.setIEEEFloat();
-    outCaps->vertexLowpFloat.setIEEEFloat();
-    outCaps->fragmentHighpFloat.setIEEEFloat();
-    outCaps->fragmentMediumpFloat.setIEEEFloat();
-    outCaps->fragmentLowpFloat.setIEEEFloat();
+    mNativeCaps.vertexHighpFloat.setIEEEFloat();
+    mNativeCaps.vertexMediumpFloat.setIEEEFloat();
+    mNativeCaps.vertexLowpFloat.setIEEEFloat();
+    mNativeCaps.fragmentHighpFloat.setIEEEFloat();
+    mNativeCaps.fragmentMediumpFloat.setIEEEFloat();
+    mNativeCaps.fragmentLowpFloat.setIEEEFloat();
 
     // Can't find documentation on the int precision in Vulkan.
-    outCaps->vertexHighpInt.setTwosComplementInt(32);
-    outCaps->vertexMediumpInt.setTwosComplementInt(32);
-    outCaps->vertexLowpInt.setTwosComplementInt(32);
-    outCaps->fragmentHighpInt.setTwosComplementInt(32);
-    outCaps->fragmentMediumpInt.setTwosComplementInt(32);
-    outCaps->fragmentLowpInt.setTwosComplementInt(32);
+    mNativeCaps.vertexHighpInt.setTwosComplementInt(32);
+    mNativeCaps.vertexMediumpInt.setTwosComplementInt(32);
+    mNativeCaps.vertexLowpInt.setTwosComplementInt(32);
+    mNativeCaps.fragmentHighpInt.setTwosComplementInt(32);
+    mNativeCaps.fragmentMediumpInt.setTwosComplementInt(32);
+    mNativeCaps.fragmentLowpInt.setTwosComplementInt(32);
 
     // TODO(lucferron): This is something we'll need to implement custom in the back-end.
     // Vulkan doesn't do any waiting for you, our back-end code is going to manage sync objects,
     // and we'll have to check that we've exceeded the max wait timeout. Also, this is ES 3.0 so
     // we'll defer the implementation until we tackle the next version.
-    // outCaps->maxServerWaitTimeout
+    // mNativeCaps.maxServerWaitTimeout
 
-    GLuint maxUniformVectors = physicalDeviceProperties.limits.maxUniformBufferRange /
+    GLuint maxUniformVectors = mPhysicalDeviceProperties.limits.maxUniformBufferRange /
                                (sizeof(GLfloat) * kComponentsPerVector);
 
     // Clamp the maxUniformVectors to 1024u, on AMD the maxUniformBufferRange is way too high.
@@ -142,24 +183,43 @@ void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
 
     // Uniforms are implemented using a uniform buffer, so the max number of uniforms we can
     // support is the max buffer range divided by the size of a single uniform (4X float).
-    outCaps->maxVertexUniformVectors      = maxUniformVectors;
-    outCaps->maxShaderUniformComponents[gl::ShaderType::Vertex]   = maxUniformComponents;
-    outCaps->maxFragmentUniformVectors    = maxUniformVectors;
-    outCaps->maxShaderUniformComponents[gl::ShaderType::Fragment] = maxUniformComponents;
+    mNativeCaps.maxVertexUniformVectors                              = maxUniformVectors;
+    mNativeCaps.maxShaderUniformComponents[gl::ShaderType::Vertex]   = maxUniformComponents;
+    mNativeCaps.maxFragmentUniformVectors                            = maxUniformVectors;
+    mNativeCaps.maxShaderUniformComponents[gl::ShaderType::Fragment] = maxUniformComponents;
 
-    // TODO(jmadill): this is an ES 3.0 property and we can skip implementing it for now.
-    // This is maxDescriptorSetUniformBuffers minus the number of uniform buffers we
-    // reserve for internal variables. We reserve one per shader stage for default uniforms
-    // and likely one per shader stage for ANGLE internal variables.
-    // outCaps->maxShaderUniformBlocks[gl::ShaderType::Vertex] = ...
+    // A number of uniform buffers are reserved for internal use.  There's one dynamic uniform
+    // buffer used per stage for default uniforms, and a single uniform buffer object used for
+    // ANGLE internal variables.  ANGLE implements UBOs as uniform buffers, so the maximum number
+    // of uniform blocks is maxDescriptorSetUniformBuffers - 1:
+    const uint32_t maxUniformBuffers =
+        mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffers -
+        kReservedDriverUniformBindingCount;
+
+    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Vertex]   = maxUniformBuffers;
+    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Fragment] = maxUniformBuffers;
+    mNativeCaps.maxCombinedUniformBlocks                         = maxUniformBuffers;
+
+    mNativeCaps.maxUniformBufferBindings = maxUniformBuffers;
+    mNativeCaps.maxUniformBlockSize      = mPhysicalDeviceProperties.limits.maxUniformBufferRange;
+    mNativeCaps.uniformBufferOffsetAlignment =
+        static_cast<GLuint>(mPhysicalDeviceProperties.limits.minUniformBufferOffsetAlignment);
+
+    // There is no additional limit to the combined number of components.  We can have up to a
+    // maximum number of uniform buffers, each having the maximum number of components.
+    const uint32_t maxCombinedUniformComponents = maxUniformBuffers * maxUniformComponents;
+    for (gl::ShaderType shaderType : gl::kAllGraphicsShaderTypes)
+    {
+        mNativeCaps.maxCombinedShaderUniformComponents[shaderType] = maxCombinedUniformComponents;
+    }
 
     // we use the same bindings on each stage, so the limitation is the same combined or not.
-    outCaps->maxCombinedTextureImageUnits =
-        physicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
-    outCaps->maxShaderTextureImageUnits[gl::ShaderType::Fragment] =
-        physicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
-    outCaps->maxShaderTextureImageUnits[gl::ShaderType::Vertex] =
-        physicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
+    mNativeCaps.maxCombinedTextureImageUnits =
+        mPhysicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
+    mNativeCaps.maxShaderTextureImageUnits[gl::ShaderType::Fragment] =
+        mPhysicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
+    mNativeCaps.maxShaderTextureImageUnits[gl::ShaderType::Vertex] =
+        mPhysicalDeviceProperties.limits.maxPerStageDescriptorSamplers;
 
     // The max vertex output components should not include gl_Position.
     // The gles2.0 section 2.10 states that "gl_Position is not a varying variable and does
@@ -169,11 +229,19 @@ void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
     // and can often crash. Reserving an additional varying just for them bringing the total to 2.
     // http://anglebug.com/2483
     constexpr GLint kReservedVaryingCount = 2;
-    outCaps->maxVaryingVectors =
-        (physicalDeviceProperties.limits.maxVertexOutputComponents / 4) - kReservedVaryingCount;
-    outCaps->maxVertexOutputComponents = outCaps->maxVaryingVectors * 4;
+    mNativeCaps.maxVaryingVectors =
+        (mPhysicalDeviceProperties.limits.maxVertexOutputComponents / 4) - kReservedVaryingCount;
+    mNativeCaps.maxVertexOutputComponents = mNativeCaps.maxVaryingVectors * 4;
+
+    const VkPhysicalDeviceLimits &limits = mPhysicalDeviceProperties.limits;
+    const uint32_t sampleCounts          = limits.framebufferColorSampleCounts &
+                                  limits.framebufferDepthSampleCounts &
+                                  limits.framebufferStencilSampleCounts;
+
+    mNativeCaps.maxSamples = vk_gl::GetMaxSampleCount(sampleCounts);
+
+    mNativeCaps.subPixelBits = mPhysicalDeviceProperties.limits.subPixelPrecisionBits;
 }
-}  // namespace vk
 
 namespace egl_vk
 {
@@ -221,35 +289,35 @@ egl::Config GenerateDefaultConfig(const RendererVk *renderer,
 
     egl::Config config;
 
-    config.renderTargetFormat    = colorFormat.internalFormat;
-    config.depthStencilFormat    = depthStencilFormat.internalFormat;
-    config.bufferSize            = colorFormat.pixelBytes * 8;
-    config.redSize               = colorFormat.redBits;
-    config.greenSize             = colorFormat.greenBits;
-    config.blueSize              = colorFormat.blueBits;
-    config.alphaSize             = colorFormat.alphaBits;
-    config.alphaMaskSize         = 0;
-    config.bindToTextureRGB      = EGL_FALSE;
-    config.bindToTextureRGBA     = EGL_FALSE;
-    config.colorBufferType       = EGL_RGB_BUFFER;
-    config.configCaveat          = EGL_NONE;
-    config.conformant            = 0;
-    config.depthSize             = depthStencilFormat.depthBits;
-    config.stencilSize           = depthStencilFormat.stencilBits;
-    config.level                 = 0;
-    config.matchNativePixmap     = EGL_NONE;
-    config.maxPBufferWidth       = physicalDeviceProperties.limits.maxImageDimension2D;
-    config.maxPBufferHeight      = physicalDeviceProperties.limits.maxImageDimension2D;
-    config.maxPBufferPixels      = ComputeMaximumPBufferPixels(physicalDeviceProperties);
-    config.maxSwapInterval       = 1;
-    config.minSwapInterval       = 1;
-    config.nativeRenderable      = EGL_TRUE;
-    config.nativeVisualID        = 0;
-    config.nativeVisualType      = EGL_NONE;
-    config.renderableType        = es2Support | es3Support;
-    config.sampleBuffers         = (sampleCount > 0) ? 1 : 0;
-    config.samples               = sampleCount;
-    config.surfaceType = EGL_WINDOW_BIT | EGL_PBUFFER_BIT | EGL_SWAP_BEHAVIOR_PRESERVED_BIT;
+    config.renderTargetFormat = colorFormat.internalFormat;
+    config.depthStencilFormat = depthStencilFormat.internalFormat;
+    config.bufferSize         = colorFormat.pixelBytes * 8;
+    config.redSize            = colorFormat.redBits;
+    config.greenSize          = colorFormat.greenBits;
+    config.blueSize           = colorFormat.blueBits;
+    config.alphaSize          = colorFormat.alphaBits;
+    config.alphaMaskSize      = 0;
+    config.bindToTextureRGB   = colorFormat.format == GL_RGB;
+    config.bindToTextureRGBA  = colorFormat.format == GL_RGBA || colorFormat.format == GL_BGRA_EXT;
+    config.colorBufferType    = EGL_RGB_BUFFER;
+    config.configCaveat       = EGL_NONE;
+    config.conformant         = es2Support | es3Support;
+    config.depthSize          = depthStencilFormat.depthBits;
+    config.stencilSize        = depthStencilFormat.stencilBits;
+    config.level              = 0;
+    config.matchNativePixmap  = EGL_NONE;
+    config.maxPBufferWidth    = physicalDeviceProperties.limits.maxImageDimension2D;
+    config.maxPBufferHeight   = physicalDeviceProperties.limits.maxImageDimension2D;
+    config.maxPBufferPixels   = ComputeMaximumPBufferPixels(physicalDeviceProperties);
+    config.maxSwapInterval    = 1;
+    config.minSwapInterval    = 0;
+    config.nativeRenderable   = EGL_TRUE;
+    config.nativeVisualID     = 0;
+    config.nativeVisualType   = EGL_NONE;
+    config.renderableType     = es2Support | es3Support;
+    config.sampleBuffers      = (sampleCount > 0) ? 1 : 0;
+    config.samples            = sampleCount;
+    config.surfaceType        = EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
     // Vulkan surfaces use a different origin than OpenGL, always prefer to be flipped vertically if
     // possible.
     config.optimalOrientation    = EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE;
@@ -269,12 +337,30 @@ egl::ConfigSet GenerateConfigs(const GLenum *colorFormats,
                                size_t colorFormatsCount,
                                const GLenum *depthStencilFormats,
                                size_t depthStencilFormatCount,
-                               const EGLint *sampleCounts,
-                               size_t sampleCountsCount,
                                DisplayVk *display)
 {
     ASSERT(colorFormatsCount > 0);
     ASSERT(display != nullptr);
+
+    gl::SupportedSampleSet colorSampleCounts;
+    gl::SupportedSampleSet depthStencilSampleCounts;
+    gl::SupportedSampleSet sampleCounts;
+
+    const VkPhysicalDeviceLimits &limits =
+        display->getRenderer()->getPhysicalDeviceProperties().limits;
+    const uint32_t depthStencilSampleCountsLimit =
+        limits.framebufferDepthSampleCounts & limits.framebufferStencilSampleCounts;
+
+    vk_gl::AddSampleCounts(limits.framebufferColorSampleCounts, &colorSampleCounts);
+    vk_gl::AddSampleCounts(depthStencilSampleCountsLimit, &depthStencilSampleCounts);
+
+    // Always support 0 samples
+    colorSampleCounts.insert(0);
+    depthStencilSampleCounts.insert(0);
+
+    std::set_intersection(colorSampleCounts.begin(), colorSampleCounts.end(),
+                          depthStencilSampleCounts.begin(), depthStencilSampleCounts.end(),
+                          std::inserter(sampleCounts, sampleCounts.begin()));
 
     egl::ConfigSet configSet;
 
@@ -292,12 +378,22 @@ egl::ConfigSet GenerateConfigs(const GLenum *colorFormats,
             ASSERT(depthStencilFormats[depthStencilFormatIdx] == GL_NONE ||
                    depthStencilFormatInfo.sized);
 
-            for (size_t sampleCountIndex = 0; sampleCountIndex < sampleCountsCount;
-                 sampleCountIndex++)
+            const gl::SupportedSampleSet *configSampleCounts = &sampleCounts;
+            // If there is no depth/stencil buffer, use the color samples set.
+            if (depthStencilFormats[depthStencilFormatIdx] == GL_NONE)
             {
-                egl::Config config =
-                    GenerateDefaultConfig(display->getRenderer(), colorFormatInfo,
-                                          depthStencilFormatInfo, sampleCounts[sampleCountIndex]);
+                configSampleCounts = &colorSampleCounts;
+            }
+            // If there is no color buffer, use the depth/stencil samples set.
+            else if (colorFormats[colorFormatIdx] == GL_NONE)
+            {
+                configSampleCounts = &depthStencilSampleCounts;
+            }
+
+            for (EGLint sampleCount : *configSampleCounts)
+            {
+                egl::Config config = GenerateDefaultConfig(display->getRenderer(), colorFormatInfo,
+                                                           depthStencilFormatInfo, sampleCount);
                 if (display->checkConfigSupport(&config))
                 {
                     configSet.add(config);

@@ -1,13 +1,7 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/hr.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 hr{
-    Version{"2.1.19.14"}
+    Version{"2.1.43.50"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -98,6 +92,7 @@ hr{
                 few{"{0} kvadratna kilometra"}
                 one{"{0} kvadratni kilometar"}
                 other{"{0} kvadratnih kilometara"}
+                per{"{0} po kvadratnom kilometru"}
             }
             square-meter{
                 dnam{"kvadratni metri"}
@@ -111,6 +106,7 @@ hr{
                 few{"{0} kvadratne milje"}
                 one{"{0} kvadratna milja"}
                 other{"{0} kvadratnih milja"}
+                per{"{0} po kvadratnoj milji"}
             }
             square-yard{
                 dnam{"kvadratni jardi"}
@@ -121,6 +117,44 @@ hr{
         }
         compound{
             per{"{0}/{1}"}
+        }
+        concentr{
+            karat{
+                dnam{"karati"}
+                few{"{0} karata"}
+                one{"{0} karat"}
+                other{"{0} karata"}
+            }
+            milligram-per-deciliter{
+                dnam{"miligrami po decilitru"}
+                few{"{0} miligrama po decilitru"}
+                one{"{0} miligram po decilitru"}
+                other{"{0} miligrama po decilitru"}
+            }
+            millimole-per-liter{
+                dnam{"milimoli po litri"}
+                few{"{0} milimola po litri"}
+                one{"{0} milimol po litri"}
+                other{"{0} milimola po litri"}
+            }
+            part-per-million{
+                dnam{"dijelovi na milijun"}
+                few{"{0} dijela na milijun"}
+                one{"{0} dio na milijun"}
+                other{"{0} dijelova na milijun"}
+            }
+            percent{
+                dnam{"postotak"}
+                few{"{0} posto"}
+                one{"{0} posto"}
+                other{"{0} posto"}
+            }
+            permille{
+                dnam{"promil"}
+                few{"{0} promila"}
+                one{"{0} promil"}
+                other{"{0} promila"}
+            }
         }
         consumption{
             liter-per-100kilometers{
@@ -141,8 +175,15 @@ hr{
                 one{"{0} milja po galonu"}
                 other{"{0} milja po galonu"}
             }
+            mile-per-gallon-imperial{
+                dnam{"milje po imp. galonu"}
+                few{"{0} milje po imp. galonu"}
+                one{"{0} milja po imp. galonu"}
+                other{"{0} milja po imp. galonu"}
+            }
         }
         coordinate{
+            dnam{"kardinalni smjer"}
             east{"{0}I"}
             north{"{0}S"}
             south{"{0}J"}
@@ -196,6 +237,12 @@ hr{
                 few{"{0} megabajta"}
                 one{"{0} megabajt"}
                 other{"{0} megabajta"}
+            }
+            petabyte{
+                dnam{"petabajti"}
+                few{"{0} petabajta"}
+                one{"{0} petabajt"}
+                other{"{0} petabajta"}
             }
             terabit{
                 dnam{"terabiti"}
@@ -489,6 +536,12 @@ hr{
                 one{"{0} pikometar"}
                 other{"{0} pikometara"}
             }
+            point{
+                dnam{"točke"}
+                few{"{0} točke"}
+                one{"{0} točka"}
+                other{"{0} točaka"}
+            }
             yard{
                 dnam{"jardi"}
                 few{"{0} jarda"}
@@ -615,6 +668,12 @@ hr{
             }
         }
         pressure{
+            atmosphere{
+                dnam{"atmosfere"}
+                few{"{0} atmosfere"}
+                one{"{0} atmosfera"}
+                other{"{0} atmosfera"}
+            }
             hectopascal{
                 dnam{"hektopaskali"}
                 few{"{0} hektopaskala"}
@@ -644,14 +703,6 @@ hr{
                 few{"{0} funte po kvadratnom inču"}
                 one{"{0} funta po kvadratnom inču"}
                 other{"{0} funti po kvadratnom inču"}
-            }
-        }
-        proportion{
-            karat{
-                dnam{"karati"}
-                few{"{0} karata"}
-                one{"{0} karat"}
-                other{"{0} karata"}
             }
         }
         speed{
@@ -800,6 +851,13 @@ hr{
                 other{"{0} galona"}
                 per{"{0}/gal"}
             }
+            gallon-imperial{
+                dnam{"imp. galoni"}
+                few{"{0} imp. galona"}
+                one{"{0} imp. galon"}
+                other{"{0} imp. galona"}
+                per{"{0} po imp. galonu"}
+            }
             hectoliter{
                 dnam{"hektolitri"}
                 few{"{0} hektolitra"}
@@ -942,6 +1000,25 @@ hr{
         compound{
             per{"{0}/{1}"}
         }
+        concentr{
+            karat{
+                few{"{0} kt"}
+                one{"{0} kt"}
+                other{"{0} kt"}
+            }
+            millimole-per-liter{
+                dnam{"mmol/l"}
+                few{"{0} mmol/l"}
+                one{"{0} mmol/l"}
+                other{"{0} mmol/l"}
+            }
+            percent{
+                dnam{"%"}
+                few{"{0} %"}
+                one{"{0} %"}
+                other{"{0} %"}
+            }
+        }
         consumption{
             liter-per-100kilometers{
                 dnam{"l/100 km"}
@@ -961,6 +1038,7 @@ hr{
             }
         }
         coordinate{
+            dnam{"smjer"}
             east{"{0}I"}
             north{"{0}S"}
             south{"{0}J"}
@@ -1379,13 +1457,6 @@ hr{
                 other{"{0} psi"}
             }
         }
-        proportion{
-            karat{
-                few{"{0} kt"}
-                one{"{0} kt"}
-                other{"{0} kt"}
-            }
-        }
         speed{
             kilometer-per-hour{
                 dnam{"km/h"}
@@ -1622,6 +1693,7 @@ hr{
                 few{"{0} km²"}
                 one{"{0} km²"}
                 other{"{0} km²"}
+                per{"{0}/km²"}
             }
             square-meter{
                 dnam{"m²"}
@@ -1635,6 +1707,7 @@ hr{
                 few{"{0} mi²"}
                 one{"{0} mi²"}
                 other{"{0} mi²"}
+                per{"{0}/mi²"}
             }
             square-yard{
                 dnam{"yd²"}
@@ -1645,6 +1718,44 @@ hr{
         }
         compound{
             per{"{0}/{1}"}
+        }
+        concentr{
+            karat{
+                dnam{"kt"}
+                few{"{0} kt"}
+                one{"{0} kt"}
+                other{"{0} kt"}
+            }
+            milligram-per-deciliter{
+                dnam{"mg/dl"}
+                few{"{0} mg/dl"}
+                one{"{0} mg/dl"}
+                other{"{0} mg/dl"}
+            }
+            millimole-per-liter{
+                dnam{"mmol/l"}
+                few{"{0} mmol/l"}
+                one{"{0} mmol/l"}
+                other{"{0} mmol/l"}
+            }
+            part-per-million{
+                dnam{"ppm"}
+                few{"{0} ppm"}
+                one{"{0} ppm"}
+                other{"{0} ppm"}
+            }
+            percent{
+                dnam{"%"}
+                few{"{0} %"}
+                one{"{0} %"}
+                other{"{0} %"}
+            }
+            permille{
+                dnam{"‰"}
+                few{"{0} ‰"}
+                one{"{0} ‰"}
+                other{"{0} ‰"}
+            }
         }
         consumption{
             liter-per-100kilometers{
@@ -1665,8 +1776,15 @@ hr{
                 one{"{0} mpg"}
                 other{"{0} mpg"}
             }
+            mile-per-gallon-imperial{
+                dnam{"milje/imp. gal."}
+                few{"{0} mpg imp."}
+                one{"{0} mpg imp."}
+                other{"{0} mpg imp."}
+            }
         }
         coordinate{
+            dnam{"smjer"}
             east{"{0}I"}
             north{"{0}S"}
             south{"{0}J"}
@@ -1720,6 +1838,12 @@ hr{
                 few{"{0} MB"}
                 one{"{0} MB"}
                 other{"{0} MB"}
+            }
+            petabyte{
+                dnam{"PB"}
+                few{"{0} PB"}
+                one{"{0} PB"}
+                other{"{0} PB"}
             }
             terabit{
                 dnam{"Tb"}
@@ -2013,6 +2137,12 @@ hr{
                 one{"{0} pm"}
                 other{"{0} pm"}
             }
+            point{
+                dnam{"točke"}
+                few{"{0} pt"}
+                one{"{0} pt"}
+                other{"{0} pt"}
+            }
             yard{
                 dnam{"jardi"}
                 few{"{0} yd"}
@@ -2139,6 +2269,12 @@ hr{
             }
         }
         pressure{
+            atmosphere{
+                dnam{"atm"}
+                few{"{0} atm"}
+                one{"{0} atm"}
+                other{"{0} atm"}
+            }
             hectopascal{
                 dnam{"hPa"}
                 few{"{0} hPa"}
@@ -2168,14 +2304,6 @@ hr{
                 few{"{0} psi"}
                 one{"{0} psi"}
                 other{"{0} psi"}
-            }
-        }
-        proportion{
-            karat{
-                dnam{"kt"}
-                few{"{0} kt"}
-                one{"{0} kt"}
-                other{"{0} kt"}
             }
         }
         speed{
@@ -2323,6 +2451,13 @@ hr{
                 one{"{0} gal"}
                 other{"{0} gal"}
                 per{"{0}/gal"}
+            }
+            gallon-imperial{
+                dnam{"imp. gal."}
+                few{"{0} imp. gal."}
+                one{"{0} imp. gal."}
+                other{"{0} imp. gal."}
+                per{"{0}/imp. gal."}
             }
             hectoliter{
                 dnam{"hl"}

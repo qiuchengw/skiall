@@ -1,12 +1,14 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 1999-2015 International Business Machines
+*   Copyright (C) 1999-2016 International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
 *   file name:  gencnval.c
-*   encoding:   US-ASCII
+*   encoding:   UTF-8
 *   tab size:   8 (not used)
 *   indentation:4
 *
@@ -230,7 +232,7 @@ main(int argc, char* argv[]) {
 
     /* preset then read command line options */
     options[DESTDIR].value=options[SOURCEDIR].value=u_getDataDirectory();
-    argc=u_parseArgs(argc, argv, sizeof(options)/sizeof(options[0]), options);
+    argc=u_parseArgs(argc, argv, UPRV_LENGTHOF(options), options);
 
     /* error handling, printing usage message */
     if(argc<0) {
@@ -963,7 +965,7 @@ createNormalizedAliasStrings(char *normalizedStrings, const char *origStringBloc
         if (currStrLen > 0) {
             int32_t normStrLen;
             ucnv_io_stripForCompare(normalizedStrings, origStringBlock);
-            normStrLen = uprv_strlen(normalizedStrings);
+            normStrLen = (int32_t)uprv_strlen(normalizedStrings);
             if (normStrLen > 0) {
                 uprv_memset(normalizedStrings + normStrLen, 0, currStrSize - normStrLen);
             }

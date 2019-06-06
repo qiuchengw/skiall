@@ -200,7 +200,7 @@ IterableBitSet<N>::Iterator::Iterator(const std::bitset<N> &bitset)
 }
 
 template <size_t N>
-typename IterableBitSet<N>::Iterator &IterableBitSet<N>::Iterator::operator++()
+ANGLE_INLINE typename IterableBitSet<N>::Iterator &IterableBitSet<N>::Iterator::operator++()
 {
     ASSERT(mBits.any());
     mBits.set(mCurrentBit - mOffset, 0);
@@ -249,13 +249,11 @@ BitSetT<N, BitsT, ParamT>::BitSetT() : mBits(0)
 
 template <size_t N, typename BitsT, typename ParamT>
 constexpr BitSetT<N, BitsT, ParamT>::BitSetT(BitsT value) : mBits(value & Mask(N))
-{
-}
+{}
 
 template <size_t N, typename BitsT, typename ParamT>
 BitSetT<N, BitsT, ParamT>::BitSetT(const BitSetT &other) : mBits(other.mBits)
-{
-}
+{}
 
 template <size_t N, typename BitsT, typename ParamT>
 BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::operator=(const BitSetT &other)
@@ -332,7 +330,7 @@ BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::operator|=(const BitSetT &
 template <size_t N, typename BitsT, typename ParamT>
 BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::operator^=(const BitSetT &other)
 {
-    mBits = (mBits ^ other.mBits) & Mask(N);
+    mBits = mBits ^ other.mBits;
     return *this;
 }
 
@@ -352,14 +350,14 @@ BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::operator&=(BitsT value)
 template <size_t N, typename BitsT, typename ParamT>
 BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::operator|=(BitsT value)
 {
-    mBits |= value;
+    mBits |= value & Mask(N);
     return *this;
 }
 
 template <size_t N, typename BitsT, typename ParamT>
 BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::operator^=(BitsT value)
 {
-    mBits ^= value;
+    mBits ^= value & Mask(N);
     return *this;
 }
 
@@ -401,7 +399,7 @@ BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::set(ParamT pos, bool value
 {
     if (value)
     {
-        mBits |= Bit(pos);
+        mBits |= Bit(pos) & Mask(N);
     }
     else
     {
@@ -434,7 +432,7 @@ BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::flip()
 template <size_t N, typename BitsT, typename ParamT>
 BitSetT<N, BitsT, ParamT> &BitSetT<N, BitsT, ParamT>::flip(ParamT pos)
 {
-    mBits ^= Bit(pos);
+    mBits ^= Bit(pos) & Mask(N);
     return *this;
 }
 
@@ -448,7 +446,8 @@ BitSetT<N, BitsT, ParamT>::Iterator::Iterator(const BitSetT &bits) : mBitsCopy(b
 }
 
 template <size_t N, typename BitsT, typename ParamT>
-typename BitSetT<N, BitsT, ParamT>::Iterator &BitSetT<N, BitsT, ParamT>::Iterator::operator++()
+ANGLE_INLINE typename BitSetT<N, BitsT, ParamT>::Iterator &BitSetT<N, BitsT, ParamT>::Iterator::
+operator++()
 {
     ASSERT(mBitsCopy.any());
     mBitsCopy.reset(static_cast<ParamT>(mCurrentBit));
@@ -526,27 +525,33 @@ struct GetBitSet<N, EnableIfBitsFit<N, uint32_t>>
 template <size_t N>
 using BitSet = typename priv::GetBitSet<N>::Type;
 
-}  // angle
+}  // namespace angle
 
 template <size_t N, typename BitsT, typename ParamT>
 inline angle::BitSetT<N, BitsT, ParamT> operator&(const angle::BitSetT<N, BitsT, ParamT> &lhs,
                                                   const angle::BitSetT<N, BitsT, ParamT> &rhs)
 {
-    return angle::BitSetT<N, BitsT, ParamT>(lhs.bits() & rhs.bits());
+    angle::BitSetT<N, BitsT, ParamT> result(lhs);
+    result &= rhs.bits();
+    return result;
 }
 
 template <size_t N, typename BitsT, typename ParamT>
 inline angle::BitSetT<N, BitsT, ParamT> operator|(const angle::BitSetT<N, BitsT, ParamT> &lhs,
                                                   const angle::BitSetT<N, BitsT, ParamT> &rhs)
 {
-    return angle::BitSetT<N, BitsT, ParamT>(lhs.bits() | rhs.bits());
+    angle::BitSetT<N, BitsT, ParamT> result(lhs);
+    result |= rhs.bits();
+    return result;
 }
 
 template <size_t N, typename BitsT, typename ParamT>
 inline angle::BitSetT<N, BitsT, ParamT> operator^(const angle::BitSetT<N, BitsT, ParamT> &lhs,
                                                   const angle::BitSetT<N, BitsT, ParamT> &rhs)
 {
-    return angle::BitSetT<N, BitsT, ParamT>(lhs.bits() ^ rhs.bits());
+    angle::BitSetT<N, BitsT, ParamT> result(lhs);
+    result ^= rhs.bits();
+    return result;
 }
 
 #endif  // COMMON_BITSETITERATOR_H_

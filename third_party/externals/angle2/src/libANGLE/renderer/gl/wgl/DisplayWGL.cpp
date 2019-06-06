@@ -28,18 +28,44 @@
 #include "platform/Platform.h"
 
 #include <EGL/eglext.h>
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace rx
 {
+
+namespace
+{
+
+std::string GetErrorMessage()
+{
+    DWORD errorCode     = GetLastError();
+    LPSTR messageBuffer = nullptr;
+    size_t size         = FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, errorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+    std::string message(messageBuffer, size);
+    if (size == 0)
+    {
+        std::ostringstream stream;
+        stream << "Failed to get the error message for '" << errorCode << "' due to the error '"
+               << GetLastError() << "'";
+        message = stream.str();
+    }
+    if (messageBuffer != nullptr)
+    {
+        LocalFree(messageBuffer);
+    }
+    return message;
+}
+
+}  // anonymous namespace
 
 class FunctionsGLWindows : public FunctionsGL
 {
   public:
     FunctionsGLWindows(HMODULE openGLModule, PFNWGLGETPROCADDRESSPROC getProcAddressWGL)
-        : mOpenGLModule(openGLModule),
-          mGetProcAddressWGL(getProcAddressWGL)
+        : mOpenGLModule(openGLModule), mGetProcAddressWGL(getProcAddressWGL)
     {
         ASSERT(mOpenGLModule);
         ASSERT(mGetProcAddressWGL);
@@ -50,10 +76,10 @@ class FunctionsGLWindows : public FunctionsGL
   private:
     void *loadProcAddress(const std::string &function) const override
     {
-        void *proc = reinterpret_cast<void*>(mGetProcAddressWGL(function.c_str()));
+        void *proc = reinterpret_cast<void *>(mGetProcAddressWGL(function.c_str()));
         if (!proc)
         {
-            proc = reinterpret_cast<void*>(GetProcAddress(mOpenGLModule, function.c_str()));
+            proc = reinterpret_cast<void *>(GetProcAddress(mOpenGLModule, function.c_str()));
         }
         return proc;
     }
@@ -79,13 +105,11 @@ DisplayWGL::DisplayWGL(const egl::DisplayState &state)
       mDxgiModule(nullptr),
       mD3d11Module(nullptr),
       mD3D11DeviceHandle(nullptr),
-      mD3D11Device(nullptr)
-{
-}
+      mD3D11Device(nullptr),
+      mUseARBShare(true)
+{}
 
-DisplayWGL::~DisplayWGL()
-{
-}
+DisplayWGL::~DisplayWGL() {}
 
 egl::Error DisplayWGL::initialize(egl::Display *display)
 {
@@ -112,8 +136,9 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
     mFunctionsWGL = new FunctionsWGL();
     mFunctionsWGL->initialize(mOpenGLModule, nullptr);
 
-    // WGL can't grab extensions until it creates a context because it needs to load the driver's DLLs first.
-    // Create a dummy context to load the driver and determine which GL versions are available.
+    // WGL can't grab extensions until it creates a context because it needs to load the driver's
+    // DLLs first. Create a dummy context to load the driver and determine which GL versions are
+    // available.
 
     // Work around compile error from not defining "UNICODE" while Chromium does
     const LPSTR idcArrow = MAKEINTRESOURCEA(32512);
@@ -122,18 +147,18 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
     stream << "ANGLE DisplayWGL " << gl::FmtHex(display) << " Intermediate Window Class";
     std::string className = stream.str();
 
-    WNDCLASSA intermediateClassDesc = { 0 };
-    intermediateClassDesc.style = CS_OWNDC;
-    intermediateClassDesc.lpfnWndProc = DefWindowProcA;
-    intermediateClassDesc.cbClsExtra = 0;
-    intermediateClassDesc.cbWndExtra = 0;
-    intermediateClassDesc.hInstance = GetModuleHandle(nullptr);
-    intermediateClassDesc.hIcon = nullptr;
-    intermediateClassDesc.hCursor = LoadCursorA(nullptr, idcArrow);
+    WNDCLASSA intermediateClassDesc     = {0};
+    intermediateClassDesc.style         = CS_OWNDC;
+    intermediateClassDesc.lpfnWndProc   = DefWindowProcA;
+    intermediateClassDesc.cbClsExtra    = 0;
+    intermediateClassDesc.cbWndExtra    = 0;
+    intermediateClassDesc.hInstance     = GetModuleHandle(nullptr);
+    intermediateClassDesc.hIcon         = nullptr;
+    intermediateClassDesc.hCursor       = LoadCursorA(nullptr, idcArrow);
     intermediateClassDesc.hbrBackground = 0;
-    intermediateClassDesc.lpszMenuName = nullptr;
+    intermediateClassDesc.lpszMenuName  = nullptr;
     intermediateClassDesc.lpszClassName = className.c_str();
-    mWindowClass = RegisterClassA(&intermediateClassDesc);
+    mWindowClass                        = RegisterClassA(&intermediateClassDesc);
     if (!mWindowClass)
     {
         return egl::EglNotInitialized()
@@ -197,7 +222,7 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
     DestroyWindow(dummyWindow);
 
     const egl::AttributeMap &displayAttributes = display->getAttributeMap();
-    EGLint requestedDisplayType = static_cast<EGLint>(displayAttributes.get(
+    EGLint requestedDisplayType                = static_cast<EGLint>(displayAttributes.get(
         EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE));
     if (requestedDisplayType == EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE &&
         !mFunctionsWGL->hasExtension("WGL_EXT_create_context_es2_profile") &&
@@ -256,7 +281,7 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
     mHasRobustness = functionsGL->getGraphicsResetStatus != nullptr;
     if (mHasWGLCreateContextRobustness != mHasRobustness)
     {
-        WARN() << "WGL_ARB_create_context_robustness exists but unable to OpenGL context with "
+        WARN() << "WGL_ARB_create_context_robustness exists but unable to create a context with "
                   "robustness.";
     }
 
@@ -295,7 +320,8 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
         }
         else
         {
-            // Want to use DXGI swap chains but WGL_NV_DX_interop2 is not present, fail initialization
+            // Want to use DXGI swap chains but WGL_NV_DX_interop2 is not present, fail
+            // initialization
             return egl::EglNotInitialized() << "WGL_NV_DX_interop2 is required but not present.";
         }
     }
@@ -437,12 +463,13 @@ SurfaceImpl *DisplayWGL::createPixmapSurface(const egl::SurfaceState &state,
     return nullptr;
 }
 
-ContextImpl *DisplayWGL::createContext(const gl::ContextState &state,
-                                       const egl::Config *configuration,
-                                       const gl::Context *shareContext,
-                                       const egl::AttributeMap &attribs)
+rx::ContextImpl *DisplayWGL::createContext(const gl::State &state,
+                                           gl::ErrorSet *errorSet,
+                                           const egl::Config *configuration,
+                                           const gl::Context *shareContext,
+                                           const egl::AttributeMap &attribs)
 {
-    return new ContextWGL(state, mRenderer);
+    return new ContextWGL(state, errorSet, mRenderer);
 }
 
 DeviceImpl *DisplayWGL::createDevice()
@@ -532,7 +559,7 @@ bool DisplayWGL::testDeviceLost()
 {
     if (mHasRobustness)
     {
-        return mRenderer->getResetStatus() != GL_NO_ERROR;
+        return mRenderer->getResetStatus() != gl::GraphicsResetStatus::NoError;
     }
 
     return false;
@@ -592,7 +619,7 @@ egl::Error DisplayWGL::initializeD3DDevice()
     }
 
     PFN_D3D11_CREATE_DEVICE d3d11CreateDevice = nullptr;
-    d3d11CreateDevice = reinterpret_cast<PFN_D3D11_CREATE_DEVICE>(
+    d3d11CreateDevice                         = reinterpret_cast<PFN_D3D11_CREATE_DEVICE>(
         GetProcAddress(mD3d11Module, "D3D11CreateDevice"));
     if (d3d11CreateDevice == nullptr)
     {
@@ -606,13 +633,7 @@ egl::Error DisplayWGL::initializeD3DDevice()
         return egl::EglNotInitialized() << "Could not create D3D11 device, " << gl::FmtHR(result);
     }
 
-    egl::Error error = registerD3DDevice(mD3D11Device, &mD3D11DeviceHandle);
-    if (error.isError())
-    {
-        return error;
-    }
-
-    return egl::NoError();
+    return registerD3DDevice(mD3D11Device, &mD3D11DeviceHandle);
 }
 
 void DisplayWGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
@@ -674,6 +695,10 @@ egl::Error DisplayWGL::makeCurrent(egl::Surface *drawSurface,
         SurfaceWGL *drawSurfaceWGL = GetImplAs<SurfaceWGL>(drawSurface);
         newDC                      = drawSurfaceWGL->getDC();
     }
+    else
+    {
+        newDC = mDeviceContext;
+    }
 
     HGLRC newContext = currentContext.glrc;
     if (context)
@@ -681,9 +706,15 @@ egl::Error DisplayWGL::makeCurrent(egl::Surface *drawSurface,
         ContextWGL *contextWGL = GetImplAs<ContextWGL>(context);
         newContext             = contextWGL->getContext();
     }
+    else
+    {
+        newContext = 0;
+    }
 
     if (newDC != currentContext.dc || newContext != currentContext.glrc)
     {
+        ASSERT(newDC != 0);
+
         if (!mFunctionsWGL->makeCurrent(newDC, newContext))
         {
             // TODO(geofflang): What error type here?
@@ -754,7 +785,10 @@ void DisplayWGL::destroyNativeContext(HGLRC context)
     mFunctionsWGL->deleteContext(context);
 }
 
-HGLRC DisplayWGL::initializeContextAttribs(const egl::AttributeMap &eglAttributes) const
+HGLRC DisplayWGL::initializeContextAttribs(const egl::AttributeMap &eglAttributes,
+                                           HGLRC &sharedContext,
+                                           bool &useARBShare,
+                                           std::vector<int> &workerContextAttribs) const
 {
     EGLint requestedDisplayType = static_cast<EGLint>(
         eglAttributes.get(EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE));
@@ -773,7 +807,8 @@ HGLRC DisplayWGL::initializeContextAttribs(const egl::AttributeMap &eglAttribute
         {
             profileMask |= WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
         }
-        return createContextAttribs(requestedVersion, profileMask);
+        return createContextAttribs(requestedVersion, profileMask, sharedContext, useARBShare,
+                                    workerContextAttribs);
     }
 
     // Try all the GL version in order as a workaround for Mesa context creation where the driver
@@ -790,7 +825,8 @@ HGLRC DisplayWGL::initializeContextAttribs(const egl::AttributeMap &eglAttribute
             profileFlag |= WGL_CONTEXT_ES_PROFILE_BIT_EXT;
         }
 
-        HGLRC context = createContextAttribs(info.version, profileFlag);
+        HGLRC context = createContextAttribs(info.version, profileFlag, sharedContext, useARBShare,
+                                             workerContextAttribs);
         if (context != nullptr)
         {
             return context;
@@ -800,7 +836,11 @@ HGLRC DisplayWGL::initializeContextAttribs(const egl::AttributeMap &eglAttribute
     return nullptr;
 }
 
-HGLRC DisplayWGL::createContextAttribs(const gl::Version &version, int profileMask) const
+HGLRC DisplayWGL::createContextAttribs(const gl::Version &version,
+                                       int profileMask,
+                                       HGLRC &sharedContext,
+                                       bool &useARBShare,
+                                       std::vector<int> &workerContextAttribs) const
 {
     std::vector<int> attribs;
 
@@ -826,16 +866,29 @@ HGLRC DisplayWGL::createContextAttribs(const gl::Version &version, int profileMa
 
     attribs.push_back(0);
     attribs.push_back(0);
+    HGLRC context = mFunctionsWGL->createContextAttribsARB(mDeviceContext, nullptr, &attribs[0]);
 
-    return mFunctionsWGL->createContextAttribsARB(mDeviceContext, nullptr, &attribs[0]);
+    // This shared context is never made current. It is safer than the main context to be used as
+    // a seed to create worker contexts from.
+    // It seems a WGL restriction not mentioned in MSDN, but some posts revealed it.
+    // https://www.opengl.org/discussion_boards/showthread.php/152648-wglShareLists-failing
+    // https://github.com/glfw/glfw/issues/402
+    sharedContext = mFunctionsWGL->createContextAttribsARB(mDeviceContext, context, &attribs[0]);
+    workerContextAttribs = attribs;
+    useARBShare          = true;
+    return context;
 }
 
 egl::Error DisplayWGL::createRenderer(std::shared_ptr<RendererWGL> *outRenderer)
 {
-    HGLRC context = nullptr;
+    HGLRC context       = nullptr;
+    HGLRC sharedContext = nullptr;
+    std::vector<int> workerContextAttribs;
+
     if (mFunctionsWGL->createContextAttribsARB)
     {
-        context = initializeContextAttribs(mDisplayAttributes);
+        context = initializeContextAttribs(mDisplayAttributes, sharedContext, mUseARBShare,
+                                           workerContextAttribs);
     }
 
     // If wglCreateContextAttribsARB is unavailable or failed, try the standard wglCreateContext
@@ -848,7 +901,19 @@ egl::Error DisplayWGL::createRenderer(std::shared_ptr<RendererWGL> *outRenderer)
     if (!context)
     {
         return egl::EglNotInitialized()
-               << "Failed to create a WGL context for the intermediate OpenGL window.";
+               << "Failed to create a WGL context for the intermediate OpenGL window."
+               << GetErrorMessage();
+    }
+
+    if (!sharedContext)
+    {
+        sharedContext = mFunctionsWGL->createContext(mDeviceContext);
+        if (!mFunctionsWGL->shareLists(context, sharedContext))
+        {
+            mFunctionsWGL->deleteContext(sharedContext);
+            sharedContext = nullptr;
+        }
+        mUseARBShare = false;
     }
 
     if (!mFunctionsWGL->makeCurrent(mDeviceContext, context))
@@ -863,8 +928,139 @@ egl::Error DisplayWGL::createRenderer(std::shared_ptr<RendererWGL> *outRenderer)
         new FunctionsGLWindows(mOpenGLModule, mFunctionsWGL->getProcAddress));
     functionsGL->initialize(mDisplayAttributes);
 
-    outRenderer->reset(new RendererWGL(std::move(functionsGL), mDisplayAttributes, this, context));
+    outRenderer->reset(new RendererWGL(std::move(functionsGL), mDisplayAttributes, this, context,
+                                       sharedContext, workerContextAttribs));
 
     return egl::NoError();
 }
+
+class WorkerContextWGL final : public WorkerContext
+{
+  public:
+    WorkerContextWGL(FunctionsWGL *functions,
+                     HPBUFFERARB pbuffer,
+                     HDC deviceContext,
+                     HGLRC context);
+    ~WorkerContextWGL() override;
+
+    bool makeCurrent() override;
+    void unmakeCurrent() override;
+
+  private:
+    FunctionsWGL *mFunctionsWGL;
+    HPBUFFERARB mPbuffer;
+    HDC mDeviceContext;
+    HGLRC mContext;
+};
+
+WorkerContextWGL::WorkerContextWGL(FunctionsWGL *functions,
+                                   HPBUFFERARB pbuffer,
+                                   HDC deviceContext,
+                                   HGLRC context)
+    : mFunctionsWGL(functions), mPbuffer(pbuffer), mDeviceContext(deviceContext), mContext(context)
+{}
+
+WorkerContextWGL::~WorkerContextWGL()
+{
+    mFunctionsWGL->makeCurrent(mDeviceContext, nullptr);
+    mFunctionsWGL->deleteContext(mContext);
+    mFunctionsWGL->releasePbufferDCARB(mPbuffer, mDeviceContext);
+    mFunctionsWGL->destroyPbufferARB(mPbuffer);
 }
+
+bool WorkerContextWGL::makeCurrent()
+{
+    bool result = mFunctionsWGL->makeCurrent(mDeviceContext, mContext);
+    if (!result)
+    {
+        ERR() << GetErrorMessage();
+    }
+    return result;
+}
+
+void WorkerContextWGL::unmakeCurrent()
+{
+    mFunctionsWGL->makeCurrent(mDeviceContext, nullptr);
+}
+
+WorkerContext *DisplayWGL::createWorkerContext(std::string *infoLog,
+                                               HGLRC sharedContext,
+                                               const std::vector<int> &workerContextAttribs)
+{
+    if (!sharedContext)
+    {
+        *infoLog += "Unable to create the shared context.";
+        return nullptr;
+    }
+
+    HPBUFFERARB workerPbuffer = nullptr;
+    HDC workerDeviceContext   = nullptr;
+    HGLRC workerContext       = nullptr;
+
+#define CLEANUP_ON_ERROR()                                                          \
+    do                                                                              \
+    {                                                                               \
+        if (workerContext)                                                          \
+        {                                                                           \
+            mFunctionsWGL->deleteContext(workerContext);                            \
+        }                                                                           \
+        if (workerDeviceContext)                                                    \
+        {                                                                           \
+            mFunctionsWGL->releasePbufferDCARB(workerPbuffer, workerDeviceContext); \
+        }                                                                           \
+        if (workerPbuffer)                                                          \
+        {                                                                           \
+            mFunctionsWGL->destroyPbufferARB(workerPbuffer);                        \
+        }                                                                           \
+    } while (0)
+
+    const int attribs[] = {0, 0};
+    workerPbuffer = mFunctionsWGL->createPbufferARB(mDeviceContext, mPixelFormat, 1, 1, attribs);
+    if (!workerPbuffer)
+    {
+        *infoLog += GetErrorMessage();
+        return nullptr;
+    }
+
+    workerDeviceContext = mFunctionsWGL->getPbufferDCARB(workerPbuffer);
+    if (!workerDeviceContext)
+    {
+        *infoLog += GetErrorMessage();
+        CLEANUP_ON_ERROR();
+        return nullptr;
+    }
+
+    if (mUseARBShare)
+    {
+        workerContext = mFunctionsWGL->createContextAttribsARB(mDeviceContext, sharedContext,
+                                                               &workerContextAttribs[0]);
+    }
+    else
+    {
+        workerContext = mFunctionsWGL->createContext(workerDeviceContext);
+    }
+    if (!workerContext)
+    {
+        GetErrorMessage();
+        CLEANUP_ON_ERROR();
+        return nullptr;
+    }
+
+    if (!mUseARBShare && !mFunctionsWGL->shareLists(sharedContext, workerContext))
+    {
+        GetErrorMessage();
+        CLEANUP_ON_ERROR();
+        return nullptr;
+    }
+
+#undef CLEANUP_ON_ERROR
+
+    return new WorkerContextWGL(mFunctionsWGL, workerPbuffer, workerDeviceContext, workerContext);
+}
+
+void DisplayWGL::populateFeatureList(angle::FeatureList *features)
+{
+    mRenderer->getWorkarounds().populateFeatureList(features);
+}
+
+}  // namespace rx

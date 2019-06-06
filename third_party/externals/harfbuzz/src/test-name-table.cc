@@ -24,7 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb.h"
+#include "hb.hh"
 #include "hb-ot.h"
 
 #include <stdlib.h>
@@ -41,14 +41,14 @@ main (int argc, char **argv)
   hb_blob_t *blob = hb_blob_create_from_file (argv[1]);
   hb_face_t *face = hb_face_create (blob, 0 /* first face */);
   hb_blob_destroy (blob);
-  blob = NULL;
+  blob = nullptr;
 
   unsigned int count;
   const hb_ot_name_entry_t *entries = hb_ot_name_list_names (face, &count);
 
   for (unsigned int i = 0; i < count; i++)
   {
-    printf ("%d	%s	",
+    printf ("%u	%s	",
 	    entries[i].name_id,
 	    hb_language_to_string (entries[i].language));
 
@@ -62,6 +62,8 @@ main (int argc, char **argv)
 
     printf ("%s\n", buf);
   }
+
+  hb_face_destroy (face);
 
   return count ? 0 : 1;
 }

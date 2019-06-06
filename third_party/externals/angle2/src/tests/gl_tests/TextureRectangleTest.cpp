@@ -29,7 +29,7 @@ class TextureRectangleTest : public ANGLETest
 
     bool checkExtensionSupported() const
     {
-        if (!extensionEnabled("GL_ANGLE_texture_rectangle"))
+        if (!IsGLExtensionEnabled("GL_ANGLE_texture_rectangle"))
         {
             std::cout << "Test skipped because GL_ANGLE_texture_rectangle is not available."
                       << std::endl;
@@ -40,12 +40,10 @@ class TextureRectangleTest : public ANGLETest
 };
 
 class TextureRectangleTestES3 : public TextureRectangleTest
-{
-};
+{};
 
 class TextureRectangleTestES31 : public TextureRectangleTest
-{
-};
+{};
 
 // Test using TexImage2D to define a rectangle texture
 TEST_P(TextureRectangleTest, TexImage2D)
@@ -70,7 +68,7 @@ TEST_P(TextureRectangleTest, TexImage2D)
 
     // Defining a texture of the max size is allowed
     {
-        ScopedIgnorePlatformMessages ignore(this);
+        ScopedIgnorePlatformMessages ignore;
 
         glTexImage2D(GL_TEXTURE_RECTANGLE_ANGLE, 0, GL_RGBA, maxSize, maxSize, 0, GL_RGBA,
                      GL_UNSIGNED_BYTE, nullptr);
@@ -91,7 +89,7 @@ TEST_P(TextureRectangleTest, TexImage2D)
 TEST_P(TextureRectangleTest, CompressedTexImage2DDisallowed)
 {
     ANGLE_SKIP_TEST_IF(!checkExtensionSupported());
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_compression_dxt1"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_dxt1"));
 
     const char data[128] = {0};
 
@@ -118,7 +116,8 @@ TEST_P(TextureRectangleTest, CompressedTexImage2DDisallowed)
 TEST_P(TextureRectangleTest, TexStorage2D)
 {
     ANGLE_SKIP_TEST_IF(!checkExtensionSupported());
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       !IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     bool useES3       = getClientMajorVersion() >= 3;
     auto TexStorage2D = [useES3](GLenum target, GLint levels, GLenum format, GLint width,
@@ -156,7 +155,7 @@ TEST_P(TextureRectangleTest, TexStorage2D)
 
     // Defining a texture of the max size is allowed but still allow for OOM
     {
-        ScopedIgnorePlatformMessages ignore(this);
+        ScopedIgnorePlatformMessages ignore;
 
         GLTexture tex;
         glBindTexture(GL_TEXTURE_RECTANGLE_ANGLE, tex);
@@ -176,7 +175,7 @@ TEST_P(TextureRectangleTest, TexStorage2D)
     }
 
     // Compressed formats are disallowed
-    if (extensionEnabled("GL_EXT_texture_compression_dxt1"))
+    if (IsGLExtensionEnabled("GL_EXT_texture_compression_dxt1"))
     {
         GLTexture tex;
         glBindTexture(GL_TEXTURE_RECTANGLE_ANGLE, tex);
@@ -291,7 +290,7 @@ TEST_P(TextureRectangleTest, SamplingFromRectangleESSL1)
     glTexImage2D(GL_TEXTURE_RECTANGLE_ANGLE, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  &GLColor::green);
 
-    const std::string fs =
+    constexpr char kFS[] =
         "#extension GL_ARB_texture_rectangle : require\n"
         "precision mediump float;\n"
         "uniform sampler2DRect tex;\n"
@@ -300,7 +299,7 @@ TEST_P(TextureRectangleTest, SamplingFromRectangleESSL1)
         "    gl_FragColor = texture2DRect(tex, vec2(0, 0));\n"
         "}\n";
 
-    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), fs);
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), kFS);
     glUseProgram(program);
 
     GLint location = glGetUniformLocation(program, "tex");
@@ -324,7 +323,7 @@ TEST_P(TextureRectangleTestES3, SamplingFromRectangleESSL3)
     glTexImage2D(GL_TEXTURE_RECTANGLE_ANGLE, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                  &GLColor::green);
 
-    const std::string fs =
+    constexpr char kFS[] =
         "#version 300 es\n"
         "#extension GL_ARB_texture_rectangle : require\n"
         "precision mediump float;\n"
@@ -335,7 +334,7 @@ TEST_P(TextureRectangleTestES3, SamplingFromRectangleESSL3)
         "    fragColor = texture(tex, vec2(0, 0));\n"
         "}\n";
 
-    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), fs);
+    ANGLE_GL_PROGRAM(program, essl3_shaders::vs::Simple(), kFS);
     glUseProgram(program);
 
     GLint location = glGetUniformLocation(program, "tex");
@@ -456,4 +455,4 @@ TEST_P(TextureRectangleTestES3, CopyTexSubImage)
 ANGLE_INSTANTIATE_TEST(TextureRectangleTest, ES2_OPENGL(), ES3_OPENGL(), ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(TextureRectangleTestES3, ES3_OPENGL());
 ANGLE_INSTANTIATE_TEST(TextureRectangleTestES31, ES31_OPENGL());
-} // anonymous namespace
+}  // anonymous namespace

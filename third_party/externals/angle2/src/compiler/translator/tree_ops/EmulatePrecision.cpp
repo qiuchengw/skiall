@@ -56,8 +56,7 @@ class RoundingHelperWriterGLSL : public RoundingHelperWriter
   public:
     RoundingHelperWriterGLSL(const ShShaderOutput outputLanguage)
         : RoundingHelperWriter(outputLanguage)
-    {
-    }
+    {}
 
   private:
     std::string getTypeString(const char *glslType) override;
@@ -74,8 +73,7 @@ class RoundingHelperWriterESSL : public RoundingHelperWriterGLSL
   public:
     RoundingHelperWriterESSL(const ShShaderOutput outputLanguage)
         : RoundingHelperWriterGLSL(outputLanguage)
-    {
-    }
+    {}
 
   private:
     std::string getTypeString(const char *glslType) override;
@@ -86,8 +84,7 @@ class RoundingHelperWriterHLSL : public RoundingHelperWriter
   public:
     RoundingHelperWriterHLSL(const ShShaderOutput outputLanguage)
         : RoundingHelperWriter(outputLanguage)
-    {
-    }
+    {}
 
   private:
     std::string getTypeString(const char *glslType) override;
@@ -177,7 +174,7 @@ std::string RoundingHelperWriterGLSL::getTypeString(const char *glslType)
 
 std::string RoundingHelperWriterESSL::getTypeString(const char *glslType)
 {
-    std::stringstream typeStrStr;
+    std::stringstream typeStrStr = sh::InitializeStream<std::stringstream>();
     typeStrStr << "highp " << glslType;
     return typeStrStr.str();
 }
@@ -260,7 +257,7 @@ void RoundingHelperWriterGLSL::writeFloatRoundingHelpers(TInfoSinkBase &sink)
 void RoundingHelperWriterGLSL::writeVectorRoundingHelpers(TInfoSinkBase &sink,
                                                           const unsigned int size)
 {
-    std::stringstream vecTypeStrStr;
+    std::stringstream vecTypeStrStr = sh::InitializeStream<std::stringstream>();
     vecTypeStrStr << "vec" << size;
     std::string vecType = getTypeString(vecTypeStrStr.str().c_str());
 
@@ -290,7 +287,7 @@ void RoundingHelperWriterGLSL::writeMatrixRoundingHelper(TInfoSinkBase &sink,
                                                          const unsigned int rows,
                                                          const char *functionName)
 {
-    std::stringstream matTypeStrStr;
+    std::stringstream matTypeStrStr = sh::InitializeStream<std::stringstream>();
     matTypeStrStr << "mat" << columns;
     if (rows != columns)
     {
@@ -382,7 +379,7 @@ void RoundingHelperWriterHLSL::writeFloatRoundingHelpers(TInfoSinkBase &sink)
 void RoundingHelperWriterHLSL::writeVectorRoundingHelpers(TInfoSinkBase &sink,
                                                           const unsigned int size)
 {
-    std::stringstream vecTypeStrStr;
+    std::stringstream vecTypeStrStr = sh::InitializeStream<std::stringstream>();
     vecTypeStrStr << "float" << size;
     std::string vecType = vecTypeStrStr.str();
 
@@ -412,7 +409,7 @@ void RoundingHelperWriterHLSL::writeMatrixRoundingHelper(TInfoSinkBase &sink,
                                                          const unsigned int rows,
                                                          const char *functionName)
 {
-    std::stringstream matTypeStrStr;
+    std::stringstream matTypeStrStr = sh::InitializeStream<std::stringstream>();
     matTypeStrStr << "float" << columns << "x" << rows;
     std::string matType = matTypeStrStr.str();
 
@@ -475,12 +472,11 @@ bool ParentConstructorTakesCareOfRounding(TIntermNode *parent, TIntermTyped *nod
     return canRoundFloat(parentConstructor->getType());
 }
 
-}  // namespace anonymous
+}  // namespace
 
 EmulatePrecision::EmulatePrecision(TSymbolTable *symbolTable)
     : TLValueTrackingTraverser(true, true, true, symbolTable), mDeclaringVariables(false)
-{
-}
+{}
 
 void EmulatePrecision::visitSymbol(TIntermSymbol *node)
 {
@@ -748,7 +744,7 @@ TIntermAggregate *EmulatePrecision::createCompoundAssignmentFunctionCallNode(TIn
                                                                              TIntermTyped *right,
                                                                              const char *opNameStr)
 {
-    std::stringstream strstr;
+    std::stringstream strstr = sh::InitializeStream<std::stringstream>();
     if (left->getPrecision() == EbpMedium)
         strstr << "angle_compound_" << opNameStr << "_frm";
     else

@@ -9,8 +9,8 @@
 #ifndef LIBANGLE_RENDERER_GL_GLX_PBUFFERSURFACEGLX_H_
 #define LIBANGLE_RENDERER_GL_GLX_PBUFFERSURFACEGLX_H_
 
-#include "libANGLE/renderer/gl/glx/platform_glx.h"
 #include "libANGLE/renderer/gl/glx/SurfaceGLX.h"
+#include "libANGLE/renderer/gl/glx/platform_glx.h"
 
 namespace rx
 {
@@ -29,7 +29,7 @@ class PbufferSurfaceGLX : public SurfaceGLX
     ~PbufferSurfaceGLX() override;
 
     egl::Error initialize(const egl::Display *display) override;
-    egl::Error makeCurrent() override;
+    egl::Error makeCurrent(const gl::Context *context) override;
 
     egl::Error swap(const gl::Context *context) override;
     egl::Error postSubBuffer(const gl::Context *context,
@@ -65,4 +65,4 @@ class PbufferSurfaceGLX : public SurfaceGLX
 
 }  // namespace rx
 
-#endif // LIBANGLE_RENDERER_GL_GLX_PBUFFERSURFACEGLX_H_
+#endif  // LIBANGLE_RENDERER_GL_GLX_PBUFFERSURFACEGLX_H_

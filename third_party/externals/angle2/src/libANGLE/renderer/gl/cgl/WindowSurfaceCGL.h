@@ -62,7 +62,7 @@ class WindowSurfaceCGL : public SurfaceGL
     ~WindowSurfaceCGL() override;
 
     egl::Error initialize(const egl::Display *display) override;
-    egl::Error makeCurrent() override;
+    egl::Error makeCurrent(const gl::Context *context) override;
 
     egl::Error swap(const gl::Context *context) override;
     egl::Error postSubBuffer(const gl::Context *context,
@@ -101,4 +101,4 @@ class WindowSurfaceCGL : public SurfaceGL
 
 }  // namespace rx
 
-#endif // LIBANGLE_RENDERER_GL_CGL_WINDOWSURFACECGL_H_
+#endif  // LIBANGLE_RENDERER_GL_CGL_WINDOWSURFACECGL_H_

@@ -14,13 +14,9 @@
 namespace rx
 {
 
-ImageNULL::ImageNULL(const egl::ImageState &state) : ImageImpl(state)
-{
-}
+ImageNULL::ImageNULL(const egl::ImageState &state) : ImageImpl(state) {}
 
-ImageNULL::~ImageNULL()
-{
-}
+ImageNULL::~ImageNULL() {}
 
 egl::Error ImageNULL::initialize(const egl::Display *display)
 {
@@ -29,7 +25,7 @@ egl::Error ImageNULL::initialize(const egl::Display *display)
 
 angle::Result ImageNULL::orphan(const gl::Context *context, egl::ImageSibling *sibling)
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

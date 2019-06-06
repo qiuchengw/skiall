@@ -47,46 +47,39 @@ class TexCoordDrawTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    virtual std::string getVertexShaderSource()
+    virtual const char *getVertexShaderSource()
     {
-        return
-            R"(precision highp float;
-            attribute vec4 position;
-            varying vec2 texcoord;
+        return R"(precision highp float;
+attribute vec4 position;
+varying vec2 texcoord;
 
-            void main()
-            {
-                gl_Position = vec4(position.xy, 0.0, 1.0);
-                texcoord = (position.xy * 0.5) + 0.5;
-            })";
+void main()
+{
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+    texcoord = (position.xy * 0.5) + 0.5;
+})";
     }
 
-    virtual std::string getFragmentShaderSource() = 0;
+    virtual const char *getFragmentShaderSource() = 0;
 
     virtual void setUpProgram()
     {
-        const std::string vertexShaderSource   = getVertexShaderSource();
-        const std::string fragmentShaderSource = getFragmentShaderSource();
+        const char *vertexShaderSource   = getVertexShaderSource();
+        const char *fragmentShaderSource = getFragmentShaderSource();
 
         mProgram = CompileProgram(vertexShaderSource, fragmentShaderSource);
         ASSERT_NE(0u, mProgram);
         ASSERT_GL_NO_ERROR();
     }
 
-    void SetUp() override
-    {
-        ANGLETest::SetUp();
+    void testSetUp() override { setUpFramebuffer(); }
 
-        setUpFramebuffer();
-    }
-
-    void TearDown() override
+    void testTearDown() override
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDeleteFramebuffers(1, &mFramebuffer);
         glDeleteTextures(1, &mFramebufferColorTexture);
         glDeleteProgram(mProgram);
-        ANGLETest::TearDown();
     }
 
     void setUpFramebuffer()
@@ -135,17 +128,16 @@ class Texture2DTest : public TexCoordDrawTest
   protected:
     Texture2DTest() : TexCoordDrawTest(), mTexture2D(0), mTexture2DUniformLocation(-1) {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return
-            R"(precision highp float;
-            uniform sampler2D tex;
-            varying vec2 texcoord;
+        return R"(precision highp float;
+uniform sampler2D tex;
+varying vec2 texcoord;
 
-            void main()
-            {
-                gl_FragColor = texture2D(tex, texcoord);
-            })";
+void main()
+{
+    gl_FragColor = texture2D(tex, texcoord);
+})";
     }
 
     virtual const char *getTextureUniformName() { return "tex"; }
@@ -157,18 +149,18 @@ class Texture2DTest : public TexCoordDrawTest
         ASSERT_NE(-1, mTexture2DUniformLocation);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
         mTexture2D = create2DTexture();
 
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTexture2D);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     // Tests CopyTexSubImage with floating point textures of various formats.
@@ -178,26 +170,26 @@ class Texture2DTest : public TexCoordDrawTest
 
         if (getClientMajorVersion() < 3)
         {
-            ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_storage") ||
-                               !extensionEnabled("GL_OES_texture_float"));
+            ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_storage") ||
+                               !IsGLExtensionEnabled("GL_OES_texture_float"));
 
             ANGLE_SKIP_TEST_IF((sourceImageChannels < 3 || destImageChannels < 3) &&
-                               !extensionEnabled("GL_EXT_texture_rg"));
+                               !IsGLExtensionEnabled("GL_EXT_texture_rg"));
 
             ANGLE_SKIP_TEST_IF(destImageChannels == 3 &&
-                               !extensionEnabled("GL_CHROMIUM_color_buffer_float_rgb"));
+                               !IsGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgb"));
 
             ANGLE_SKIP_TEST_IF(destImageChannels == 4 &&
-                               !extensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
+                               !IsGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
 
             ANGLE_SKIP_TEST_IF(destImageChannels <= 2);
         }
         else
         {
-            ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_color_buffer_float"));
+            ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_color_buffer_float"));
 
             ANGLE_SKIP_TEST_IF(destImageChannels == 3 &&
-                               !extensionEnabled("GL_CHROMIUM_color_buffer_float_rgb"));
+                               !IsGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgb"));
         }
 
         // clang-format off
@@ -231,11 +223,17 @@ class Texture2DTest : public TexCoordDrawTest
         // clang-format on
 
         GLenum imageFormats[] = {
-            GL_R32F, GL_RG32F, GL_RGB32F, GL_RGBA32F,
+            GL_R32F,
+            GL_RG32F,
+            GL_RGB32F,
+            GL_RGBA32F,
         };
 
         GLenum sourceUnsizedFormats[] = {
-            GL_RED, GL_RG, GL_RGB, GL_RGBA,
+            GL_RED,
+            GL_RG,
+            GL_RGB,
+            GL_RGBA,
         };
 
         GLuint textures[2];
@@ -260,7 +258,7 @@ class Texture2DTest : public TexCoordDrawTest
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 2, 2, sourceUnsizedFormat, GL_FLOAT, imageData);
 
-        if (sourceImageChannels < 3 && !extensionEnabled("GL_EXT_texture_rg"))
+        if (sourceImageChannels < 3 && !IsGLExtensionEnabled("GL_EXT_texture_rg"))
         {
             // This is not supported
             ASSERT_GL_ERROR(GL_INVALID_OPERATION);
@@ -321,36 +319,34 @@ class Texture2DTestES3 : public Texture2DTest
   protected:
     Texture2DTestES3() : Texture2DTest() {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp sampler2D tex;\n"
-            "in vec2 texcoord;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    fragColor = texture(tex, texcoord);\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp sampler2D tex;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = texture(tex, texcoord);\n"
+               "}\n";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        Texture2DTest::SetUp();
+        Texture2DTest::testSetUp();
         setUpProgram();
     }
 };
@@ -360,38 +356,36 @@ class Texture2DIntegerAlpha1TestES3 : public Texture2DTest
   protected:
     Texture2DIntegerAlpha1TestES3() : Texture2DTest() {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp isampler2D tex;\n"
-            "in vec2 texcoord;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    vec4 green = vec4(0, 1, 0, 1);\n"
-            "    vec4 black = vec4(0, 0, 0, 0);\n"
-            "    fragColor = (texture(tex, texcoord).a == 1) ? green : black;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp isampler2D tex;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    vec4 green = vec4(0, 1, 0, 1);\n"
+               "    vec4 black = vec4(0, 0, 0, 0);\n"
+               "    fragColor = (texture(tex, texcoord).a == 1) ? green : black;\n"
+               "}\n";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        Texture2DTest::SetUp();
+        Texture2DTest::testSetUp();
         setUpProgram();
     }
 };
@@ -401,38 +395,36 @@ class Texture2DUnsignedIntegerAlpha1TestES3 : public Texture2DTest
   protected:
     Texture2DUnsignedIntegerAlpha1TestES3() : Texture2DTest() {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp usampler2D tex;\n"
-            "in vec2 texcoord;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    vec4 green = vec4(0, 1, 0, 1);\n"
-            "    vec4 black = vec4(0, 0, 0, 0);\n"
-            "    fragColor = (texture(tex, texcoord).a == 1u) ? green : black;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp usampler2D tex;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    vec4 green = vec4(0, 1, 0, 1);\n"
+               "    vec4 black = vec4(0, 0, 0, 0);\n"
+               "    fragColor = (texture(tex, texcoord).a == 1u) ? green : black;\n"
+               "}\n";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        Texture2DTest::SetUp();
+        Texture2DTest::testSetUp();
         setUpProgram();
     }
 };
@@ -442,7 +434,7 @@ class Texture2DTestWithDrawScale : public Texture2DTest
   protected:
     Texture2DTestWithDrawScale() : Texture2DTest(), mDrawScaleUniformLocation(-1) {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
         return
             R"(precision highp float;
@@ -458,9 +450,9 @@ class Texture2DTestWithDrawScale : public Texture2DTest
             })";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        Texture2DTest::SetUp();
+        Texture2DTest::testSetUp();
 
         setUpProgram();
 
@@ -481,7 +473,7 @@ class Sampler2DAsFunctionParameterTest : public Texture2DTest
   protected:
     Sampler2DAsFunctionParameterTest() : Texture2DTest() {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
         return
             R"(precision highp float;
@@ -499,9 +491,9 @@ class Sampler2DAsFunctionParameterTest : public Texture2DTest
             })";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        Texture2DTest::SetUp();
+        Texture2DTest::testSetUp();
         setUpProgram();
     }
 };
@@ -515,10 +507,9 @@ class TextureCubeTest : public TexCoordDrawTest
           mTextureCube(0),
           mTexture2DUniformLocation(-1),
           mTextureCubeUniformLocation(-1)
-    {
-    }
+    {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
         return
             R"(precision highp float;
@@ -533,9 +524,9 @@ class TextureCubeTest : public TexCoordDrawTest
             })";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         glGenTextures(1, &mTextureCube);
         glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
@@ -556,10 +547,10 @@ class TextureCubeTest : public TexCoordDrawTest
         ASSERT_NE(-1, mTextureCubeUniformLocation);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTextureCube);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     GLuint mTexture2D;
@@ -583,10 +574,9 @@ class SamplerArrayTest : public TexCoordDrawTest
           mTexture2DB(0),
           mTexture0UniformLocation(-1),
           mTexture1UniformLocation(-1)
-    {
-    }
+    {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
         return
             R"(precision mediump float;
@@ -599,9 +589,9 @@ class SamplerArrayTest : public TexCoordDrawTest
             })";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         setUpProgram();
 
@@ -615,11 +605,11 @@ class SamplerArrayTest : public TexCoordDrawTest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTexture2DA);
         glDeleteTextures(1, &mTexture2DB);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     void testSamplerArrayDraw()
@@ -660,7 +650,7 @@ class SamplerArrayAsFunctionParameterTest : public SamplerArrayTest
   protected:
     SamplerArrayAsFunctionParameterTest() : SamplerArrayTest() {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
         return
             R"(precision mediump float;
@@ -684,36 +674,34 @@ class Texture2DArrayTestES3 : public TexCoordDrawTest
   protected:
     Texture2DArrayTestES3() : TexCoordDrawTest(), m2DArrayTexture(0), mTextureArrayLocation(-1) {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp sampler2DArray tex2DArray;\n"
-            "in vec2 texcoord;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    fragColor = texture(tex2DArray, vec3(texcoord.x, texcoord.y, 0.0));\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp sampler2DArray tex2DArray;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = texture(tex2DArray, vec3(texcoord.x, texcoord.y, 0.0));\n"
+               "}\n";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         setUpProgram();
 
@@ -724,10 +712,10 @@ class Texture2DArrayTestES3 : public TexCoordDrawTest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &m2DArrayTexture);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     GLuint m2DArrayTexture;
@@ -743,32 +731,27 @@ class TextureSizeTextureArrayTest : public TexCoordDrawTest
           mTexture2DB(0),
           mTexture0Location(-1),
           mTexture1Location(-1)
+    {}
+
+    const char *getVertexShaderSource() override { return essl3_shaders::vs::Simple(); }
+
+    const char *getFragmentShaderSource() override
     {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp sampler2D tex2DArray[2];\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    float red = float(textureSize(tex2DArray[0], 0).x) / 255.0;\n"
+               "    float green = float(textureSize(tex2DArray[1], 0).x) / 255.0;\n"
+               "    fragColor = vec4(red, green, 0.0, 1.0);\n"
+               "}\n";
     }
 
-    std::string getVertexShaderSource() override
+    void testSetUp() override
     {
-        return std::string(essl3_shaders::vs::Simple());
-    }
-
-    std::string getFragmentShaderSource() override
-    {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp sampler2D tex2DArray[2];\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    float red = float(textureSize(tex2DArray[0], 0).x) / 255.0;\n"
-            "    float green = float(textureSize(tex2DArray[1], 0).x) / 255.0;\n"
-            "    fragColor = vec4(red, green, 0.0, 1.0);\n"
-            "}\n");
-    }
-
-    void SetUp() override
-    {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         setUpProgram();
 
@@ -782,11 +765,11 @@ class TextureSizeTextureArrayTest : public TexCoordDrawTest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTexture2DA);
         glDeleteTextures(1, &mTexture2DB);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     GLuint mTexture2DA;
@@ -800,36 +783,34 @@ class Texture3DTestES3 : public TexCoordDrawTest
   protected:
     Texture3DTestES3() : TexCoordDrawTest(), mTexture3D(0), mTexture3DUniformLocation(-1) {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp sampler3D tex3D;\n"
-            "in vec2 texcoord;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    fragColor = texture(tex3D, vec3(texcoord, 0.0));\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp sampler3D tex3D;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = texture(tex3D, vec3(texcoord, 0.0));\n"
+               "}\n";
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         glGenTextures(1, &mTexture3D);
 
@@ -839,10 +820,10 @@ class Texture3DTestES3 : public TexCoordDrawTest
         ASSERT_NE(-1, mTexture3DUniformLocation);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTexture3D);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     GLuint mTexture3D;
@@ -859,42 +840,39 @@ class ShadowSamplerPlusSampler3DTestES3 : public TexCoordDrawTest
           mTextureShadowUniformLocation(-1),
           mTexture3DUniformLocation(-1),
           mDepthRefUniformLocation(-1)
+    {}
+
+    const char *getVertexShaderSource() override
     {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getVertexShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp sampler2DShadow tex2DShadow;\n"
+               "uniform highp sampler3D tex3D;\n"
+               "in vec2 texcoord;\n"
+               "uniform float depthRef;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(texture(tex2DShadow, vec3(texcoord, depthRef)) * 0.5);\n"
+               "    fragColor += texture(tex3D, vec3(texcoord, 0.0));\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    void testSetUp() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp sampler2DShadow tex2DShadow;\n"
-            "uniform highp sampler3D tex3D;\n"
-            "in vec2 texcoord;\n"
-            "uniform float depthRef;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    fragColor = vec4(texture(tex2DShadow, vec3(texcoord, depthRef)) * 0.5);\n"
-            "    fragColor += texture(tex3D, vec3(texcoord, 0.0));\n"
-            "}\n");
-    }
-
-    void SetUp() override
-    {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         glGenTextures(1, &mTexture3D);
 
@@ -912,11 +890,11 @@ class ShadowSamplerPlusSampler3DTestES3 : public TexCoordDrawTest
         ASSERT_NE(-1, mDepthRefUniformLocation);
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTextureShadow);
         glDeleteTextures(1, &mTexture3D);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     GLuint mTextureShadow;
@@ -940,47 +918,44 @@ class SamplerTypeMixTestES3 : public TexCoordDrawTest
           mTexture2DShadowUniformLocation(-1),
           mTextureCubeShadowUniformLocation(-1),
           mDepthRefUniformLocation(-1)
+    {}
+
+    const char *getVertexShaderSource() override
     {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
     }
 
-    std::string getVertexShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "out vec2 texcoord;\n"
-            "in vec4 position;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
-            "    texcoord = (position.xy * 0.5) + 0.5;\n"
-            "}\n");
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp sampler2D tex2D;\n"
+               "uniform highp samplerCube texCube;\n"
+               "uniform highp sampler2DShadow tex2DShadow;\n"
+               "uniform highp samplerCubeShadow texCubeShadow;\n"
+               "in vec2 texcoord;\n"
+               "uniform float depthRef;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = texture(tex2D, texcoord);\n"
+               "    fragColor += texture(texCube, vec3(1.0, 0.0, 0.0));\n"
+               "    fragColor += vec4(texture(tex2DShadow, vec3(texcoord, depthRef)) * 0.25);\n"
+               "    fragColor += vec4(texture(texCubeShadow, vec4(1.0, 0.0, 0.0, depthRef)) * "
+               "0.125);\n"
+               "}\n";
     }
 
-    std::string getFragmentShaderSource() override
+    void testSetUp() override
     {
-        return std::string(
-            "#version 300 es\n"
-            "precision highp float;\n"
-            "uniform highp sampler2D tex2D;\n"
-            "uniform highp samplerCube texCube;\n"
-            "uniform highp sampler2DShadow tex2DShadow;\n"
-            "uniform highp samplerCubeShadow texCubeShadow;\n"
-            "in vec2 texcoord;\n"
-            "uniform float depthRef;\n"
-            "out vec4 fragColor;\n"
-            "void main()\n"
-            "{\n"
-            "    fragColor = texture(tex2D, texcoord);\n"
-            "    fragColor += texture(texCube, vec3(1.0, 0.0, 0.0));\n"
-            "    fragColor += vec4(texture(tex2DShadow, vec3(texcoord, depthRef)) * 0.25);\n"
-            "    fragColor += vec4(texture(texCubeShadow, vec4(1.0, 0.0, 0.0, depthRef)) * "
-            "0.125);\n"
-            "}\n");
-    }
-
-    void SetUp() override
-    {
-        TexCoordDrawTest::SetUp();
+        TexCoordDrawTest::testSetUp();
 
         glGenTextures(1, &mTexture2D);
         glGenTextures(1, &mTextureCube);
@@ -1009,13 +984,13 @@ class SamplerTypeMixTestES3 : public TexCoordDrawTest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(1, &mTexture2D);
         glDeleteTextures(1, &mTextureCube);
         glDeleteTextures(1, &mTexture2DShadow);
         glDeleteTextures(1, &mTextureCubeShadow);
-        TexCoordDrawTest::TearDown();
+        TexCoordDrawTest::testTearDown();
     }
 
     GLuint mTexture2D;
@@ -1036,21 +1011,20 @@ class SamplerInStructTest : public Texture2DTest
 
     const char *getTextureUniformName() override { return "us.tex"; }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "precision highp float;\n"
-            "struct S\n"
-            "{\n"
-            "    vec4 a;\n"
-            "    highp sampler2D tex;\n"
-            "};\n"
-            "uniform S us;\n"
-            "varying vec2 texcoord;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_FragColor = texture2D(us.tex, texcoord + us.a.x);\n"
-            "}\n");
+        return "precision highp float;\n"
+               "struct S\n"
+               "{\n"
+               "    vec4 a;\n"
+               "    highp sampler2D tex;\n"
+               "};\n"
+               "uniform S us;\n"
+               "varying vec2 texcoord;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_FragColor = texture2D(us.tex, texcoord + us.a.x);\n"
+               "}\n";
     }
 
     void runSamplerInStructTest()
@@ -1071,24 +1045,23 @@ class SamplerInStructAsFunctionParameterTest : public SamplerInStructTest
   protected:
     SamplerInStructAsFunctionParameterTest() : SamplerInStructTest() {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "precision highp float;\n"
-            "struct S\n"
-            "{\n"
-            "    vec4 a;\n"
-            "    highp sampler2D tex;\n"
-            "};\n"
-            "uniform S us;\n"
-            "varying vec2 texcoord;\n"
-            "vec4 sampleFrom(S s) {\n"
-            "    return texture2D(s.tex, texcoord + s.a.x);\n"
-            "}\n"
-            "void main()\n"
-            "{\n"
-            "    gl_FragColor = sampleFrom(us);\n"
-            "}\n");
+        return "precision highp float;\n"
+               "struct S\n"
+               "{\n"
+               "    vec4 a;\n"
+               "    highp sampler2D tex;\n"
+               "};\n"
+               "uniform S us;\n"
+               "varying vec2 texcoord;\n"
+               "vec4 sampleFrom(S s) {\n"
+               "    return texture2D(s.tex, texcoord + s.a.x);\n"
+               "}\n"
+               "void main()\n"
+               "{\n"
+               "    gl_FragColor = sampleFrom(us);\n"
+               "}\n";
     }
 };
 
@@ -1099,24 +1072,23 @@ class SamplerInStructArrayAsFunctionParameterTest : public SamplerInStructTest
 
     const char *getTextureUniformName() override { return "us[0].tex"; }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "precision highp float;\n"
-            "struct S\n"
-            "{\n"
-            "    vec4 a;\n"
-            "    highp sampler2D tex;\n"
-            "};\n"
-            "uniform S us[1];\n"
-            "varying vec2 texcoord;\n"
-            "vec4 sampleFrom(S s) {\n"
-            "    return texture2D(s.tex, texcoord + s.a.x);\n"
-            "}\n"
-            "void main()\n"
-            "{\n"
-            "    gl_FragColor = sampleFrom(us[0]);\n"
-            "}\n");
+        return "precision highp float;\n"
+               "struct S\n"
+               "{\n"
+               "    vec4 a;\n"
+               "    highp sampler2D tex;\n"
+               "};\n"
+               "uniform S us[1];\n"
+               "varying vec2 texcoord;\n"
+               "vec4 sampleFrom(S s) {\n"
+               "    return texture2D(s.tex, texcoord + s.a.x);\n"
+               "}\n"
+               "void main()\n"
+               "{\n"
+               "    gl_FragColor = sampleFrom(us[0]);\n"
+               "}\n";
     }
 };
 
@@ -1127,28 +1099,27 @@ class SamplerInNestedStructAsFunctionParameterTest : public SamplerInStructTest
 
     const char *getTextureUniformName() override { return "us[0].sub.tex"; }
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "precision highp float;\n"
-            "struct SUB\n"
-            "{\n"
-            "    vec4 a;\n"
-            "    highp sampler2D tex;\n"
-            "};\n"
-            "struct S\n"
-            "{\n"
-            "    SUB sub;\n"
-            "};\n"
-            "uniform S us[1];\n"
-            "varying vec2 texcoord;\n"
-            "vec4 sampleFrom(SUB s) {\n"
-            "    return texture2D(s.tex, texcoord + s.a.x);\n"
-            "}\n"
-            "void main()\n"
-            "{\n"
-            "    gl_FragColor = sampleFrom(us[0].sub);\n"
-            "}\n");
+        return "precision highp float;\n"
+               "struct SUB\n"
+               "{\n"
+               "    vec4 a;\n"
+               "    highp sampler2D tex;\n"
+               "};\n"
+               "struct S\n"
+               "{\n"
+               "    SUB sub;\n"
+               "};\n"
+               "uniform S us[1];\n"
+               "varying vec2 texcoord;\n"
+               "vec4 sampleFrom(SUB s) {\n"
+               "    return texture2D(s.tex, texcoord + s.a.x);\n"
+               "}\n"
+               "void main()\n"
+               "{\n"
+               "    gl_FragColor = sampleFrom(us[0].sub);\n"
+               "}\n";
     }
 };
 
@@ -1157,22 +1128,234 @@ class SamplerInStructAndOtherVariableTest : public SamplerInStructTest
   protected:
     SamplerInStructAndOtherVariableTest() : SamplerInStructTest() {}
 
-    std::string getFragmentShaderSource() override
+    const char *getFragmentShaderSource() override
     {
-        return std::string(
-            "precision highp float;\n"
-            "struct S\n"
-            "{\n"
-            "    vec4 a;\n"
-            "    highp sampler2D tex;\n"
-            "};\n"
-            "uniform S us;\n"
-            "uniform float us_tex;\n"
-            "varying vec2 texcoord;\n"
-            "void main()\n"
-            "{\n"
-            "    gl_FragColor = texture2D(us.tex, texcoord + us.a.x + us_tex);\n"
-            "}\n");
+        return "precision highp float;\n"
+               "struct S\n"
+               "{\n"
+               "    vec4 a;\n"
+               "    highp sampler2D tex;\n"
+               "};\n"
+               "uniform S us;\n"
+               "uniform float us_tex;\n"
+               "varying vec2 texcoord;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_FragColor = texture2D(us.tex, texcoord + us.a.x + us_tex);\n"
+               "}\n";
+    }
+};
+
+class Texture2DIntegerTestES3 : public Texture2DTest
+{
+  protected:
+    Texture2DIntegerTestES3() : Texture2DTest() {}
+
+    const char *getVertexShaderSource() override
+    {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
+    }
+
+    const char *getFragmentShaderSource() override
+    {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "precision highp usampler2D;\n"
+               "uniform usampler2D tex;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(texture(tex, texcoord))/255.0;\n"
+               "}\n";
+    }
+};
+
+class TextureCubeIntegerTestES3 : public TexCoordDrawTest
+{
+  protected:
+    TextureCubeIntegerTestES3()
+        : TexCoordDrawTest(), mTextureCube(0), mTextureCubeUniformLocation(-1)
+    {}
+
+    const char *getVertexShaderSource() override
+    {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = 0.5*position.xy;\n"
+               "}\n";
+    }
+
+    const char *getFragmentShaderSource() override
+    {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "precision highp usamplerCube;\n"
+               "uniform usamplerCube texCube;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(texture(texCube, vec3(texcoord, 1)))/255.0;\n"
+               "}\n";
+    }
+
+    void testSetUp() override
+    {
+        TexCoordDrawTest::testSetUp();
+        glGenTextures(1, &mTextureCube);
+        setUpProgram();
+
+        mTextureCubeUniformLocation = glGetUniformLocation(mProgram, "texCube");
+        ASSERT_NE(-1, mTextureCubeUniformLocation);
+    }
+
+    void testTearDown() override
+    {
+        glDeleteTextures(1, &mTextureCube);
+        TexCoordDrawTest::testTearDown();
+    }
+
+    GLuint mTextureCube;
+    GLint mTextureCubeUniformLocation;
+};
+
+class TextureCubeIntegerEdgeTestES3 : public TextureCubeIntegerTestES3
+{
+  protected:
+    TextureCubeIntegerEdgeTestES3() : TextureCubeIntegerTestES3() {}
+
+    const char *getVertexShaderSource() override
+    {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = position.xy;\n"
+               "}\n";
+    }
+
+    const char *getFragmentShaderSource() override
+    {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "precision highp usamplerCube;\n"
+               "uniform usamplerCube texCube;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(texture(texCube, vec3(texcoord, 0)))/255.0;\n"
+               "}\n";
+    }
+};
+
+class Texture2DIntegerProjectiveOffsetTestES3 : public Texture2DTest
+{
+  protected:
+    Texture2DIntegerProjectiveOffsetTestES3() : Texture2DTest() {}
+
+    const char *getVertexShaderSource() override
+    {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = 0.5*position.xy + vec2(0.5, 0.5);\n"
+               "}\n";
+    }
+
+    const char *getFragmentShaderSource() override
+    {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "precision highp usampler2D;\n"
+               "uniform usampler2D tex;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(textureProjOffset(tex, vec3(texcoord, 1), ivec2(0,0), "
+               "0.0))/255.0;\n"
+               "}\n";
+    }
+};
+
+class Texture2DArrayIntegerTestES3 : public Texture2DArrayTestES3
+{
+  protected:
+    Texture2DArrayIntegerTestES3() : Texture2DArrayTestES3() {}
+
+    const char *getVertexShaderSource() override
+    {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
+    }
+
+    const char *getFragmentShaderSource() override
+    {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp usampler2DArray tex2DArray;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(texture(tex2DArray, vec3(texcoord.x, texcoord.y, "
+               "0.0)))/255.0;\n"
+               "}\n";
+    }
+};
+
+class Texture3DIntegerTestES3 : public Texture3DTestES3
+{
+  protected:
+    Texture3DIntegerTestES3() : Texture3DTestES3() {}
+
+    const char *getVertexShaderSource() override
+    {
+        return "#version 300 es\n"
+               "out vec2 texcoord;\n"
+               "in vec4 position;\n"
+               "void main()\n"
+               "{\n"
+               "    gl_Position = vec4(position.xy, 0.0, 1.0);\n"
+               "    texcoord = (position.xy * 0.5) + 0.5;\n"
+               "}\n";
+    }
+
+    const char *getFragmentShaderSource() override
+    {
+        return "#version 300 es\n"
+               "precision highp float;\n"
+               "uniform highp usampler3D tex3D;\n"
+               "in vec2 texcoord;\n"
+               "out vec4 fragColor;\n"
+               "void main()\n"
+               "{\n"
+               "    fragColor = vec4(texture(tex3D, vec3(texcoord, 0.0)))/255.0;\n"
+               "}\n";
     }
 };
 
@@ -1187,7 +1370,7 @@ TEST_P(Texture2DTest, NegativeAPISubImage)
     glTexSubImage2D(GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 
-    if (extensionEnabled("GL_EXT_texture_storage"))
+    if (IsGLExtensionEnabled("GL_EXT_texture_storage"))
     {
         // Create a 1-level immutable texture.
         glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2);
@@ -1210,8 +1393,8 @@ TEST_P(Texture2DTest, QueryBinding)
     EXPECT_EQ(0, textureBinding);
 
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &textureBinding);
-    if (extensionEnabled("GL_OES_EGL_image_external") ||
-        extensionEnabled("GL_NV_EGL_stream_consumer_external"))
+    if (IsGLExtensionEnabled("GL_OES_EGL_image_external") ||
+        IsGLExtensionEnabled("GL_NV_EGL_stream_consumer_external"))
     {
         EXPECT_GL_NO_ERROR();
         EXPECT_EQ(0, textureBinding);
@@ -1373,6 +1556,12 @@ TEST_P(Texture2DTestWithDrawScale, MipmapsTwice)
 // https://code.google.com/p/angleproject/issues/detail?id=849
 TEST_P(TextureCubeTest, CubeMapFBO)
 {
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
+
     GLFramebuffer fbo;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
@@ -1415,6 +1604,9 @@ TEST_P(TextureCubeTest, CubeMapFBOScissoredClear)
     // TODO(jie.a.chen): Diagnose and fix. http://anglebug.com/2822
     ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel() && IsWindows());
 
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
     constexpr size_t kSize = 16;
 
     GLFramebuffer fbo;
@@ -1455,7 +1647,8 @@ TEST_P(TextureCubeTest, CubeMapFBOScissoredClear)
 // default color.
 TEST_P(Texture2DTest, TexStorage)
 {
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 && !extensionEnabled("GL_EXT_texture_storage"));
+    ANGLE_SKIP_TEST_IF(getClientMajorVersion() < 3 &&
+                       !IsGLExtensionEnabled("GL_EXT_texture_storage"));
 
     int width  = getWindowWidth();
     int height = getWindowHeight();
@@ -1510,7 +1703,7 @@ TEST_P(Texture2DTest, TexStorage)
 // initialized the image with a default color.
 TEST_P(Texture2DTest, TexStorageWithPBO)
 {
-    if (extensionEnabled("NV_pixel_buffer_object"))
+    if (IsGLExtensionEnabled("NV_pixel_buffer_object"))
     {
         int width  = getWindowWidth();
         int height = getWindowHeight();
@@ -1636,7 +1829,7 @@ TEST_P(Texture2DTest, TextureNPOT_GL_ALPHA_UBYTE)
     const int potTexSize  = 4;  // Should be less than npotTexSize
     GLuint tex2D;
 
-    if (extensionEnabled("GL_OES_texture_npot"))
+    if (IsGLExtensionEnabled("GL_OES_texture_npot"))
     {
         // This test isn't applicable if texture_npot is enabled
         return;
@@ -1734,6 +1927,121 @@ TEST_P(Texture2DTest, NPOTSubImageParameters)
     glTexSubImage2D(GL_TEXTURE_2D, 1, 0, 0, 3, 3, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
 
     EXPECT_GL_NO_ERROR();
+}
+
+// Regression test for http://crbug.com/949985 to make sure dirty bits are propagated up from
+// TextureImpl and the texture is synced before being used in a draw call.
+TEST_P(Texture2DTestES3, TextureImplPropogatesDirtyBits)
+{
+    ANGLE_SKIP_TEST_IF(IsIntel() && IsOpenGL());
+    // Flaky hangs on Win10 AMD RX 550 GL. http://anglebug.com/3371
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsOpenGL());
+
+    // The workaround in the GL backend required to trigger this bug generates driver warning
+    // messages.
+    ScopedIgnorePlatformMessages ignoreMessages;
+
+    setUpProgram();
+    glUseProgram(mProgram);
+    glActiveTexture(GL_TEXTURE0 + mTexture2DUniformLocation);
+
+    GLTexture dest;
+    glBindTexture(GL_TEXTURE_2D, dest);
+
+    GLTexture source;
+    glBindTexture(GL_TEXTURE_2D, source);
+
+    // Put data in mip 0 and 1
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 GLColor::red.data());
+    glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 GLColor::green.data());
+
+    // Disable mipmapping so source is complete
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Force the dirty bits to be synchronized in source
+    drawQuad(mProgram, "position", 1.0f);
+
+    // Copy from mip 1 of the source.  In the GL backend this internally sets the base level to mip
+    // 1 and sets a dirty bit.
+    glCopyTextureCHROMIUM(source, 1, GL_TEXTURE_2D, dest, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_FALSE,
+                          GL_FALSE, GL_FALSE);
+
+    // Draw again, assertions are generated if the texture has internal dirty bits at draw time
+    drawQuad(mProgram, "position", 1.0f);
+}
+
+// This test case changes the base level of a texture that's attached to a framebuffer, clears every
+// level to green, and then samples the texture when rendering. Test is taken from
+// https://www.khronos.org/registry/webgl/sdk/tests/conformance2/rendering/framebuffer-texture-changing-base-level.html
+TEST_P(Texture2DTestES3, FramebufferTextureChangingBaselevel)
+{
+    // TODO(geofflang): Investigate on D3D11. http://anglebug.com/2291
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    setUpProgram();
+
+    constexpr GLint width  = 8;
+    constexpr GLint height = 4;
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Create all mipmap levels for the texture from level 0 to the 1x1 pixel level.
+    GLint level  = 0;
+    GLint levelW = width;
+    GLint levelH = height;
+    glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, levelW, levelH, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 nullptr);
+    while (levelW > 1 || levelH > 1)
+    {
+        ++level;
+        levelW = static_cast<GLint>(std::max(1.0, std::floor(width / std::pow(2, level))));
+        levelH = static_cast<GLint>(std::max(1.0, std::floor(height / std::pow(2, level))));
+        glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, levelW, levelH, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     nullptr);
+    }
+
+    // Clear each level of the texture using an FBO. Change the base level to match the level used
+    // for the FBO on each iteration.
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    level  = 0;
+    levelW = width;
+    levelH = height;
+    while (levelW > 1 || levelH > 1)
+    {
+        levelW = static_cast<GLint>(std::floor(width / std::pow(2, level)));
+        levelH = static_cast<GLint>(std::floor(height / std::pow(2, level)));
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, level);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, level);
+
+        EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        EXPECT_GL_NO_ERROR();
+
+        glClearColor(0, 1, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+        ++level;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, 16, 16);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
 // Test to check that texture completeness is determined correctly when the texture base level is
@@ -2495,7 +2803,7 @@ TEST_P(Texture2DTest, TextureLuminanceAlphaRGBSame)
 // ES 3.0.4 table 3.24
 TEST_P(Texture2DTest, TextureLuminance32ImplicitAlpha1)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
     ANGLE_SKIP_TEST_IF(IsD3D9());
     ANGLE_SKIP_TEST_IF(IsVulkan());
 
@@ -2515,7 +2823,7 @@ TEST_P(Texture2DTest, TextureLuminance32ImplicitAlpha1)
 // ES 3.0.4 table 3.24
 TEST_P(Texture2DTest, TextureLuminance16ImplicitAlpha1)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
     ANGLE_SKIP_TEST_IF(IsD3D9());
     ANGLE_SKIP_TEST_IF(IsVulkan());
     ANGLE_SKIP_TEST_IF(IsNVIDIA() && IsOpenGLES());
@@ -2721,8 +3029,8 @@ TEST_P(SamplerInStructTest, SamplerInStruct)
 // Use a sampler in a uniform struct that's passed as a function parameter.
 TEST_P(SamplerInStructAsFunctionParameterTest, SamplerInStructAsFunctionParameter)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1427 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Fails on Nexus 5X due to a driver bug. http://anglebug.com/1427
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     runSamplerInStructTest();
 }
@@ -2731,8 +3039,8 @@ TEST_P(SamplerInStructAsFunctionParameterTest, SamplerInStructAsFunctionParamete
 // parameter.
 TEST_P(SamplerInStructArrayAsFunctionParameterTest, SamplerInStructArrayAsFunctionParameter)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1427 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Fails on Nexus 5X due to a driver bug. http://anglebug.com/1427
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     runSamplerInStructTest();
 }
@@ -2741,8 +3049,8 @@ TEST_P(SamplerInStructArrayAsFunctionParameterTest, SamplerInStructArrayAsFuncti
 // parameter.
 TEST_P(SamplerInNestedStructAsFunctionParameterTest, SamplerInNestedStructAsFunctionParameter)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1427 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Fails on Nexus 5X due to a driver bug. http://anglebug.com/1427
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     runSamplerInStructTest();
 }
@@ -2754,13 +3062,48 @@ TEST_P(SamplerInStructAndOtherVariableTest, SamplerInStructAndOtherVariable)
     runSamplerInStructTest();
 }
 
+// GL_EXT_texture_filter_anisotropic
+class TextureAnisotropyTest : public Texture2DTest
+{
+  protected:
+    void uploadTexture()
+    {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mTexture2D);
+        GLColor texDataRed[1] = {GLColor::red};
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, texDataRed);
+        EXPECT_GL_NO_ERROR();
+    }
+};
+
+// Tests that setting anisotropic filtering doesn't cause failures at draw time.
+TEST_P(TextureAnisotropyTest, AnisotropyFunctional)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_filter_anisotropic"));
+
+    setUpProgram();
+
+    uploadTexture();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2.0f);
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, getWindowHeight() / 2, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() - 1, getWindowHeight() - 1, GLColor::red);
+}
+
 // GL_OES_texture_border_clamp
 class TextureBorderClampTest : public Texture2DTest
 {
   protected:
     TextureBorderClampTest() : Texture2DTest() {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
         return
             R"(precision highp float;
@@ -2790,7 +3133,7 @@ class TextureBorderClampTest : public Texture2DTest
 // GL_CLAMP_TO_BORDER wrap mode (set with glTexParameter).
 TEST_P(TextureBorderClampTest, TextureBorderClampFunctional)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     setUpProgram();
 
@@ -2813,7 +3156,7 @@ TEST_P(TextureBorderClampTest, TextureBorderClampFunctional)
 // Test reading back GL_TEXTURE_BORDER_COLOR by glGetTexParameter.
 TEST_P(TextureBorderClampTest, TextureBorderClampFunctional2)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
@@ -2844,7 +3187,7 @@ TEST_P(TextureBorderClampTest, TextureBorderClampFunctional2)
 // Test GL_TEXTURE_BORDER_COLOR parameter validation at glTexParameter.
 TEST_P(TextureBorderClampTest, TextureBorderClampValidation)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
@@ -2898,7 +3241,7 @@ class TextureBorderClampTestES3 : public TextureBorderClampTest
 // GL_CLAMP_TO_BORDER wrap mode (set with glSamplerParameter).
 TEST_P(TextureBorderClampTestES3, TextureBorderClampES3Functional)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     setUpProgram();
 
@@ -2923,7 +3266,7 @@ TEST_P(TextureBorderClampTestES3, TextureBorderClampES3Functional)
 // Test reading back GL_TEXTURE_BORDER_COLOR by glGetSamplerParameter.
 TEST_P(TextureBorderClampTestES3, TextureBorderClampES3Functional2)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     glActiveTexture(GL_TEXTURE0);
 
@@ -2992,7 +3335,7 @@ TEST_P(TextureBorderClampTestES3, TextureBorderClampES3Functional2)
 // Test GL_TEXTURE_BORDER_COLOR parameter validation at glSamplerParameter.
 TEST_P(TextureBorderClampTestES3, TextureBorderClampES3Validation)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     glActiveTexture(GL_TEXTURE0);
 
@@ -3011,7 +3354,7 @@ class TextureBorderClampIntegerTestES3 : public Texture2DTest
   protected:
     TextureBorderClampIntegerTestES3() : Texture2DTest(), isUnsignedIntTest(false) {}
 
-    std::string getVertexShaderSource() override
+    const char *getVertexShaderSource() override
     {
         return
             R"(#version 300 es
@@ -3026,24 +3369,40 @@ class TextureBorderClampIntegerTestES3 : public Texture2DTest
             })";
     }
 
-    std::string getFragmentShaderSource()
+    const char *getFragmentShaderSource() override
     {
-        // clang-format off
-        return std::string(
-               "#version 300 es\n"
-               "precision highp float;\n"
-               "uniform highp ") + (isUnsignedIntTest ? "usampler2D" : "isampler2D") + " tex;\n"
-               "in vec2 texcoord;\n"
-               "out vec4 fragColor;\n"
+        if (isUnsignedIntTest)
+        {
+            return "#version 300 es\n"
+                   "precision highp float;\n"
+                   "uniform highp usampler2D tex;\n"
+                   "in vec2 texcoord;\n"
+                   "out vec4 fragColor;\n"
 
-               "void main()\n"
-               "{\n"
-               "vec4 red   = vec4(1.0, 0.0, 0.0, 1.0);\n"
-               "vec4 green = vec4(0.0, 1.0, 0.0, 1.0);\n"
-               "fragColor = (texture(tex, texcoord).r == " + (isUnsignedIntTest ? "150u" : "-50") + ")"
-               "            ? green : red;\n"
-               "}\n";
-        // clang-format on
+                   "void main()\n"
+                   "{\n"
+                   "vec4 red   = vec4(1.0, 0.0, 0.0, 1.0);\n"
+                   "vec4 green = vec4(0.0, 1.0, 0.0, 1.0);\n"
+                   "fragColor = (texture(tex, texcoord).r == 150u)"
+                   "            ? green : red;\n"
+                   "}\n";
+        }
+        else
+        {
+            return "#version 300 es\n"
+                   "precision highp float;\n"
+                   "uniform highp isampler2D tex;\n"
+                   "in vec2 texcoord;\n"
+                   "out vec4 fragColor;\n"
+
+                   "void main()\n"
+                   "{\n"
+                   "vec4 red   = vec4(1.0, 0.0, 0.0, 1.0);\n"
+                   "vec4 green = vec4(0.0, 1.0, 0.0, 1.0);\n"
+                   "fragColor = (texture(tex, texcoord).r == -50)"
+                   "            ? green : red;\n"
+                   "}\n";
+        }
     }
 
     void uploadTexture()
@@ -3072,7 +3431,7 @@ class TextureBorderClampIntegerTestES3 : public Texture2DTest
 // integer texture in GL_CLAMP_TO_BORDER wrap mode (set with glTexParameterIivOES).
 TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampInteger)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     setUpProgram();
 
@@ -3099,7 +3458,7 @@ TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampInteger)
 // integer texture in GL_CLAMP_TO_BORDER wrap mode (set with glTexParameterIivOES).
 TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampInteger2)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     setUpProgram();
 
@@ -3128,7 +3487,7 @@ TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampInteger2)
 // of the unsigned integer texture in GL_CLAMP_TO_BORDER wrap mode (set with glTexParameterIuivOES).
 TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampIntegerUnsigned)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     isUnsignedIntTest = true;
 
@@ -3158,7 +3517,7 @@ TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampIntegerUnsigned)
 // glSamplerParameterIuivOES).
 TEST_P(TextureBorderClampIntegerTestES3, TextureBorderClampIntegerUnsigned2)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_border_clamp"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_border_clamp"));
 
     isUnsignedIntTest = true;
 
@@ -3206,10 +3565,8 @@ class TextureLimitsTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
         glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &mMaxVertexTextures);
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &mMaxFragmentTextures);
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &mMaxCombinedTextures);
@@ -3217,7 +3574,7 @@ class TextureLimitsTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         if (mProgram != 0)
         {
@@ -3229,8 +3586,6 @@ class TextureLimitsTest : public ANGLETest
                 glDeleteTextures(static_cast<GLsizei>(mTextures.size()), &mTextures[0]);
             }
         }
-
-        ANGLETest::TearDown();
     }
 
     void compileProgramWithTextureCounts(const std::string &vertexPrefix,
@@ -3286,7 +3641,7 @@ class TextureLimitsTest : public ANGLETest
         const std::string &vertexShaderSource   = vertexShaderStr.str();
         const std::string &fragmentShaderSource = fragmentShaderStr.str();
 
-        mProgram = CompileProgram(vertexShaderSource, fragmentShaderSource);
+        mProgram = CompileProgram(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
     }
 
     RGBA8 getPixel(GLint texIndex)
@@ -3478,7 +3833,7 @@ TEST_P(TextureLimitsTest, MaxActiveFragmentTextures)
 // GLES 2.0.25 section 2.10.4 page 39.
 TEST_P(TextureLimitsTest, TextureTypeConflict)
 {
-    const std::string &vertexShader =
+    constexpr char kVS[] =
         "attribute vec2 position;\n"
         "varying float color;\n"
         "uniform sampler2D tex2D;\n"
@@ -3489,13 +3844,13 @@ TEST_P(TextureLimitsTest, TextureTypeConflict)
         "  color = texture2D(tex2D, texCoord).x;\n"
         "  color += textureCube(texCube, vec3(texCoord, 0)).x;\n"
         "}";
-    const std::string &fragmentShader =
+    constexpr char kFS[] =
         "varying mediump float color;\n"
         "void main() {\n"
         "  gl_FragColor = vec4(color, 0, 0, 1);\n"
         "}";
 
-    mProgram = CompileProgram(vertexShader, fragmentShader);
+    mProgram = CompileProgram(kVS, kFS);
     ASSERT_NE(0u, mProgram);
 
     initTextures(1, 0);
@@ -3519,9 +3874,9 @@ class Texture2DNorm16TestES3 : public Texture2DTestES3
   protected:
     Texture2DNorm16TestES3() : Texture2DTestES3(), mTextures{0, 0, 0}, mFBO(0), mRenderbuffer(0) {}
 
-    void SetUp() override
+    void testSetUp() override
     {
-        Texture2DTestES3::SetUp();
+        Texture2DTestES3::testSetUp();
 
         glActiveTexture(GL_TEXTURE0);
         glGenTextures(3, mTextures);
@@ -3540,13 +3895,13 @@ class Texture2DNorm16TestES3 : public Texture2DTestES3
         ASSERT_GL_NO_ERROR();
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteTextures(3, mTextures);
         glDeleteFramebuffers(1, &mFBO);
         glDeleteRenderbuffers(1, &mRenderbuffer);
 
-        Texture2DTestES3::TearDown();
+        Texture2DTestES3::testTearDown();
     }
 
     void testNorm16Texture(GLint internalformat, GLenum format, GLenum type)
@@ -3634,7 +3989,7 @@ class Texture2DNorm16TestES3 : public Texture2DTestES3
 // Test texture formats enabled by the GL_EXT_texture_norm16 extension.
 TEST_P(Texture2DNorm16TestES3, TextureNorm16Test)
 {
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_texture_norm16"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_norm16"));
 
     testNorm16Texture(GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT);
     testNorm16Texture(GL_RG16_EXT, GL_RG, GL_UNSIGNED_SHORT);
@@ -3654,8 +4009,8 @@ TEST_P(Texture2DNorm16TestES3, TextureNorm16Test)
 // GLES 3.0.4 section 3.8.3.
 TEST_P(Texture2DTestES3, UnpackSkipImages2D)
 {
-    // TODO(ynovikov): re-enable once root cause of http://anglebug.com/1429 is fixed
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
+    // Crashes on Nexus 5X due to a driver bug. http://anglebug.com/1429
+    ANGLE_SKIP_TEST_IF((IsNexus5X() || IsNexus6P()) && IsOpenGLES());
 
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -3783,6 +4138,9 @@ TEST_P(Texture2DTestES3, DepthTexturesWithMipmaps)
     // TODO(zmo) this is faling on Win Intel HD 530 Debug.
     // http://anglebug.com/1706
     ANGLE_SKIP_TEST_IF(IsIntel() && IsWindows() && IsOpenGL());
+
+    // Seems to fail on AMD D3D11. Possibly driver bug. http://anglebug.com/3342
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsD3D11());
 
     const int size = getWindowWidth();
 
@@ -4033,7 +4391,7 @@ TEST_P(Texture2DTestES3, SingleTextureMultipleSamplers)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
 
     // Simple multitexturing program.
-    const std::string vs =
+    constexpr char kVS[] =
         "#version 300 es\n"
         "in vec2 position;\n"
         "out vec2 texCoord;\n"
@@ -4042,7 +4400,8 @@ TEST_P(Texture2DTestES3, SingleTextureMultipleSamplers)
         "    gl_Position = vec4(position, 0, 1);\n"
         "    texCoord = position * 0.5 + vec2(0.5);\n"
         "}";
-    const std::string fs =
+
+    constexpr char kFS[] =
         "#version 300 es\n"
         "precision mediump float;\n"
         "in vec2 texCoord;\n"
@@ -4057,7 +4416,7 @@ TEST_P(Texture2DTestES3, SingleTextureMultipleSamplers)
         "          +  texture(tex3, texCoord) + texture(tex4, texCoord)) * 0.25;\n"
         "}";
 
-    ANGLE_GL_PROGRAM(program, vs, fs);
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
 
     std::array<GLint, 4> texLocations = {
         {glGetUniformLocation(program, "tex1"), glGetUniformLocation(program, "tex2"),
@@ -4138,7 +4497,7 @@ TEST_P(TextureCubeTestES3, SpecifyAndSampleFromBaseLevel1)
     // Check http://anglebug.com/2155.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsNVIDIA());
 
-    const std::string vs =
+    constexpr char kVS[] =
         R"(#version 300 es
         precision mediump float;
         in vec3 pos;
@@ -4146,7 +4505,7 @@ TEST_P(TextureCubeTestES3, SpecifyAndSampleFromBaseLevel1)
             gl_Position = vec4(pos, 1.0);
         })";
 
-    const std::string fs =
+    constexpr char kFS[] =
         R"(#version 300 es
         precision mediump float;
         out vec4 color;
@@ -4154,7 +4513,8 @@ TEST_P(TextureCubeTestES3, SpecifyAndSampleFromBaseLevel1)
         void main(){
             color = texture(uTex, vec3(1.0));
         })";
-    ANGLE_GL_PROGRAM(program, vs, fs);
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
     glUseProgram(program);
 
     glUniform1i(glGetUniformLocation(program, "uTex"), 0);
@@ -4240,7 +4600,7 @@ TEST_P(Texture2DTestES3, GenerateMipmapAndBaseLevelLUMA)
 // this led to not sampling your texture data when minification occurred.
 TEST_P(Texture2DTestES3, MinificationWithSamplerNoMipmapping)
 {
-    const std::string vs =
+    constexpr char kVS[] =
         "#version 300 es\n"
         "out vec2 texcoord;\n"
         "in vec4 position;\n"
@@ -4250,7 +4610,7 @@ TEST_P(Texture2DTestES3, MinificationWithSamplerNoMipmapping)
         "    texcoord = (position.xy * 0.5) + 0.5;\n"
         "}\n";
 
-    const std::string fs =
+    constexpr char kFS[] =
         "#version 300 es\n"
         "precision highp float;\n"
         "uniform highp sampler2D tex;\n"
@@ -4260,7 +4620,8 @@ TEST_P(Texture2DTestES3, MinificationWithSamplerNoMipmapping)
         "{\n"
         "    fragColor = texture(tex, texcoord);\n"
         "}\n";
-    ANGLE_GL_PROGRAM(program, vs, fs);
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
 
     GLSampler sampler;
     glBindSampler(0, sampler);
@@ -4282,48 +4643,227 @@ TEST_P(Texture2DTestES3, MinificationWithSamplerNoMipmapping)
     EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, getWindowHeight() / 2, angle::GLColor::white);
 }
 
+// Draw a quad with an integer texture with a non-zero base level, and test that the color of the
+// texture is output.
+TEST_P(Texture2DIntegerTestES3, IntegerTextureNonZeroBaseLevel)
+{
+    // http://anglebug.com/3478
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsAMD() && IsDesktopOpenGL());
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTexture2D);
+    int width     = getWindowWidth();
+    int height    = getWindowHeight();
+    GLColor color = GLColor::green;
+    std::vector<GLColor> pixels(width * height, color);
+    GLint baseLevel = 1;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, baseLevel, GL_RGBA8UI, width, height, 0, GL_RGBA_INTEGER,
+                 GL_UNSIGNED_BYTE, pixels.data());
+
+    setUpProgram();
+    glUseProgram(mProgram);
+    glUniform1i(mTexture2DUniformLocation, 0);
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, color);
+    EXPECT_PIXEL_COLOR_EQ(width - 1, height - 1, color);
+}
+
+// Draw a quad with an integer cube texture with a non-zero base level, and test that the color of
+// the texture is output.
+TEST_P(TextureCubeIntegerTestES3, IntegerCubeTextureNonZeroBaseLevel)
+{
+    // All output checks returned black, rather than the texture color.
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsOpenGL());
+
+    glActiveTexture(GL_TEXTURE0);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
+    GLint baseLevel = 1;
+    int width       = getWindowWidth();
+    int height      = getWindowHeight();
+    GLColor color   = GLColor::green;
+    std::vector<GLColor> pixels(width * height, color);
+    for (GLenum faceIndex = 0; faceIndex < 6; faceIndex++)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, baseLevel, GL_RGBA8UI, width,
+                     height, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, pixels.data());
+        EXPECT_GL_NO_ERROR();
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glUseProgram(mProgram);
+    glUniform1i(mTextureCubeUniformLocation, 0);
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, color);
+    EXPECT_PIXEL_COLOR_EQ(width - 1, 0, color);
+    EXPECT_PIXEL_COLOR_EQ(0, height - 1, color);
+    EXPECT_PIXEL_COLOR_EQ(width - 1, height - 1, color);
+}
+
+// This test sets up a cube map with four distincly colored MIP levels.
+// The size of the texture and the geometry is chosen such that levels 1 or 2 should be chosen at
+// the corners of the screen.
+TEST_P(TextureCubeIntegerEdgeTestES3, IntegerCubeTextureCorner)
+{
+    glActiveTexture(GL_TEXTURE0);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
+    int width  = getWindowWidth();
+    int height = getWindowHeight();
+    ASSERT_EQ(width, height);
+    GLColor color[4] = {GLColor::white, GLColor::green, GLColor::blue, GLColor::red};
+    for (GLint level = 0; level < 4; level++)
+    {
+        for (GLenum faceIndex = 0; faceIndex < 6; faceIndex++)
+        {
+            int levelWidth  = (2 * width) >> level;
+            int levelHeight = (2 * height) >> level;
+            std::vector<GLColor> pixels(levelWidth * levelHeight, color[level]);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, GL_RGBA8UI, levelWidth,
+                         levelHeight, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, pixels.data());
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 3);
+
+    glUseProgram(mProgram);
+    glUniform1i(mTextureCubeUniformLocation, 0);
+    drawQuad(mProgram, "position", 0.5f);
+
+    ASSERT_GL_NO_ERROR();
+    // Check that we do not read from levels 0 or 3. Levels 1 and 2 are both acceptable.
+    EXPECT_EQ(ReadColor(0, 0).R, 0);
+    EXPECT_EQ(ReadColor(width - 1, 0).R, 0);
+    EXPECT_EQ(ReadColor(0, height - 1).R, 0);
+    EXPECT_EQ(ReadColor(width - 1, height - 1).R, 0);
+}
+
+// Draw a quad with an integer texture with a non-zero base level, and test that the color of the
+// texture is output.
+TEST_P(Texture2DIntegerProjectiveOffsetTestES3, NonZeroBaseLevel)
+{
+    // Fails on AMD: http://crbug.com/967796
+    ANGLE_SKIP_TEST_IF(IsAMD() && IsWindows() && IsOpenGL());
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTexture2D);
+    int width     = getWindowWidth();
+    int height    = getWindowHeight();
+    GLColor color = GLColor::green;
+    std::vector<GLColor> pixels(width * height, color);
+    GLint baseLevel = 1;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, baseLevel, GL_RGBA8UI, width, height, 0, GL_RGBA_INTEGER,
+                 GL_UNSIGNED_BYTE, pixels.data());
+
+    setUpProgram();
+    glUseProgram(mProgram);
+    glUniform1i(mTexture2DUniformLocation, 0);
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, color);
+    EXPECT_PIXEL_COLOR_EQ(width - 1, height - 1, color);
+}
+
+// Draw a quad with an integer texture with a non-zero base level, and test that the color of the
+// texture is output.
+TEST_P(Texture2DArrayIntegerTestES3, NonZeroBaseLevel)
+{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m2DArrayTexture);
+    int width     = getWindowWidth();
+    int height    = getWindowHeight();
+    int depth     = 2;
+    GLColor color = GLColor::green;
+    std::vector<GLColor> pixels(width * height * depth, color);
+    GLint baseLevel = 1;
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, baseLevel, GL_RGBA8UI, width, height, depth, 0,
+                 GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, pixels.data());
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, color);
+    EXPECT_PIXEL_COLOR_EQ(width - 1, height - 1, color);
+}
+
+// Draw a quad with an integer 3D texture with a non-zero base level, and test that the color of the
+// texture is output.
+TEST_P(Texture3DIntegerTestES3, NonZeroBaseLevel)
+{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, mTexture3D);
+    int width     = getWindowWidth();
+    int height    = getWindowHeight();
+    int depth     = 2;
+    GLColor color = GLColor::green;
+    std::vector<GLColor> pixels(width * height * depth, color);
+    GLint baseLevel = 1;
+    glTexImage3D(GL_TEXTURE_3D, baseLevel, GL_RGBA8UI, width, height, depth, 0, GL_RGBA_INTEGER,
+                 GL_UNSIGNED_BYTE, pixels.data());
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, baseLevel);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, color);
+    EXPECT_PIXEL_COLOR_EQ(width - 1, height - 1, color);
+}
+
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST(Texture2DTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(TextureCubeTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL10_0(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(Texture2DTestWithDrawScale,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(Sampler2DAsFunctionParameterTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(SamplerArrayTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(SamplerArrayAsFunctionParameterTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
@@ -4343,35 +4883,36 @@ ANGLE_INSTANTIATE_TEST(Texture2DArrayTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPE
 ANGLE_INSTANTIATE_TEST(TextureSizeTextureArrayTest, ES3_D3D11(), ES3_OPENGL());
 ANGLE_INSTANTIATE_TEST(SamplerInStructTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_D3D9(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(SamplerInStructAsFunctionParameterTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_D3D9(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(SamplerInStructArrayAsFunctionParameterTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_D3D9(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(SamplerInNestedStructAsFunctionParameterTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
                        ES2_D3D9(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(SamplerInStructAndOtherVariableTest,
                        ES2_D3D11(),
-                       ES2_D3D11_FL9_3(),
+                       ES2_D3D9(),
+                       ES2_OPENGL(),
+                       ES2_OPENGLES(),
+                       ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST(TextureAnisotropyTest,
+                       ES2_D3D11(),
                        ES2_D3D9(),
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
@@ -4387,5 +4928,11 @@ ANGLE_INSTANTIATE_TEST(TextureBorderClampIntegerTestES3, ES3_D3D11(), ES3_OPENGL
 ANGLE_INSTANTIATE_TEST(TextureLimitsTest, ES2_D3D11(), ES2_OPENGL(), ES2_OPENGLES(), ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(Texture2DNorm16TestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 ANGLE_INSTANTIATE_TEST(TextureCubeTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
+ANGLE_INSTANTIATE_TEST(Texture2DIntegerTestES3, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(TextureCubeIntegerTestES3, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(TextureCubeIntegerEdgeTestES3, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(Texture2DIntegerProjectiveOffsetTestES3, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(Texture2DArrayIntegerTestES3, ES3_D3D11(), ES3_OPENGL());
+ANGLE_INSTANTIATE_TEST(Texture3DIntegerTestES3, ES3_D3D11(), ES3_OPENGL());
 
 }  // anonymous namespace

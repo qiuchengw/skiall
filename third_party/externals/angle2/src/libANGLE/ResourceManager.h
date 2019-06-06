@@ -30,12 +30,14 @@ class Context;
 class Sync;
 class Framebuffer;
 struct Limitations;
+class MemoryObject;
 class Path;
 class Program;
 class ProgramPipeline;
 class Renderbuffer;
 class Sampler;
 class Shader;
+class Semaphore;
 class Texture;
 
 template <typename HandleAllocatorType>
@@ -302,6 +304,42 @@ class ProgramPipelineManager
 
   protected:
     ~ProgramPipelineManager() override {}
+};
+
+class MemoryObjectManager : public ResourceManagerBase<HandleAllocator>
+{
+  public:
+    MemoryObjectManager();
+
+    GLuint createMemoryObject(rx::GLImplFactory *factory);
+    void deleteMemoryObject(const Context *context, GLuint handle);
+    MemoryObject *getMemoryObject(GLuint handle) const;
+
+  protected:
+    ~MemoryObjectManager() override;
+
+  private:
+    void reset(const Context *context) override;
+
+    ResourceMap<MemoryObject> mMemoryObjects;
+};
+
+class SemaphoreManager : public ResourceManagerBase<HandleAllocator>
+{
+  public:
+    SemaphoreManager();
+
+    GLuint createSemaphore(rx::GLImplFactory *factory);
+    void deleteSemaphore(const Context *context, GLuint handle);
+    Semaphore *getSemaphore(GLuint handle) const;
+
+  protected:
+    ~SemaphoreManager() override;
+
+  private:
+    void reset(const Context *context) override;
+
+    ResourceMap<Semaphore> mSemaphores;
 };
 
 }  // namespace gl

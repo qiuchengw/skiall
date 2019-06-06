@@ -1,13 +1,7 @@
-﻿// ***************************************************************************
-// *
-// * Copyright (C) 2015 International Business Machines
-// * Corporation and others. All Rights Reserved.
-// * Tool: org.unicode.cldr.icu.NewLdml2IcuConverter
-// * Source File: <path>/common/main/nl.xml
-// *
-// ***************************************************************************
+﻿// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html#License
 nl{
-    Version{"2.1.19.96"}
+    Version{"2.1.45.14"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidjan"}
@@ -309,6 +303,9 @@ nl{
         "America:El_Salvador"{
             ec{"El Salvador"}
         }
+        "America:Fort_Nelson"{
+            ec{"Fort Nelson"}
+        }
         "America:Fortaleza"{
             ec{"Fortaleza"}
         }
@@ -510,6 +507,9 @@ nl{
         "America:Puerto_Rico"{
             ec{"Puerto Rico"}
         }
+        "America:Punta_Arenas"{
+            ec{"Punta Arenas"}
+        }
         "America:Rainy_River"{
             ec{"Rainy River"}
         }
@@ -660,6 +660,9 @@ nl{
         "Asia:Ashgabat"{
             ec{"Asjchabad"}
         }
+        "Asia:Atyrau"{
+            ec{"Atıraw"}
+        }
         "Asia:Baghdad"{
             ec{"Bagdad"}
         }
@@ -671,6 +674,9 @@ nl{
         }
         "Asia:Bangkok"{
             ec{"Bangkok"}
+        }
+        "Asia:Barnaul"{
+            ec{"Barnaul"}
         }
         "Asia:Beirut"{
             ec{"Beiroet"}
@@ -688,7 +694,7 @@ nl{
             ec{"Chita"}
         }
         "Asia:Choibalsan"{
-            ec{"Choibalsan"}
+            ec{"Tsjojbalsan"}
         }
         "Asia:Colombo"{
             ec{"Colombo"}
@@ -707,6 +713,9 @@ nl{
         }
         "Asia:Dushanbe"{
             ec{"Doesjanbe"}
+        }
+        "Asia:Famagusta"{
+            ec{"Famagusta"}
         }
         "Asia:Gaza"{
             ec{"Gaza"}
@@ -849,6 +858,9 @@ nl{
         "Asia:Tokyo"{
             ec{"Tokio"}
         }
+        "Asia:Tomsk"{
+            ec{"Tomsk"}
+        }
         "Asia:Ulaanbaatar"{
             ec{"Ulaanbaatar"}
         }
@@ -939,6 +951,10 @@ nl{
         "Australia:Sydney"{
             ec{"Sydney"}
         }
+        "Etc:UTC"{
+            ls{"Gecoördineerde wereldtijd"}
+            ss{"UTC"}
+        }
         "Etc:Unknown"{
             ec{"onbekende stad"}
         }
@@ -947,6 +963,9 @@ nl{
         }
         "Europe:Andorra"{
             ec{"Andorra"}
+        }
+        "Europe:Astrakhan"{
+            ec{"Astrakhan"}
         }
         "Europe:Athens"{
             ec{"Athene"}
@@ -980,7 +999,7 @@ nl{
         }
         "Europe:Dublin"{
             ec{"Dublin"}
-            ld{"Ierse zomertijd"}
+            ld{"Ierse standaardtijd"}
         }
         "Europe:Gibraltar"{
             ec{"Gibraltar"}
@@ -1005,6 +1024,9 @@ nl{
         }
         "Europe:Kiev"{
             ec{"Kiev"}
+        }
+        "Europe:Kirov"{
+            ec{"Kirov"}
         }
         "Europe:Lisbon"{
             ec{"Lissabon"}
@@ -1064,6 +1086,9 @@ nl{
         "Europe:Sarajevo"{
             ec{"Sarajevo"}
         }
+        "Europe:Saratov"{
+            ec{"Saratov"}
+        }
         "Europe:Simferopol"{
             ec{"Simferopol"}
         }
@@ -1081,6 +1106,9 @@ nl{
         }
         "Europe:Tirane"{
             ec{"Tirana"}
+        }
+        "Europe:Ulyanovsk"{
+            ec{"Ulyanovsk"}
         }
         "Europe:Uzhgorod"{
             ec{"Oezjhorod"}
@@ -1189,6 +1217,9 @@ nl{
         }
         "Pacific:Honolulu"{
             ec{"Honolulu"}
+            sd{"HDT"}
+            sg{"HST"}
+            ss{"HST"}
         }
         "Pacific:Johnston"{
             ec{"Johnston"}
@@ -1529,7 +1560,7 @@ nl{
             ls{"Greenwich Mean Time"}
         }
         "meta:Galapagos"{
-            ls{"Galapagoseilandse tijd"}
+            ls{"Galapagoseilandse standaardtijd"}
         }
         "meta:Gambier"{
             ls{"Gambiereilandse tijd"}
@@ -1792,6 +1823,9 @@ nl{
         }
         "meta:Ponape"{
             ls{"Pohnpei-tijd"}
+        }
+        "meta:Pyongyang"{
+            ls{"Pyongyang-tijd"}
         }
         "meta:Qyzylorda"{
             ld{"Qyzylorda-zomertijd"}

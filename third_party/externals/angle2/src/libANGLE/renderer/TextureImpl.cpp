@@ -10,17 +10,11 @@
 
 namespace rx
 {
-TextureImpl::TextureImpl(const gl::TextureState &state) : mState(state)
-{
-}
+TextureImpl::TextureImpl(const gl::TextureState &state) : mState(state) {}
 
-TextureImpl::~TextureImpl()
-{
-}
+TextureImpl::~TextureImpl() {}
 
-void TextureImpl::onDestroy(const gl::Context *context)
-{
-}
+void TextureImpl::onDestroy(const gl::Context *context) {}
 
 angle::Result TextureImpl::copyTexture(const gl::Context *context,
                                        const gl::ImageIndex &index,
@@ -33,7 +27,7 @@ angle::Result TextureImpl::copyTexture(const gl::Context *context,
                                        const gl::Texture *source)
 {
     UNREACHABLE();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result TextureImpl::copySubTexture(const gl::Context *context,
@@ -47,14 +41,14 @@ angle::Result TextureImpl::copySubTexture(const gl::Context *context,
                                           const gl::Texture *source)
 {
     UNREACHABLE();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result TextureImpl::copyCompressedTexture(const gl::Context *context,
                                                  const gl::Texture *source)
 {
     UNREACHABLE();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result TextureImpl::copy3DTexture(const gl::Context *context,
@@ -69,7 +63,7 @@ angle::Result TextureImpl::copy3DTexture(const gl::Context *context,
                                          const gl::Texture *source)
 {
     UNREACHABLE();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result TextureImpl::copy3DSubTexture(const gl::Context *context,
@@ -84,6 +78,17 @@ angle::Result TextureImpl::copy3DSubTexture(const gl::Context *context,
                                             const gl::Texture *source)
 {
     UNREACHABLE();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
+
+GLint TextureImpl::getMemorySize() const
+{
+    return 0;
+}
+
+GLint TextureImpl::getLevelMemorySize(gl::TextureTarget target, GLint level)
+{
+    return 0;
+}
+
 }  // namespace rx

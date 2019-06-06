@@ -62,7 +62,7 @@ fail (hb_bool_t suggest_help, const char *format, ...)
 
 
 static gchar *
-shapers_to_string (void)
+shapers_to_string ()
 {
   GString *shapers = g_string_new (nullptr);
   const char **shaper_list = hb_shape_list_shapers ();
@@ -95,7 +95,7 @@ show_version (const char *name G_GNUC_UNUSED,
 
 
 void
-option_parser_t::add_main_options (void)
+option_parser_t::add_main_options ()
 {
   GOptionEntry entries[] =
   {
@@ -325,6 +325,7 @@ parse_text (const char *name G_GNUC_UNUSED,
     return false;
   }
 
+  text_opts->text_len = -1;
   text_opts->text = g_strdup (arg);
   return true;
 }
@@ -370,6 +371,7 @@ parse_unicodes (const char *name G_GNUC_UNUSED,
     s = p;
   }
 
+  text_opts->text_len = gs->len;
   text_opts->text = g_string_free (gs, FALSE);
   return true;
 }
@@ -430,7 +432,8 @@ shape_options_t::add_options (option_parser_t *parser)
     "    Features can be enabled or disabled, either globally or limited to\n"
     "    specific character ranges.  The format for specifying feature settings\n"
     "    follows.  All valid CSS font-feature-settings values other than 'normal'\n"
-    "    and 'inherited' are also accepted, though, not documented below.\n"
+    "    and the global values are also accepted, though not documented below.\n"
+    "    CSS string escapes are not supported."
     "\n"
     "    The range indices refer to the positions between Unicode characters,\n"
     "    unless the --utf8-clusters is provided, in which case range indices\n"
@@ -636,7 +639,7 @@ output_options_t::add_options (option_parser_t *parser)
 
 
 hb_font_t *
-font_options_t::get_font (void) const
+font_options_t::get_font () const
 {
   if (font)
     return font;
@@ -727,7 +730,11 @@ const char *
 text_options_t::get_line (unsigned int *len)
 {
   if (text) {
-    if (!line) line = text;
+    if (!line)
+    {
+      line = text;
+      line_len = text_len;
+    }
     if (line_len == (unsigned int) -1)
       line_len = strlen (line);
 
@@ -789,7 +796,7 @@ text_options_t::get_line (unsigned int *len)
 
 
 FILE *
-output_options_t::get_file_handle (void)
+output_options_t::get_file_handle ()
 {
   if (fp)
     return fp;
@@ -969,7 +976,11 @@ subset_options_t::add_options (option_parser_t *parser)
 {
   GOptionEntry entries[] =
   {
+    {"layout", 0, 0, G_OPTION_ARG_NONE,  &this->keep_layout,   "Keep OpenType Layout tables",   nullptr},
     {"no-hinting", 0, 0, G_OPTION_ARG_NONE,  &this->drop_hints,   "Whether to drop hints",   nullptr},
+    {"retain-gids", 0, 0, G_OPTION_ARG_NONE,  &this->retain_gids,   "If set don't renumber glyph ids in the subset.",   nullptr},
+    {"desubroutinize", 0, 0, G_OPTION_ARG_NONE,  &this->desubroutinize,   "Remove CFF/CFF2 use of subroutines",   nullptr},
+
     {nullptr}
   };
   parser->add_group (entries,

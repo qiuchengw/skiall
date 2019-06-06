@@ -32,7 +32,7 @@ class TSymbolTable;
 class TVariable;
 class UnfoldShortCircuit;
 
-using ReferencedVariables       = std::map<int, const TVariable *>;
+using ReferencedVariables = std::map<int, const TVariable *>;
 
 class OutputHLSL : public TIntermTraverser
 {
@@ -43,11 +43,13 @@ class OutputHLSL : public TIntermTraverser
                const char *sourcePath,
                ShShaderOutput outputType,
                int numRenderTargets,
+               int maxDualSourceDrawBuffers,
                const std::vector<Uniform> &uniforms,
                ShCompileOptions compileOptions,
                sh::WorkGroupSize workGroupSize,
                TSymbolTable *symbolTable,
-               PerformanceDiagnostics *perfDiagnostics);
+               PerformanceDiagnostics *perfDiagnostics,
+               const std::vector<InterfaceBlock> &shaderStorageBlocks);
 
     ~OutputHLSL();
 
@@ -56,8 +58,9 @@ class OutputHLSL : public TIntermTraverser
     const std::map<std::string, unsigned int> &getShaderStorageBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformRegisterMap() const;
-
-    static TString zeroInitializer(const TType &type);
+    unsigned int getReadonlyImage2DRegisterIndex() const;
+    unsigned int getImage2DRegisterIndex() const;
+    const std::set<std::string> &getUsedImage2DFunctionNames() const;
 
     TInfoSinkBase &getInfoSink()
     {
@@ -67,6 +70,8 @@ class OutputHLSL : public TIntermTraverser
 
   protected:
     friend class ShaderStorageBlockOutputHLSL;
+
+    TString zeroInitializer(const TType &type) const;
 
     void writeReferencedAttributes(TInfoSinkBase &out) const;
     void writeReferencedVaryings(TInfoSinkBase &out) const;
@@ -202,8 +207,11 @@ class OutputHLSL : public TIntermTraverser
     bool mUsesDiscardRewriting;
     bool mUsesNestedBreak;
     bool mRequiresIEEEStrictCompiling;
+    mutable bool mUseZeroArray;
+    bool mUsesSecondaryColor;
 
     int mNumRenderTargets;
+    int mMaxDualSourceDrawBuffers;
 
     int mUniqueIndex;  // For creating unique names
 
@@ -259,8 +267,13 @@ class OutputHLSL : public TIntermTraverser
     TString generateStructMapping(const std::vector<MappedStruct> &std140Structs) const;
     ImmutableString samplerNamePrefixFromStruct(TIntermTyped *node);
     bool ancestorEvaluatesToSamplerInStruct();
+    // We need to do struct mapping when pass the struct to a function or copy the struct via
+    // assignment.
+    bool needStructMapping(TIntermTyped *node);
+
     ShaderStorageBlockOutputHLSL *mSSBOOutputHLSL;
+    bool mNeedStructMapping;
 };
-}
+}  // namespace sh
 
 #endif  // COMPILER_TRANSLATOR_OUTPUTHLSL_H_

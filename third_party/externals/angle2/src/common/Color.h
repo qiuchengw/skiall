@@ -18,7 +18,7 @@ template <typename T>
 struct Color
 {
     Color();
-    Color(T r, T g, T b, T a);
+    constexpr Color(T r, T g, T b, T a);
 
     const T *data() const { return &red; }
     T *ptr() { return &red; }
@@ -62,7 +62,8 @@ struct ColorGeneric
         UInt  = 2
     };
 
-    union {
+    union
+    {
         ColorF colorF;
         ColorI colorI;
         ColorUI colorUI;
@@ -98,6 +99,6 @@ using ColorGeneric = angle::ColorGeneric;
 
 }  // namespace gl
 
-#include "Color.inl"
+#include "Color.inc"
 
 #endif  // COMMON_COLOR_H_

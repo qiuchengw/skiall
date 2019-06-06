@@ -16,7 +16,7 @@
 
 #include "Config.hpp"
 #include "System/Configurator.hpp"
-#include "System/Debug.hpp"
+#include "Vulkan/VkDebug.hpp"
 #include "Vulkan/Version.h"
 
 #include <sstream>
@@ -76,7 +76,7 @@ namespace sw
 		listenSocket->listen();
 
 		terminate = false;
-		serverThread = new Thread(serverRoutine, this);
+		serverThread = new std::thread(serverRoutine, this);
 	}
 
 	void SwiftConfig::destroyServer()
@@ -352,11 +352,6 @@ namespace sw
 		html += "<option value='1'" + (config.mipmapQuality == 1 ? selected : empty) + ">Linear (default)</option>\n";
 		html += "</select></td>\n";
 		html += "</tr>\n";
-		html += "<tr><td>Perspective correction:</td><td><select name='perspectiveCorrection' title='Enables or disables perspective correction. Disabling it is faster but can causes distortion. Recommended for 2D applications only.'>\n";
-		html += "<option value='0'" + (config.perspectiveCorrection == 0 ? selected : empty) + ">Off</option>\n";
-		html += "<option value='1'" + (config.perspectiveCorrection == 1 ? selected : empty) + ">On (default)</option>\n";
-		html += "</select></td>\n";
-		html += "</tr>\n";
 		html += "<tr><td>Transcendental function precision:</td><td><select name='transcendentalPrecision' title='The precision at which log/exp/pow/rcp/rsq/nrm shader instructions are computed. Lower settings can be faster but cause visual artifacts.'>\n";
 		html += "<option value='0'" + (config.transcendentalPrecision == 0 ? selected : empty) + ">Approximate</option>\n";
 		html += "<option value='1'" + (config.transcendentalPrecision == 1 ? selected : empty) + ">Partial</option>\n";
@@ -422,7 +417,6 @@ namespace sw
 		html += "<table>\n";
 		html += "<tr><td>Disable SwiftConfig server:</td><td><input name = 'disableServer' type='checkbox'" + (config.disableServer == true ? checked : empty) + " title='If checked disables the web browser based control panel.'></td></tr>";
 		html += "<tr><td>Force windowed mode:</td><td><input name = 'forceWindowed' type='checkbox'" + (config.forceWindowed == true ? checked : empty) + " title='If checked prevents the application from switching to full-screen mode.'></td></tr>";
-		html += "<tr><td>Complementary depth buffer:</td><td><input name = 'complementaryDepthBuffer' type='checkbox'" + (config.complementaryDepthBuffer == true ? checked : empty) + " title='If checked causes 1 - z to be stored in the depth buffer.'></td></tr>";
 		html += "<tr><td>Post alpha blend sRGB conversion:</td><td><input name = 'postBlendSRGB' type='checkbox'" + (config.postBlendSRGB == true ? checked : empty) + " title='If checked alpha blending is performed in linear color space.'></td></tr>";
 		html += "<tr><td>Exact color rounding:</td><td><input name = 'exactColorRounding' type='checkbox'" + (config.exactColorRounding == true ? checked : empty) + " title='If checked color rounding is done at high accuracy.'></td></tr>";
 		html += "<tr><td>Disable alpha display formats:</td><td><input name = 'disableAlphaMode' type='checkbox'" + (config.disableAlphaMode == true ? checked : empty) + " title='If checked the device does not advertise the A8R8G8B8 display mode.'></td></tr>";
@@ -541,7 +535,6 @@ namespace sw
 		config.enableSSE4_1 = false;
 		config.disableServer = false;
 		config.forceWindowed = false;
-		config.complementaryDepthBuffer = false;
 		config.postBlendSRGB = false;
 		config.exactColorRounding = false;
 		config.disableAlphaMode = false;
@@ -593,10 +586,6 @@ namespace sw
 			else if(sscanf(post, "mipmapQuality=%d", &integer))
 			{
 				config.mipmapQuality = integer;
-			}
-			else if(sscanf(post, "perspectiveCorrection=%d", &integer))
-			{
-				config.perspectiveCorrection = integer != 0;
 			}
 			else if(sscanf(post, "transcendentalPrecision=%d", &integer))
 			{
@@ -662,10 +651,6 @@ namespace sw
 			{
 				config.forceWindowed = true;
 			}
-			else if(strstr(post, "complementaryDepthBuffer=on"))
-			{
-				config.complementaryDepthBuffer = true;
-			}
 			else if(strstr(post, "postBlendSRGB=on"))
 			{
 				config.postBlendSRGB = true;
@@ -727,7 +712,6 @@ namespace sw
 		config.vertexCacheSize = ini.getInteger("Caches", "VertexCacheSize", 64);
 		config.textureSampleQuality = ini.getInteger("Quality", "TextureSampleQuality", 2);
 		config.mipmapQuality = ini.getInteger("Quality", "MipmapQuality", 1);
-		config.perspectiveCorrection = ini.getBoolean("Quality", "PerspectiveCorrection", true);
 		config.transcendentalPrecision = ini.getInteger("Quality", "TranscendentalPrecision", 2);
 		config.transparencyAntialiasing = ini.getInteger("Quality", "TransparencyAntialiasing", 0);
 		config.threadCount = ini.getInteger("Processor", "ThreadCount", DEFAULT_THREAD_COUNT);
@@ -744,7 +728,6 @@ namespace sw
 
 		config.disableServer = ini.getBoolean("Testing", "DisableServer", false);
 		config.forceWindowed = ini.getBoolean("Testing", "ForceWindowed", false);
-		config.complementaryDepthBuffer = ini.getBoolean("Testing", "ComplementaryDepthBuffer", false);
 		config.postBlendSRGB = ini.getBoolean("Testing", "PostBlendSRGB", false);
 		config.exactColorRounding = ini.getBoolean("Testing", "ExactColorRounding", true);
 		config.disableAlphaMode = ini.getBoolean("Testing", "DisableAlphaMode", false);
@@ -785,7 +768,6 @@ namespace sw
 		ini.addValue("Caches", "VertexCacheSize", itoa(config.vertexCacheSize));
 		ini.addValue("Quality", "TextureSampleQuality", itoa(config.textureSampleQuality));
 		ini.addValue("Quality", "MipmapQuality", itoa(config.mipmapQuality));
-		ini.addValue("Quality", "PerspectiveCorrection", itoa(config.perspectiveCorrection));
 		ini.addValue("Quality", "TranscendentalPrecision", itoa(config.transcendentalPrecision));
 		ini.addValue("Quality", "TransparencyAntialiasing", itoa(config.transparencyAntialiasing));
 		ini.addValue("Processor", "ThreadCount", itoa(config.threadCount));
@@ -802,7 +784,6 @@ namespace sw
 
 		ini.addValue("Testing", "DisableServer", itoa(config.disableServer));
 		ini.addValue("Testing", "ForceWindowed", itoa(config.forceWindowed));
-		ini.addValue("Testing", "ComplementaryDepthBuffer", itoa(config.complementaryDepthBuffer));
 		ini.addValue("Testing", "PostBlendSRGB", itoa(config.postBlendSRGB));
 		ini.addValue("Testing", "ExactColorRounding", itoa(config.exactColorRounding));
 		ini.addValue("Testing", "DisableAlphaMode", itoa(config.disableAlphaMode));

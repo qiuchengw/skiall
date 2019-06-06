@@ -12,7 +12,8 @@
 #include <d3d11.h>
 #include <windows.h>
 
-#include "com_utils.h"
+#include "util/EGLWindow.h"
+#include "util/com_utils.h"
 
 namespace angle
 {
@@ -32,11 +33,9 @@ class D3DTextureTest : public ANGLETest
         setConfigStencilBits(8);
     }
 
-    void SetUp() override
+    void testSetUp() override
     {
-        ANGLETest::SetUp();
-
-        const std::string vsSource =
+        constexpr char kVS[] =
             R"(precision highp float;
             attribute vec4 position;
             varying vec2 texcoord;
@@ -48,7 +47,7 @@ class D3DTextureTest : public ANGLETest
                 texcoord.y = 1.0 - texcoord.y;
             })";
 
-        const std::string textureFSSource =
+        constexpr char kTextureFS[] =
             R"(precision highp float;
             uniform sampler2D tex;
             varying vec2 texcoord;
@@ -58,7 +57,7 @@ class D3DTextureTest : public ANGLETest
                 gl_FragColor = texture2D(tex, texcoord);
             })";
 
-        const std::string textureFSSourceNoSampling =
+        constexpr char kTextureFSNoSampling[] =
             R"(precision highp float;
 
             void main()
@@ -66,13 +65,13 @@ class D3DTextureTest : public ANGLETest
                 gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
             })";
 
-        mTextureProgram = CompileProgram(vsSource, textureFSSource);
+        mTextureProgram = CompileProgram(kVS, kTextureFS);
         ASSERT_NE(0u, mTextureProgram) << "shader compilation failed.";
 
         mTextureUniformLocation = glGetUniformLocation(mTextureProgram, "tex");
         ASSERT_NE(-1, mTextureUniformLocation);
 
-        mTextureProgramNoSampling = CompileProgram(vsSource, textureFSSourceNoSampling);
+        mTextureProgramNoSampling = CompileProgram(kVS, kTextureFSNoSampling);
         ASSERT_NE(0u, mTextureProgramNoSampling) << "shader compilation failed.";
 
         mD3D11Module = LoadLibrary(TEXT("d3d11.dll"));
@@ -83,7 +82,7 @@ class D3DTextureTest : public ANGLETest
 
         EGLWindow *window  = getEGLWindow();
         EGLDisplay display = window->getDisplay();
-        if (eglDisplayExtensionEnabled(display, "EGL_EXT_device_query"))
+        if (IsEGLDisplayExtensionEnabled(display, "EGL_EXT_device_query"))
         {
             PFNEGLQUERYDISPLAYATTRIBEXTPROC eglQueryDisplayAttribEXT =
                 reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(
@@ -99,7 +98,7 @@ class D3DTextureTest : public ANGLETest
                 device = reinterpret_cast<EGLDeviceEXT>(result);
             }
 
-            if (eglDeviceExtensionEnabled(device, "EGL_ANGLE_device_d3d"))
+            if (IsEGLDeviceExtensionEnabled(device, "EGL_ANGLE_device_d3d"))
             {
                 EGLAttrib result = 0;
                 if (eglQueryDeviceAttribEXT(device, EGL_D3D11_DEVICE_ANGLE, &result))
@@ -122,7 +121,7 @@ class D3DTextureTest : public ANGLETest
         }
     }
 
-    void TearDown() override
+    void testTearDown() override
     {
         glDeleteProgram(mTextureProgram);
 
@@ -140,8 +139,6 @@ class D3DTextureTest : public ANGLETest
             mD3D9Device->Release();
             mD3D9Device = nullptr;
         }
-
-        ANGLETest::TearDown();
     }
 
     EGLSurface createD3D11PBuffer(size_t width,
@@ -156,7 +153,7 @@ class D3DTextureTest : public ANGLETest
         EGLDisplay display = window->getDisplay();
         EGLConfig config   = window->getConfig();
 
-        ASSERT(mD3D11Device);
+        EXPECT_TRUE(mD3D11Device != nullptr);
         ID3D11Texture2D *texture = nullptr;
         CD3D11_TEXTURE2D_DESC desc(format, static_cast<UINT>(width), static_cast<UINT>(height), 1,
                                    1, bindFlags);
@@ -215,8 +212,8 @@ class D3DTextureTest : public ANGLETest
             };
 
             // Multisampled textures are not supported on D3D9.
-            ASSERT(sampleCount <= 1);
-            ASSERT(sampleQuality == 0);
+            EXPECT_TRUE(sampleCount <= 1);
+            EXPECT_TRUE(sampleQuality == 0);
 
             IDirect3DTexture9 *texture = nullptr;
             EXPECT_TRUE(SUCCEEDED(mD3D9Device->CreateTexture(
@@ -240,7 +237,7 @@ class D3DTextureTest : public ANGLETest
     {
         EGLWindow *window  = getEGLWindow();
         EGLDisplay display = window->getDisplay();
-        if (!eglDisplayExtensionEnabled(display, "EGL_ANGLE_d3d_texture_client_buffer"))
+        if (!IsEGLDisplayExtensionEnabled(display, "EGL_ANGLE_d3d_texture_client_buffer"))
         {
             std::cout << "Test skipped due to missing EGL_ANGLE_d3d_texture_client_buffer"
                       << std::endl;
@@ -308,7 +305,7 @@ class D3DTextureTest : public ANGLETest
 // Test creating pbuffer from textures with several different DXGI formats.
 TEST_P(D3DTextureTest, TestD3D11SupportedFormatsSurface)
 {
-    bool srgbSupported = extensionEnabled("GL_EXT_sRGB") || getClientMajorVersion() == 3;
+    bool srgbSupported = IsGLExtensionEnabled("GL_EXT_sRGB") || getClientMajorVersion() == 3;
     ANGLE_SKIP_TEST_IF(!valid() || !mD3D11Device || !srgbSupported);
 
     const DXGI_FORMAT formats[] = {DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
@@ -361,7 +358,8 @@ TEST_P(D3DTextureTest, TestD3D11SupportedFormatsTexture)
     bool srgb8alpha8TextureAttachmentSupported = getClientMajorVersion() >= 3;
     ANGLE_SKIP_TEST_IF(!valid() || !mD3D11Device || !srgb8alpha8TextureAttachmentSupported);
 
-    bool srgbWriteControlSupported = extensionEnabled("GL_EXT_sRGB_write_control") && !IsOpenGL();
+    bool srgbWriteControlSupported =
+        IsGLExtensionEnabled("GL_EXT_sRGB_write_control") && !IsOpenGL();
 
     const DXGI_FORMAT formats[] = {DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM,
                                    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
@@ -653,7 +651,7 @@ TEST_P(D3DTextureTest, GlColorspaceNotAllowedForTypedD3DTexture)
     ANGLE_SKIP_TEST_IF(!mD3D11Device);
 
     // SRGB support is required.
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_sRGB") && getClientMajorVersion() < 3);
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_sRGB") && getClientMajorVersion() < 3);
 
     EGLint attribsExplicitColorspace[] = {
         EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA,       EGL_TEXTURE_TARGET, EGL_TEXTURE_2D,
@@ -681,7 +679,7 @@ TEST_P(D3DTextureTest, TypelessD3DTextureNotSupported)
     ANGLE_SKIP_TEST_IF(IsD3D11());
 
     // SRGB support is required.
-    ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_sRGB") && getClientMajorVersion() < 3);
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_sRGB") && getClientMajorVersion() < 3);
 
     EGLint attribs[] = {
         EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA, EGL_TEXTURE_TARGET,
@@ -699,7 +697,7 @@ TEST_P(D3DTextureTest, TypelessD3DTextureNotSupported)
 TEST_P(D3DTextureTest, UnnecessaryWidthHeightAttributes)
 {
     ANGLE_SKIP_TEST_IF(!valid() || !IsD3D11());
-    ASSERT(mD3D11Device);
+    ASSERT_TRUE(mD3D11Device != nullptr);
     ID3D11Texture2D *texture = nullptr;
     CD3D11_TEXTURE2D_DESC desc(DXGI_FORMAT_R8G8B8A8_UNORM, 1, 1, 1, 1, D3D11_BIND_RENDER_TARGET);
     desc.SampleDesc.Count   = 1;
@@ -825,7 +823,7 @@ TEST_P(D3DTextureTest, BindTexImage)
         return;
     }
 
-    EGLWindow *window = getEGLWindow();
+    EGLWindow *window  = getEGLWindow();
     EGLDisplay display = window->getDisplay();
 
     const size_t bufferSize = 32;
@@ -1203,4 +1201,4 @@ TEST_P(D3DTextureTestMS, CopyTexSubImage2DTest)
 ANGLE_INSTANTIATE_TEST(D3DTextureTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(D3DTextureTestES3, ES3_D3D11(), ES3_OPENGL());
 ANGLE_INSTANTIATE_TEST(D3DTextureTestMS, ES2_D3D11());
-}  // namespace
+}  // namespace angle
