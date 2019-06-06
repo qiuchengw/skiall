@@ -5,21 +5,23 @@
  * found in the LICENSE file.
  */
 
-#include "GrYUVProvider.h"
-#include "GrClip.h"
-#include "GrColorSpaceXform.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrProxyProvider.h"
-#include "GrRenderTargetContext.h"
-#include "GrTextureProxy.h"
-#include "SkAutoMalloc.h"
-#include "SkCachedData.h"
-#include "SkRefCnt.h"
-#include "SkResourceCache.h"
-#include "SkYUVPlanesCache.h"
-#include "SkYUVAIndex.h"
-#include "effects/GrYUVtoRGBEffect.h"
+#include "src/gpu/GrYUVProvider.h"
+
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkYUVAIndex.h"
+#include "include/private/GrRecordingContext.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/core/SkAutoMalloc.h"
+#include "src/core/SkCachedData.h"
+#include "src/core/SkResourceCache.h"
+#include "src/core/SkYUVPlanesCache.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrColorSpaceXform.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/effects/GrYUVtoRGBEffect.h"
 
 sk_sp<SkCachedData> GrYUVProvider::getPlanes(SkYUVASizeInfo* size,
                                              SkYUVAIndex yuvaIndices[SkYUVAIndex::kIndexCount],
@@ -101,7 +103,9 @@ void GrYUVProvider::YUVGen_DataReleaseProc(const void*, void* data) {
     cachedData->unref();
 }
 
-sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx, const GrSurfaceDesc& desc,
+sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrRecordingContext* ctx,
+                                                       const GrBackendFormat& format,
+                                                       const GrSurfaceDesc& desc,
                                                        SkColorSpace* srcColorSpace,
                                                        SkColorSpace* dstColorSpace) {
     SkYUVASizeInfo yuvSizeInfo;
@@ -145,8 +149,12 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx, const GrS
         sk_sp<SkImage> yuvImage = SkImage::MakeFromRaster(pixmap, YUVGen_DataReleaseProc,
                                                           dataStoragePtr);
 
-        auto proxyProvider = ctx->contextPriv().proxyProvider();
-        yuvTextureProxies[i] = proxyProvider->createTextureProxy(yuvImage, kNone_GrSurfaceFlags,
+        auto proxyProvider = ctx->priv().proxyProvider();
+        auto clearFlag = kNone_GrSurfaceFlags;
+        if (ctx->priv().caps()->shouldInitializeTextures() && fit == SkBackingFit::kApprox) {
+            clearFlag = kPerformInitialClear_GrSurfaceFlag;
+        }
+        yuvTextureProxies[i] = proxyProvider->createTextureProxy(yuvImage, clearFlag,
                                                                  1, SkBudgeted::kYes, fit);
 
         SkASSERT(yuvTextureProxies[i]->width() == yuvSizeInfo.fSizes[i].fWidth);
@@ -155,8 +163,8 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx, const GrS
 
     // TODO: investigate preallocating mip maps here
     sk_sp<GrRenderTargetContext> renderTargetContext(
-        ctx->contextPriv().makeDeferredRenderTargetContext(
-            SkBackingFit::kExact, desc.fWidth, desc.fHeight, desc.fConfig, nullptr,
+        ctx->priv().makeDeferredRenderTargetContext(
+            format, SkBackingFit::kExact, desc.fWidth, desc.fHeight, desc.fConfig, nullptr,
             desc.fSampleCnt, GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin));
     if (!renderTargetContext) {
         return nullptr;
@@ -180,7 +188,8 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx, const GrS
     const SkRect r = SkRect::MakeIWH(yuvSizeInfo.fSizes[0].fWidth,
                                      yuvSizeInfo.fSizes[0].fHeight);
 
-    renderTargetContext->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(), r);
+    SkMatrix m = SkEncodedOriginToMatrix(yuvSizeInfo.fOrigin, r.width(), r.height());
+    renderTargetContext->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, m, r);
 
     return renderTargetContext->asTextureProxyRef();
 }

@@ -5,13 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "GrColorSpaceXform.h"
-#include "SkColorSpace.h"
-#include "SkColorSpacePriv.h"
-#include "SkMatrix44.h"
-#include "glsl/GrGLSLColorSpaceXformHelper.h"
-#include "glsl/GrGLSLFragmentProcessor.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
+#include "include/core/SkColorSpace.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/gpu/GrColorSpaceXform.h"
+#include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
+#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
 sk_sp<GrColorSpaceXform> GrColorSpaceXform::Make(SkColorSpace* src, SkAlphaType srcAT,
                                                  SkColorSpace* dst, SkAlphaType dstAT) {
@@ -171,4 +170,17 @@ std::unique_ptr<GrFragmentProcessor> GrColorSpaceXformEffect::Make(
 
     return std::unique_ptr<GrFragmentProcessor>(new GrColorSpaceXformEffect(std::move(child),
                                                                             std::move(xform)));
+}
+
+std::unique_ptr<GrFragmentProcessor> GrColorSpaceXformEffect::Make(
+        std::unique_ptr<GrFragmentProcessor> child, sk_sp<GrColorSpaceXform> colorXform) {
+    if (!child) {
+        return nullptr;
+    }
+    if (!colorXform) {
+        return child;
+    }
+
+    return std::unique_ptr<GrFragmentProcessor>(new GrColorSpaceXformEffect(std::move(child),
+                                                                            std::move(colorXform)));
 }

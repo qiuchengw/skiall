@@ -8,17 +8,16 @@
 #ifndef SkPathRef_DEFINED
 #define SkPathRef_DEFINED
 
-#include "SkAtomics.h"
-#include "SkMatrix.h"
-#include "SkMutex.h"
-#include "SkPoint.h"
-#include "SkRRect.h"
-#include "SkRect.h"
-#include "SkRefCnt.h"
-#include "SkTDArray.h"
-#include "SkTemplates.h"
-#include "SkTo.h"
-
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkTDArray.h"
+#include "include/private/SkTemplates.h"
+#include "include/private/SkTo.h"
+#include <atomic>
 #include <limits>
 
 class SkRBuffer;
@@ -47,7 +46,7 @@ public:
                int incReserveVerbs = 0,
                int incReservePoints = 0);
 
-        ~Editor() { SkDEBUGCODE(sk_atomic_dec(&fPathRef->fEditorsAttached);) }
+        ~Editor() { SkDEBUGCODE(fPathRef->fEditorsAttached--;) }
 
         /**
          * Returns the array of points.
@@ -358,7 +357,7 @@ private:
         // The next two values don't matter unless fIsOval or fIsRRect are true.
         fRRectOrOvalIsCCW = false;
         fRRectOrOvalStartIdx = 0xAC;
-        SkDEBUGCODE(fEditorsAttached = 0;)
+        SkDEBUGCODE(fEditorsAttached.store(0);)
         SkDEBUGCODE(this->validate();)
     }
 
@@ -403,6 +402,7 @@ private:
     void resetToSize(int verbCount, int pointCount, int conicCount,
                      int reserveVerbs = 0, int reservePoints = 0) {
         SkDEBUGCODE(this->validate();)
+        this->callGenIDChangeListeners();
         fBoundsIsDirty = true;      // this also invalidates fIsFinite
         fGenerationID = 0;
 
@@ -558,7 +558,7 @@ private:
         kEmptyGenID = 1, // GenID reserved for path ref with zero points and zero verbs.
     };
     mutable uint32_t    fGenerationID;
-    SkDEBUGCODE(int32_t fEditorsAttached;) // assert that only one editor in use at any time.
+    SkDEBUGCODE(std::atomic<int> fEditorsAttached;) // assert only one editor in use at any time.
 
     SkMutex                         fGenIDChangeListenersMutex;
     SkTDArray<GenIDChangeListener*> fGenIDChangeListeners;  // pointers are reffed
@@ -577,6 +577,7 @@ private:
     friend class PathRefTest_Private;
     friend class ForceIsRRect_Private; // unit test isRRect
     friend class SkPath;
+    friend class SkPathPriv;
 };
 
 #endif

@@ -5,14 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "SkOpts.h"
+#include "src/core/SkOpts.h"
 
 #define SK_OPTS_NS hsw
-#include "SkRasterPipeline_opts.h"
-#include "SkUtils_opts.h"
+#include "src/opts/SkBlitRow_opts.h"
+#include "src/opts/SkRasterPipeline_opts.h"
+#include "src/opts/SkUtils_opts.h"
+#include "src/opts/SkVM_opts.h"
 
 namespace SkOpts {
     void Init_hsw() {
+        blit_row_color32     = hsw::blit_row_color32;
+        blit_row_s32a_opaque = hsw::blit_row_s32a_opaque;
+
     #define M(st) stages_highp[SkRasterPipeline::st] = (StageFn)SK_OPTS_NS::st;
         SK_RASTER_PIPELINE_STAGES(M)
         just_return_highp = (StageFn)SK_OPTS_NS::just_return;
@@ -24,5 +29,7 @@ namespace SkOpts {
         just_return_lowp = (StageFn)SK_OPTS_NS::lowp::just_return;
         start_pipeline_lowp = SK_OPTS_NS::lowp::start_pipeline;
     #undef M
+
+        eval = hsw::eval;
     }
 }

@@ -8,8 +8,8 @@
 #ifndef GMSlide_DEFINED
 #define GMSlide_DEFINED
 
-#include "Slide.h"
-#include "gm.h"
+#include "gm/gm.h"
+#include "tools/viewer/Slide.h"
 
 class GMSlide : public Slide {
 public:
@@ -19,7 +19,7 @@ public:
     SkISize getDimensions() const override { return fGM->getISize(); }
 
     void draw(SkCanvas* canvas) override;
-    bool animate(const SkAnimTimer&) override;
+    bool animate(const AnimTimer&) override;
 
     bool onChar(SkUnichar c) override;
 

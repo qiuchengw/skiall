@@ -16,12 +16,12 @@
 #include <string>
 #include <vector>
 
-#include "SkCanvas.h"
-#include "SkPDFDocument.h"
-#include "SkShaper.h"
-#include "SkStream.h"
-#include "SkTextBlob.h"
-#include "SkTypeface.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTextBlob.h"
+#include "include/core/SkTypeface.h"
+#include "include/docs/SkPDFDocument.h"
+#include "modules/skshaper/include/SkShaper.h"
 
 // Options /////////////////////////////////////////////////////////////////////
 
@@ -42,8 +42,8 @@ struct BaseOption {
 template <class T>
 struct Option : BaseOption {
     T value;
-    Option(std::string selector, std::string description, T defaultValue)
-        : BaseOption(selector, description), value(defaultValue) {}
+    Option(std::string _selector, std::string _description, T defaultValue)
+        : BaseOption(_selector, _description), value(defaultValue) {}
 };
 
 void BaseOption::Init(const std::vector<BaseOption*> &option_list,
@@ -83,19 +83,19 @@ struct DoubleOption : Option<double> {
         stm << value;
         return stm.str();
     }
-    DoubleOption(std::string selector,
-                 std::string description,
+    DoubleOption(std::string _selector,
+                 std::string _description,
                  double defaultValue)
-        : Option<double>(selector, description, defaultValue) {}
+        : Option<double>(_selector, _description, defaultValue) {}
 };
 
 struct StringOption : Option<std::string> {
     virtual void set(std::string _value) { value = _value; }
     virtual std::string valueToString() { return value; }
-    StringOption(std::string selector,
-                 std::string description,
+    StringOption(std::string _selector,
+                 std::string _description,
                  std::string defaultValue)
-        : Option<std::string>(selector, description, defaultValue) {}
+        : Option<std::string>(_selector, _description, defaultValue) {}
 };
 
 // Config //////////////////////////////////////////////////////////////////////
@@ -132,17 +132,18 @@ public:
         : config(conf), document(doc), pageCanvas(nullptr) {
         white_paint.setColor(SK_ColorWHITE);
         glyph_paint.setColor(SK_ColorBLACK);
-        glyph_paint.setFlags(SkPaint::kAntiAlias_Flag |
-                             SkPaint::kSubpixelText_Flag);
-        glyph_paint.setTextSize(SkDoubleToScalar(config->font_size.value));
+        glyph_paint.setAntiAlias(true);
+        font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+        font.setSubpixel(true);
+        font.setSize(SkDoubleToScalar(config->font_size.value));
     }
 
     void WriteLine(const SkShaper& shaper, const char *text, size_t textBytes) {
-        SkTextBlobBuilder textBlobBuilder;
-        SkPoint endPoint = shaper.shape(&textBlobBuilder, glyph_paint, text, textBytes, true,
-                                        SkPoint{0, 0},
-                                        config->page_width.value - 2*config->left_margin.value);
-        sk_sp<const SkTextBlob> blob = textBlobBuilder.make();
+        SkTextBlobBuilderRunHandler textBlobBuilder(text, {0, 0});
+        shaper.shape(text, textBytes, font, true,
+                     config->page_width.value - 2*config->left_margin.value, &textBlobBuilder);
+        SkPoint endPoint = textBlobBuilder.endPoint();
+        sk_sp<const SkTextBlob> blob = textBlobBuilder.makeBlob();
         // If we don't have a page, or if we're not at the start of the page and the blob won't fit
         if (!pageCanvas ||
               (current_y > config->line_spacing_ratio.value * config->font_size.value &&
@@ -171,6 +172,7 @@ private:
     SkCanvas *pageCanvas;
     SkPaint white_paint;
     SkPaint glyph_paint;
+    SkFont font;
     double current_x;
     double current_y;
 };
@@ -206,12 +208,12 @@ int main(int argc, char **argv) {
     if (font_file.size() > 0) {
         typeface = SkTypeface::MakeFromFile(font_file.c_str(), 0 /* index */);
     }
-    SkShaper shaper(typeface);
-    assert(shaper.good());
+    std::unique_ptr<SkShaper> shaper = SkShaper::Make();
+    assert(shaper);
     //SkString line("This is هذا هو الخط a line.");
     //SkString line("⁧This is a line هذا هو الخط.⁩");
     for (std::string line; std::getline(std::cin, line);) {
-        placement.WriteLine(shaper, line.c_str(), line.size());
+        placement.WriteLine(*shaper, line.c_str(), line.size());
     }
 
     doc->close();

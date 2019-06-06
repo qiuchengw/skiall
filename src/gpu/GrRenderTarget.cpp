@@ -6,26 +6,27 @@
  */
 
 
-#include "GrRenderTarget.h"
+#include "include/gpu/GrRenderTarget.h"
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrRenderTargetContext.h"
-#include "GrGpu.h"
-#include "GrRenderTargetOpList.h"
-#include "GrRenderTargetPriv.h"
-#include "GrStencilAttachment.h"
-#include "GrStencilSettings.h"
-#include "SkRectPriv.h"
+#include "include/gpu/GrContext.h"
+#include "src/core/SkRectPriv.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetOpList.h"
+#include "src/gpu/GrRenderTargetPriv.h"
+#include "src/gpu/GrSamplePatternDictionary.h"
+#include "src/gpu/GrStencilAttachment.h"
+#include "src/gpu/GrStencilSettings.h"
 
 GrRenderTarget::GrRenderTarget(GrGpu* gpu, const GrSurfaceDesc& desc,
                                GrStencilAttachment* stencil)
         : INHERITED(gpu, desc)
         , fSampleCnt(desc.fSampleCnt)
+        , fSamplePatternKey(GrSamplePatternDictionary::kInvalidSamplePatternKey)
         , fStencilAttachment(stencil) {
     SkASSERT(desc.fFlags & kRenderTarget_GrSurfaceFlag);
     SkASSERT(!this->hasMixedSamples() || fSampleCnt > 1);
-    SkASSERT(!this->supportsWindowRects() || gpu->caps()->maxWindowRectangles() > 0);
     fResolveRect = SkRectPriv::MakeILargestInverted();
 }
 
@@ -88,4 +89,15 @@ void GrRenderTargetPriv::attachStencilAttachment(sk_sp<GrStencilAttachment> sten
 int GrRenderTargetPriv::numStencilBits() const {
     SkASSERT(this->getStencilAttachment());
     return this->getStencilAttachment()->bits();
+}
+
+int GrRenderTargetPriv::getSamplePatternKey() const {
+    SkASSERT(fRenderTarget->fSampleCnt > 1);
+    if (GrSamplePatternDictionary::kInvalidSamplePatternKey == fRenderTarget->fSamplePatternKey) {
+        fRenderTarget->fSamplePatternKey =
+                fRenderTarget->getGpu()->findOrAssignSamplePatternKey(fRenderTarget);
+    }
+    SkASSERT(GrSamplePatternDictionary::kInvalidSamplePatternKey
+                     != fRenderTarget->fSamplePatternKey);
+    return fRenderTarget->fSamplePatternKey;
 }

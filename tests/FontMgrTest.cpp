@@ -5,13 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "SkAdvancedTypefaceMetrics.h"
-#include "SkCommandLineFlags.h"
-#include "SkFont.h"
-#include "SkFontMgr.h"
-#include "SkPaint.h"
-#include "SkTypeface.h"
-#include "Test.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontMgr.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTypeface.h"
+#include "src/core/SkAdvancedTypefaceMetrics.h"
+#include "tests/Test.h"
+#include "tools/flags/CommandLineFlags.h"
 
 #include <initializer_list>
 #include <limits>
@@ -20,7 +21,7 @@
 static void test_font(skiatest::Reporter* reporter) {
     SkFont font(nullptr, 24);
 
-    REPORTER_ASSERT(reporter, font.getTypeface());
+    //REPORTER_ASSERT(reporter, SkTypeface::GetDefaultTypeface() == font.getTypeface());
     REPORTER_ASSERT(reporter, 24 == font.getSize());
     REPORTER_ASSERT(reporter, 1 == font.getScaleX());
     REPORTER_ASSERT(reporter, 0 == font.getSkewX());
@@ -29,11 +30,11 @@ static void test_font(skiatest::Reporter* reporter) {
     sk_bzero(glyphs, sizeof(glyphs));
 
     // Check that no glyphs are copied with insufficient storage.
-    int count = font.textToGlyphs("Hello", 5, kUTF8_SkTextEncoding, glyphs, 2);
+    int count = font.textToGlyphs("Hello", 5, SkTextEncoding::kUTF8, glyphs, 2);
     REPORTER_ASSERT(reporter, 5 == count);
     for (const auto glyph : glyphs) { REPORTER_ASSERT(reporter, glyph == 0); }
 
-    SkAssertResult(font.textToGlyphs("Hello", 5, kUTF8_SkTextEncoding, glyphs,
+    SkAssertResult(font.textToGlyphs("Hello", 5, SkTextEncoding::kUTF8, glyphs,
                                      SK_ARRAY_COUNT(glyphs)) == count);
 
     for (int i = 0; i < count; ++i) {
@@ -43,14 +44,9 @@ static void test_font(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, glyphs[2] == glyphs[3]); // 'l' == 'l'
 
     const SkFont newFont(font.makeWithSize(36));
-    REPORTER_ASSERT(reporter, font.getTypeface() == newFont.getTypeface());
+    REPORTER_ASSERT(reporter, font.getTypefaceOrDefault() == newFont.getTypefaceOrDefault());
     REPORTER_ASSERT(reporter, 36 == newFont.getSize());   // double check we haven't changed
     REPORTER_ASSERT(reporter, 24 == font.getSize());   // double check we haven't changed
-
-    SkPaint paint;
-    paint.setTextSize(18);
-    font = SkFont::LEGACY_ExtractFromPaint(paint);
-    REPORTER_ASSERT(reporter, font.getSize() == paint.getTextSize());
 }
 
 /*
@@ -127,7 +123,7 @@ static void test_matchStyleCSS3(skiatest::Reporter* reporter) {
     public:
         TestTypeface(const SkFontStyle& fontStyle) : SkTypeface(fontStyle, false){}
     protected:
-        SkStreamAsset* onOpenStream(int* ttcIndex) const override { return nullptr; }
+        std::unique_ptr<SkStreamAsset> onOpenStream(int* ttcIndex) const override { return nullptr; }
         sk_sp<SkTypeface> onMakeClone(const SkFontArguments& args) const override {
             return sk_ref_sp(this);
         }
@@ -140,14 +136,12 @@ static void test_matchStyleCSS3(skiatest::Reporter* reporter) {
             return nullptr;
         }
         void onGetFontDescriptor(SkFontDescriptor*, bool*) const override { }
-        virtual int onCharsToGlyphs(const void* chars, Encoding encoding,
-            uint16_t glyphs[], int glyphCount) const override {
-            if (glyphs && glyphCount > 0) {
-                sk_bzero(glyphs, glyphCount * sizeof(glyphs[0]));
-            }
-            return 0;
+        void onCharsToGlyphs(const SkUnichar* chars, int count, SkGlyphID glyphs[]) const override {
+            sk_bzero(glyphs, count * sizeof(glyphs[0]));
         }
         int onCountGlyphs() const override { return 0; }
+        void getPostScriptGlyphNames(SkString*) const override {}
+        void getGlyphToUnicodeMap(SkUnichar*) const override {}
         int onGetUPEM() const override { return 0; }
         class EmptyLocalizedStrings : public SkTypeface::LocalizedStrings {
         public:
@@ -164,6 +158,11 @@ static void test_matchStyleCSS3(skiatest::Reporter* reporter) {
                 int coordinateCount) const override
         {
             return 0;
+        }
+        int onGetVariationDesignParameters(SkFontParameters::Variation::Axis parameters[],
+                                           int parameterCount) const override
+        {
+            return -1;
         }
         int onGetTableTags(SkFontTableTag tags[]) const override { return 0; }
         size_t onGetTableData(SkFontTableTag, size_t, size_t, void*) const override {

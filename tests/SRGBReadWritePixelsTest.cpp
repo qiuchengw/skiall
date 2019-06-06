@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
-#include "GrCaps.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrSurfaceContext.h"
-#include "SkCanvas.h"
-#include "SkGr.h"
-#include "SkSurface.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkSurface.h"
+#include "include/gpu/GrContext.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/SkGr.h"
+#include "tests/Test.h"
 
 // using anonymous namespace because these functions are used as template params.
 namespace {
@@ -202,8 +202,13 @@ static sk_sp<GrSurfaceContext> make_surface_context(Encoding contextEncoding, Gr
     desc.fHeight = kH;
     desc.fConfig = encoding_as_pixel_config(contextEncoding);
 
-    auto surfaceContext = context->contextPriv().makeDeferredSurfaceContext(
-            desc, kBottomLeft_GrSurfaceOrigin, GrMipMapped::kNo, SkBackingFit::kExact,
+    GrSRGBEncoded srgbEncoded = GrSRGBEncoded::kNo;
+    GrColorType colorType = GrPixelConfigToColorTypeAndEncoding(desc.fConfig, &srgbEncoded);
+    const GrBackendFormat format =
+            context->priv().caps()->getBackendFormatFromGrColorType(colorType, srgbEncoded);
+
+    auto surfaceContext = context->priv().makeDeferredSurfaceContext(
+            format, desc, kBottomLeft_GrSurfaceOrigin, GrMipMapped::kNo, SkBackingFit::kExact,
             SkBudgeted::kNo, encoding_as_color_space(contextEncoding));
     if (!surfaceContext) {
         ERRORF(reporter, "Could not create %s surface context.", encoding_as_str(contextEncoding));
@@ -240,16 +245,16 @@ static void test_write_read(Encoding contextEncoding, Encoding writeEncoding, En
 // are sRGB, linear, or untagged RGBA_8888.
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SRGBReadWritePixels, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    if (!context->contextPriv().caps()->isConfigRenderable(kSRGBA_8888_GrPixelConfig) &&
-        !context->contextPriv().caps()->isConfigTexturable(kSRGBA_8888_GrPixelConfig)) {
+    if (!context->priv().caps()->isConfigRenderable(kSRGBA_8888_GrPixelConfig) &&
+        !context->priv().caps()->isConfigTexturable(kSRGBA_8888_GrPixelConfig)) {
         return;
     }
     // We allow more error on GPUs with lower precision shader variables.
-    float error = context->contextPriv().caps()->shaderCaps()->halfIs32Bits() ? 0.5f : 1.2f;
+    float error = context->priv().caps()->shaderCaps()->halfIs32Bits() ? 0.5f : 1.2f;
     // For the all-sRGB case, we allow a small error only for devices that have
     // precision variation because the sRGB data gets converted to linear and back in
     // the shader.
-    float smallError = context->contextPriv().caps()->shaderCaps()->halfIs32Bits() ? 0.0f : 1.f;
+    float smallError = context->priv().caps()->shaderCaps()->halfIs32Bits() ? 0.0f : 1.f;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Write sRGB data to a sRGB context - no conversion on the write.
@@ -290,9 +295,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SRGBReadWritePixels, reporter, ctxInfo) {
         // Reading untagged back as untagged should do no conversion.
         test_write_read(Encoding::kUntagged, writeEncoding, Encoding::kUntagged, error,
                         check_no_conversion, context, reporter);
-        // Reading untagged back as linear does no conversion.
+        // Reading untagged back as linear does convert (context is source, so treated as sRGB),
+        // dst is tagged.
         test_write_read(Encoding::kUntagged, writeEncoding, Encoding::kLinear, error,
-                        check_no_conversion, context, reporter);
+                        check_srgb_to_linear_conversion, context, reporter);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

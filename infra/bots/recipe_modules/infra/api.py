@@ -27,14 +27,15 @@ class InfraApi(recipe_api.RecipeApi):
   @property
   def go_env(self):
     return {
+        'GOCACHE': self.m.vars.cache_dir.join('go_cache'),
         'GOPATH': self.gopath,
         'GOROOT': self.goroot,
-        'PATH': '%s:%s:%%(PATH)s' % (self.go_bin, self.gopath),
+        'PATH': '%s:%s:%%(PATH)s' % (self.go_bin, self.gopath.join('bin')),
     }
 
   @property
   def gopath(self):
-    return self.m.vars.slave_dir.join('go_deps')
+    return self.m.vars.cache_dir.join('gopath')
 
   def go_version(self):
     """Print the Go version."""

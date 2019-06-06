@@ -4,9 +4,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "PathOpsDebug.h"
-#include "PathOpsExtendedTest.h"
-#include "PathOpsTestCommon.h"
+#include "tests/PathOpsDebug.h"
+#include "tests/PathOpsExtendedTest.h"
+#include "tests/PathOpsTestCommon.h"
 
 class PathTest_Private {
 public:
@@ -3590,7 +3590,7 @@ static void loop1(skiatest::Reporter* reporter, const char* filename) {
     testPathOp(reporter, path, pathB, kIntersect_SkPathOp, filename);
 }
 
-#include "SkPathOpsCubic.h"
+#include "src/pathops/SkPathOpsCubic.h"
 
 static void loop1asQuad(skiatest::Reporter* reporter, const char* filename) {
     CubicPts cubic1 = {{{0,1}, {1,5}, {-5.66666651f,3.33333349f}, {8.83333302f,2.33333349f}}};
@@ -3656,7 +3656,7 @@ static void loop4(skiatest::Reporter* reporter, const char* filename) {
     testPathOp(reporter, path, pathB, kIntersect_SkPathOp, filename);
 }
 
-#include "SkParsePath.h"
+#include "include/utils/SkParsePath.h"
 
 static void issue3517(skiatest::Reporter* reporter, const char* filename) {
     SkPath path, pathB;
@@ -3848,7 +3848,7 @@ static void cubicOp130(skiatest::Reporter* reporter, const char* filename) {
     testPathOp(reporter, path, pathB, kDifference_SkPathOp, filename);
 }
 
-#include "SkGeometry.h"
+#include "src/core/SkGeometry.h"
 
 static void complex_to_quads(const SkPoint pts[], SkPath* path) {
     SkScalar loopT[3];
@@ -9079,6 +9079,30 @@ static void bug8228(skiatest::Reporter* reporter, const char* filename) {
     testPathOp(reporter, path1, path2, kIntersect_SkPathOp, filename);
 }
 
+static void bug8380(skiatest::Reporter* reporter, const char* filename) {
+SkPath path, path2;
+path.setFillType(SkPath::kEvenOdd_FillType);
+path.moveTo(SkBits2Float(0xa6800000), SkBits2Float(0x43b0f22d));  // -8.88178e-16f, 353.892f
+path.lineTo(SkBits2Float(0x42fc0000), SkBits2Float(0x4116566d));  // 126, 9.3961f
+path.cubicTo(SkBits2Float(0x42fb439d), SkBits2Float(0x4114bbc7), SkBits2Float(0x42fa3ed7), SkBits2Float(0x411565bd), SkBits2Float(0x42f934d2), SkBits2Float(0x4116131e));  // 125.632f, 9.29584f, 125.123f, 9.33734f, 124.603f, 9.37967f
+path.cubicTo(SkBits2Float(0x42f84915), SkBits2Float(0x4116acc3), SkBits2Float(0x42f75939), SkBits2Float(0x41174918), SkBits2Float(0x42f693f8), SkBits2Float(0x4116566d));  // 124.143f, 9.41718f, 123.674f, 9.45535f, 123.289f, 9.3961f
+path.lineTo(SkBits2Float(0x42ec3cee), SkBits2Float(0x410127bb));  // 118.119f, 8.0722f
+path.lineTo(SkBits2Float(0x4102c0ec), SkBits2Float(0x42d06d0e));  // 8.1721f, 104.213f
+path.lineTo(SkBits2Float(0xa6000000), SkBits2Float(0x4381a63d));  // -4.44089e-16f, 259.299f
+path.lineTo(SkBits2Float(0x00000000), SkBits2Float(0x43b0f22d));  // 0, 353.892f
+path.lineTo(SkBits2Float(0xa6800000), SkBits2Float(0x43b0f22d));  // -8.88178e-16f, 353.892f
+path.close();
+path2.setFillType(SkPath::kEvenOdd_FillType);
+path2.moveTo(SkBits2Float(0x4102c0ec), SkBits2Float(0x42d06d0e));  // 8.1721f, 104.213f
+path2.lineTo(SkBits2Float(0xc0ba5a1d), SkBits2Float(0x43b8e831));  // -5.8235f, 369.814f
+path2.lineTo(SkBits2Float(0x42fc0000), SkBits2Float(0x411656d6));  // 126, 9.3962f
+path2.cubicTo(SkBits2Float(0x42fa9cac), SkBits2Float(0x41134fdf), SkBits2Float(0x42f837cf), SkBits2Float(0x41185aee), SkBits2Float(0x42f693f8), SkBits2Float(0x411656d6));  // 125.306f, 9.207f, 124.109f, 9.5222f, 123.289f, 9.3962f
+path2.lineTo(SkBits2Float(0x42ec3cee), SkBits2Float(0x410127bb));  // 118.119f, 8.0722f
+path2.lineTo(SkBits2Float(0x4102c0ec), SkBits2Float(0x42d06d0e));  // 8.1721f, 104.213f
+path2.close();
+    testPathOp(reporter, path, path2, kIntersect_SkPathOp, filename);
+}
+
 static void (*skipTest)(skiatest::Reporter* , const char* filename) = 0;
 static void (*firstTest)(skiatest::Reporter* , const char* filename) = 0;
 static void (*stopTest)(skiatest::Reporter* , const char* filename) = 0;
@@ -9086,6 +9110,7 @@ static void (*stopTest)(skiatest::Reporter* , const char* filename) = 0;
 #define TEST(name) { name, #name }
 
 static struct TestDesc tests[] = {
+    TEST(bug8380),
     TEST(crbug_526025),
     TEST(bug8228),
     TEST(op_4),

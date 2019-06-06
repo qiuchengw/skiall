@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "GrVkPipelineLayout.h"
-#include "GrVkGpu.h"
-#include "GrVkUtil.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkPipelineLayout.h"
+#include "src/gpu/vk/GrVkUtil.h"
 
-void GrVkPipelineLayout::freeGPUData(const GrVkGpu* gpu) const {
+void GrVkPipelineLayout::freeGPUData(GrVkGpu* gpu) const {
     GR_VK_CALL(gpu->vkInterface(), DestroyPipelineLayout(gpu->device(), fPipelineLayout, nullptr));
 }

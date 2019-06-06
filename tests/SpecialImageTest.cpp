@@ -5,23 +5,23 @@
  * found in the LICENSE file
  */
 
-#include "SkAutoPixmapStorage.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkImage.h"
-#include "SkPixmap.h"
-#include "SkSpecialImage.h"
-#include "SkSpecialSurface.h"
-#include "SkSurface.h"
-#include "Test.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkPixmap.h"
+#include "include/core/SkSurface.h"
+#include "src/core/SkAutoPixmapStorage.h"
+#include "src/core/SkSpecialImage.h"
+#include "src/core/SkSpecialSurface.h"
+#include "tests/Test.h"
 
-#include "GrBackendSurface.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrProxyProvider.h"
-#include "GrSurfaceProxy.h"
-#include "GrTextureProxy.h"
-#include "SkGr.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/GrSurfaceProxy.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/SkGr.h"
 
 
 // This test creates backing resources exactly sized to [kFullSize x kFullSize].
@@ -163,13 +163,14 @@ static void test_specialimage_image(skiatest::Reporter* reporter) {
     sk_sp<SkImage> fullImage(SkImage::MakeFromBitmap(bm));
 
     sk_sp<SkSpecialImage> fullSImage(SkSpecialImage::MakeFromImage(
+                                                            nullptr,
                                                             SkIRect::MakeWH(kFullSize, kFullSize),
                                                             fullImage));
 
     const SkIRect& subset = SkIRect::MakeXYWH(kPad, kPad, kSmallerSize, kSmallerSize);
 
     {
-        sk_sp<SkSpecialImage> subSImg1(SkSpecialImage::MakeFromImage(subset, fullImage));
+        sk_sp<SkSpecialImage> subSImg1(SkSpecialImage::MakeFromImage(nullptr, subset, fullImage));
         test_image(subSImg1, reporter, nullptr, false, kPad, kFullSize);
     }
 
@@ -197,7 +198,7 @@ static void test_texture_backed(skiatest::Reporter* reporter,
 // Test out the SkSpecialImage::makeTextureImage entry point
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_MakeTexture, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrProxyProvider* proxyProvider = context->contextPriv().proxyProvider();
+    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
     SkBitmap bm = create_bm();
 
     const SkIRect& subset = SkIRect::MakeXYWH(kPad, kPad, kSmallerSize, kSmallerSize);
@@ -254,7 +255,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_MakeTexture, reporter, ctxInfo) 
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_Gpu, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrProxyProvider* proxyProvider = context->contextPriv().proxyProvider();
+    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
     SkBitmap bm = create_bm();
     sk_sp<SkImage> rasterImage = SkImage::MakeFromBitmap(bm);
 
@@ -305,8 +306,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_ReadbackAndCachingSubsets_Gpu, r
     }
 
     auto image = surface->makeImageSnapshot();
-    auto redImg  = SkSpecialImage::MakeFromImage(SkIRect::MakeXYWH(10, 30, 10, 10), image);
-    auto blueImg = SkSpecialImage::MakeFromImage(SkIRect::MakeXYWH(30, 10, 10, 10), image);
+    auto redImg  = SkSpecialImage::MakeFromImage(context, SkIRect::MakeXYWH(10, 30, 10, 10), image);
+    auto blueImg = SkSpecialImage::MakeFromImage(context, SkIRect::MakeXYWH(30, 10, 10, 10), image);
 
     // This isn't necessary, but if it ever becomes false, then the cache collision bug that we're
     // checking below is irrelevant.

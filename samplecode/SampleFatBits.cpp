@@ -5,25 +5,25 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkBlendMode.h"
-#include "SkCanvas.h"
-#include "SkClipOpPriv.h"
-#include "SkColor.h"
-#include "SkImageInfo.h"
-#include "SkMatrix.h"
-#include "SkPaint.h"
-#include "SkPath.h"
-#include "SkPoint.h"
-#include "SkPointPriv.h"
-#include "SkRect.h"
-#include "SkRefCnt.h"
-#include "SkScalar.h"
-#include "SkShader.h"
-#include "SkString.h"
-#include "SkSurface.h"
-#include "SkTypes.h"
-#include "sk_tool_utils.h"
+#include "include/core/SkBlendMode.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkString.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTypes.h"
+#include "samplecode/Sample.h"
+#include "src/core/SkClipOpPriv.h"
+#include "src/core/SkPointPriv.h"
+#include "tools/ToolUtils.h"
 
 class SkEvent;
 
@@ -105,8 +105,8 @@ public:
         fBounds.set(0, 0, SkIntToScalar(width * zoom), SkIntToScalar(height * zoom));
         fMatrix.setScale(SkIntToScalar(zoom), SkIntToScalar(zoom));
         fInverse.setScale(SK_Scalar1 / zoom, SK_Scalar1 / zoom);
-        fShader0 = sk_tool_utils::create_checkerboard_shader(0xFFDDDDDD, 0xFFFFFFFF, zoom);
-        fShader1 = SkShader::MakeColorShader(SK_ColorWHITE);
+        fShader0 = ToolUtils::create_checkerboard_shader(0xFFDDDDDD, 0xFFFFFFFF, zoom);
+        fShader1 = SkShaders::Color(SK_ColorWHITE);
         fShader = fShader0;
 
         SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
@@ -467,10 +467,9 @@ protected:
                        FatBits::kHair_Style == fFB.getStyle() ? "Hair" : "Stroke",
                        fFB.getUseClip() ? "clip" : "noclip");
             SkPaint paint;
-            paint.setAntiAlias(true);
-            paint.setTextSize(16);
             paint.setColor(SK_ColorBLUE);
-            canvas->drawString(str, 10, 16, paint);
+            SkFont font(nullptr, 16);
+            canvas->drawString(str, 10, 16, font, paint);
         }
     }
 

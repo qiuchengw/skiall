@@ -8,9 +8,9 @@
 #ifndef GrVkPipeline_DEFINED
 #define GrVkPipeline_DEFINED
 
-#include "GrTypesPriv.h"
-#include "GrVkResource.h"
-#include "vk/GrVkDefines.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/vk/GrVkResource.h"
 
 class GrPipeline;
 class GrPrimitiveProcessor;
@@ -24,10 +24,12 @@ struct SkIRect;
 
 class GrVkPipeline : public GrVkResource {
 public:
-    static GrVkPipeline* Create(GrVkGpu* gpu,
-                                const GrPrimitiveProcessor& primProc,
+    static GrVkPipeline* Create(GrVkGpu*,
+                                int numColorSamples,
+                                const GrPrimitiveProcessor&,
                                 const GrPipeline& pipeline,
                                 const GrStencilSettings&,
+                                GrSurfaceOrigin,
                                 VkPipelineShaderStageCreateInfo* shaderStageInfo,
                                 int shaderStageCount,
                                 GrPrimitiveType primitiveType,
@@ -55,7 +57,7 @@ protected:
     VkPipeline  fPipeline;
 
 private:
-    void freeGPUData(const GrVkGpu* gpu) const override;
+    void freeGPUData(GrVkGpu* gpu) const override;
 
     typedef GrVkResource INHERITED;
 };

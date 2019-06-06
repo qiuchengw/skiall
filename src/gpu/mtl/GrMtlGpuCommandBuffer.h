@@ -8,13 +8,15 @@
 #ifndef GrMtlGpuCommandBuffer_DEFINED
 #define GrMtlGpuCommandBuffer_DEFINED
 
-#include "GrGpuCommandBuffer.h"
-#include "GrMtlGpu.h"
-#include "GrMesh.h"
+#include "src/gpu/GrGpuCommandBuffer.h"
+#include "src/gpu/GrMesh.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/mtl/GrMtlGpu.h"
 
 #import <metal/metal.h>
 
 typedef uint32_t GrColor;
+class GrMtlBuffer;
 class GrMtlPipelineState;
 class GrMtlRenderTarget;
 
@@ -31,7 +33,11 @@ public:
               const SkIPoint& dstPoint) override {
         fGpu->copySurface(fTexture, fOrigin, src, srcOrigin, srcRect, dstPoint);
     }
-
+    void transferFrom(const SkIRect& srcRect, GrColorType bufferColorType,
+                      GrGpuBuffer* transferBuffer, size_t offset) override {
+        fGpu->transferPixelsFrom(fTexture, srcRect.fLeft, srcRect.fTop, srcRect.width(),
+                                 srcRect.height(), bufferColorType, transferBuffer, offset);
+    }
     void insertEventMarker(const char* msg) override {}
 
 private:
@@ -56,16 +62,19 @@ public:
 
     void insertEventMarker(const char* msg) override {}
 
-    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {}
-
+    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {
+        // TODO: this could be more efficient
+        state->doUpload(upload);
+    }
+    void transferFrom(const SkIRect& srcRect, GrColorType bufferColorType,
+                      GrGpuBuffer* transferBuffer, size_t offset) override;
     void copy(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
               const SkIPoint& dstPoint) override;
 
     void submit();
 
 private:
-    void internalBegin();
-    void internalEnd();
+    void addNullCommand();
 
     GrGpu* gpu() override { return fGpu; }
 
@@ -73,8 +82,7 @@ private:
             const GrPrimitiveProcessor& primProc,
             const GrPipeline& pipeline,
             const GrPipeline::FixedDynamicState* fixedDynamicState,
-            const GrMesh meshes[],
-            int meshCount);
+            GrPrimitiveType primType);
 
     void onDraw(const GrPrimitiveProcessor& primProc,
                 const GrPipeline& pipeline,
@@ -90,25 +98,18 @@ private:
 
     MTLRenderPassDescriptor* createRenderPassDesc() const;
 
-    void bindGeometry(const GrBuffer* vertexBuffer, const GrBuffer* instanceBuffer);
+    void bindGeometry(const GrBuffer* vertexBuffer, size_t vertexOffset,
+                      const GrBuffer* instanceBuffer);
 
     // GrMesh::SendToGpuImpl methods. These issue the actual Metal draw commands.
     // Marked final as a hint to the compiler to not use virtual dispatch.
     void sendMeshToGpu(GrPrimitiveType primType, const GrBuffer* vertexBuffer, int vertexCount,
-                       int baseVertex) final {
-        this->sendInstancedMeshToGpu(primType, vertexBuffer, vertexCount, baseVertex, nullptr, 1,
-                                     0);
-    }
+                       int baseVertex) final;
 
     void sendIndexedMeshToGpu(GrPrimitiveType primType, const GrBuffer* indexBuffer, int indexCount,
                               int baseIndex, uint16_t /*minIndexValue*/, uint16_t /*maxIndexValue*/,
                               const GrBuffer* vertexBuffer, int baseVertex,
-                              GrPrimitiveRestart restart) final {
-        SkASSERT(restart == GrPrimitiveRestart::kNo);
-        this->sendIndexedInstancedMeshToGpu(primType, indexBuffer, indexCount, baseIndex,
-                                            vertexBuffer, baseVertex, nullptr, 1, 0,
-                                            GrPrimitiveRestart::kNo);
-    }
+                              GrPrimitiveRestart restart) final;
 
     void sendInstancedMeshToGpu(GrPrimitiveType, const GrBuffer* vertexBuffer, int vertexCount,
                                 int baseVertex, const GrBuffer* instanceBuffer, int instanceCount,
@@ -119,6 +120,10 @@ private:
                                        const GrBuffer* instanceBuffer, int instanceCount,
                                        int baseInstance, GrPrimitiveRestart) final;
 
+    void setVertexBuffer(id<MTLRenderCommandEncoder>, const GrMtlBuffer*, size_t offset,
+                         size_t index);
+    void resetBufferBindings();
+
     GrMtlGpu*                                     fGpu;
     // GrRenderTargetProxy bounds
 #ifdef SK_DEBUG
@@ -128,13 +133,17 @@ private:
     GrGpuRTCommandBuffer::StencilLoadAndStoreInfo fStencilLoadAndStoreInfo;
 
     id<MTLRenderCommandEncoder> fActiveRenderCmdEncoder;
-    MTLRenderPassDescriptor* fRenderPassDesc;
+    MTLRenderPassDescriptor*    fRenderPassDesc;
 
     struct CommandBufferInfo {
         SkRect fBounds;
+        size_t fCurrentVertexStride;
     };
 
     CommandBufferInfo fCommandBufferInfo;
+
+    static constexpr size_t kNumBindings = GrMtlUniformHandler::kLastUniformBinding + 3;
+    id<MTLBuffer> fBufferBindings[kNumBindings];
 
     typedef GrGpuRTCommandBuffer INHERITED;
 };

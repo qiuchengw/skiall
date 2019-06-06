@@ -5,16 +5,21 @@
  * found in the LICENSE file.
  */
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrTexturePriv.h"
-#include "SkCanvas.h"
-#include "SkImage_Base.h"
-#include "SkSurface.h"
-#include "Test.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkSurface.h"
+#include "include/gpu/GrContext.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrTexturePriv.h"
+#include "src/image/SkImage_Base.h"
+#include "tests/Test.h"
 
 // Tests that MIP maps are created and invalidated as expected when drawing to and from GrTextures.
-DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrTextureMipMapInvalidationTest, reporter, ctxInfo) {
+DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrTextureMipMapInvalidationTest, reporter, ctxInfo) {
+    GrContext* context = ctxInfo.grContext();
+    if (!context->priv().caps()->mipMapSupport()) {
+        return;
+    }
+
     auto isMipped = [] (SkSurface* surf) {
         const GrTexture* texture = surf->makeImageSnapshot()->getTexture();
         return GrMipMapped::kYes == texture->texturePriv().mipMapped();
@@ -24,7 +29,6 @@ DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrTextureMipMapInvalidationTest, reporter, ctxInf
         return surf->makeImageSnapshot()->getTexture()->texturePriv().mipMapsAreDirty();
     };
 
-    GrContext* context = ctxInfo.grContext();
     auto info = SkImageInfo::MakeN32Premul(256, 256);
     for (auto allocateMips : {false, true}) {
         auto surf1 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info, 0,
@@ -33,7 +37,7 @@ DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrTextureMipMapInvalidationTest, reporter, ctxInf
         auto surf2 = SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, info);
         // Draw something just in case we ever had a solid color optimization
         surf1->getCanvas()->drawCircle(128, 128, 50, SkPaint());
-        surf1->getCanvas()->flush();
+        surf1->flush();
 
         // No mipmaps initially
         REPORTER_ASSERT(reporter, isMipped(surf1.get()) == allocateMips);
@@ -59,7 +63,7 @@ DEF_GPUTEST_FOR_NULLGL_CONTEXT(GrTextureMipMapInvalidationTest, reporter, ctxInf
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ReimportImageTextureWithMipLevels, reporter, ctxInfo) {
     auto* ctx = ctxInfo.grContext();
-    if (!ctx->contextPriv().caps()->mipMapSupport()) {
+    if (!ctx->priv().caps()->mipMapSupport()) {
         return;
     }
     static constexpr auto kCreateWithMipMaps = true;

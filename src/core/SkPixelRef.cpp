@@ -5,30 +5,25 @@
  * found in the LICENSE file.
  */
 
-#include "SkBitmapCache.h"
-#include "SkMutex.h"
-#include "SkPixelRef.h"
-#include "SkTraceEvent.h"
-
-//#define SK_TRACE_PIXELREF_LIFETIME
-
-#include "SkNextID.h"
+#include "include/core/SkPixelRef.h"
+#include "include/private/SkMutex.h"
+#include "src/core/SkBitmapCache.h"
+#include "src/core/SkNextID.h"
+#include "src/core/SkTraceEvent.h"
+#include <atomic>
 
 uint32_t SkNextID::ImageID() {
-    static uint32_t gID = 0;
+    // We never set the low bit.... see SkPixelRef::genIDIsUnique().
+    static std::atomic<uint32_t> nextID{2};
+
     uint32_t id;
-    // Loop in case our global wraps around, as we never want to return a 0.
     do {
-        id = sk_atomic_fetch_add(&gID, 2u) + 2;  // Never set the low bit.
-    } while (0 == id);
+        id = nextID.fetch_add(2);
+    } while (id == 0);
     return id;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#ifdef SK_TRACE_PIXELREF_LIFETIME
-    static int32_t gInstCounter;
-#endif
 
 SkPixelRef::SkPixelRef(int width, int height, void* pixels, size_t rowBytes)
     : fWidth(width)
@@ -37,18 +32,11 @@ SkPixelRef::SkPixelRef(int width, int height, void* pixels, size_t rowBytes)
     , fRowBytes(rowBytes)
     , fAddedToCache(false)
 {
-#ifdef SK_TRACE_PIXELREF_LIFETIME
-    SkDebugf(" pixelref %d\n", sk_atomic_inc(&gInstCounter));
-#endif
-
     this->needsNewGenID();
     fMutability = kMutable;
 }
 
 SkPixelRef::~SkPixelRef() {
-#ifdef SK_TRACE_PIXELREF_LIFETIME
-    SkDebugf("~pixelref %d\n", sk_atomic_dec(&gInstCounter) - 1);
-#endif
     this->callGenIDChangeListeners();
 }
 
@@ -89,13 +77,13 @@ void SkPixelRef::addGenIDChangeListener(GenIDChangeListener* listener) {
         delete listener;
         return;
     }
-    SkAutoMutexAcquire lock(fGenIDChangeListenersMutex);
+    SkAutoMutexExclusive lock(fGenIDChangeListenersMutex);
     *fGenIDChangeListeners.append() = listener;
 }
 
 // we need to be called *before* the genID gets changed or zerod
 void SkPixelRef::callGenIDChangeListeners() {
-    SkAutoMutexAcquire lock(fGenIDChangeListenersMutex);
+    SkAutoMutexExclusive lock(fGenIDChangeListenersMutex);
     // We don't invalidate ourselves if we think another SkPixelRef is sharing our genID.
     if (this->genIDIsUnique()) {
         for (int i = 0; i < fGenIDChangeListeners.count(); i++) {

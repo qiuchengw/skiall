@@ -5,19 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "DecodeFile.h"
-#include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkCamera.h"
-#include "SkEmbossMaskFilter.h"
-#include "SkGradientShader.h"
-#include "SkPath.h"
-#include "SkRandom.h"
-#include "SkRegion.h"
-#include "SkShader.h"
-#include "SkString.h"
-#include "SkUTF.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRegion.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkString.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/utils/SkCamera.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/DecodeFile.h"
+#include "samplecode/Sample.h"
+#include "src/effects/SkEmbossMaskFilter.h"
+#include "src/utils/SkUTF.h"
+#include "tools/timer/AnimTimer.h"
 
 class CameraView : public Sample {
     SkTArray<sk_sp<SkShader>> fShaders;
@@ -39,10 +39,7 @@ public:
                 SkMatrix matrix;
                 matrix.setRectToRect(src, dst, SkMatrix::kFill_ScaleToFit);
 
-                fShaders.push_back(SkShader::MakeBitmapShader(bm,
-                                                           SkShader::kClamp_TileMode,
-                                                           SkShader::kClamp_TileMode,
-                                                           &matrix));
+                fShaders.push_back(bm.makeShader(&matrix));
             } else {
                 break;
             }
@@ -83,7 +80,7 @@ protected:
         }
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (timer.isStopped()) {
             fRY = 0;
         } else {

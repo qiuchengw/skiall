@@ -5,9 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "GrPrimitiveProcessor.h"
+#include "src/gpu/GrPrimitiveProcessor.h"
 
-#include "GrCoordTransform.h"
+#include "src/gpu/GrCoordTransform.h"
 
 /**
  * We specialize the vertex code for each of these matrix types.
@@ -55,8 +55,9 @@ static inline GrSamplerState::Filter clamp_filter(GrTextureType type,
 
 GrPrimitiveProcessor::TextureSampler::TextureSampler(GrTextureType textureType,
                                                      GrPixelConfig config,
-                                                     const GrSamplerState& samplerState) {
-    this->reset(textureType, config, samplerState);
+                                                     const GrSamplerState& samplerState,
+                                                     uint32_t extraSamplerKey) {
+    this->reset(textureType, config, samplerState, extraSamplerKey);
 }
 
 GrPrimitiveProcessor::TextureSampler::TextureSampler(GrTextureType textureType,
@@ -68,12 +69,15 @@ GrPrimitiveProcessor::TextureSampler::TextureSampler(GrTextureType textureType,
 
 void GrPrimitiveProcessor::TextureSampler::reset(GrTextureType textureType,
                                                  GrPixelConfig config,
-                                                 const GrSamplerState& samplerState) {
+                                                 const GrSamplerState& samplerState,
+                                                 uint32_t extraSamplerKey) {
     SkASSERT(kUnknown_GrPixelConfig != config);
     fSamplerState = samplerState;
     fSamplerState.setFilterMode(clamp_filter(textureType, samplerState.filter()));
     fTextureType = textureType;
     fConfig = config;
+    fExtraSamplerKey = extraSamplerKey;
+    SkASSERT(!fExtraSamplerKey || textureType == GrTextureType::kExternal);
 }
 
 void GrPrimitiveProcessor::TextureSampler::reset(GrTextureType textureType,

@@ -9,39 +9,39 @@
 #include <initializer_list>
 #include <vector>
 
-#include "SkAutoPixmapStorage.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkColorSpacePriv.h"
-#include "SkData.h"
-#include "SkImageEncoder.h"
-#include "SkImageGenerator.h"
-#include "SkImage_Base.h"
-#include "SkImagePriv.h"
-#include "SkMakeUnique.h"
-#include "SkPicture.h"
-#include "SkPictureRecorder.h"
-#include "SkRRect.h"
-#include "SkSerialProcs.h"
-#include "SkStream.h"
-#include "SkSurface.h"
-#include "SkUtils.h"
-#include "Test.h"
-
-#include "Resources.h"
-#include "sk_pixel_iter.h"
-#include "sk_tool_utils.h"
-
-#include "GrContextPriv.h"
-#include "GrGpu.h"
-#include "GrResourceCache.h"
-#include "GrTexture.h"
-#include "SkGr.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkData.h"
+#include "include/core/SkImageEncoder.h"
+#include "include/core/SkImageGenerator.h"
+#include "include/core/SkPicture.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkSerialProcs.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkSurface.h"
+#include "include/gpu/GrContextThreadSafeProxy.h"
+#include "include/gpu/GrTexture.h"
+#include "src/core/SkAutoPixmapStorage.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/core/SkImagePriv.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkUtils.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrResourceCache.h"
+#include "src/gpu/SkGr.h"
+#include "src/image/SkImage_Base.h"
+#include "src/image/SkImage_GpuYUVA.h"
+#include "tests/Test.h"
+#include "tests/TestUtils.h"
+#include "tools/Resources.h"
+#include "tools/ToolUtils.h"
 
 using namespace sk_gpu_test;
 
 SkImageInfo read_pixels_info(SkImage* image) {
-    if (as_IB(image)->onImageInfo().colorSpace()) {
+    if (image->colorSpace()) {
         return SkImageInfo::MakeS32(image->width(), image->height(), image->alphaType());
     }
 
@@ -324,7 +324,7 @@ DEF_TEST(image_newfrombitmap, reporter) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "SkBitmapCache.h"
+#include "src/core/SkBitmapCache.h"
 
 /*
  *  This tests the caching (and preemptive purge) of the raster equivalent of a gpu-image.
@@ -425,7 +425,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeTextureImage, reporter, contextIn
                 }
                 if (GrMipMapped::kYes == mipMapped &&
                     as_IB(texImage)->peekProxy()->mipMapped() != mipMapped &&
-                    context->contextPriv().caps()->mipMapSupport()) {
+                    context->priv().caps()->mipMapSupport()) {
                     ERRORF(reporter, "makeTextureImage returned non-mipmapped texture.");
                     continue;
                 }
@@ -481,35 +481,28 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeNonTextureImage, reporter, contex
     }
 }
 
-DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkImage_drawAbandonedGpuImage, reporter, contextInfo) {
-    auto context = contextInfo.grContext();
-    auto image = create_gpu_image(context);
-    auto info = SkImageInfo::MakeN32(20, 20, kOpaque_SkAlphaType);
-    auto surface(SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info));
-    image->getTexture()->abandon();
-    surface->getCanvas()->drawImage(image, 0, 0);
-}
-
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrContext_colorTypeSupportedAsImage, reporter, ctxInfo) {
+    GrContext* context = ctxInfo.grContext();
+
+    static constexpr int kSize = 10;
+
     for (int ct = 0; ct < kLastEnum_SkColorType; ++ct) {
-        static constexpr int kSize = 10;
         SkColorType colorType = static_cast<SkColorType>(ct);
-        bool can = ctxInfo.grContext()->colorTypeSupportedAsImage(colorType);
-        auto* gpu = ctxInfo.grContext()->contextPriv().getGpu();
-        GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
-                nullptr, kSize, kSize, colorType, false, GrMipMapped::kNo);
-        auto img =
-                SkImage::MakeFromTexture(ctxInfo.grContext(), backendTex, kTopLeft_GrSurfaceOrigin,
-                                         colorType, kOpaque_SkAlphaType, nullptr);
+        bool can = context->colorTypeSupportedAsImage(colorType);
+
+        GrBackendTexture backendTex = context->createBackendTexture(
+                kSize, kSize, colorType, SkColors::kTransparent,
+                GrMipMapped::kNo, GrRenderable::kNo);
+
+        auto img = SkImage::MakeFromTexture(context, backendTex, kTopLeft_GrSurfaceOrigin,
+                                            colorType, kOpaque_SkAlphaType, nullptr);
         REPORTER_ASSERT(reporter, can == SkToBool(img),
                         "colorTypeSupportedAsImage:%d, actual:%d, ct:%d", can, SkToBool(img),
                         colorType);
 
         img.reset();
-        ctxInfo.grContext()->flush();
-        if (backendTex.isValid()) {
-            gpu->deleteTestingOnlyBackendTexture(backendTex);
-        }
+        context->flush();
+        context->deleteBackendTexture(backendTex);
     }
 }
 
@@ -834,13 +827,17 @@ struct TextureReleaseChecker {
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkImage_NewFromTextureRelease, reporter, ctxInfo) {
     const int kWidth = 10;
     const int kHeight = 10;
-    std::unique_ptr<uint32_t[]> pixels(new uint32_t[kWidth * kHeight]);
 
     GrContext* ctx = ctxInfo.grContext();
-    GrGpu* gpu = ctx->contextPriv().getGpu();
 
-    GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
-               pixels.get(), kWidth, kHeight, GrColorType::kRGBA_8888, true, GrMipMapped::kNo);
+    SkImageInfo ii = SkImageInfo::Make(kWidth, kHeight, SkColorType::kRGBA_8888_SkColorType,
+                                       kPremul_SkAlphaType);
+    GrBackendTexture backendTex;
+
+    if (!create_backend_texture(ctx, &backendTex, ii, GrMipMapped::kNo, SK_ColorRED,
+                                GrRenderable::kNo)) {
+        ERRORF(reporter, "couldn't create backend texture\n");
+    }
 
     TextureReleaseChecker releaseChecker;
     GrSurfaceOrigin texOrigin = kBottomLeft_GrSurfaceOrigin;
@@ -866,7 +863,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkImage_NewFromTextureRelease, reporter, c
     refImg.reset(nullptr); // force a release of the image
     REPORTER_ASSERT(reporter, 1 == releaseChecker.fReleaseCount);
 
-    gpu->deleteTestingOnlyBackendTexture(backendTex);
+    delete_backend_texture(ctx, backendTex);
 }
 
 static void test_cross_context_image(skiatest::Reporter* reporter, const GrContextOptions& options,
@@ -884,7 +881,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
         // If we don't have proper support for this feature, the factory will fallback to returning
         // codec-backed images. Those will "work", but some of our checks will fail because we
         // expect the cross-context images not to work on multiple contexts at once.
-        if (!ctx->contextPriv().caps()->crossContextTextureSupport()) {
+        if (!ctx->priv().caps()->crossContextTextureSupport()) {
             continue;
         }
 
@@ -916,7 +913,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             sk_sp<SkImage> refImg(imageMaker(ctx));
 
             canvas->drawImage(refImg, 0, 0);
-            canvas->flush();
+            surface->flush();
 
             refImg.reset(nullptr); // force a release of the image
         }
@@ -928,7 +925,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             canvas->drawImage(refImg, 0, 0);
             refImg.reset(nullptr); // force a release of the image
 
-            canvas->flush();
+            surface->flush();
         }
 
         // Configure second context
@@ -953,7 +950,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
 
             otherTestContext->makeCurrent();
             canvas->drawImage(refImg, 0, 0);
-            canvas->flush();
+            surface->flush();
 
             testContext->makeCurrent();
             refImg.reset(nullptr); // force a release of the image
@@ -971,11 +968,11 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             refImg.reset(nullptr); // force a release of the image
 
             otherTestContext->makeCurrent();
-            canvas->flush();
+            surface->flush();
 
             // This is specifically here for vulkan to guarantee the command buffer will finish
             // which is when we call the ReleaseProc.
-            otherCtx->contextPriv().getGpu()->testingOnly_flushGpuAndSync();
+            otherCtx->priv().getGpu()->testingOnly_flushGpuAndSync();
         }
 
         // Case #6: Verify that only one context can be using the image at a time
@@ -1029,7 +1026,10 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
 
 DEF_GPUTEST(SkImage_MakeCrossContextFromEncodedRelease, reporter, options) {
     sk_sp<SkData> data = GetResourceAsData("images/mandrill_128.png");
-    SkASSERT(data.get());
+    if (!data) {
+       ERRORF(reporter, "missing resource");
+       return;
+    }
 
     test_cross_context_image(reporter, options, "SkImage_MakeCrossContextFromEncodedRelease",
                              [&data](GrContext* ctx) {
@@ -1040,8 +1040,10 @@ DEF_GPUTEST(SkImage_MakeCrossContextFromEncodedRelease, reporter, options) {
 DEF_GPUTEST(SkImage_MakeCrossContextFromPixmapRelease, reporter, options) {
     SkBitmap bitmap;
     SkPixmap pixmap;
-    SkAssertResult(GetResourceAsBitmap("images/mandrill_128.png", &bitmap) && bitmap.peekPixels(&pixmap));
-
+    if (!GetResourceAsBitmap("images/mandrill_128.png", &bitmap) || !bitmap.peekPixels(&pixmap)) {
+        ERRORF(reporter, "missing resource");
+        return;
+    }
     test_cross_context_image(reporter, options, "SkImage_MakeCrossContextFromPixmapRelease",
                              [&pixmap](GrContext* ctx) {
         return SkImage::MakeCrossContextFromPixmap(ctx, pixmap, false, nullptr);
@@ -1059,7 +1061,7 @@ DEF_GPUTEST(SkImage_CrossContextGrayAlphaConfigs, reporter, options) {
             GrContextFactory::ContextType ctxType = static_cast<GrContextFactory::ContextType>(i);
             ContextInfo ctxInfo = testFactory.getContextInfo(ctxType);
             GrContext* ctx = ctxInfo.grContext();
-            if (!ctx || !ctx->contextPriv().caps()->crossContextTextureSupport()) {
+            if (!ctx || !ctx->priv().caps()->crossContextTextureSupport()) {
                 continue;
             }
 
@@ -1087,7 +1089,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(makeBackendTexture, reporter, ctxInfo) {
     testContext->makeCurrent();
     REPORTER_ASSERT(reporter, proxy);
     auto createLarge = [context] {
-        return create_image_large(context->contextPriv().caps()->maxTextureSize());
+        return create_image_large(context->priv().caps()->maxTextureSize());
     };
     struct {
         std::function<sk_sp<SkImage> ()>                      fImageFactory;
@@ -1163,13 +1165,13 @@ DEF_TEST(Image_ColorSpace, r) {
     REPORTER_ASSERT(r, srgb.get() == image->colorSpace());
 
     image = GetResourceAsImage("images/webp-color-profile-lossy.webp");
-    SkColorSpaceTransferFn fn;
+    skcms_TransferFunction fn;
     bool success = image->colorSpace()->isNumericalTransferFn(&fn);
     REPORTER_ASSERT(r, success);
-    REPORTER_ASSERT(r, color_space_almost_equal(1.8f, fn.fG));
+    REPORTER_ASSERT(r, color_space_almost_equal(1.8f, fn.g));
 
-    sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                                        SkColorSpace::kRec2020_Gamut);
+    sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
+                                                        SkNamedGamut::kRec2020);
     image = create_picture_image(rec2020);
     REPORTER_ASSERT(r, SkColorSpace::Equals(rec2020.get(), image->colorSpace()));
 
@@ -1190,11 +1192,10 @@ DEF_TEST(Image_ColorSpace, r) {
 }
 
 DEF_TEST(Image_makeColorSpace, r) {
-    sk_sp<SkColorSpace> p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                                   SkColorSpace::kDCIP3_D65_Gamut);
-    SkColorSpaceTransferFn fn;
-    fn.fA = 1.f; fn.fB = 0.f; fn.fC = 0.f; fn.fD = 0.f; fn.fE = 0.f; fn.fF = 0.f; fn.fG = 1.8f;
-    sk_sp<SkColorSpace> adobeGamut = SkColorSpace::MakeRGB(fn, SkColorSpace::kAdobeRGB_Gamut);
+    sk_sp<SkColorSpace> p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
+    skcms_TransferFunction fn;
+    fn.a = 1.f; fn.b = 0.f; fn.c = 0.f; fn.d = 0.f; fn.e = 0.f; fn.f = 0.f; fn.g = 1.8f;
+    sk_sp<SkColorSpace> adobeGamut = SkColorSpace::MakeRGB(fn, SkNamedGamut::kAdobeRGB);
 
     SkBitmap srgbBitmap;
     srgbBitmap.allocPixels(SkImageInfo::MakeS32(1, 1, kOpaque_SkAlphaType));
@@ -1369,7 +1370,7 @@ DEF_TEST(Image_nonfinite_dst, reporter) {
             surf->getCanvas()->drawImageRect(img, dst, &paint);
 
             // we should draw nothing
-            sk_tool_utils::PixelIter iter(surf.get());
+            ToolUtils::PixelIter iter(surf.get());
             while (void* addr = iter.next()) {
                 REPORTER_ASSERT(reporter, *(SkPMColor*)addr == 0);
             }
@@ -1377,3 +1378,121 @@ DEF_TEST(Image_nonfinite_dst, reporter) {
     }
 }
 
+static sk_sp<SkImage> make_yuva_image(GrContext* c) {
+    SkAutoPixmapStorage pm;
+    pm.alloc(SkImageInfo::Make(1, 1, kAlpha_8_SkColorType, kPremul_SkAlphaType));
+    const SkPixmap pmaps[] = {pm, pm, pm, pm};
+    SkYUVAIndex indices[] = {{0, SkColorChannel::kA},
+                             {1, SkColorChannel::kA},
+                             {2, SkColorChannel::kA},
+                             {3, SkColorChannel::kA}};
+
+    return SkImage::MakeFromYUVAPixmaps(c, kJPEG_SkYUVColorSpace, pmaps, indices,
+                                        SkISize::Make(1, 1), kTopLeft_GrSurfaceOrigin, false);
+}
+
+DEF_GPUTEST_FOR_ALL_CONTEXTS(ImageFlush, reporter, ctxInfo) {
+    auto c = ctxInfo.grContext();
+    auto ii = SkImageInfo::Make(10, 10, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    auto s = SkSurface::MakeRenderTarget(ctxInfo.grContext(), SkBudgeted::kYes, ii, 1, nullptr);
+
+    s->getCanvas()->clear(SK_ColorRED);
+    auto i0 = s->makeImageSnapshot();
+    s->getCanvas()->clear(SK_ColorBLUE);
+    auto i1 = s->makeImageSnapshot();
+    s->getCanvas()->clear(SK_ColorGREEN);
+    // Make a YUVA image.
+    auto i2 = make_yuva_image(c);
+
+    // Flush all the setup work we did above and then make little lambda that reports the flush
+    // count delta since the last time it was called.
+    c->flush();
+    auto numFlushes = [c, flushCnt = c->priv().getGpu()->stats()->numFinishFlushes()]() mutable {
+        int curr = c->priv().getGpu()->stats()->numFinishFlushes();
+        int n = curr - flushCnt;
+        flushCnt = curr;
+        return n;
+    };
+
+    // Images aren't used therefore flush is ignored.
+    i0->flush(c);
+    i1->flush(c);
+    i2->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+
+    // Syncing forces the flush to happen even if the images aren't used.
+    GrFlushInfo syncInfo;
+    syncInfo.fFlags = kSyncCpu_GrFlushFlag;
+    i0->flush(c, syncInfo);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+    i1->flush(c, syncInfo);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+    i2->flush(c, syncInfo);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+
+    // Use image 1
+    s->getCanvas()->drawImage(i1, 0, 0);
+    // Flushing image 0 should do nothing.
+    i0->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 1 should flush.
+    i1->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+    // Flushing image 2 should do nothing.
+    i2->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+
+    // Use image 2
+    s->getCanvas()->drawImage(i2, 0, 0);
+    // Flushing image 0 should do nothing.
+    i0->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 1 do nothing.
+    i1->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 2 should flush.
+    i2->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+    // Since we just did a simple image draw it should not have been flattened.
+    REPORTER_ASSERT(reporter,
+                    !static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->testingOnly_IsFlattened());
+    REPORTER_ASSERT(reporter, static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->isTextureBacked());
+
+    // Flatten it and repeat.
+    as_IB(i2.get())->asTextureProxyRef(c);
+    REPORTER_ASSERT(reporter,
+                    static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->testingOnly_IsFlattened());
+    REPORTER_ASSERT(reporter, static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->isTextureBacked());
+    s->getCanvas()->drawImage(i2, 0, 0);
+    // Flushing image 0 should do nothing.
+    i0->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 1 do nothing.
+    i1->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 2 should flush.
+    i2->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+
+    // Test case where flatten happens before the first flush.
+    i2 = make_yuva_image(c);
+    // On some systems where preferVRAMUseOverFlushes is false (ANGLE on Windows) the above may
+    // actually flush in order to make textures for the YUV planes. TODO: Remove this when we
+    // make the YUVA planes from backend textures rather than pixmaps that GrContext must upload.
+    // Calling numFlushes rebases the flush count from here.
+    numFlushes();
+    as_IB(i2.get())->asTextureProxyRef(c);
+    REPORTER_ASSERT(reporter,
+                    static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->testingOnly_IsFlattened());
+    REPORTER_ASSERT(reporter, static_cast<SkImage_GpuYUVA*>(as_IB(i2.get()))->isTextureBacked());
+    s->getCanvas()->drawImage(i2, 0, 0);
+    // Flushing image 0 should do nothing.
+    i0->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 1 do nothing.
+    i1->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 0);
+    // Flushing image 2 should flush.
+    i2->flush(c);
+    REPORTER_ASSERT(reporter, numFlushes() == 1);
+}

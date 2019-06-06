@@ -5,18 +5,29 @@
 * found in the LICENSE file.
 */
 
-#include "gm.h"
-#include "SkBlurMask.h"
-#include "SkCanvas.h"
-#include "SkColorFilter.h"
-#include "SkLayerDrawLooper.h"
-#include "SkMaskFilter.h"
-#include "SkPaint.h"
-#include "SkPath.h"
-#include "SkPoint.h"
-#include "SkRect.h"
-#include "SkRRect.h"
-#include "SkString.h"
+#include "gm/gm.h"
+#include "include/core/SkBlendMode.h"
+#include "include/core/SkBlurTypes.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkDrawLooper.h"
+#include "include/core/SkMaskFilter.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTileMode.h"
+#include "include/core/SkTypes.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/effects/SkLayerDrawLooper.h"
+#include "src/core/SkBlurMask.h"
 
 // This GM mimics a blurred RR seen in the wild.
 class BlurRoundRectGM : public skiagm::GM {
@@ -57,9 +68,7 @@ public:
             paint->setMaskFilter(SkMaskFilter::MakeBlur(
                     kNormal_SkBlurStyle,
                     SkBlurMask::ConvertRadiusToSigma(SK_ScalarHalf)));
-            paint->setColorFilter(SkColorFilter::MakeModeFilter(
-                    SK_ColorLTGRAY,
-                    SkBlendMode::kSrcIn));
+            paint->setColorFilter(SkColorFilters::Blend(SK_ColorLTGRAY, SkBlendMode::kSrcIn));
             paint->setColor(SK_ColorGRAY);
         }
         {
@@ -84,7 +93,6 @@ private:
     typedef skiagm::GM INHERITED;
 };
 
-#include "SkGradientShader.h"
 /*
  * Spits out a dummy gradient to test blur with shader on paint
  */
@@ -93,7 +101,7 @@ static sk_sp<SkShader> MakeRadial() {
         { 0, 0 },
         { SkIntToScalar(100), SkIntToScalar(100) }
     };
-    SkShader::TileMode tm = SkShader::kClamp_TileMode;
+    SkTileMode tm = SkTileMode::kClamp;
     const SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, };
     const SkScalar pos[] = { SK_Scalar1/4, SK_Scalar1*3/4 };
     SkMatrix scale;

@@ -8,16 +8,16 @@
 #ifndef GrPathRenderer_DEFINED
 #define GrPathRenderer_DEFINED
 
-#include "GrTypesPriv.h"
-#include "SkTArray.h"
-#include "SkRefCnt.h"
+#include "include/core/SkRefCnt.h"
+#include "include/private/GrTypesPriv.h"
+#include "include/private/SkTArray.h"
 
 class GrCaps;
 class GrClip;
-class GrContext;
 class GrFixedClip;
 class GrHardClip;
 class GrPaint;
+class GrRecordingContext;
 class GrRenderTargetContext;
 class GrShape;
 class GrStyle;
@@ -72,6 +72,17 @@ public:
         kYes
     };
 
+    /**
+     * This enum defines a set of flags indicating which AA methods would be acceptable for a path
+     * renderer to employ (if any) while drawing a given path.
+     */
+    enum class AATypeFlags {
+        kNone = 0,
+        kCoverage = (1 << 0),
+        kMSAA = (1 << 1),
+        kMixedSampledStencilThenCover = (1 << 2),
+    };
+
     struct CanDrawPathArgs {
         SkDEBUGCODE(CanDrawPathArgs() { memset(this, 0, sizeof(*this)); }) // For validation.
 
@@ -79,9 +90,10 @@ public:
         const SkIRect*              fClipConservativeBounds;
         const SkMatrix*             fViewMatrix;
         const GrShape*              fShape;
-        GrAAType                    fAAType;
+        AATypeFlags                 fAATypeFlags;
+        bool                        fTargetIsWrappedVkSecondaryCB;
 
-        // These next two are only used by GrStencilAndCoverPathRenderer
+        // This is only used by GrStencilAndCoverPathRenderer
         bool                        fHasUserStencilSettings;
 
 #ifdef SK_DEBUG
@@ -105,7 +117,7 @@ public:
     }
 
     struct DrawPathArgs {
-        GrContext*                   fContext;
+        GrRecordingContext*          fContext;
         GrPaint&&                    fPaint;
         const GrUserStencilSettings* fUserStencilSettings;
         GrRenderTargetContext*       fRenderTargetContext;
@@ -113,7 +125,7 @@ public:
         const SkIRect*               fClipConservativeBounds;
         const SkMatrix*              fViewMatrix;
         const GrShape*               fShape;
-        GrAAType                     fAAType;
+        AATypeFlags                  fAATypeFlags;
         bool                         fGammaCorrect;
 #ifdef SK_DEBUG
         void validate() const {
@@ -139,13 +151,13 @@ public:
     struct StencilPathArgs {
         SkDEBUGCODE(StencilPathArgs() { memset(this, 0, sizeof(*this)); }) // For validation.
 
-        GrContext*             fContext;
+        GrRecordingContext*    fContext;
         GrRenderTargetContext* fRenderTargetContext;
         const GrHardClip*      fClip;
         const SkIRect*         fClipConservativeBounds;
         const SkMatrix*        fViewMatrix;
-        GrAAType               fAAType;
         const GrShape*         fShape;
+        GrAA                   fDoStencilMSAA;
 
         SkDEBUGCODE(void validate() const);
     };
@@ -200,5 +212,7 @@ private:
 
     typedef SkRefCnt INHERITED;
 };
+
+GR_MAKE_BITFIELD_CLASS_OPS(GrPathRenderer::AATypeFlags);
 
 #endif

@@ -8,12 +8,31 @@
 #ifndef SkFontPriv_DEFINED
 #define SkFontPriv_DEFINED
 
-#include "SkFont.h"
-#include "SkMatrix.h"
-#include "SkTypeface.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkTypeface.h"
+
+class SkReadBuffer;
+class SkWriteBuffer;
 
 class SkFontPriv {
 public:
+    /*  This is the size we use when we ask for a glyph's path. We then
+     *  post-transform it as we draw to match the request.
+     *  This is done to try to re-use cache entries for the path.
+     *
+     *  This value is somewhat arbitrary. In theory, it could be 1, since
+     *  we store paths as floats. However, we get the path from the font
+     *  scaler, and it may represent its paths as fixed-point (or 26.6),
+     *  so we shouldn't ask for something too big (might overflow 16.16)
+     *  or too small (underflow 26.6).
+     *
+     *  This value could track kMaxSizeForGlyphCache, assuming the above
+     *  constraints, but since we ask for unhinted paths, the two values
+     *  need not match per-se.
+     */
+    static constexpr int kCanonicalTextSizeForPaths  = 64;
+
     /**
      *  Return a matrix that applies the paint's text values: size, scale, skew
      */
@@ -31,20 +50,55 @@ public:
 
     static void ScaleFontMetrics(SkFontMetrics*, SkScalar);
 
-    // returns -1 if buffer is invalid for specified encoding
-    static int ValidCountText(const void* text, size_t length, SkTextEncoding);
+    /**
+        Returns the union of bounds of all glyphs.
+        Returned dimensions are computed by font manager from font data,
+        ignoring SkPaint::Hinting. Includes font metrics, but not fake bold or SkPathEffect.
 
-    static SkTypeface* GetTypefaceOrDefault(const SkFont& font) {
-        return font.getTypeface() ? font.getTypeface() : SkTypeface::GetDefaultTypeface();
+        If text size is large, text scale is one, and text skew is zero,
+        returns the bounds as:
+        { SkFontMetrics::fXMin, SkFontMetrics::fTop, SkFontMetrics::fXMax, SkFontMetrics::fBottom }.
+
+        @return  union of bounds of all glyphs
+     */
+    static SkRect GetFontBounds(const SkFont&);
+
+    static bool IsFinite(const SkFont& font) {
+        return SkScalarIsFinite(font.getSize()) &&
+               SkScalarIsFinite(font.getScaleX()) &&
+               SkScalarIsFinite(font.getSkewX());
     }
 
-    static sk_sp<SkTypeface> RefTypefaceOrDefault(const SkFont& font) {
-        return font.getTypeface() ? font.refTypeface() : SkTypeface::MakeDefault();
+    // Returns the number of elements (characters or glyphs) in the array.
+    static int CountTextElements(const void* text, size_t byteLength, SkTextEncoding);
+
+    static void GlyphsToUnichars(const SkFont&, const uint16_t glyphs[], int count, SkUnichar[]);
+
+    static void Flatten(const SkFont&, SkWriteBuffer& buffer);
+    static bool Unflatten(SkFont*, SkReadBuffer& buffer);
+};
+
+class SkAutoToGlyphs {
+public:
+    SkAutoToGlyphs(const SkFont& font, const void* text, size_t length, SkTextEncoding encoding) {
+        if (encoding == SkTextEncoding::kGlyphID || length == 0) {
+            fGlyphs = reinterpret_cast<const uint16_t*>(text);
+            fCount = length >> 1;
+        } else {
+            fCount = font.countText(text, length, encoding);
+            fStorage.reset(fCount);
+            font.textToGlyphs(text, length, encoding, fStorage.get(), fCount);
+            fGlyphs = fStorage.get();
+        }
     }
 
-    typedef const SkGlyph& (*GlyphCacheProc)(SkGlyphCache*, const char**, const char*);
+    int count() const { return fCount; }
+    const uint16_t* glyphs() const { return fGlyphs; }
 
-    static GlyphCacheProc GetGlyphCacheProc(SkTextEncoding encoding, bool needFullMetrics);
+private:
+    SkAutoSTArray<32, uint16_t> fStorage;
+    const uint16_t* fGlyphs;
+    int             fCount;
 };
 
 #endif

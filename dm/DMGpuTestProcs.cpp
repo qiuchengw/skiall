@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
+#include "tests/Test.h"
 
 using sk_gpu_test::GrContextFactory;
 using sk_gpu_test::GLTestContext;
@@ -25,8 +25,8 @@ bool IsMetalContextType(sk_gpu_test::GrContextFactory::ContextType type) {
 bool IsRenderingGLContextType(sk_gpu_test::GrContextFactory::ContextType type) {
     return IsGLContextType(type) && GrContextFactory::IsRenderingContext(type);
 }
-bool IsNullGLContextType(sk_gpu_test::GrContextFactory::ContextType type) {
-    return type == GrContextFactory::kNullGL_ContextType;
+bool IsMockContextType(sk_gpu_test::GrContextFactory::ContextType type) {
+    return type == GrContextFactory::kMock_ContextType;
 }
 
 void RunWithGPUTestContexts(GrContextTestFn* test, GrContextTypeFilterFn* contextTypeFilter,

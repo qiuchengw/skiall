@@ -8,14 +8,14 @@
 #ifndef GrCCPathParser_DEFINED
 #define GrCCPathParser_DEFINED
 
-#include "GrMesh.h"
-#include "SkPathPriv.h"
-#include "SkRect.h"
-#include "SkRefCnt.h"
-#include "GrTessellator.h"
-#include "ccpr/GrCCCoverageProcessor.h"
-#include "ccpr/GrCCFillGeometry.h"
-#include "ops/GrDrawOp.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "src/core/SkPathPriv.h"
+#include "src/gpu/GrMesh.h"
+#include "src/gpu/GrTessellator.h"
+#include "src/gpu/ccpr/GrCCCoverageProcessor.h"
+#include "src/gpu/ccpr/GrCCFillGeometry.h"
+#include "src/gpu/ops/GrDrawOp.h"
 
 class GrOnFlushResourceProvider;
 class SkMatrix;
@@ -45,7 +45,8 @@ public:
     bool prepareToDraw(GrOnFlushResourceProvider*);
 
     // Called after prepareToDraw(). Draws the given batch of path fills.
-    void drawFills(GrOpFlushState*, BatchID, const SkIRect& drawBounds) const;
+    void drawFills(
+            GrOpFlushState*, GrCCCoverageProcessor*, BatchID, const SkIRect& drawBounds) const;
 
 private:
     static constexpr int kNumScissorModes = 2;
@@ -95,9 +96,8 @@ private:
         SkIRect fScissor;
     };
 
-    void drawPrimitives(GrOpFlushState*, const GrPipeline&, BatchID,
-                        GrCCCoverageProcessor::PrimitiveType, int PrimitiveTallies::*instanceType,
-                        const SkIRect& drawBounds) const;
+    void drawPrimitives(GrOpFlushState*, const GrCCCoverageProcessor&, const GrPipeline&, BatchID,
+                        int PrimitiveTallies::*instanceType, const SkIRect& drawBounds) const;
 
     GrCCFillGeometry fGeometry;
     SkSTArray<32, PathInfo, true> fPathInfos;
@@ -106,7 +106,7 @@ private:
     PrimitiveTallies fTotalPrimitiveCounts[kNumScissorModes];
     int fMaxMeshesPerDraw = 0;
 
-    sk_sp<GrBuffer> fInstanceBuffer;
+    sk_sp<GrGpuBuffer> fInstanceBuffer;
     PrimitiveTallies fBaseInstances[kNumScissorModes];
     mutable SkSTArray<32, GrMesh> fMeshesScratchBuffer;
     mutable SkSTArray<32, SkIRect> fScissorRectScratchBuffer;

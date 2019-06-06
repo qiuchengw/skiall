@@ -5,29 +5,31 @@
  * found in the LICENSE file.
  */
 
-#include "GrDashOp.h"
-#include "GrAppliedClip.h"
-#include "GrCaps.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrCoordTransform.h"
-#include "GrDefaultGeoProcFactory.h"
-#include "GrDrawOpTest.h"
-#include "GrGeometryProcessor.h"
-#include "GrMemoryPool.h"
-#include "GrOpFlushState.h"
-#include "GrProcessor.h"
-#include "GrStyle.h"
-#include "SkGr.h"
-#include "SkMatrixPriv.h"
-#include "SkPointPriv.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "glsl/GrGLSLGeometryProcessor.h"
-#include "glsl/GrGLSLProgramDataManager.h"
-#include "glsl/GrGLSLUniformHandler.h"
-#include "glsl/GrGLSLVarying.h"
-#include "glsl/GrGLSLVertexGeoBuilder.h"
-#include "ops/GrMeshDrawOp.h"
+#include "include/private/GrRecordingContext.h"
+#include "src/core/SkMatrixPriv.h"
+#include "src/core/SkPointPriv.h"
+#include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrCoordTransform.h"
+#include "src/gpu/GrDefaultGeoProcFactory.h"
+#include "src/gpu/GrDrawOpTest.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrProcessor.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrStyle.h"
+#include "src/gpu/GrVertexWriter.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/geometry/GrQuad.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
+#include "src/gpu/glsl/GrGLSLProgramDataManager.h"
+#include "src/gpu/glsl/GrGLSLUniformHandler.h"
+#include "src/gpu/glsl/GrGLSLVarying.h"
+#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
+#include "src/gpu/ops/GrDashOp.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
 
 using AAMode = GrDashOp::AAMode;
 
@@ -71,22 +73,6 @@ bool GrDashOp::CanDrawDashLine(const SkPoint pts[2], const GrStyle& style,
 
     return true;
 }
-
-namespace {
-struct DashLineVertex {
-    SkPoint fPos;
-    SkPoint fDashPos;
-    SkScalar fIntervalLength;
-    SkRect fRect;
-};
-struct DashCircleVertex {
-    SkPoint fPos;
-    SkPoint fDashPos;
-    SkScalar fIntervalLength;
-    SkScalar fRadius;
-    SkScalar fCenterX;
-};
-};
 
 static void calc_dash_scaling(SkScalar* parallelScale, SkScalar* perpScale,
                             const SkMatrix& viewMatrix, const SkPoint pts[2]) {
@@ -164,79 +150,37 @@ enum DashCap {
     kNonRound_DashCap,
 };
 
-static int kDashVertices = 4;
-
-template <typename T>
-void setup_dashed_rect_common(const SkRect& rect, const SkMatrix& matrix, T* vertices, int idx,
+static void setup_dashed_rect(const SkRect& rect, GrVertexWriter& vertices, const SkMatrix& matrix,
                               SkScalar offset, SkScalar bloatX, SkScalar bloatY, SkScalar len,
-                              SkScalar stroke) {
-    SkScalar startDashX = offset - bloatX;
-    SkScalar endDashX = offset + len + bloatX;
-    SkScalar startDashY = -stroke - bloatY;
-    SkScalar endDashY = stroke + bloatY;
-    vertices[idx].fDashPos = SkPoint::Make(startDashX , startDashY);
-    vertices[idx + 1].fDashPos = SkPoint::Make(startDashX, endDashY);
-    vertices[idx + 2].fDashPos = SkPoint::Make(endDashX, startDashY);
-    vertices[idx + 3].fDashPos = SkPoint::Make(endDashX, endDashY);
-
-    vertices[idx].fPos = SkPoint::Make(rect.fLeft, rect.fTop);
-    vertices[idx + 1].fPos = SkPoint::Make(rect.fLeft, rect.fBottom);
-    vertices[idx + 2].fPos = SkPoint::Make(rect.fRight, rect.fTop);
-    vertices[idx + 3].fPos = SkPoint::Make(rect.fRight, rect.fBottom);
-
-    SkMatrixPriv::MapPointsWithStride(matrix, &vertices[idx].fPos, sizeof(T), 4);
-}
-
-static void setup_dashed_rect(const SkRect& rect, void* vertices, int idx,
-                              const SkMatrix& matrix, SkScalar offset, SkScalar bloatX,
-                              SkScalar bloatY, SkScalar len, SkScalar stroke,
-                              SkScalar startInterval, SkScalar endInterval, SkScalar strokeWidth,
-                              DashCap cap, const size_t vertexStride) {
+                              SkScalar stroke, SkScalar startInterval, SkScalar endInterval,
+                              SkScalar strokeWidth, DashCap cap) {
     SkScalar intervalLength = startInterval + endInterval;
+    SkRect dashRect = { offset       - bloatX, -stroke - bloatY,
+                        offset + len + bloatX,  stroke + bloatY };
 
     if (kRound_DashCap == cap) {
-        SkASSERT(vertexStride == sizeof(DashCircleVertex));
-        DashCircleVertex* verts = reinterpret_cast<DashCircleVertex*>(vertices);
-
-        setup_dashed_rect_common<DashCircleVertex>(rect, matrix, verts, idx, offset, bloatX,
-                                                   bloatY, len, stroke);
-
         SkScalar radius = SkScalarHalf(strokeWidth) - 0.5f;
         SkScalar centerX = SkScalarHalf(endInterval);
 
-        for (int i = 0; i < kDashVertices; i++) {
-            verts[idx + i].fIntervalLength = intervalLength;
-            verts[idx + i].fRadius = radius;
-            verts[idx + i].fCenterX = centerX;
-        }
+        vertices.writeQuad(GrQuad::MakeFromRect(rect, matrix),
+                           GrVertexWriter::TriStripFromRect(dashRect),
+                           intervalLength,
+                           radius,
+                           centerX);
     } else {
-        SkASSERT(kNonRound_DashCap == cap && vertexStride == sizeof(DashLineVertex));
-        DashLineVertex* verts = reinterpret_cast<DashLineVertex*>(vertices);
-
-        setup_dashed_rect_common<DashLineVertex>(rect, matrix, verts, idx, offset, bloatX,
-                                                 bloatY, len, stroke);
-
+        SkASSERT(kNonRound_DashCap == cap);
         SkScalar halfOffLen = SkScalarHalf(endInterval);
         SkScalar halfStroke = SkScalarHalf(strokeWidth);
         SkRect rectParam;
-        rectParam.set(halfOffLen + 0.5f, -halfStroke + 0.5f,
-                      halfOffLen + startInterval - 0.5f, halfStroke - 0.5f);
-        for (int i = 0; i < kDashVertices; i++) {
-            verts[idx + i].fIntervalLength = intervalLength;
-            verts[idx + i].fRect = rectParam;
-        }
+        rectParam.set(halfOffLen                 + 0.5f, -halfStroke + 0.5f,
+                      halfOffLen + startInterval - 0.5f,  halfStroke - 0.5f);
+
+        vertices.writeQuad(GrQuad::MakeFromRect(rect, matrix),
+                           GrVertexWriter::TriStripFromRect(dashRect),
+                           intervalLength,
+                           rectParam);
     }
 }
-
-static void setup_dashed_rect_pos(const SkRect& rect, int idx, const SkMatrix& matrix,
-                                  SkPoint* verts) {
-    verts[idx] = SkPoint::Make(rect.fLeft, rect.fTop);
-    verts[idx + 1] = SkPoint::Make(rect.fLeft, rect.fBottom);
-    verts[idx + 2] = SkPoint::Make(rect.fRight, rect.fTop);
-    verts[idx + 3] = SkPoint::Make(rect.fRight, rect.fBottom);
-    matrix.mapPoints(&verts[idx], 4);
-}
-
 
 /**
  * An GrGeometryProcessor that renders a dashed line.
@@ -265,13 +209,13 @@ public:
         SkScalar fPerpendicularScale;
     };
 
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrPaint&& paint,
                                           const LineData& geometry,
                                           SkPaint::Cap cap,
                                           AAMode aaMode, bool fullDash,
                                           const GrUserStencilSettings* stencilSettings) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
         return pool->allocate<DashOp>(std::move(paint), geometry, cap,
                                       aaMode, fullDash, stencilSettings);
@@ -279,7 +223,7 @@ public:
 
     const char* name() const override { return "DashOp"; }
 
-    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
+    void visitProxies(const VisitProxyFunc& func) const override {
         fProcessorSet.visitProxies(func);
     }
 
@@ -313,19 +257,19 @@ public:
         return flags;
     }
 
-    RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType,
+            GrClampType clampType) override {
         GrProcessorAnalysisCoverage coverage;
         if (AAMode::kNone == fAAMode && !clip->numClipCoverageFragmentProcessors()) {
             coverage = GrProcessorAnalysisCoverage::kNone;
         } else {
             coverage = GrProcessorAnalysisCoverage::kSingleChannel;
         }
-        auto analysis = fProcessorSet.finalize(fColor, coverage, clip, false, caps, &fColor);
-        fDisallowCombineOnTouchOrOverlap = analysis.requiresDstTexture() ||
-                                           (fProcessorSet.xferProcessor() &&
-                                            fProcessorSet.xferProcessor()->xferBarrierType(caps));
+        auto analysis = fProcessorSet.finalize(
+                fColor, coverage, clip, fStencilSettings, fsaaType, caps, clampType, &fColor);
         fUsesLocalCoords = analysis.usesLocalCoords();
-        return analysis.requiresDstTexture() ? RequiresDstTexture::kYes : RequiresDstTexture::kNo;
+        return analysis;
     }
 
 private:
@@ -627,14 +571,12 @@ private:
             return;
         }
 
-        size_t vertexStride = gp->vertexStride();
-        QuadHelper helper(target, vertexStride, totalRectCount);
-        void* vertices = helper.vertices();
-        if (!vertices) {
+        QuadHelper helper(target, gp->vertexStride(), totalRectCount);
+        GrVertexWriter vertices{ helper.vertices() };
+        if (!vertices.fPtr) {
             return;
         }
 
-        int curVIdx = 0;
         int rectIndex = 0;
         for (int i = 0; i < instanceCount; i++) {
             const LineData& geom = fLines[i];
@@ -642,65 +584,57 @@ private:
             if (!draws[i].fLineDone) {
                 if (fullDash) {
                     setup_dashed_rect(
-                            rects[rectIndex], vertices, curVIdx, geom.fSrcRotInv,
+                            rects[rectIndex], vertices, geom.fSrcRotInv,
                             draws[i].fStartOffset, draws[i].fDevBloatX, draws[i].fDevBloatY,
                             draws[i].fLineLength, draws[i].fHalfDevStroke, draws[i].fIntervals[0],
-                            draws[i].fIntervals[1], draws[i].fStrokeWidth, capType, vertexStride);
+                            draws[i].fIntervals[1], draws[i].fStrokeWidth, capType);
                 } else {
-                    SkPoint* verts = reinterpret_cast<SkPoint*>(vertices);
-                    setup_dashed_rect_pos(rects[rectIndex], curVIdx, geom.fSrcRotInv, verts);
+                    vertices.writeQuad(GrQuad::MakeFromRect(rects[rectIndex], geom.fSrcRotInv));
                 }
-                curVIdx += 4;
             }
             rectIndex++;
 
             if (draws[i].fHasStartRect) {
                 if (fullDash) {
                     setup_dashed_rect(
-                            rects[rectIndex], vertices, curVIdx, geom.fSrcRotInv,
+                            rects[rectIndex], vertices, geom.fSrcRotInv,
                             draws[i].fStartOffset, draws[i].fDevBloatX, draws[i].fDevBloatY,
                             draws[i].fIntervals[0], draws[i].fHalfDevStroke, draws[i].fIntervals[0],
-                            draws[i].fIntervals[1], draws[i].fStrokeWidth, capType, vertexStride);
+                            draws[i].fIntervals[1], draws[i].fStrokeWidth, capType);
                 } else {
-                    SkPoint* verts = reinterpret_cast<SkPoint*>(vertices);
-                    setup_dashed_rect_pos(rects[rectIndex], curVIdx, geom.fSrcRotInv, verts);
+                    vertices.writeQuad(GrQuad::MakeFromRect(rects[rectIndex], geom.fSrcRotInv));
                 }
-                curVIdx += 4;
             }
             rectIndex++;
 
             if (draws[i].fHasEndRect) {
                 if (fullDash) {
                     setup_dashed_rect(
-                            rects[rectIndex], vertices, curVIdx, geom.fSrcRotInv,
+                            rects[rectIndex], vertices, geom.fSrcRotInv,
                             draws[i].fStartOffset, draws[i].fDevBloatX, draws[i].fDevBloatY,
                             draws[i].fIntervals[0], draws[i].fHalfDevStroke, draws[i].fIntervals[0],
-                            draws[i].fIntervals[1], draws[i].fStrokeWidth, capType, vertexStride);
+                            draws[i].fIntervals[1], draws[i].fStrokeWidth, capType);
                 } else {
-                    SkPoint* verts = reinterpret_cast<SkPoint*>(vertices);
-                    setup_dashed_rect_pos(rects[rectIndex], curVIdx, geom.fSrcRotInv, verts);
+                    vertices.writeQuad(GrQuad::MakeFromRect(rects[rectIndex], geom.fSrcRotInv));
                 }
-                curVIdx += 4;
             }
             rectIndex++;
         }
-        SkASSERT(0 == (curVIdx % 4) && (curVIdx / 4) == totalRectCount);
-        uint32_t pipelineFlags = 0;
+        helper.recordDraw(target, std::move(gp));
+    }
+
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        auto pipelineFlags = GrPipeline::InputFlags::kNone;
         if (AAMode::kCoverageWithMSAA == fAAMode) {
-            pipelineFlags |= GrPipeline::kHWAntialias_Flag;
+            pipelineFlags |= GrPipeline::InputFlags::kHWAntialias;
         }
-        auto pipe = target->makePipeline(pipelineFlags, std::move(fProcessorSet),
-                                         target->detachAppliedClip());
-        helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
+        flushState->executeDrawsAndUploadsForMeshDrawOp(
+                this, chainBounds, std::move(fProcessorSet), pipelineFlags, fStencilSettings);
     }
 
     CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
         DashOp* that = t->cast<DashOp>();
         if (fProcessorSet != that->fProcessorSet) {
-            return CombineResult::kCannotCombine;
-        }
-        if (fDisallowCombineOnTouchOrOverlap &&
-            GrRectsTouchOrOverlap(this->bounds(), that->bounds())) {
             return CombineResult::kCannotCombine;
         }
 
@@ -740,7 +674,6 @@ private:
 
     SkSTArray<1, LineData, true> fLines;
     SkPMColor4f fColor;
-    bool fDisallowCombineOnTouchOrOverlap : 1;
     bool fUsesLocalCoords : 1;
     bool fFullDash : 1;
     // We use 3 bits for this 3-value enum because MSVS makes the underlying types signed.
@@ -752,7 +685,7 @@ private:
     typedef GrMeshDrawOp INHERITED;
 };
 
-std::unique_ptr<GrDrawOp> GrDashOp::MakeDashLineOp(GrContext* context,
+std::unique_ptr<GrDrawOp> GrDashOp::MakeDashLineOp(GrRecordingContext* context,
                                                    GrPaint&& paint,
                                                    const SkMatrix& viewMatrix,
                                                    const SkPoint pts[2],
@@ -933,10 +866,11 @@ void GLDashingCircleEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
                          args.fFPCoordTransformHandler);
 
     // transforms all points so that we can compare them to our test circle
-    fragBuilder->codeAppendf("half xShifted = %s.x - floor(%s.x / %s.z) * %s.z;",
+    fragBuilder->codeAppendf("half xShifted = half(%s.x - floor(%s.x / %s.z) * %s.z);",
                              dashParams.fsIn(), dashParams.fsIn(), dashParams.fsIn(),
                              dashParams.fsIn());
-    fragBuilder->codeAppendf("half2 fragPosShifted = half2(xShifted, %s.y);", dashParams.fsIn());
+    fragBuilder->codeAppendf("half2 fragPosShifted = half2(xShifted, half(%s.y));",
+                             dashParams.fsIn());
     fragBuilder->codeAppendf("half2 center = half2(%s.y, 0.0);", circleParams.fsIn());
     fragBuilder->codeAppend("half dist = length(center - fragPosShifted);");
     if (dce.aaMode() != AAMode::kNone) {
@@ -1132,18 +1066,23 @@ void GLDashingLineEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
                          args.fFPCoordTransformHandler);
 
     // transforms all points so that we can compare them to our test rect
-    fragBuilder->codeAppendf("half xShifted = %s.x - floor(%s.x / %s.z) * %s.z;",
+    fragBuilder->codeAppendf("half xShifted = half(%s.x - floor(%s.x / %s.z) * %s.z);",
                              inDashParams.fsIn(), inDashParams.fsIn(), inDashParams.fsIn(),
                              inDashParams.fsIn());
-    fragBuilder->codeAppendf("half2 fragPosShifted = half2(xShifted, %s.y);", inDashParams.fsIn());
+    fragBuilder->codeAppendf("half2 fragPosShifted = half2(xShifted, half(%s.y));",
+                             inDashParams.fsIn());
     if (de.aaMode() == AAMode::kCoverage) {
         // The amount of coverage removed in x and y by the edges is computed as a pair of negative
         // numbers, xSub and ySub.
         fragBuilder->codeAppend("half xSub, ySub;");
-        fragBuilder->codeAppendf("xSub = min(fragPosShifted.x - %s.x, 0.0);", inRectParams.fsIn());
-        fragBuilder->codeAppendf("xSub += min(%s.z - fragPosShifted.x, 0.0);", inRectParams.fsIn());
-        fragBuilder->codeAppendf("ySub = min(fragPosShifted.y - %s.y, 0.0);", inRectParams.fsIn());
-        fragBuilder->codeAppendf("ySub += min(%s.w - fragPosShifted.y, 0.0);", inRectParams.fsIn());
+        fragBuilder->codeAppendf("xSub = half(min(fragPosShifted.x - %s.x, 0.0));",
+                                 inRectParams.fsIn());
+        fragBuilder->codeAppendf("xSub += half(min(%s.z - fragPosShifted.x, 0.0));",
+                                 inRectParams.fsIn());
+        fragBuilder->codeAppendf("ySub = half(min(fragPosShifted.y - %s.y, 0.0));",
+                                 inRectParams.fsIn());
+        fragBuilder->codeAppendf("ySub += half(min(%s.w - fragPosShifted.y, 0.0));",
+                                 inRectParams.fsIn());
         // Now compute coverage in x and y and multiply them to get the fraction of the pixel
         // covered.
         fragBuilder->codeAppendf(
@@ -1152,8 +1091,10 @@ void GLDashingLineEffect::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
         // For MSAA, we don't modulate the alpha by the Y distance, since MSAA coverage will handle
         // AA on the the top and bottom edges. The shader is only responsible for intra-dash alpha.
         fragBuilder->codeAppend("half xSub;");
-        fragBuilder->codeAppendf("xSub = min(fragPosShifted.x - %s.x, 0.0);", inRectParams.fsIn());
-        fragBuilder->codeAppendf("xSub += min(%s.z - fragPosShifted.x, 0.0);", inRectParams.fsIn());
+        fragBuilder->codeAppendf("xSub = half(min(fragPosShifted.x - %s.x, 0.0));",
+                                 inRectParams.fsIn());
+        fragBuilder->codeAppendf("xSub += half(min(%s.z - fragPosShifted.x, 0.0));",
+                                 inRectParams.fsIn());
         // Now compute coverage in x to get the fraction of the pixel covered.
         fragBuilder->codeAppendf("half alpha = (1.0 + max(xSub, -1.0));");
     } else {

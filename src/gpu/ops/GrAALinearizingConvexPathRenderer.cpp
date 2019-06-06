@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "GrAALinearizingConvexPathRenderer.h"
-#include "GrAAConvexTessellator.h"
-#include "GrContext.h"
-#include "GrDefaultGeoProcFactory.h"
-#include "GrDrawOpTest.h"
-#include "GrGeometryProcessor.h"
-#include "GrOpFlushState.h"
-#include "GrPathUtils.h"
-#include "GrProcessor.h"
-#include "GrRenderTargetContext.h"
-#include "GrShape.h"
-#include "GrStyle.h"
-#include "GrVertexWriter.h"
-#include "SkGeometry.h"
-#include "SkPathPriv.h"
-#include "SkString.h"
-#include "SkTraceEvent.h"
-#include "glsl/GrGLSLGeometryProcessor.h"
-#include "ops/GrMeshDrawOp.h"
-#include "ops/GrSimpleMeshDrawOpHelper.h"
+#include "include/core/SkString.h"
+#include "src/core/SkGeometry.h"
+#include "src/core/SkPathPriv.h"
+#include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrDefaultGeoProcFactory.h"
+#include "src/gpu/GrDrawOpTest.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrProcessor.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrStyle.h"
+#include "src/gpu/GrVertexWriter.h"
+#include "src/gpu/geometry/GrPathUtils.h"
+#include "src/gpu/geometry/GrShape.h"
+#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
+#include "src/gpu/ops/GrAAConvexTessellator.h"
+#include "src/gpu/ops/GrAALinearizingConvexPathRenderer.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
+#include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
 static const int DEFAULT_BUFFER_SIZE = 100;
 
@@ -39,7 +39,7 @@ GrAALinearizingConvexPathRenderer::GrAALinearizingConvexPathRenderer() {
 
 GrPathRenderer::CanDrawPath
 GrAALinearizingConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
-    if (GrAAType::kCoverage != args.fAAType) {
+    if (!(AATypeFlags::kCoverage & args.fAATypeFlags)) {
         return CanDrawPath::kNo;
     }
     if (!args.fShape->knownToBeConvex()) {
@@ -82,22 +82,12 @@ GrAALinearizingConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) co
 // extract the result vertices and indices from the GrAAConvexTessellator
 static void extract_verts(const GrAAConvexTessellator& tess,
                           void* vertData,
-                          size_t vertexStride,
-                          GrColor color,
+                          const GrVertexColor& color,
                           uint16_t firstIndex,
-                          uint16_t* idxs,
-                          bool tweakAlphaForCoverage) {
+                          uint16_t* idxs) {
     GrVertexWriter verts{vertData};
     for (int i = 0; i < tess.numPts(); ++i) {
-        verts.write(tess.point(i));
-        if (tweakAlphaForCoverage) {
-            SkASSERT(SkScalarRoundToInt(255.0f * tess.coverage(i)) <= 255);
-            unsigned scale = SkScalarRoundToInt(255.0f * tess.coverage(i));
-            GrColor scaledColor = (0xff == scale) ? color : SkAlphaMulQ(color, scale);
-            verts.write(scaledColor);
-        } else {
-            verts.write(color, tess.coverage(i));
-        }
+        verts.write(tess.point(i), color, tess.coverage(i));
     }
 
     for (int i = 0; i < tess.numIndices(); ++i) {
@@ -108,22 +98,18 @@ static void extract_verts(const GrAAConvexTessellator& tess,
 static sk_sp<GrGeometryProcessor> create_lines_only_gp(const GrShaderCaps* shaderCaps,
                                                        bool tweakAlphaForCoverage,
                                                        const SkMatrix& viewMatrix,
-                                                       bool usesLocalCoords) {
+                                                       bool usesLocalCoords,
+                                                       bool wideColor) {
     using namespace GrDefaultGeoProcFactory;
 
-    Coverage::Type coverageType;
-    if (tweakAlphaForCoverage) {
-        coverageType = Coverage::kSolid_Type;
-    } else {
-        coverageType = Coverage::kAttribute_Type;
-    }
+    Coverage::Type coverageType =
+        tweakAlphaForCoverage ? Coverage::kAttributeTweakAlpha_Type : Coverage::kAttribute_Type;
     LocalCoords::Type localCoordsType =
-            usesLocalCoords ? LocalCoords::kUsePosition_Type : LocalCoords::kUnused_Type;
-    return MakeForDeviceSpace(shaderCaps,
-                              Color::kPremulGrColorAttribute_Type,
-                              coverageType,
-                              localCoordsType,
-                              viewMatrix);
+        usesLocalCoords ? LocalCoords::kUsePosition_Type : LocalCoords::kUnused_Type;
+    Color::Type colorType =
+        wideColor ? Color::kPremulWideColorAttribute_Type : Color::kPremulGrColorAttribute_Type;
+
+    return MakeForDeviceSpace(shaderCaps, colorType, coverageType, localCoordsType, viewMatrix);
 }
 
 namespace {
@@ -134,7 +120,7 @@ private:
 
 public:
     DEFINE_OP_CLASS_ID
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrPaint&& paint,
                                           const SkMatrix& viewMatrix,
                                           const SkPath& path,
@@ -178,7 +164,7 @@ public:
 
     const char* name() const override { return "AAFlatteningConvexPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
+    void visitProxies(const VisitProxyFunc& func) const override {
         fHelper.visitProxies(func);
     }
 
@@ -200,19 +186,20 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kSingleChannel,
-                                            &fPaths.back().fColor);
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrFSAAType fsaaType, GrClampType clampType) override {
+        return fHelper.finalizeProcessors(
+                caps, clip, fsaaType, clampType, GrProcessorAnalysisCoverage::kSingleChannel,
+                &fPaths.back().fColor, &fWideColor);
     }
 
 private:
-    void draw(Target* target, sk_sp<const GrGeometryProcessor> gp, const GrPipeline* pipeline,
-              const GrPipeline::FixedDynamicState* fixedDynamicState, int vertexCount,
-              size_t vertexStride, void* vertices, int indexCount, uint16_t* indices) const {
+    void recordDraw(Target* target, sk_sp<const GrGeometryProcessor> gp, int vertexCount,
+                    size_t vertexStride, void* vertices, int indexCount, uint16_t* indices) const {
         if (vertexCount == 0 || indexCount == 0) {
             return;
         }
-        const GrBuffer* vertexBuffer;
+        sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex;
         void* verts = target->makeVertexSpace(vertexStride, vertexCount, &vertexBuffer,
                                               &firstVertex);
@@ -222,7 +209,7 @@ private:
         }
         memcpy(verts, vertices, vertexCount * vertexStride);
 
-        const GrBuffer* indexBuffer;
+        sk_sp<const GrBuffer> indexBuffer;
         int firstIndex;
         uint16_t* idxs = target->makeIndexSpace(indexCount, &indexBuffer, &firstIndex);
         if (!idxs) {
@@ -231,19 +218,19 @@ private:
         }
         memcpy(idxs, indices, indexCount * sizeof(uint16_t));
         GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangles);
-        mesh->setIndexed(indexBuffer, indexCount, firstIndex, 0, vertexCount - 1,
+        mesh->setIndexed(std::move(indexBuffer), indexCount, firstIndex, 0, vertexCount - 1,
                          GrPrimitiveRestart::kNo);
-        mesh->setVertexData(vertexBuffer, firstVertex);
-        target->draw(std::move(gp), pipeline, fixedDynamicState, mesh);
+        mesh->setVertexData(std::move(vertexBuffer), firstVertex);
+        target->recordDraw(std::move(gp), mesh);
     }
 
     void onPrepareDraws(Target* target) override {
-        auto pipe = fHelper.makePipeline(target);
         // Setup GrGeometryProcessor
         sk_sp<GrGeometryProcessor> gp(create_lines_only_gp(target->caps().shaderCaps(),
-                                                           fHelper.compatibleWithAlphaAsCoverage(),
+                                                           fHelper.compatibleWithCoverageAsAlpha(),
                                                            this->viewMatrix(),
-                                                           fHelper.usesLocalCoords()));
+                                                           fHelper.usesLocalCoords(),
+                                                           fWideColor));
         if (!gp) {
             SkDebugf("Couldn't create a GrGeometryProcessor\n");
             return;
@@ -271,8 +258,8 @@ private:
             if (vertexCount + currentVertices > static_cast<int>(UINT16_MAX)) {
                 // if we added the current instance, we would overflow the indices we can store in a
                 // uint16_t. Draw what we've got so far and reset.
-                this->draw(target, gp, pipe.fPipeline, pipe.fFixedDynamicState, vertexCount,
-                           vertexStride, vertices, indexCount, indices);
+                this->recordDraw(
+                        target, gp, vertexCount, vertexStride, vertices, indexCount, indices);
                 vertexCount = 0;
                 indexCount = 0;
             }
@@ -296,19 +283,22 @@ private:
                 indices = (uint16_t*) sk_realloc_throw(indices, maxIndices * sizeof(uint16_t));
             }
 
-            // TODO4F: Preserve float colors
-            extract_verts(tess, vertices + vertexStride * vertexCount, vertexStride,
-                          args.fColor.toBytes_RGBA(), vertexCount, indices + indexCount,
-                          fHelper.compatibleWithAlphaAsCoverage());
+            extract_verts(tess, vertices + vertexStride * vertexCount,
+                          GrVertexColor(args.fColor, fWideColor), vertexCount,
+                          indices + indexCount);
             vertexCount += currentVertices;
             indexCount += currentIndices;
         }
         if (vertexCount <= SK_MaxS32 && indexCount <= SK_MaxS32) {
-            this->draw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState, vertexCount,
-                       vertexStride, vertices, indexCount, indices);
+            this->recordDraw(target, std::move(gp), vertexCount, vertexStride, vertices, indexCount,
+                             indices);
         }
         sk_free(vertices);
         sk_free(indices);
+    }
+
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        fHelper.executeDrawsAndUploads(this, flushState, chainBounds);
     }
 
     CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
@@ -318,6 +308,7 @@ private:
         }
 
         fPaths.push_back_n(that->fPaths.count(), that->fPaths.begin());
+        fWideColor |= that->fWideColor;
         return CombineResult::kMerged;
     }
 
@@ -335,6 +326,7 @@ private:
 
     SkSTArray<1, PathData, true> fPaths;
     Helper fHelper;
+    bool fWideColor;
 
     typedef GrMeshDrawOp INHERITED;
 };

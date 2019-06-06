@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "CanvasStateHelpers.h"
-#include "SkBitmap.h"
-#include "SkCanvasPriv.h"
-#include "SkCanvasStateUtils.h"
-#include "SkClipOpPriv.h"
-#include "SkColor.h"
-#include "SkCommandLineFlags.h"
-#include "SkImageInfo.h"
-#include "SkPaint.h"
-#include "SkRRect.h"
-#include "SkRect.h"
-#include "SkRegion.h"
-#include "SkScalar.h"
-#include "SkTDArray.h"
-#include "SkTLazy.h"
-#include "SkTypes.h"
-#include "Test.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRegion.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkTDArray.h"
+#include "include/utils/SkCanvasStateUtils.h"
+#include "src/core/SkCanvasPriv.h"
+#include "src/core/SkClipOpPriv.h"
+#include "src/core/SkTLazy.h"
+#include "tests/CanvasStateHelpers.h"
+#include "tests/Test.h"
+#include "tools/flags/CommandLineFlags.h"
 
 #include <cstring>
-#include <memory>
 
 class SkCanvasState;
 
@@ -32,12 +32,13 @@ class SkCanvasState;
 #ifdef SK_SUPPORT_LEGACY_CLIPTOLAYERFLAG
 #include <dlfcn.h>
 
-DEFINE_string(library, "", "Support library to use for CanvasState test. If empty (the default), "
-                           "the test will be run without crossing a library boundary. Otherwise, "
-                           "it is expected to be a full path to a shared library file, which will"
-                           " be dynamically loaded. Functions from the library will be called to "
-                           "test SkCanvasState. Instructions for generating the library are in "
-                           "gyp/canvas_state_lib.gyp");
+static DEFINE_string(library, "",
+                     "Support library to use for CanvasState test. If empty (the default), "
+                     "the test will be run without crossing a library boundary. Otherwise, "
+                     "it is expected to be a full path to a shared library file, which will"
+                     " be dynamically loaded. Functions from the library will be called to "
+                     "test SkCanvasState. Instructions for generating the library are in "
+                     "gyp/canvas_state_lib.gyp");
 
 
 // This class calls dlopen on the library passed in to the command line flag library, and handles

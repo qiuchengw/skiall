@@ -5,14 +5,16 @@
  * found in the LICENSE file.
  */
 
-#include "Fuzz.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkImage.h"
-#include "SkPath.h"
-#include "SkSurface.h"
-#include "SkTypeface.h"
-#include "SkClipOpPriv.h"
+#include "fuzz/Fuzz.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTextBlob.h"
+#include "include/core/SkTypeface.h"
+#include "src/core/SkClipOpPriv.h"
 
 static const int kBmpSize = 24;
 static const int kMaxX = 250;
@@ -46,9 +48,6 @@ static void init_paint(Fuzz* fuzz, SkPaint* p) {
 
     fuzz->nextRange(&tmp_u8, 0, (int)kHigh_SkFilterQuality);
     p->setFilterQuality(static_cast<SkFilterQuality>(tmp_u8));
-
-    fuzz->nextRange(&tmp_u8, 0, (int)SkPaint::kFull_Hinting);
-    p->setHinting(static_cast<SkFontHinting>(tmp_u8));
 
     fuzz->nextRange(&tmp_u8, 0, (int)SkPaint::kLast_Cap);
     p->setStrokeCap(static_cast<SkPaint::Cap>(tmp_u8));
@@ -111,7 +110,8 @@ static void init_surface(Fuzz* fuzz, sk_sp<SkSurface>* s) {
 }
 
 
-static void fuzz_drawText(Fuzz* fuzz, sk_sp<SkTypeface> font) {
+static void fuzz_drawText(Fuzz* fuzz, sk_sp<SkTypeface> typeface) {
+    SkFont font(typeface);
     SkPaint p;
     init_paint(fuzz, &p);
     sk_sp<SkSurface> surface;
@@ -126,37 +126,33 @@ static void fuzz_drawText(Fuzz* fuzz, sk_sp<SkTypeface> font) {
     SkPoint pts[kPtsLen];
     for (uint8_t i = 0; i < kPtsLen; ++i) {
         pts[i].set(x, y);
-        x += p.getTextSize();
+        x += font.getSize();
     }
 
-    p.setTypeface(font);
-    // set text related attributes
     bool b;
     fuzz->next(&b);
-    p.setAutohinted(b);
+    font.setForceAutoHinting(b);
     fuzz->next(&b);
-    p.setEmbeddedBitmapText(b);
+    font.setEmbeddedBitmaps(b);
     fuzz->next(&b);
-    p.setFakeBoldText(b);
+    font.setEmbolden(b);
     fuzz->next(&b);
-    p.setLCDRenderText(b);
+    font.setEdging(b ? SkFont::Edging::kAntiAlias : SkFont::Edging::kSubpixelAntiAlias);
     fuzz->next(&b);
-    p.setLinearText(b);
+    font.setLinearMetrics(b);
     fuzz->next(&b);
-    p.setSubpixelText(b);
+    font.setSubpixel(b);
     fuzz->next(&x);
-    p.setTextScaleX(x);
+    font.setScaleX(x);
     fuzz->next(&x);
-    p.setTextSkewX(x);
+    font.setSkewX(x);
     fuzz->next(&x);
-    p.setTextSize(x);
+    font.setSize(x);
 
     SkCanvas* cnv = surface->getCanvas();
-    cnv->drawPosText(text, (kTxtLen-1), pts, p);
-
     fuzz->next(&x);
     fuzz->next(&y);
-    cnv->drawText(text, (kTxtLen-1), x, y, p);
+    cnv->drawTextBlob(SkTextBlob::MakeFromPosText(text, kTxtLen-1, pts, font), x, y, p);
 }
 
 static void fuzz_drawCircle(Fuzz* fuzz) {

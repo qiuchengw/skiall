@@ -5,14 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "SkCanvas.h"
-#include "SkDrawable.h"
-#include "SkPictureRecorder.h"
-#include "SkReadBuffer.h"
-#include "SkRect.h"
-#include "SkStream.h"
-#include "SkWriteBuffer.h"
-#include "Test.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkDrawable.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkStream.h"
+#include "src/core/SkReadBuffer.h"
+#include "src/core/SkWriteBuffer.h"
+#include "tests/Test.h"
 
 class IntDrawable : public SkDrawable {
 public:
@@ -70,7 +71,7 @@ public:
 
     static sk_sp<SkFlattenable> CreateProc(SkReadBuffer& buffer) {
         SkPaint paint;
-        buffer.readPaint(&paint);
+        buffer.readPaint(&paint, nullptr);
         return sk_sp<PaintDrawable>(new PaintDrawable(paint));
     }
 
@@ -199,10 +200,10 @@ private:
 // Register these drawables for deserialization some time before main().
 static struct Initializer {
     Initializer() {
-        SK_REGISTER_FLATTENABLE(IntDrawable)
-        SK_REGISTER_FLATTENABLE(PaintDrawable)
-        SK_REGISTER_FLATTENABLE(CompoundDrawable)
-        SK_REGISTER_FLATTENABLE(RootDrawable)
+        SK_REGISTER_FLATTENABLE(IntDrawable);
+        SK_REGISTER_FLATTENABLE(PaintDrawable);
+        SK_REGISTER_FLATTENABLE(CompoundDrawable);
+        SK_REGISTER_FLATTENABLE(RootDrawable);
     }
 } initializer;
 
@@ -258,7 +259,7 @@ DEF_TEST(FlattenRecordedDrawable, r) {
     canvas->drawPaint(paint);
     SkPaint textPaint;
     textPaint.setColor(SK_ColorBLUE);
-    canvas->drawString("TEXT", 467.0f, 100.0f, textPaint);
+    canvas->drawString("TEXT", 467.0f, 100.0f, SkFont(), textPaint);
 
     // Draw some drawables as well
     sk_sp<SkDrawable> drawable(new IntDrawable(1, 2, 3, 4));

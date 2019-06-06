@@ -5,11 +5,20 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkColor.h"
-#include "SkShader.h"
+#include "gm/gm.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFilterQuality.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTileMode.h"
+#include "include/core/SkTypes.h"
 
 namespace skiagm {
 
@@ -42,28 +51,29 @@ constexpr SkScalar SLIDE_SIZE = 300;
 
 class ClippedBitmapShadersGM : public GM {
 public:
-    ClippedBitmapShadersGM(SkShader::TileMode mode, bool hq=false)
+    ClippedBitmapShadersGM(SkTileMode mode, bool hq=false)
     : fMode(mode), fHQ(hq) {
     }
 
 protected:
-    SkShader::TileMode fMode;
+    SkTileMode fMode;
     bool fHQ;
 
     virtual SkString onShortName() {
         SkString descriptor;
         switch (fMode) {
-            case SkShader::kRepeat_TileMode:
+            case SkTileMode::kRepeat:
                 descriptor = "tile";
             break;
-            case SkShader::kMirror_TileMode:
+            case SkTileMode::kMirror:
                 descriptor = "mirror";
             break;
-            case SkShader::kClamp_TileMode:
+            case SkTileMode::kClamp:
                 descriptor = "clamp";
             break;
-            default:
-                SkASSERT(false);
+            case SkTileMode::kDecal:
+                descriptor = "decal";
+                break;
         }
         descriptor.prepend("clipped-bitmap-shaders-");
         if (fHQ) {
@@ -83,7 +93,7 @@ protected:
         s.setScale(8, 8);
         s.postTranslate(SLIDE_SIZE / 2, SLIDE_SIZE / 2);
         SkPaint paint;
-        paint.setShader(SkShader::MakeBitmapShader(bmp, fMode, fMode, &s));
+        paint.setShader(bmp.makeShader(fMode, fMode, &s));
 
         if (fHQ) {
             paint.setFilterQuality(kHigh_SkFilterQuality);
@@ -113,13 +123,13 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-DEF_GM( return new ClippedBitmapShadersGM(SkShader::kRepeat_TileMode); )
-DEF_GM( return new ClippedBitmapShadersGM(SkShader::kMirror_TileMode); )
-DEF_GM( return new ClippedBitmapShadersGM(SkShader::kClamp_TileMode); )
+DEF_GM( return new ClippedBitmapShadersGM(SkTileMode::kRepeat); )
+DEF_GM( return new ClippedBitmapShadersGM(SkTileMode::kMirror); )
+DEF_GM( return new ClippedBitmapShadersGM(SkTileMode::kClamp); )
 
-DEF_GM( return new ClippedBitmapShadersGM(SkShader::kRepeat_TileMode, true); )
-DEF_GM( return new ClippedBitmapShadersGM(SkShader::kMirror_TileMode, true); )
-DEF_GM( return new ClippedBitmapShadersGM(SkShader::kClamp_TileMode, true); )
+DEF_GM( return new ClippedBitmapShadersGM(SkTileMode::kRepeat, true); )
+DEF_GM( return new ClippedBitmapShadersGM(SkTileMode::kMirror, true); )
+DEF_GM( return new ClippedBitmapShadersGM(SkTileMode::kClamp, true); )
 
 
 }

@@ -8,8 +8,9 @@
 #ifndef SkYUVASizeInfo_DEFINED
 #define SkYUVASizeInfo_DEFINED
 
-#include "SkImageInfo.h"
-#include "SkSize.h"
+#include "include/codec/SkEncodedOrigin.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkSize.h"
 
 struct SK_API SkYUVASizeInfo {
     static constexpr auto kMaxCount = 4;
@@ -29,6 +30,12 @@ struct SK_API SkYUVASizeInfo {
      * the allocation must be at least "widthBytes".
      */
     size_t      fWidthBytes[kMaxCount];
+
+    /**
+     * YUVA data often comes from formats like JPEG that support EXIF orientation.
+     * Code that operates on the raw YUV data often needs to know that orientation.
+     */
+    SkEncodedOrigin fOrigin = kDefault_SkEncodedOrigin;
 
     bool operator==(const SkYUVASizeInfo& that) const {
         for (int i = 0; i < kMaxCount; ++i) {

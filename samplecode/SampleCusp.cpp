@@ -4,12 +4,14 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkGeometry.h"
-#include "SkPath.h"
+
 #include <string>
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPath.h"
+#include "samplecode/Sample.h"
+#include "src/core/SkGeometry.h"
+#include "tools/timer/AnimTimer.h"
 
 // This draws an animation where every cubic has a cusp, to test drawing a circle
 // at the cusp point. Create a unit square. A cubic with its control points
@@ -165,11 +167,11 @@ protected:
         canvas->drawPath(path, p);
         // draw time to make it easier to guess when the bad cubic was drawn
         std::string timeStr = std::to_string((float) (curTime - start) / 1000.f);
-        canvas->drawString(timeStr.c_str(), 20, 20, SkPaint());
+        canvas->drawSimpleText(timeStr.c_str(), timeStr.size(), SkTextEncoding::kUTF8, 20, 20, SkFont(), SkPaint());
         SkDebugf("");
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         curTime = timer.msec();
         if (!start) {
             start = curTime;

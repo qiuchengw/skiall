@@ -8,7 +8,7 @@
 #ifndef SkDeferredDisplayListPriv_DEFINED
 #define SkDeferredDisplayListPriv_DEFINED
 
-#include "SkDeferredDisplayList.h"
+#include "include/private/SkDeferredDisplayList.h"
 
 /** Class that adds methods to SkDeferredDisplayList that are only intended for use internal to Skia.
     This class is purely a privileged window into SkDeferredDisplayList. It should never have
@@ -20,6 +20,14 @@ public:
         return fDDL->fOpLists.count();
 #else
         return 0;
+#endif
+    }
+
+    const SkDeferredDisplayList::LazyProxyData* lazyProxyData() const {
+#if SK_SUPPORT_GPU
+        return fDDL->fLazyProxyData.get();
+#else
+        return nullptr;
 #endif
     }
 

@@ -8,15 +8,14 @@
 #ifndef GrVkPipelineStateBuilder_DEFINED
 #define GrVkPipelineStateBuilder_DEFINED
 
-#include "GrPipeline.h"
-#include "GrProgramDesc.h"
-#include "GrVkPipelineState.h"
-#include "GrVkUniformHandler.h"
-#include "GrVkVaryingHandler.h"
-#include "SkSLCompiler.h"
-#include "glsl/GrGLSLProgramBuilder.h"
-
-#include "vk/GrVkDefines.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "src/gpu/GrPipeline.h"
+#include "src/gpu/GrProgramDesc.h"
+#include "src/gpu/glsl/GrGLSLProgramBuilder.h"
+#include "src/gpu/vk/GrVkPipelineState.h"
+#include "src/gpu/vk/GrVkUniformHandler.h"
+#include "src/gpu/vk/GrVkVaryingHandler.h"
+#include "src/sksl/SkSLCompiler.h"
 
 class GrVkGpu;
 class GrVkRenderPass;
@@ -39,13 +38,18 @@ public:
     class Desc : public GrProgramDesc {
     public:
         static bool Build(Desc*,
+                          GrRenderTarget*,
                           const GrPrimitiveProcessor&,
                           const GrPipeline&,
                           const GrStencilSettings&,
                           GrPrimitiveType primitiveType,
-                          const GrShaderCaps&);
+                          GrVkGpu* gpu);
+
+        size_t shaderKeyLength() const { return fShaderKeyLength; }
 
     private:
+        size_t fShaderKeyLength;
+
         typedef GrProgramDesc INHERITED;
     };
 
@@ -58,7 +62,9 @@ public:
     * @return true if generation was successful.
     */
     static GrVkPipelineState* CreatePipelineState(GrVkGpu*,
+                                                  GrRenderTarget*, GrSurfaceOrigin,
                                                   const GrPrimitiveProcessor&,
+                                                  const GrTextureProxy* const primProcProxies[],
                                                   const GrPipeline&,
                                                   const GrStencilSettings&,
                                                   GrPrimitiveType,
@@ -73,9 +79,10 @@ public:
     void finalizeFragmentSecondaryColor(GrShaderVar& outputColor) override;
 
 private:
-    GrVkPipelineStateBuilder(GrVkGpu*,
+    GrVkPipelineStateBuilder(GrVkGpu*, GrRenderTarget*, GrSurfaceOrigin,
                              const GrPipeline&,
                              const GrPrimitiveProcessor&,
+                             const GrTextureProxy* const primProcProxies[],
                              GrProgramDesc*);
 
     GrVkPipelineState* finalize(const GrStencilSettings&,
@@ -83,12 +90,28 @@ private:
                                 VkRenderPass compatibleRenderPass,
                                 Desc*);
 
+    // returns number of shader stages
+    int loadShadersFromCache(const SkData& cached, VkShaderModule outShaderModules[],
+                             VkPipelineShaderStageCreateInfo* outStageInfo);
+
+    void storeShadersInCache(const SkSL::String shaders[], const SkSL::Program::Inputs inputs[],
+                             bool isSkSL);
+
     bool createVkShaderModule(VkShaderStageFlagBits stage,
-                              const GrGLSLShaderBuilder& builder,
+                              const SkSL::String& sksl,
                               VkShaderModule* shaderModule,
                               VkPipelineShaderStageCreateInfo* stageInfo,
                               const SkSL::Program::Settings& settings,
-                              Desc* desc);
+                              Desc* desc,
+                              SkSL::String* outSPIRV,
+                              SkSL::Program::Inputs* outInputs);
+
+    bool installVkShaderModule(VkShaderStageFlagBits stage,
+                               const GrGLSLShaderBuilder& builder,
+                               VkShaderModule* shaderModule,
+                               VkPipelineShaderStageCreateInfo* stageInfo,
+                               SkSL::String spirv,
+                               SkSL::Program::Inputs inputs);
 
     GrGLSLUniformHandler* uniformHandler() override { return &fUniformHandler; }
     const GrGLSLUniformHandler* uniformHandler() const override { return &fUniformHandler; }

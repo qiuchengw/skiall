@@ -8,7 +8,7 @@
 #ifndef SkLinearGradient_DEFINED
 #define SkLinearGradient_DEFINED
 
-#include "SkGradientShaderPriv.h"
+#include "src/shaders/gradients/SkGradientShaderPriv.h"
 
 class SkLinearGradient : public SkGradientShaderBase {
 public:
@@ -30,8 +30,6 @@ protected:
     void appendGradientStages(SkArenaAlloc* alloc, SkRasterPipeline* tPipeline,
                               SkRasterPipeline* postPipeline) const final;
 
-
-    sk_sp<SkShader> onMakeColorSpace(SkColorSpaceXformer* xformer) const override;
 
 private:
     SK_FLATTENABLE_HOOKS(SkLinearGradient)

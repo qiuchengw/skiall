@@ -8,14 +8,15 @@
 #ifndef SkSpecialSurface_DEFINED
 #define SkSpecialSurface_DEFINED
 
-#include "SkImageInfo.h"
-#include "SkRefCnt.h"
-#include "SkSurfaceProps.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkSurfaceProps.h"
 
 #if SK_SUPPORT_GPU
-#include "GrTypesPriv.h"
+#include "include/private/GrTypesPriv.h"
 #endif
 
+class GrBackendFormat;
 class GrContext;
 class SkBitmap;
 class SkCanvas;
@@ -59,7 +60,8 @@ public:
      *  Allocate a new GPU-backed SkSpecialSurface. If the requested surface cannot
      *  be created, nullptr will be returned.
      */
-    static sk_sp<SkSpecialSurface> MakeRenderTarget(GrContext*,
+    static sk_sp<SkSpecialSurface> MakeRenderTarget(GrRecordingContext*,
+                                                    const GrBackendFormat& format,
                                                     int width, int height,
                                                     GrPixelConfig config,
                                                     sk_sp<SkColorSpace> colorSpace,

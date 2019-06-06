@@ -8,10 +8,11 @@
 #ifndef GrGLUtil_DEFINED
 #define GrGLUtil_DEFINED
 
-#include "gl/GrGLInterface.h"
-#include "GrGLDefines.h"
-#include "GrStencilSettings.h"
-#include "GrTypesPriv.h"
+#include "include/gpu/gl/GrGLInterface.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/GrDataUtils.h"
+#include "src/gpu/GrStencilSettings.h"
+#include "src/gpu/gl/GrGLDefines.h"
 
 class SkMatrix;
 
@@ -258,5 +259,22 @@ void GrGLClearErr(const GrGLInterface* gl);
 #define GR_GL_GET_ERROR(IFACE) (IFACE)->fFunctions.fGetError()
 
 GrGLenum GrToGLStencilFunc(GrStencilTest test);
+
+/**
+ * Returns true if the format is compressed.
+ */
+bool GrGLFormatIsCompressed(GrGLenum glFormat);
+
+/**
+ * Maps a gl format into the GrCompressed enum.
+ */
+GrCompression GrGLFormat2Compression(GrGLenum glFormat);
+
+/**
+ * Returns the data size for the given compressed format
+ */
+size_t GrGLFormatCompressedDataSize(GrGLenum glFormat, int width, int height);
+
+size_t GrGLBytesPerFormat(GrGLenum glFormat);
 
 #endif

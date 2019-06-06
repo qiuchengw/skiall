@@ -4,8 +4,24 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "gm.h"
-#include "sk_tool_utils.h"
+
+#include "gm/gm.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontTypes.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypeface.h"
+#include "include/core/SkTypes.h"
+#include "tools/ToolUtils.h"
+
+#include <string.h>
 
 namespace skiagm {
 
@@ -21,6 +37,7 @@ static const char* color_type_name(SkColorType colorType) {
         case kRGBA_1010102_SkColorType: return "1010102";
         case kRGB_101010x_SkColorType:  return "101010x";
         case kGray_8_SkColorType:       return "G8";
+        case kRGBA_F16Norm_SkColorType: return "F16Norm";
         case kRGBA_F16_SkColorType:     return "F16";
         case kRGBA_F32_SkColorType:     return "F32";
     }
@@ -79,21 +96,22 @@ protected:
         draw_checks(&canvasTmp, 40, 40);
 
         for (unsigned i = 0; i < NUM_CONFIGS; ++i) {
-            sk_tool_utils::copy_to(&fDst[i], gColorTypes[i], src);
+            ToolUtils::copy_to(&fDst[i], gColorTypes[i], src);
         }
 
         canvas->clear(0xFFDDDDDD);
         paint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&paint);
+
+        SkFont font(ToolUtils::create_portable_typeface());
 
         SkScalar width = SkIntToScalar(40);
         SkScalar height = SkIntToScalar(40);
-        if (paint.getFontSpacing() > height) {
-            height = paint.getFontSpacing();
+        if (font.getSpacing() > height) {
+            height = font.getSpacing();
         }
         for (unsigned i = 0; i < NUM_CONFIGS; i++) {
             const char* name = color_type_name(src.colorType());
-            SkScalar textWidth = paint.measureText(name, strlen(name));
+            SkScalar textWidth = font.measureText(name, strlen(name), SkTextEncoding::kUTF8);
             if (textWidth > width) {
                 width = textWidth;
             }
@@ -106,10 +124,10 @@ protected:
             canvas->save();
             // Draw destination config name
             const char* name = color_type_name(fDst[i].colorType());
-            SkScalar textWidth = paint.measureText(name, strlen(name));
+            SkScalar textWidth = font.measureText(name, strlen(name), SkTextEncoding::kUTF8);
             SkScalar x = (width - textWidth) / SkScalar(2);
-            SkScalar y = paint.getFontSpacing() / SkScalar(2);
-            canvas->drawString(name, x, y, paint);
+            SkScalar y = font.getSpacing() / SkScalar(2);
+            canvas->drawSimpleText(name, strlen(name), SkTextEncoding::kUTF8, x, y, font, paint);
 
             // Draw destination bitmap
             canvas->translate(0, vertOffset);
@@ -127,6 +145,5 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new BitmapCopyGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new BitmapCopyGM; )
 }

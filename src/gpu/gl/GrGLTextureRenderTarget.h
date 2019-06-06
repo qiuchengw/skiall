@@ -9,8 +9,8 @@
 #ifndef GrGLTextureRenderTarget_DEFINED
 #define GrGLTextureRenderTarget_DEFINED
 
-#include "GrGLTexture.h"
-#include "GrGLRenderTarget.h"
+#include "src/gpu/gl/GrGLRenderTarget.h"
+#include "src/gpu/gl/GrGLTexture.h"
 
 class GrGLGpu;
 
@@ -37,8 +37,15 @@ public:
 
     static sk_sp<GrGLTextureRenderTarget> MakeWrapped(GrGLGpu* gpu, const GrSurfaceDesc& desc,
                                                       const GrGLTexture::IDDesc& texIDDesc,
+                                                      sk_sp<GrGLTextureParameters> parameters,
                                                       const GrGLRenderTarget::IDDesc& rtIDDesc,
-                                                      GrMipMapsStatus);
+                                                      GrWrapCacheable cacheble, GrMipMapsStatus);
+
+    GrBackendFormat backendFormat() const override {
+        // It doesn't matter if we take the texture or render target path, so just pick texture.
+        return GrGLTexture::backendFormat();
+    }
+
 protected:
     void onAbandon() override {
         GrGLRenderTarget::onAbandon();
@@ -55,7 +62,9 @@ private:
     GrGLTextureRenderTarget(GrGLGpu* gpu,
                             const GrSurfaceDesc& desc,
                             const GrGLTexture::IDDesc& texIDDesc,
+                            sk_sp<GrGLTextureParameters> parameters,
                             const GrGLRenderTarget::IDDesc& rtIDDesc,
+                            GrWrapCacheable,
                             GrMipMapsStatus);
 
     size_t onGpuMemorySize() const override;

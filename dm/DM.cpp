@@ -5,51 +5,42 @@
  * found in the LICENSE file.
  */
 
-#include "DMJsonWriter.h"
-#include "DMSrcSink.h"
-#include "ProcStats.h"
-#include "Resources.h"
-#include "SkBBHFactory.h"
-#include "SkChecksum.h"
-#include "SkChromeTracingTracer.h"
-#include "SkCodec.h"
-#include "SkColorPriv.h"
-#include "SkColorSpace.h"
-#include "SkColorSpacePriv.h"
-#include "SkCommonFlags.h"
-#include "SkCommonFlagsConfig.h"
-#include "SkCommonFlagsGpu.h"
-#include "SkData.h"
-#include "SkDebugfTracer.h"
-#include "SkDocument.h"
-#include "SkEventTracingPriv.h"
-#include "SkFontMgr.h"
-#include "SkFontMgrPriv.h"
-#include "SkGraphics.h"
-#include "SkHalf.h"
-#include "SkLeanWindows.h"
-#include "SkMD5.h"
-#include "SkMutex.h"
-#include "SkOSFile.h"
-#include "SkOSPath.h"
-#include "SkPngEncoder.h"
-#include "SkScan.h"
-#include "SkSpinlock.h"
-#include "SkTestFontMgr.h"
-#include "SkTHash.h"
-#include "SkTaskGroup.h"
-#include "SkTypeface_win.h"
-#include "Test.h"
-#include "ios_utils.h"
-#include "sk_tool_utils.h"
+#include "dm/DMJsonWriter.h"
+#include "dm/DMSrcSink.h"
+#include "include/codec/SkCodec.h"
+#include "include/core/SkBBHFactory.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkData.h"
+#include "include/core/SkDocument.h"
+#include "include/core/SkFontMgr.h"
+#include "include/core/SkGraphics.h"
+#include "include/ports/SkTypeface_win.h"
+#include "include/private/SkChecksum.h"
+#include "include/private/SkHalf.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkSpinlock.h"
+#include "include/private/SkTHash.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/core/SkLeanWindows.h"
+#include "src/core/SkMD5.h"
+#include "src/core/SkOSFile.h"
+#include "src/core/SkTaskGroup.h"
+#include "src/utils/SkOSPath.h"
+#include "tests/Test.h"
+#include "tools/AutoreleasePool.h"
+#include "tools/HashAndEncode.h"
+#include "tools/ProcStats.h"
+#include "tools/Resources.h"
+#include "tools/ToolUtils.h"
+#include "tools/flags/CommonFlags.h"
+#include "tools/flags/CommonFlagsConfig.h"
+#include "tools/ios_utils.h"
+#include "tools/trace/ChromeTracingTracer.h"
+#include "tools/trace/EventTracingPriv.h"
+#include "tools/trace/SkDebugfTracer.h"
 
 #include <vector>
-
-#ifdef SK_PDF_IMAGE_STATS
-extern void SkPDFImageDumpStats();
-#endif
-
-#include "png.h"
 
 #include <stdlib.h>
 
@@ -63,18 +54,17 @@ extern void SkPDFImageDumpStats();
 
 extern bool gSkForceRasterPipelineBlitter;
 
-DECLARE_bool(undefok);
-DEFINE_string(src, "tests gm skp image", "Source types to test.");
-DEFINE_bool(nameByHash, false,
-            "If true, write to FLAGS_writePath[0]/<hash>.png instead of "
-            "to FLAGS_writePath[0]/<config>/<sourceType>/<sourceOptions>/<name>.png");
-DEFINE_bool2(pathOpsExtended, x, false, "Run extended pathOps tests.");
-DEFINE_string(matrix, "1 0 0 1",
-              "2x2 scale+skew matrix to apply or upright when using "
-              "'matrix' or 'upright' in config.");
-DEFINE_bool(gpu_threading, false, "Allow GPU work to run on multiple threads?");
+static DEFINE_string(src, "tests gm skp image", "Source types to test.");
+static DEFINE_bool(nameByHash, false,
+                   "If true, write to FLAGS_writePath[0]/<hash>.png instead of "
+                   "to FLAGS_writePath[0]/<config>/<sourceType>/<sourceOptions>/<name>.png");
+static DEFINE_bool2(pathOpsExtended, x, false, "Run extended pathOps tests.");
+static DEFINE_string(matrix, "1 0 0 1",
+                    "2x2 scale+skew matrix to apply or upright when using "
+                    "'matrix' or 'upright' in config.");
+static DEFINE_bool(gpu_threading, false, "Allow GPU work to run on multiple threads?");
 
-DEFINE_string(blacklist, "",
+static DEFINE_string(blacklist, "",
         "Space-separated config/src/srcOptions/name quadruples to blacklist. "
         "'_' matches anything. '~' negates the match. E.g. \n"
         "'--blacklist gpu skp _ _' will blacklist all SKPs drawn into the gpu config.\n"
@@ -82,34 +72,90 @@ DEFINE_string(blacklist, "",
         "'--blacklist ~8888 svg _ svgparse_' blocks non-8888 SVGs that contain \"svgparse_\" in "
                                             "the name.");
 
-DEFINE_string2(readPath, r, "", "If set check for equality with golden results in this directory.");
+static DEFINE_string2(readPath, r, "",
+                      "If set check for equality with golden results in this directory.");
+DEFINE_string2(writePath, w, "", "If set, write bitmaps here as .pngs.");
 
-DEFINE_string(uninterestingHashesFile, "",
+
+static DEFINE_string(uninterestingHashesFile, "",
         "File containing a list of uninteresting hashes. If a result hashes to something in "
         "this list, no image is written for that result.");
 
-DEFINE_int32(shards, 1, "We're splitting source data into this many shards.");
-DEFINE_int32(shard,  0, "Which shard do I run?");
+static DEFINE_int(shards, 1, "We're splitting source data into this many shards.");
+static DEFINE_int(shard,  0, "Which shard do I run?");
 
-DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp file.");
-DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
+static DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp file.");
+static DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
 
-DEFINE_string(bisect, "",
+static DEFINE_string(bisect, "",
         "Pair of: SKP file to bisect, followed by an l/r bisect trail string (e.g., 'lrll'). The "
         "l/r trail specifies which half to keep at each step of a binary search through the SKP's "
         "paths. An empty string performs no bisect. Only the SkPaths are bisected; all other draws "
         "are thrown out. This is useful for finding a reduced repo case for path drawing bugs.");
 
-DEFINE_bool(ignoreSigInt, false, "ignore SIGINT signals during test execution");
+static DEFINE_bool(ignoreSigInt, false, "ignore SIGINT signals during test execution");
 
-DEFINE_string(dont_write, "", "File extensions to skip writing to --writePath.");  // See skia:6821
+static DEFINE_string(dont_write, "", "File extensions to skip writing to --writePath.");  // See skia:6821
 
-DEFINE_bool(gdi, false, "On Windows, use GDI instead of DirectWrite for font rendering.");
+static DEFINE_bool(checkF16, false, "Ensure that F16Norm pixels are clamped.");
+
+static DEFINE_string(colorImages, "",
+              "List of images and/or directories to decode with color correction. "
+              "A directory with no images is treated as a fatal error.");
+
+static DEFINE_bool2(veryVerbose, V, false, "tell individual tests to be verbose.");
+
+static DEFINE_bool(cpu, true, "master switch for running CPU-bound work.");
+static DEFINE_bool(gpu, true, "master switch for running GPU-bound work.");
+
+static DEFINE_bool(dryRun, false,
+                   "just print the tests that would be run, without actually running them.");
+
+static DEFINE_string(images, "",
+                     "List of images and/or directories to decode. A directory with no images"
+                     " is treated as a fatal error.");
+
+static DEFINE_bool(simpleCodec, false,
+                   "Runs of a subset of the codec tests, "
+                   "with no scaling or subsetting, always using the canvas color type.");
+
+static DEFINE_string2(match, m, nullptr,
+               "[~][^]substring[$] [...] of name to run.\n"
+               "Multiple matches may be separated by spaces.\n"
+               "~ causes a matching name to always be skipped\n"
+               "^ requires the start of the name to match\n"
+               "$ requires the end of the name to match\n"
+               "^ and $ requires an exact match\n"
+               "If a name does not match any list entry,\n"
+               "it is skipped unless some list entry starts with ~");
+
+static DEFINE_bool2(quiet, q, false, "if true, don't print status updates.");
+static DEFINE_bool2(verbose, v, false, "enable verbose output from the test driver.");
+
+static DEFINE_string(skps, "skps", "Directory to read skps from.");
+static DEFINE_string(lotties, "lotties", "Directory to read (Bodymovin) jsons from.");
+static DEFINE_string(svgs, "", "Directory to read SVGs from, or a single SVG file.");
+
+static DEFINE_int_2(threads, j, -1,
+               "Run threadsafe tests on a threadpool with this many extra threads, "
+               "defaulting to one extra thread per core.");
+
+static DEFINE_string(key, "",
+                     "Space-separated key/value pairs to add to JSON identifying this builder.");
+static DEFINE_string(properties, "",
+                     "Space-separated key/value pairs to add to JSON identifying this run.");
+
 
 using namespace DM;
 using sk_gpu_test::GrContextFactory;
 using sk_gpu_test::GLTestContext;
 using sk_gpu_test::ContextInfo;
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+static sk_sp<SkColorSpace> rec2020() {
+    return SkColorSpace::MakeRGB(SkNamedTransferFn::kRec2020, SkNamedGamut::kRec2020);
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -154,6 +200,12 @@ struct Running {
     }
 };
 
+static void dump_json() {
+    if (!FLAGS_writePath.isEmpty()) {
+        JsonWriter::DumpJson(FLAGS_writePath[0], FLAGS_key, FLAGS_properties);
+    }
+}
+
 // We use a spinlock to make locking this in a signal handler _somewhat_ safe.
 static SkSpinlock        gMutex;
 static int               gPending;
@@ -164,7 +216,7 @@ static void done(const char* config, const char* src, const char* srcOptions, co
     vlog("done  %s\n", id.c_str());
     int pending;
     {
-        SkAutoMutexAcquire lock(gMutex);
+        SkAutoSpinlock lock(gMutex);
         for (int i = 0; i < gRunning.count(); i++) {
             if (gRunning[i].id == id) {
                 gRunning.removeShuffle(i);
@@ -177,12 +229,12 @@ static void done(const char* config, const char* src, const char* srcOptions, co
     // We write out dm.json file and print out a progress update every once in a while.
     // Notice this also handles the final dm.json and progress update when pending == 0.
     if (pending % 500 == 0) {
-        JsonWriter::DumpJson();
+        dump_json();
 
         int curr = sk_tools::getCurrResidentSetSizeMB(),
             peak = sk_tools::getMaxResidentSetSizeMB();
 
-        SkAutoMutexAcquire lock(gMutex);
+        SkAutoSpinlock lock(gMutex);
         info("\n%dMB RAM, %dMB peak, %d queued, %d active:\n",
              curr, peak, gPending - gRunning.count(), gRunning.count());
         for (auto& task : gRunning) {
@@ -194,7 +246,7 @@ static void done(const char* config, const char* src, const char* srcOptions, co
 static void start(const char* config, const char* src, const char* srcOptions, const char* name) {
     SkString id = SkStringPrintf("%s %s %s %s", config, src, srcOptions, name);
     vlog("start %s\n", id.c_str());
-    SkAutoMutexAcquire lock(gMutex);
+    SkAutoSpinlock lock(gMutex);
     gRunning.push_back({id,SkGetThreadID()});
 }
 
@@ -224,7 +276,7 @@ static void find_culprit() {
         #undef _
         };
 
-        SkAutoMutexAcquire lock(gMutex);
+        SkAutoSpinlock lock(gMutex);
 
         const DWORD code = e->ExceptionRecord->ExceptionCode;
         info("\nCaught exception %u", code);
@@ -263,7 +315,7 @@ static void find_culprit() {
     static void (*previous_handler[max_of(SIGABRT,SIGBUS,SIGFPE,SIGILL,SIGSEGV,SIGTERM)+1])(int);
 
     static void crash_handler(int sig) {
-        SkAutoMutexAcquire lock(gMutex);
+        SkAutoSpinlock lock(gMutex);
 
         info("\nCaught signal %d [%s] (%dMB RAM, peak %dMB), was running:\n",
              sig, strsignal(sig),
@@ -285,18 +337,19 @@ static void find_culprit() {
     #endif
         fflush(stdout);
 
-        signal(sig, previous_handler[sig]);
-        raise(sig);
+        if (sig == SIGINT && FLAGS_ignoreSigInt) {
+            info("Ignoring signal %d because of --ignoreSigInt.\n"
+                 "This is probably a sign the bot is overloaded with work.\n", sig);
+        } else {
+            signal(sig, previous_handler[sig]);
+            raise(sig);
+        }
     }
 
     static void setup_crash_handler() {
         const int kSignals[] = { SIGABRT, SIGBUS, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM };
         for (int sig : kSignals) {
             previous_handler[sig] = signal(sig, crash_handler);
-        }
-
-        if (FLAGS_ignoreSigInt) {
-            signal(SIGINT, SIG_IGN);
         }
     }
 #endif
@@ -392,9 +445,8 @@ static bool in_shard() {
 
 static void push_src(const char* tag, ImplicitString options, Src* s) {
     std::unique_ptr<Src> src(s);
-    if (in_shard() &&
-        FLAGS_src.contains(tag) &&
-        !SkCommandLineFlags::ShouldSkip(FLAGS_match, src->name().c_str())) {
+    if (in_shard() && FLAGS_src.contains(tag) &&
+        !CommandLineFlags::ShouldSkip(FLAGS_match, src->name().c_str())) {
         TaggedSrc& s = gSrcs.push_back();
         s.reset(src.release());
         s.tag = tag;
@@ -759,8 +811,9 @@ static void push_codec_srcs(Path path) {
 }
 
 template <typename T>
-void gather_file_srcs(const SkCommandLineFlags::StringArray& flags, const char* ext,
-                      const char* src_name = nullptr) {
+void gather_file_srcs(const CommandLineFlags::StringArray& flags,
+                      const char*                          ext,
+                      const char*                          src_name = nullptr) {
     if (!src_name) {
         // With the exception of Lottie files, the source name is the extension.
         src_name = ext;
@@ -813,27 +866,11 @@ static bool gather_srcs() {
     }
 
     for (auto colorImage : colorImages) {
-        ColorCodecSrc* src = new ColorCodecSrc(colorImage, ColorCodecSrc::kBaseline_Mode,
-                                               kN32_SkColorType);
-        push_src("colorImage", "color_codec_baseline", src);
-
-        src = new ColorCodecSrc(colorImage, ColorCodecSrc::kDst_HPZR30w_Mode, kN32_SkColorType);
-        push_src("colorImage", "color_codec_HPZR30w", src);
-        // TODO (msarett):
-        // Should we test this Dst in F16 mode (even though the Dst gamma is 2.2 instead of sRGB)?
-
-        src = new ColorCodecSrc(colorImage, ColorCodecSrc::kDst_sRGB_Mode, kN32_SkColorType);
-        push_src("colorImage", "color_codec_sRGB_kN32", src);
-        src = new ColorCodecSrc(colorImage, ColorCodecSrc::kDst_sRGB_Mode, kRGBA_F16_SkColorType);
-        push_src("colorImage", "color_codec_sRGB_kF16", src);
+        push_src("colorImage", "decode_native", new ColorCodecSrc(colorImage, false));
+        push_src("colorImage", "decode_to_dst", new ColorCodecSrc(colorImage,  true));
     }
 
     return true;
-}
-
-static sk_sp<SkColorSpace> rec2020() {
-    return SkColorSpace::MakeRGB({2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0},
-                                 SkColorSpace::kRec2020_Gamut);
 }
 
 static void push_sink(const SkCommandLineConfig& config, Sink* s) {
@@ -863,6 +900,10 @@ static void push_sink(const SkCommandLineConfig& config, Sink* s) {
     ts.tag = config.getTag();
 }
 
+static sk_sp<SkColorSpace> rgb_to_gbr() {
+    return SkColorSpace::MakeSRGB()->makeColorSpin();
+}
+
 static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLineConfig* config) {
     if (FLAGS_gpu) {
         if (const SkCommandLineConfigGpu* gpuConfig = config->asConfigGpu()) {
@@ -886,7 +927,8 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
                         contextType, contextOverrides, gpuConfig->getSurfType(),
                         gpuConfig->getSamples(), gpuConfig->getUseDIText(),
                         gpuConfig->getColorType(), gpuConfig->getAlphaType(),
-                        sk_ref_sp(gpuConfig->getColorSpace()), FLAGS_gpu_threading, grCtxOptions);
+                        sk_ref_sp(gpuConfig->getColorSpace()), FLAGS_gpu_threading, grCtxOptions,
+                        gpuConfig->getTestPersistentCache());
             } else {
                 return new GPUSink(contextType, contextOverrides, gpuConfig->getSurfType(),
                                    gpuConfig->getSamples(), gpuConfig->getUseDIText(),
@@ -901,7 +943,7 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
         return new SVGSink(pageIndex);
     }
 
-#define SINK(t, sink, ...) if (config->getBackend().equals(t)) { return new sink(__VA_ARGS__); }
+#define SINK(t, sink, ...) if (config->getBackend().equals(t)) return new sink(__VA_ARGS__)
 
     if (FLAGS_cpu) {
         SINK("g8",      RasterSink, kGray_8_SkColorType);
@@ -925,18 +967,15 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
         // Configs relevant to color management testing (and 8888 for reference).
 
         // 'narrow' has a gamut narrower than sRGB, and different transfer function.
-        SkMatrix44 narrow_gamut;
-        narrow_gamut.set3x3RowMajorf(gNarrow_toXYZD50);
-
-        auto narrow = SkColorSpace::MakeRGB(k2Dot2Curve_SkGammaNamed, narrow_gamut),
+        auto narrow = SkColorSpace::MakeRGB(SkNamedTransferFn::k2Dot2, gNarrow_toXYZD50),
                srgb = SkColorSpace::MakeSRGB(),
          srgbLinear = SkColorSpace::MakeSRGBLinear(),
-                 p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                            SkColorSpace::kDCIP3_D65_Gamut);
+                 p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
 
         SINK(     "f16",  RasterSink,  kRGBA_F16_SkColorType, srgbLinear);
         SINK(    "srgb",  RasterSink, kRGBA_8888_SkColorType, srgb      );
         SINK(   "esrgb",  RasterSink,  kRGBA_F16_SkColorType, srgb      );
+        SINK(   "esgbr",  RasterSink,  kRGBA_F16_SkColorType, rgb_to_gbr());
         SINK(  "narrow",  RasterSink, kRGBA_8888_SkColorType, narrow    );
         SINK( "enarrow",  RasterSink,  kRGBA_F16_SkColorType, narrow    );
         SINK(      "p3",  RasterSink, kRGBA_8888_SkColorType, p3        );
@@ -944,23 +983,16 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
         SINK( "rec2020",  RasterSink, kRGBA_8888_SkColorType, rec2020() );
         SINK("erec2020",  RasterSink,  kRGBA_F16_SkColorType, rec2020() );
 
+        SINK("f16norm",  RasterSink,  kRGBA_F16Norm_SkColorType, srgb);
+
         SINK(    "f32",  RasterSink,  kRGBA_F32_SkColorType, srgbLinear);
     }
 #undef SINK
     return nullptr;
 }
 
-static sk_sp<SkColorSpace> rgb_to_gbr() {
-    return SkColorSpace::MakeSRGB()->makeColorSpin();
-}
-
 static Sink* create_via(const SkString& tag, Sink* wrapped) {
-#define VIA(t, via, ...) if (tag.equals(t)) { return new via(__VA_ARGS__); }
-    VIA("gbr",       ViaCSXform,           wrapped, rgb_to_gbr(), true);
-    VIA("p3",        ViaCSXform,           wrapped,
-                     SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                           SkColorSpace::kDCIP3_D65_Gamut), false);
-    VIA("lite",      ViaLite,              wrapped);
+#define VIA(t, via, ...) if (tag.equals(t)) return new via(__VA_ARGS__)
 #ifdef TEST_VIA_SVG
     VIA("svg",       ViaSVG,               wrapped);
 #endif
@@ -969,7 +1001,8 @@ static Sink* create_via(const SkString& tag, Sink* wrapped) {
     VIA("tiles",     ViaTiles, 256, 256, nullptr,            wrapped);
     VIA("tiles_rt",  ViaTiles, 256, 256, new SkRTreeFactory, wrapped);
 
-    VIA("ddl",       ViaDDL, 3,            wrapped);
+    VIA("ddl",       ViaDDL, 1, 3,         wrapped);
+    VIA("ddl2",      ViaDDL, 2, 3,         wrapped);
 
     if (FLAGS_matrix.count() == 4) {
         SkMatrix m;
@@ -989,6 +1022,7 @@ static Sink* create_via(const SkString& tag, Sink* wrapped) {
 static bool gather_sinks(const GrContextOptions& grCtxOptions, bool defaultConfigs) {
     SkCommandLineConfigArray configs;
     ParseConfigs(FLAGS_config, &configs);
+    AutoreleasePool pool;
     for (int i = 0; i < configs.count(); i++) {
         const SkCommandLineConfig& config = *configs[i];
         Sink* sink = create_sink(grCtxOptions, &config);
@@ -1020,57 +1054,11 @@ static bool gather_sinks(const GrContextOptions& grCtxOptions, bool defaultConfi
     if (configs.count() == 0 ||
         // If we're using the default configs, we're okay.
         defaultConfigs ||
-        // If we've been told to ignore undefined flags, we're okay.
-        FLAGS_undefok ||
         // Otherwise, make sure that all specified configs have become sinks.
         configs.count() == gSinks.count()) {
         return true;
     }
-    info("Invalid --config. Use --undefok to bypass this warning.\n");
     return false;
-}
-
-static bool dump_png(SkBitmap bitmap, const char* path, const char* md5) {
-    SkPixmap pm;
-    if (!bitmap.peekPixels(&pm)) {
-        return false;  // Ought to never happen... we're already read-back at this point.
-    }
-    SkFILEWStream dst{path};
-
-    SkString description;
-    description.append("Key: ");
-    for (int i = 0; i < FLAGS_key.count(); i++) {
-        description.appendf("%s ", FLAGS_key[i]);
-    }
-    description.append("Properties: ");
-    for (int i = 0; i < FLAGS_properties.count(); i++) {
-        description.appendf("%s ", FLAGS_properties[i]);
-    }
-    description.appendf("MD5: %s", md5);
-
-    const char* comments[] = {
-        "Author",       "DM dump_png()",
-        "Description",  description.c_str(),
-    };
-    size_t lengths[] = {
-        strlen(comments[0])+1, strlen(comments[1])+1,
-        strlen(comments[2])+1, strlen(comments[3])+1,
-    };
-
-    // PNGs can't hold out-of-gamut values, so if we're likely to be holding them,
-    // convert to a wide gamut, giving us the best chance to have the PNG look like our colors.
-    SkBitmap wide;
-    if (pm.colorType() >= kRGBA_F16_SkColorType) {
-        wide.allocPixels(pm.info().makeColorSpace(rec2020()));
-        SkAssertResult(wide.writePixels(pm, 0,0));
-        SkAssertResult(wide.peekPixels(&pm));
-    }
-
-    SkPngEncoder::Options options;
-    options.fComments         = SkDataTable::MakeCopyArrays((const void**)comments, lengths, 4);
-    options.fFilterFlags      = SkPngEncoder::FilterFlag::kNone;
-    options.fZLibLevel        = 1;
-    return SkPngEncoder::Encode(&dst, pm, options);
 }
 
 static bool match(const char* needle, const char* haystack) {
@@ -1108,6 +1096,7 @@ struct Task {
     const TaggedSink& sink;
 
     static void Run(const Task& task) {
+        AutoreleasePool pool;
         SkString name = task.src->name();
 
         SkString log;
@@ -1144,6 +1133,8 @@ struct Task {
             gDefinitelyThreadSafeWork.add([task,name,bitmap,data]{
                 std::unique_ptr<SkStreamAsset> ownedData(data);
 
+                std::unique_ptr<HashAndEncode> hashAndEncode;
+
                 SkString md5;
                 if (!FLAGS_writePath.isEmpty() || !FLAGS_readPath.isEmpty()) {
                     SkMD5 hash;
@@ -1151,21 +1142,10 @@ struct Task {
                         hash.writeStream(data, data->getLength());
                         data->rewind();
                     } else {
-                        // If we're BGRA (Linux, Windows), swizzle over to RGBA (Mac, Android).
-                        // This helps eliminate multiple 0-pixel-diff hashes on gold.skia.org.
-                        // (Android's general slow speed breaks the tie arbitrarily in RGBA's favor.)
-                        // We might consider promoting 565 to RGBA too.
-                        if (bitmap.colorType() == kBGRA_8888_SkColorType) {
-                            SkBitmap swizzle;
-                            SkAssertResult(sk_tool_utils::copy_to(&swizzle, kRGBA_8888_SkColorType,
-                                                                  bitmap));
-                            hash.write(swizzle.getPixels(), swizzle.computeByteSize());
-                        } else {
-                            hash.write(bitmap.getPixels(), bitmap.computeByteSize());
-                        }
+                        hashAndEncode.reset(new HashAndEncode(bitmap));
+                        hashAndEncode->write(&hash);
                     }
-                    SkMD5::Digest digest;
-                    hash.finish(digest);
+                    SkMD5::Digest digest = hash.finish();
                     for (int i = 0; i < 16; i++) {
                         md5.appendf("%02x", digest.data[i]);
                     }
@@ -1187,10 +1167,26 @@ struct Task {
                     const char* ext = task.sink->fileExtension();
                     if (ext && !FLAGS_dont_write.contains(ext)) {
                         if (data->getLength()) {
-                            WriteToDisk(task, md5, ext, data, data->getLength(), nullptr);
+                            WriteToDisk(task, md5, ext, data, data->getLength(), nullptr, nullptr);
                             SkASSERT(bitmap.drawsNothing());
                         } else if (!bitmap.drawsNothing()) {
-                            WriteToDisk(task, md5, ext, nullptr, 0, &bitmap);
+                            WriteToDisk(task, md5, ext, nullptr, 0, &bitmap, hashAndEncode.get());
+                        }
+                    }
+                }
+
+                SkPixmap pm;
+                if (FLAGS_checkF16 && bitmap.colorType() == kRGBA_F16Norm_SkColorType &&
+                        bitmap.peekPixels(&pm)) {
+                    bool unclamped = false;
+                    for (int y = 0; y < pm.height() && !unclamped; ++y)
+                    for (int x = 0; x < pm.width() && !unclamped; ++x) {
+                        Sk4f rgba = SkHalfToFloat_finite_ftz(*pm.addr64(x, y));
+                        float a = rgba[3];
+                        if (a > 1.0f || (rgba < 0.0f).anyTrue() || (rgba > a).anyTrue()) {
+                            SkDebugf("[%s] F16Norm pixel [%d, %d] unclamped: (%g, %g, %g, %g)\n",
+                                     name.c_str(), x, y, rgba[0], rgba[1], rgba[2], rgba[3]);
+                            unclamped = true;
                         }
                     }
                 }
@@ -1199,14 +1195,66 @@ struct Task {
         done(task.sink.tag.c_str(), task.src.tag.c_str(), task.src.options.c_str(), name.c_str());
     }
 
+    static SkString identify_gamut(SkColorSpace* cs) {
+        if (!cs) {
+            return SkString("untagged");
+        }
+
+        skcms_Matrix3x3 gamut;
+        if (cs->toXYZD50(&gamut)) {
+            auto eq = [](skcms_Matrix3x3 x, skcms_Matrix3x3 y) {
+                for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++) {
+                    if (x.vals[i][j] != y.vals[i][j]) { return false; }
+                }
+                return true;
+            };
+
+            if (eq(gamut, SkNamedGamut::kSRGB    )) { return SkString("sRGB"); }
+            if (eq(gamut, SkNamedGamut::kAdobeRGB)) { return SkString("Adobe"); }
+            if (eq(gamut, SkNamedGamut::kDCIP3   )) { return SkString("P3"); }
+            if (eq(gamut, SkNamedGamut::kRec2020 )) { return SkString("2020"); }
+            if (eq(gamut, SkNamedGamut::kXYZ     )) { return SkString("XYZ"); }
+            if (eq(gamut,     gNarrow_toXYZD50   )) { return SkString("narrow"); }
+            return SkString("other");
+        }
+        return SkString("non-XYZ");
+    }
+
+    static SkString identify_transfer_fn(SkColorSpace* cs) {
+        if (!cs) {
+            return SkString("untagged");
+        }
+
+        skcms_TransferFunction tf;
+        if (cs->isNumericalTransferFn(&tf)) {
+            auto eq = [](skcms_TransferFunction x, skcms_TransferFunction y) {
+                return x.g == y.g
+                    && x.a == y.a
+                    && x.b == y.b
+                    && x.c == y.c
+                    && x.d == y.d
+                    && x.e == y.e
+                    && x.f == y.f;
+            };
+
+            if (tf.a == 1 && tf.b == 0 && tf.c == 0 && tf.d == 0 && tf.e == 0 && tf.f == 0) {
+                return SkStringPrintf("gamma %.3g", tf.g);
+            }
+            if (eq(tf, SkNamedTransferFn::kSRGB   )) { return SkString("sRGB"); }
+            if (eq(tf, SkNamedTransferFn::kRec2020)) { return SkString("2020"); }
+            return SkStringPrintf("%.3g %.3g %.3g %.3g %.3g %.3g %.3g",
+                                  tf.g, tf.a, tf.b, tf.c, tf.d, tf.e, tf.f);
+        }
+        return SkString("non-numeric");
+    }
+
     static void WriteToDisk(const Task& task,
                             SkString md5,
                             const char* ext,
                             SkStream* data, size_t len,
-                            const SkBitmap* bitmap) {
-        bool gammaCorrect = bitmap &&
-                            bitmap->info().colorSpace() &&
-                            bitmap->info().colorSpace()->gammaIsLinear();
+                            const SkBitmap* bitmap,
+                            const HashAndEncode* hashAndEncode) {
 
         JsonWriter::BitmapResult result;
         result.name          = task.src->name();
@@ -1214,8 +1262,14 @@ struct Task {
         result.sourceType    = task.src.tag;
         result.sourceOptions = task.src.options;
         result.ext           = ext;
-        result.gammaCorrect  = gammaCorrect;
         result.md5           = md5;
+        if (bitmap) {
+            result.gamut         = identify_gamut            (bitmap->colorSpace());
+            result.transferFn    = identify_transfer_fn      (bitmap->colorSpace());
+            result.colorType     = ToolUtils::colortype_name (bitmap->colorType());
+            result.alphaType     = ToolUtils::alphatype_name (bitmap->alphaType());
+            result.colorDepth    = ToolUtils::colortype_depth(bitmap->colorType());
+        }
         JsonWriter::AddBitmapResult(result);
 
         // If an MD5 is uninteresting, we want it noted in the JSON file,
@@ -1225,8 +1279,9 @@ struct Task {
         }
 
         const char* dir = FLAGS_writePath[0];
+        SkString resources = GetResourcePath();
         if (0 == strcmp(dir, "@")) {  // Needed for iOS.
-            dir = FLAGS_resourcePath[0];
+            dir = resources.c_str();
         }
         sk_mkdir(dir);
 
@@ -1253,7 +1308,11 @@ struct Task {
         }
 
         if (bitmap) {
-            if (!dump_png(*bitmap, path.c_str(), result.md5.c_str())) {
+            SkASSERT(hashAndEncode);
+            if (!hashAndEncode->writePngTo(path.c_str(),
+                                           result.md5.c_str(),
+                                           FLAGS_key,
+                                           FLAGS_properties)) {
                 fail(SkStringPrintf("Can't encode PNG to %s.\n", path.c_str()));
                 return;
             }
@@ -1285,7 +1344,7 @@ static void gather_tests() {
         if (!in_shard()) {
             continue;
         }
-        if (SkCommandLineFlags::ShouldSkip(FLAGS_match, test.name)) {
+        if (CommandLineFlags::ShouldSkip(FLAGS_match, test.name)) {
             continue;
         }
         if (test.needsGpu && FLAGS_gpu) {
@@ -1300,7 +1359,6 @@ static void run_test(skiatest::Test test, const GrContextOptions& grCtxOptions) 
     struct : public skiatest::Reporter {
         void reportFailed(const skiatest::Failure& failure) override {
             fail(failure.toString());
-            JsonWriter::AddTestFailure(failure);
         }
         bool allowExtendedTest() const override {
             return FLAGS_pathOpsExtended;
@@ -1309,9 +1367,11 @@ static void run_test(skiatest::Test test, const GrContextOptions& grCtxOptions) 
     } reporter;
 
     if (!FLAGS_dryRun && !is_blacklisted("_", "tests", "_", test.name)) {
+        AutoreleasePool pool;
         GrContextOptions options = grCtxOptions;
         test.modifyGrContextOptions(&options);
 
+        skiatest::ReporterContext ctx(&reporter, SkString(test.name));
         start("unit", "test", "", test.name);
         test.run(&reporter, options);
     }
@@ -1324,17 +1384,7 @@ int main(int argc, char** argv) {
 #if defined(SK_BUILD_FOR_ANDROID_FRAMEWORK) && defined(SK_HAS_HEIF_LIBRARY)
     android::ProcessState::self()->startThreadPool();
 #endif
-    SkCommandLineFlags::Parse(argc, argv);
-
-    if (!FLAGS_nativeFonts) {
-        gSkFontMgr_DefaultFactory = &sk_tool_utils::MakePortableFontMgr;
-    }
-
-#if defined(SK_BUILD_FOR_WIN)
-    if (FLAGS_gdi) {
-        gSkFontMgr_DefaultFactory = &SkFontMgr_New_GDI;
-    }
-#endif
+    CommandLineFlags::Parse(argc, argv);
 
     initializeEventTracingForTools();
 
@@ -1344,15 +1394,9 @@ int main(int argc, char** argv) {
     setbuf(stdout, nullptr);
     setup_crash_handler();
 
-    gSkUseAnalyticAA = FLAGS_analyticAA;
-    gSkUseDeltaAA = FLAGS_deltaAA;
+    ToolUtils::SetDefaultFontMgr();
+    SetAnalyticAAFromCommonFlags();
 
-    if (FLAGS_forceAnalyticAA) {
-        gSkForceAnalyticAA = true;
-    }
-    if (FLAGS_forceDeltaAA) {
-        gSkForceDeltaAA = true;
-    }
     if (FLAGS_forceRasterPipeline) {
         gSkForceRasterPipelineBlitter = true;
     }
@@ -1369,7 +1413,8 @@ int main(int argc, char** argv) {
     GrContextOptions grCtxOptions;
     SetCtxOptionsFromCommonFlags(&grCtxOptions);
 
-    JsonWriter::DumpJson();  // It's handy for the bots to assume this is ~never missing.
+    dump_json();  // It's handy for the bots to assume this is ~never missing.
+
     SkAutoGraphics ag;
     SkTaskGroup::Enabler enabled(FLAGS_threads);
 
@@ -1408,7 +1453,7 @@ int main(int argc, char** argv) {
         if (src->veto(sink->flags()) ||
             is_blacklisted(sink.tag.c_str(), src.tag.c_str(),
                            src.options.c_str(), src->name().c_str())) {
-            SkAutoMutexAcquire lock(gMutex);
+            SkAutoSpinlock lock(gMutex);
             gPending--;
             continue;
         }
@@ -1437,7 +1482,7 @@ int main(int argc, char** argv) {
     // We'd better have run everything.
     SkASSERT(gPending == 0);
     // Make sure we've flushed all our results to disk.
-    JsonWriter::DumpJson();
+    dump_json();
 
     if (gFailures.count() > 0) {
         info("Failures:\n");
@@ -1445,12 +1490,13 @@ int main(int argc, char** argv) {
             info("\t%s\n", gFailures[i].c_str());
         }
         info("%d failures\n", gFailures.count());
+        // A non-zero return code does not make it to Swarming
+        // An abort does.
+#ifdef SK_BUILD_FOR_IOS
+        SK_ABORT("There were failures!");
+#endif
         return 1;
     }
-
-#ifdef SK_PDF_IMAGE_STATS
-    SkPDFImageDumpStats();
-#endif  // SK_PDF_IMAGE_STATS
 
     SkGraphics::PurgeAllCaches();
     info("Finished!\n");

@@ -50,7 +50,7 @@
     "cwd": "[START_DIR]/cache/work",
     "env_prefixes": {
       "PATH": [
-        "RECIPE_PACKAGE_REPO[depot_tools]"
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -102,14 +102,14 @@
     ],
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
-      "GOPATH": "[START_DIR]/go_deps",
+      "GOCACHE": "[START_DIR]/cache/go_cache",
+      "GOPATH": "[START_DIR]/cache/gopath",
       "GOROOT": "[START_DIR]/go/go",
-      "PATH": "[START_DIR]/go/go/bin:[START_DIR]/go_deps:<PATH>"
+      "PATH": "[START_DIR]/go/go/bin:[START_DIR]/cache/gopath/bin:<PATH>"
     },
     "name": "infra_tests"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

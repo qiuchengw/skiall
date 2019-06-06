@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "SkBitmap.h"
-#include "SkMipMap.h"
-#include "SkRandom.h"
-#include "Test.h"
+#include "include/core/SkBitmap.h"
+#include "include/utils/SkRandom.h"
+#include "src/core/SkMipMap.h"
+#include "tests/Test.h"
 
 static void make_bitmap(SkBitmap* bm, int width, int height) {
     bm->allocN32Pixels(width, height);
@@ -201,4 +201,11 @@ DEF_TEST(MipMap_ComputeLevelSize, reporter) {
                                                        currentTest.fLevel);
         REPORTER_ASSERT(reporter, currentTest.fExpectedMipMapLevelSize == levelSize);
     }
+}
+
+DEF_TEST(MipMap_F16, reporter) {
+    SkBitmap bmp;
+    bmp.allocPixels(SkImageInfo::Make(10, 10, kRGBA_F16_SkColorType, kPremul_SkAlphaType));
+    bmp.eraseColor(0);
+    sk_sp<SkMipMap> mipmap(SkMipMap::Build(bmp, nullptr));
 }

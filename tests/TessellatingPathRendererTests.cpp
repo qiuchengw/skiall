@@ -5,18 +5,18 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
+#include "tests/Test.h"
 
-#include "GrClip.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrShape.h"
-#include "GrStyle.h"
-#include "SkGradientShader.h"
-#include "SkPath.h"
-#include "SkShaderBase.h"
-#include "effects/GrPorterDuffXferProcessor.h"
-#include "ops/GrTessellatingPathRenderer.h"
+#include "include/core/SkPath.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/gpu/GrContext.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrStyle.h"
+#include "src/gpu/effects/GrPorterDuffXferProcessor.h"
+#include "src/gpu/geometry/GrShape.h"
+#include "src/gpu/ops/GrTessellatingPathRenderer.h"
+#include "src/shaders/SkShaderBase.h"
 
 /*
  * These tests pass by not crashing, hanging or asserting in Debug.
@@ -340,14 +340,6 @@ static SkPath create_path_21() {
     return path;
 }
 
-// A quad which becomes NaN when interpolated.
-static SkPath create_path_22() {
-    SkPath path;
-    path.moveTo(-5.71889e+13f, 1.36759e+09f);
-    path.quadTo(2.45472e+19f, -3.12406e+15f, -2.19589e+18f, 2.79462e+14f);
-    return path;
-}
-
 // A path which contains out-of-range colinear intersections.
 static SkPath create_path_23() {
     SkPath path;
@@ -630,24 +622,75 @@ static SkPath create_path_43() {
     return path;
 }
 
+// Reduction from crbug.com/966696
+static SkPath create_path_44() {
+    SkPath path;
+    path.moveTo(114.4606170654296875,       186.443878173828125);
+    path.lineTo( 91.5394744873046875,       185.4189453125);
+    path.lineTo(306.45538330078125,        3203.986083984375);
+    path.moveTo(16276206965409972224.0,     815.59393310546875);
+    path.lineTo(-3.541605062372533207e+20,  487.7236328125);
+    path.lineTo(-3.541605062372533207e+20,  168.204071044921875);
+    path.lineTo(16276206965409972224.0,     496.07427978515625);
+    path.moveTo(-3.541605062372533207e+20,  167.00958251953125);
+    path.lineTo(-3.541605062372533207e+20,  488.32086181640625);
+    path.lineTo(16276206965409972224.0,     816.78839111328125);
+    path.lineTo(16276206965409972224.0,     495.47705078125);
+    return path;
+}
+
+// Reduction from crbug.com/966274.
+static SkPath create_path_45() {
+    SkPath path;
+    path.moveTo(        706471854080,         379003666432);
+    path.lineTo(        706503180288,         379020443648);
+    path.lineTo(        706595717120,         379070087168);
+    path.lineTo(        706626060288,         379086372864);
+    path.lineTo(        706656141312,         379102527488);
+    path.lineTo(        706774171648,         379165835264);
+    path.lineTo(        706803073024,         379181334528);
+    path.lineTo(        706831712256,         379196702720);
+    path.lineTo(        706860154880,         379211939840);
+    path.lineTo(        706888335360,         379227078656);
+    path.lineTo(        706916253696,         379242053632);
+    path.lineTo(        706956820480,         379263811584);
+    path.lineTo(        706929098752,         379248934912);
+    path.lineTo(        706901114880,         379233927168);
+    path.lineTo(        706872934400,         379218821120);
+    path.lineTo(        706844491776,         379203551232);
+    path.lineTo(        706815787008,         379188183040);
+    path.lineTo(        706786885632,         379172651008);
+    path.lineTo(        706757722112,         379156987904);
+    path.lineTo(        706728296448,         379141226496);
+    path.lineTo(        706698608640,         379125301248);
+    path.lineTo(        706668724224,         379109244928);
+    path.lineTo(        706638577664,         379093090304);
+    path.lineTo(        706608168960,         379076771840);
+    path.lineTo(        706484174848,         379010252800);
+    return path;
+}
+
 static std::unique_ptr<GrFragmentProcessor> create_linear_gradient_processor(GrContext* ctx) {
 
     SkPoint pts[2] = { {0, 0}, {1, 1} };
     SkColor colors[2] = { SK_ColorGREEN, SK_ColorBLUE };
     sk_sp<SkShader> shader = SkGradientShader::MakeLinear(
-        pts, colors, nullptr, SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode);
+        pts, colors, nullptr, SK_ARRAY_COUNT(colors), SkTileMode::kClamp);
     GrColorSpaceInfo colorSpaceInfo(nullptr, kRGBA_8888_GrPixelConfig);
     GrFPArgs args(ctx, &SkMatrix::I(), SkFilterQuality::kLow_SkFilterQuality, &colorSpaceInfo);
     return as_SB(shader)->asFragmentProcessor(args);
 }
 
+using AATypeFlags = GrPathRenderer::AATypeFlags;
+
 static void test_path(GrContext* ctx,
                       GrRenderTargetContext* renderTargetContext,
                       const SkPath& path,
                       const SkMatrix& matrix = SkMatrix::I(),
-                      GrAAType aaType = GrAAType::kNone,
+                      AATypeFlags aaTypeFlags = AATypeFlags::kNone,
                       std::unique_ptr<GrFragmentProcessor> fp = nullptr) {
     GrTessellatingPathRenderer tess;
+    tess.setMaxVerbCount(100);
 
     GrPaint paint;
     paint.setXPFactory(GrPorterDuffXPFactory::Get(SkBlendMode::kSrc));
@@ -668,16 +711,18 @@ static void test_path(GrContext* ctx,
                                       &clipConservativeBounds,
                                       &matrix,
                                       &shape,
-                                      aaType,
+                                      aaTypeFlags,
                                       false};
     tess.drawPath(args);
 }
 
 DEF_GPUTEST_FOR_ALL_CONTEXTS(TessellatingPathRendererTests, reporter, ctxInfo) {
     GrContext* ctx = ctxInfo.grContext();
-    sk_sp<GrRenderTargetContext> rtc(ctx->contextPriv().makeDeferredRenderTargetContext(
-            SkBackingFit::kApprox, 800, 800, kRGBA_8888_GrPixelConfig, nullptr, 1, GrMipMapped::kNo,
-            kTopLeft_GrSurfaceOrigin));
+    const GrBackendFormat format =
+            ctx->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+    sk_sp<GrRenderTargetContext> rtc(ctx->priv().makeDeferredRenderTargetContext(
+            format, SkBackingFit::kApprox, 800, 800, kRGBA_8888_GrPixelConfig, nullptr, 1,
+            GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin));
     if (!rtc) {
         return;
     }
@@ -705,32 +750,33 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(TessellatingPathRendererTests, reporter, ctxInfo) {
     test_path(ctx, rtc.get(), create_path_16());
     SkMatrix nonInvertibleMatrix = SkMatrix::MakeScale(0, 0);
     std::unique_ptr<GrFragmentProcessor> fp(create_linear_gradient_processor(ctx));
-    test_path(ctx, rtc.get(), create_path_17(), nonInvertibleMatrix, GrAAType::kCoverage,
+    test_path(ctx, rtc.get(), create_path_17(), nonInvertibleMatrix, AATypeFlags::kCoverage,
               std::move(fp));
     test_path(ctx, rtc.get(), create_path_18());
     test_path(ctx, rtc.get(), create_path_19());
-    test_path(ctx, rtc.get(), create_path_20(), SkMatrix(), GrAAType::kCoverage);
-    test_path(ctx, rtc.get(), create_path_21(), SkMatrix(), GrAAType::kCoverage);
-    test_path(ctx, rtc.get(), create_path_22());
+    test_path(ctx, rtc.get(), create_path_20(), SkMatrix(), AATypeFlags::kCoverage);
+    test_path(ctx, rtc.get(), create_path_21(), SkMatrix(), AATypeFlags::kCoverage);
     test_path(ctx, rtc.get(), create_path_23());
     test_path(ctx, rtc.get(), create_path_24());
-    test_path(ctx, rtc.get(), create_path_25(), SkMatrix(), GrAAType::kCoverage);
-    test_path(ctx, rtc.get(), create_path_26(), SkMatrix(), GrAAType::kCoverage);
-    test_path(ctx, rtc.get(), create_path_27(), SkMatrix(), GrAAType::kCoverage);
-    test_path(ctx, rtc.get(), create_path_28(), SkMatrix(), GrAAType::kCoverage);
+    test_path(ctx, rtc.get(), create_path_25(), SkMatrix(), AATypeFlags::kCoverage);
+    test_path(ctx, rtc.get(), create_path_26(), SkMatrix(), AATypeFlags::kCoverage);
+    test_path(ctx, rtc.get(), create_path_27(), SkMatrix(), AATypeFlags::kCoverage);
+    test_path(ctx, rtc.get(), create_path_28(), SkMatrix(), AATypeFlags::kCoverage);
     test_path(ctx, rtc.get(), create_path_29());
     test_path(ctx, rtc.get(), create_path_30());
-    test_path(ctx, rtc.get(), create_path_31(), SkMatrix(), GrAAType::kCoverage);
+    test_path(ctx, rtc.get(), create_path_31(), SkMatrix(), AATypeFlags::kCoverage);
     test_path(ctx, rtc.get(), create_path_32());
     test_path(ctx, rtc.get(), create_path_33());
     test_path(ctx, rtc.get(), create_path_34());
     test_path(ctx, rtc.get(), create_path_35());
     test_path(ctx, rtc.get(), create_path_36());
     test_path(ctx, rtc.get(), create_path_37());
-    test_path(ctx, rtc.get(), create_path_38(), SkMatrix(), GrAAType::kCoverage);
+    test_path(ctx, rtc.get(), create_path_38(), SkMatrix(), AATypeFlags::kCoverage);
     test_path(ctx, rtc.get(), create_path_39());
     test_path(ctx, rtc.get(), create_path_40());
-    test_path(ctx, rtc.get(), create_path_41(), SkMatrix(), GrAAType::kCoverage);
+    test_path(ctx, rtc.get(), create_path_41(), SkMatrix(), AATypeFlags::kCoverage);
     test_path(ctx, rtc.get(), create_path_42());
-    test_path(ctx, rtc.get(), create_path_43(), SkMatrix(), GrAAType::kCoverage);
+    test_path(ctx, rtc.get(), create_path_43(), SkMatrix(), AATypeFlags::kCoverage);
+    test_path(ctx, rtc.get(), create_path_44(), SkMatrix(), AATypeFlags::kCoverage);
+    test_path(ctx, rtc.get(), create_path_45(), SkMatrix(), AATypeFlags::kCoverage);
 }

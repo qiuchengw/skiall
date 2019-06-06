@@ -5,14 +5,24 @@
 * found in the LICENSE file.
 */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontMetrics.h"
+#include "include/core/SkFontStyle.h"
+#include "include/core/SkFontTypes.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypeface.h"
+#include "tools/Resources.h"
+#include "tools/ToolUtils.h"
 
-#include "Resources.h"
-#include "SkCanvas.h"
-#include "SkStream.h"
-#include "SkTo.h"
-#include "SkTypeface.h"
+#include <string.h>
+#include <initializer_list>
 
 namespace skiagm {
 class ScaledEmojiRenderingGM : public GM {
@@ -26,13 +36,11 @@ protected:
         typefaces[0] = MakeResourceAsTypeface("fonts/colr.ttf");
         typefaces[1] = MakeResourceAsTypeface("fonts/sbix.ttf");
         typefaces[2] = MakeResourceAsTypeface("fonts/cbdt.ttf");
-        typefaces[3] = sk_tool_utils::create_portable_typeface("Emoji", SkFontStyle());
+        typefaces[3] = ToolUtils::create_portable_typeface("Emoji", SkFontStyle());
     }
 
     SkString onShortName() override {
-        SkString name("scaledemoji_rendering");
-        name.append(sk_tool_utils::platform_font_manager());
-        return name;
+        return SkString("scaledemoji_rendering");
     }
 
     SkISize onISize() override { return SkISize::Make(1200, 1200); }
@@ -43,29 +51,22 @@ protected:
         SkScalar y = 0;
 
         for (const auto& typeface: typefaces) {
+            SkFont font(typeface);
+            font.setEdging(SkFont::Edging::kAlias);
+
             SkPaint paint;
-            paint.setTypeface(typeface);
-            const char* text = sk_tool_utils::emoji_sample_text();
+            const char*   text = ToolUtils::emoji_sample_text();
             SkFontMetrics metrics;
 
             for (SkScalar textSize : { 70, 150 }) {
-                paint.setTextSize(textSize);
-                paint.getFontMetrics(&metrics);
+                font.setSize(textSize);
+                font.getMetrics(&metrics);
                 // All typefaces should support subpixel mode
-                paint.setSubpixelText(true);
+                font.setSubpixel(true);
                 y += -metrics.fAscent;
 
-                int len = SkToInt(strlen(text));
-                SkAutoTArray<SkPoint>  pos(len);
-                SkAutoTArray<SkScalar> widths(len);
-                int found = paint.getTextWidths(text, len, &widths[0]);
-                SkScalar x = SkIntToScalar(10);
-                for (int i = 0; i < found; ++i) {
-                    pos[i].set(x, y);
-                    x += widths[i];
-                }
-
-                canvas->drawPosText(text, len, &pos[0], paint);
+                canvas->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8,
+                                       10, y, font, paint);
                 y += metrics.fDescent + metrics.fLeading;
             }
         }

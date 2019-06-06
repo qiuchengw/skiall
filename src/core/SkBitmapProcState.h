@@ -8,17 +8,17 @@
 #ifndef SkBitmapProcState_DEFINED
 #define SkBitmapProcState_DEFINED
 
-#include "SkArenaAlloc.h"
-#include "SkBitmap.h"
-#include "SkBitmapController.h"
-#include "SkBitmapProvider.h"
-#include "SkFixed.h"
-#include "SkFloatBits.h"
-#include "SkMatrixPriv.h"
-#include "SkMipMap.h"
-#include "SkPaint.h"
-#include "SkShader.h"
-#include "SkTemplates.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkShader.h"
+#include "include/private/SkFixed.h"
+#include "include/private/SkFloatBits.h"
+#include "include/private/SkTemplates.h"
+#include "src/core/SkArenaAlloc.h"
+#include "src/core/SkBitmapController.h"
+#include "src/core/SkBitmapProvider.h"
+#include "src/core/SkMatrixPriv.h"
+#include "src/core/SkMipMap.h"
 
 typedef SkFixed3232    SkFractionalInt;
 #define SkScalarToFractionalInt(x)  SkScalarToFixed3232(x)
@@ -29,20 +29,20 @@ typedef SkFixed3232    SkFractionalInt;
 class SkPaint;
 
 struct SkBitmapProcInfo {
-    SkBitmapProcInfo(const SkBitmapProvider&, SkShader::TileMode tmx, SkShader::TileMode tmy);
+    SkBitmapProcInfo(const SkBitmapProvider&, SkTileMode tmx, SkTileMode tmy);
     ~SkBitmapProcInfo();
 
-    const SkBitmapProvider        fProvider;
+    const SkBitmapProvider  fProvider;
 
-    SkPixmap                      fPixmap;
-    SkMatrix                      fInvMatrix;         // This changes based on tile mode.
+    SkPixmap                fPixmap;
+    SkMatrix                fInvMatrix;         // This changes based on tile mode.
     // TODO: combine fInvMatrix and fRealInvMatrix.
-    SkMatrix                      fRealInvMatrix;     // The actual inverse matrix.
-    SkColor                       fPaintColor;
-    SkShader::TileMode            fTileModeX;
-    SkShader::TileMode            fTileModeY;
-    SkFilterQuality               fFilterQuality;
-    SkMatrix::TypeMask            fInvType;
+    SkMatrix                fRealInvMatrix;     // The actual inverse matrix.
+    SkColor                 fPaintColor;
+    SkTileMode              fTileModeX;
+    SkTileMode              fTileModeY;
+    SkFilterQuality         fFilterQuality;
+    SkMatrix::TypeMask      fInvType;
 
     bool init(const SkMatrix& inverse, const SkPaint&);
 
@@ -55,7 +55,7 @@ private:
 };
 
 struct SkBitmapProcState : public SkBitmapProcInfo {
-    SkBitmapProcState(const SkBitmapProvider& prov, SkShader::TileMode tmx, SkShader::TileMode tmy)
+    SkBitmapProcState(const SkBitmapProvider& prov, SkTileMode tmx, SkTileMode tmy)
         : SkBitmapProcInfo(prov, tmx, tmy) {}
 
     bool setup(const SkMatrix& inv, const SkPaint& paint) {
@@ -74,16 +74,10 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
                                  int count,
                                  SkPMColor colors[]);
 
-    typedef U16CPU (*FixedTileProc)(SkFixed);   // returns 0..0xFFFF
-    typedef U16CPU (*IntTileProc)(int value, int count);   // returns 0..count-1
-
     SkMatrixPriv::MapXYProc fInvProc;           // chooseProcs
     SkFractionalInt     fInvSxFractionalInt;
     SkFractionalInt     fInvKyFractionalInt;
 
-    FixedTileProc       fTileProcX;         // chooseProcs
-    FixedTileProc       fTileProcY;         // chooseProcs
-    IntTileProc         fIntTileProcY;      // chooseProcs
     SkFixed             fFilterOneX;
     SkFixed             fFilterOneY;
 
@@ -91,19 +85,6 @@ struct SkBitmapProcState : public SkBitmapProcInfo {
     SkFixed             fInvKy;             // chooseProcs
     SkPMColor           fPaintPMColor;      // chooseProcs - A8 config
     uint16_t            fAlphaScale;        // chooseProcs
-
-    /** Platforms implement this, and can optionally overwrite only the
-        following fields:
-
-        fShaderProc32
-        fMatrixProc
-        fSampleProc32
-
-        They will already have valid function pointers, so a platform that does
-        not have an accelerated version can just leave that field as is. A valid
-        implementation can do nothing (see SkBitmapProcState_opts_none.cpp)
-     */
-    void platformProcs();
 
     /** Given the byte size of the index buffer to be passed to the matrix proc,
         return the maximum number of resulting pixels that can be computed
@@ -135,7 +116,6 @@ private:
 
     MatrixProc chooseMatrixProc(bool trivial_matrix);
     bool chooseProcs(); // caller must have called init() first (on our base-class)
-    bool chooseScanlineProcs(bool trivialMatrix, bool clampClamp);
     ShaderProc32 chooseShaderProc32();
 
     // Return false if we failed to setup for fast translate (e.g. overflow)
@@ -170,16 +150,6 @@ private:
 #else
     #define pack_two_shorts(pri, sec)   PACK_TWO_SHORTS(pri, sec)
 #endif
-
-// These functions are generated via macros, but are exposed here so that
-// platformProcs may test for them by name.
-void S32_alpha_D32_filter_DX(const SkBitmapProcState& s,
-                             const uint32_t xy[], int count, SkPMColor colors[]);
-
-void ClampX_ClampY_filter_scale(const SkBitmapProcState& s, uint32_t xy[],
-                                int count, int x, int y);
-void ClampX_ClampY_nofilter_scale(const SkBitmapProcState& s, uint32_t xy[],
-                                  int count, int x, int y);
 
 // Helper class for mapping the middle of pixel (x, y) into SkFractionalInt bitmap space.
 // Discussion:

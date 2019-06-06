@@ -8,7 +8,7 @@
 #ifndef GrProcessorAnalysis_DEFINED
 #define GrProcessorAnalysis_DEFINED
 
-#include "SkColorData.h"
+#include "include/private/SkColorData.h"
 
 class GrDrawOp;
 class GrFragmentProcessor;
@@ -38,6 +38,8 @@ public:
     void setToUnknown() { fFlags = 0; }
 
     void setToUnknownOpaque() { fFlags = kIsOpaque_Flag; }
+
+    bool isUnknown() const { return SkToBool(fFlags == 0); }
 
     bool isOpaque() const { return SkToBool(kIsOpaque_Flag & fFlags); }
 

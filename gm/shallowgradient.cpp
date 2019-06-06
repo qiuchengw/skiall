@@ -5,26 +5,37 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "SkGradientShader.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTileMode.h"
+#include "include/core/SkTypes.h"
+#include "include/effects/SkGradientShader.h"
 
 typedef sk_sp<SkShader> (*MakeShaderProc)(const SkColor[], int count, const SkSize&);
 
 static sk_sp<SkShader> shader_linear(const SkColor colors[], int count, const SkSize& size) {
     SkPoint pts[] = { { 0, 0 }, { size.width(), size.height() } };
-    return SkGradientShader::MakeLinear(pts, colors, nullptr, count, SkShader::kClamp_TileMode);
+    return SkGradientShader::MakeLinear(pts, colors, nullptr, count, SkTileMode::kClamp);
 }
 
 static sk_sp<SkShader> shader_radial(const SkColor colors[], int count, const SkSize& size) {
     SkPoint center = { size.width()/2, size.height()/2 };
     return SkGradientShader::MakeRadial(center, size.width()/2, colors, nullptr, count,
-                                        SkShader::kClamp_TileMode);
+                                        SkTileMode::kClamp);
 }
 
 static sk_sp<SkShader> shader_conical(const SkColor colors[], int count, const SkSize& size) {
     SkPoint center = { size.width()/2, size.height()/2 };
     return SkGradientShader::MakeTwoPointConical(center, size.width()/64, center, size.width()/2,
-                                                colors, nullptr, count, SkShader::kClamp_TileMode);
+                                                colors, nullptr, count, SkTileMode::kClamp);
 }
 
 static sk_sp<SkShader> shader_sweep(const SkColor colors[], int count, const SkSize& size) {

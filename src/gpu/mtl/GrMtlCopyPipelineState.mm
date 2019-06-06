@@ -5,8 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "GrMtlCopyPipelineState.h"
-#include "GrMtlGpu.h"
+#include "src/gpu/mtl/GrMtlCopyPipelineState.h"
+#include "src/gpu/mtl/GrMtlGpu.h"
+
+#if !__has_feature(objc_arc)
+#error This file must be compiled with Arc. Use -fobjc-arc flag
+#endif
 
 GrMtlCopyPipelineState* GrMtlCopyPipelineState::CreateCopyPipelineState(
         GrMtlGpu* gpu,
@@ -16,7 +20,7 @@ GrMtlCopyPipelineState* GrMtlCopyPipelineState::CreateCopyPipelineState(
         MTLVertexDescriptor* vertexDescriptor) {
 
     // Create pipeline state for copy as draw
-    MTLRenderPipelineDescriptor* pipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
+    MTLRenderPipelineDescriptor* pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = vertexFunction;
     pipelineDescriptor.fragmentFunction = fragmentFunction;
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;

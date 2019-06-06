@@ -5,17 +5,20 @@
  * found in the LICENSE file.
  */
 
-#include "GrCCAtlas.h"
+#include "src/gpu/ccpr/GrCCAtlas.h"
 
-#include "GrCaps.h"
-#include "GrOnFlushResourceProvider.h"
-#include "GrProxyProvider.h"
-#include "GrRectanizer_skyline.h"
-#include "GrRenderTargetContext.h"
-#include "GrTexture.h"
-#include "GrTextureProxy.h"
-#include "SkMakeUnique.h"
-#include "SkMathPriv.h"
+#include "include/gpu/GrTexture.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/core/SkIPoint16.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/core/SkMathPriv.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrOnFlushResourceProvider.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRectanizer_skyline.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/ccpr/GrCCPathCache.h"
+#include <atomic>
 
 class GrCCAtlas::Node {
 public:
@@ -46,8 +49,9 @@ private:
     GrRectanizerSkyline fRectanizer;
 };
 
-GrCCAtlas::GrCCAtlas(GrPixelConfig pixelConfig, const Specs& specs, const GrCaps& caps)
-        : fMaxTextureSize(SkTMax(SkTMax(specs.fMinHeight, specs.fMinWidth),
+GrCCAtlas::GrCCAtlas(CoverageType coverageType, const Specs& specs, const GrCaps& caps)
+        : fCoverageType(coverageType)
+        , fMaxTextureSize(SkTMax(SkTMax(specs.fMinHeight, specs.fMinWidth),
                                  specs.fMaxPreferredTextureSize)) {
     // Caller should have cropped any paths to the destination render target instead of asking for
     // an atlas larger than maxRenderTargetSize.
@@ -72,22 +76,29 @@ GrCCAtlas::GrCCAtlas(GrPixelConfig pixelConfig, const Specs& specs, const GrCaps
 
     fTopNode = skstd::make_unique<Node>(nullptr, 0, 0, fWidth, fHeight);
 
+    GrColorType colorType = (CoverageType::kFP16_CoverageCount == fCoverageType)
+            ? GrColorType::kAlpha_F16 : GrColorType::kAlpha_8;
+    const GrBackendFormat format =
+            caps.getBackendFormatFromGrColorType(colorType, GrSRGBEncoded::kNo);
+    GrPixelConfig pixelConfig = (CoverageType::kFP16_CoverageCount == fCoverageType)
+            ? kAlpha_half_GrPixelConfig : kAlpha_8_GrPixelConfig;
+
     fTextureProxy = GrProxyProvider::MakeFullyLazyProxy(
             [this, pixelConfig](GrResourceProvider* resourceProvider) {
-                    if (!resourceProvider) {
-                        return sk_sp<GrTexture>();
-                    }
                     if (!fBackingTexture) {
                         GrSurfaceDesc desc;
                         desc.fFlags = kRenderTarget_GrSurfaceFlag;
                         desc.fWidth = fWidth;
                         desc.fHeight = fHeight;
                         desc.fConfig = pixelConfig;
-                        fBackingTexture = resourceProvider->createTexture(desc, SkBudgeted::kYes);
+                        fBackingTexture = resourceProvider->createTexture(
+                            desc, SkBudgeted::kYes, GrResourceProvider::Flags::kNoPendingIO);
                     }
-                    return fBackingTexture;
+                    return GrSurfaceProxy::LazyInstantiationResult(fBackingTexture);
             },
-            GrProxyProvider::Renderable::kYes, kTextureOrigin, pixelConfig, caps);
+            format, GrProxyProvider::Renderable::kYes, kTextureOrigin, pixelConfig, caps);
+
+    fTextureProxy->priv().setIgnoredByResourceAllocator();
 }
 
 GrCCAtlas::~GrCCAtlas() {
@@ -147,31 +158,27 @@ void GrCCAtlas::setStrokeBatchID(int id) {
 }
 
 static uint32_t next_atlas_unique_id() {
-    static int32_t nextID;
-    return sk_atomic_inc(&nextID);
+    static std::atomic<uint32_t> nextID;
+    return nextID++;
 }
 
-const GrUniqueKey& GrCCAtlas::getOrAssignUniqueKey(GrOnFlushResourceProvider* onFlushRP) {
-    static const GrUniqueKey::Domain kAtlasDomain = GrUniqueKey::GenerateDomain();
+sk_sp<GrCCCachedAtlas> GrCCAtlas::refOrMakeCachedAtlas(GrOnFlushResourceProvider* onFlushRP) {
+    if (!fCachedAtlas) {
+        static const GrUniqueKey::Domain kAtlasDomain = GrUniqueKey::GenerateDomain();
 
-    if (!fUniqueKey.isValid()) {
-        GrUniqueKey::Builder builder(&fUniqueKey, kAtlasDomain, 1, "CCPR Atlas");
+        GrUniqueKey atlasUniqueKey;
+        GrUniqueKey::Builder builder(&atlasUniqueKey, kAtlasDomain, 1, "CCPR Atlas");
         builder[0] = next_atlas_unique_id();
         builder.finish();
 
-        if (fTextureProxy->isInstantiated()) {
-            onFlushRP->assignUniqueKeyToProxy(fUniqueKey, fTextureProxy.get());
-        }
-    }
-    return fUniqueKey;
-}
+        onFlushRP->assignUniqueKeyToProxy(atlasUniqueKey, fTextureProxy.get());
 
-sk_sp<GrCCAtlas::CachedAtlasInfo> GrCCAtlas::refOrMakeCachedAtlasInfo(uint32_t contextUniqueID) {
-    if (!fCachedAtlasInfo) {
-        fCachedAtlasInfo = sk_make_sp<CachedAtlasInfo>(contextUniqueID);
+        fCachedAtlas = sk_make_sp<GrCCCachedAtlas>(fCoverageType, atlasUniqueKey, fTextureProxy);
     }
-    SkASSERT(fCachedAtlasInfo->fContextUniqueID == contextUniqueID);
-    return fCachedAtlasInfo;
+
+    SkASSERT(fCachedAtlas->coverageType() == fCoverageType);
+    SkASSERT(fCachedAtlas->getOnFlushProxy() == fTextureProxy.get());
+    return fCachedAtlas;
 }
 
 sk_sp<GrRenderTargetContext> GrCCAtlas::makeRenderTargetContext(
@@ -181,6 +188,10 @@ sk_sp<GrRenderTargetContext> GrCCAtlas::makeRenderTargetContext(
     // an atlas larger than maxRenderTargetSize.
     SkASSERT(SkTMax(fHeight, fWidth) <= fMaxTextureSize);
     SkASSERT(fMaxTextureSize <= onFlushRP->caps()->maxRenderTargetSize());
+
+    // Finalize the content size of our proxy. The GPU can potentially make optimizations if it
+    // knows we only intend to write out a smaller sub-rectangle of the backing texture.
+    fTextureProxy->priv().setLazySize(fDrawBounds.width(), fDrawBounds.height());
 
     if (backingTexture) {
         SkASSERT(backingTexture->config() == kAlpha_half_GrPixelConfig);
@@ -197,10 +208,6 @@ sk_sp<GrRenderTargetContext> GrCCAtlas::makeRenderTargetContext(
         return nullptr;
     }
 
-    if (fUniqueKey.isValid()) {
-        onFlushRP->assignUniqueKeyToProxy(fUniqueKey, fTextureProxy.get());
-    }
-
     SkIRect clearRect = SkIRect::MakeSize(fDrawBounds);
     rtc->clear(&clearRect, SK_PMColor4fTRANSPARENT,
                GrRenderTargetContext::CanClearFullscreen::kYes);
@@ -212,7 +219,7 @@ GrCCAtlas* GrCCAtlasStack::addRect(const SkIRect& devIBounds, SkIVector* devToAt
     if (fAtlases.empty() || !fAtlases.back().addRect(devIBounds, devToAtlasOffset)) {
         // The retired atlas is out of room and can't grow any bigger.
         retiredAtlas = !fAtlases.empty() ? &fAtlases.back() : nullptr;
-        fAtlases.emplace_back(fPixelConfig, fSpecs, *fCaps);
+        fAtlases.emplace_back(fCoverageType, fSpecs, *fCaps);
         SkASSERT(devIBounds.width() <= fSpecs.fMinWidth);
         SkASSERT(devIBounds.height() <= fSpecs.fMinHeight);
         SkAssertResult(fAtlases.back().addRect(devIBounds, devToAtlasOffset));

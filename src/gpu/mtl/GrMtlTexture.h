@@ -8,7 +8,7 @@
 #ifndef GrMtlTexture_DEFINED
 #define GrMtlTexture_DEFINED
 
-#include "GrTexture.h"
+#include "include/gpu/GrTexture.h"
 
 #import <Metal/Metal.h>
 
@@ -21,8 +21,8 @@ public:
                                                 MTLTextureDescriptor*,
                                                 GrMipMapsStatus);
 
-    static sk_sp<GrMtlTexture> MakeWrappedTexture(GrMtlGpu*, const GrSurfaceDesc&,
-                                                  id<MTLTexture>, bool purgeImmediately);
+    static sk_sp<GrMtlTexture> MakeWrappedTexture(GrMtlGpu*, const GrSurfaceDesc&, id<MTLTexture>,
+                                                  GrWrapCacheable, GrIOType);
 
     ~GrMtlTexture() override;
 
@@ -30,16 +30,11 @@ public:
 
     GrBackendTexture getBackendTexture() const override;
 
+    GrBackendFormat backendFormat() const override;
+
     void textureParamsModified() override {}
 
     bool reallocForMipmap(GrMtlGpu* gpu, uint32_t mipLevels);
-
-    void setRelease(sk_sp<GrReleaseProcHelper> releaseHelper) override {
-        // Since all MTLResources are inherently ref counted, we can call the Release proc when we
-        // delete the GrMtlTexture without worry of the MTLTexture getting deleted before it is done
-        // on the GPU.
-        fReleaseHelper = std::move(releaseHelper);
-    }
 
 protected:
     GrMtlTexture(GrMtlGpu*, const GrSurfaceDesc&, id<MTLTexture>, GrMipMapsStatus);
@@ -48,9 +43,11 @@ protected:
 
     void onAbandon() override {
         fTexture = nil;
+        INHERITED::onAbandon();
     }
     void onRelease() override {
         fTexture = nil;
+        INHERITED::onRelease();
     }
 
      bool onStealBackendTexture(GrBackendTexture*, SkImage::BackendTextureReleaseProc*) override {
@@ -59,15 +56,14 @@ protected:
 
 private:
     enum Wrapped { kWrapped };
+
     GrMtlTexture(GrMtlGpu*, SkBudgeted, const GrSurfaceDesc&, id<MTLTexture>,
                  GrMipMapsStatus);
 
     GrMtlTexture(GrMtlGpu*, Wrapped, const GrSurfaceDesc&, id<MTLTexture>, GrMipMapsStatus,
-                 bool purgeImmediately);
+                 GrWrapCacheable, GrIOType);
 
     id<MTLTexture> fTexture;
-
-    sk_sp<GrReleaseProcHelper>        fReleaseHelper;
 
     typedef GrTexture INHERITED;
 };

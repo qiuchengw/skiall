@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkPath.h"
-#include "SkRect.h"
-#include "SkRectPriv.h"
-#include "Test.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRect.h"
+#include "src/core/SkRectPriv.h"
+#include "tests/Test.h"
 
 static bool has_green_pixels(const SkBitmap& bm) {
     for (int j = 0; j < bm.height(); ++j) {
@@ -160,3 +160,27 @@ DEF_TEST(Rect_center, reporter) {
     REPORTER_ASSERT(reporter, !SkScalarIsFinite(r.height()));
 }
 
+#include "include/core/SkSurface.h"
+
+// Before the fix, this sequence would trigger a release_assert in the Tiler
+// in SkBitmapDevice.cpp
+DEF_TEST(big_tiled_rect_crbug_927075, reporter) {
+    // since part of the regression test allocates a huge buffer, don't bother trying on
+    // 32-bit devices (e.g. chromecast) so we avoid them failing to allocated.
+
+    if (sizeof(void*) == 8) {
+        const int w = 67108863;
+        const int h = 1;
+        const auto info = SkImageInfo::MakeN32Premul(w, h);
+
+        auto surf = SkSurface::MakeRaster(info);
+        auto canvas = surf->getCanvas();
+
+        const SkRect r = { 257, 213, 67109120, 214 };
+        SkPaint paint;
+        paint.setAntiAlias(true);
+
+        canvas->translate(-r.fLeft, -r.fTop);
+        canvas->drawRect(r, paint);
+    }
+}

@@ -5,15 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "GrXfermodeFragmentProcessor.h"
+#include "src/gpu/effects/GrXfermodeFragmentProcessor.h"
 
-#include "GrConstColorProcessor.h"
-#include "GrFragmentProcessor.h"
-#include "glsl/GrGLSLFragmentProcessor.h"
-#include "glsl/GrGLSLBlend.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "SkGr.h"
-#include "SkXfermodePriv.h"
+#include "src/core/SkXfermodePriv.h"
+#include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/effects/generated/GrConstColorProcessor.h"
+#include "src/gpu/glsl/GrGLSLBlend.h"
+#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 
 // Some of the cpu implementations of blend modes differ too much from the GPU enough that
 // we can't use the cpu implementation to implement constantOutputForConstantInput.
@@ -326,17 +326,8 @@ private:
             case SkBlendMode::kSrcIn:
             case SkBlendMode::kDstIn:
             case SkBlendMode::kModulate:
-                if (fp->compatibleWithCoverageAsAlpha()) {
-                    if (fp->preservesOpaqueInput()) {
-                        flags = kPreservesOpaqueInput_OptimizationFlag |
-                                kCompatibleWithCoverageAsAlpha_OptimizationFlag;
-                    } else {
-                        flags = kCompatibleWithCoverageAsAlpha_OptimizationFlag;
-                    }
-                } else {
-                    flags = fp->preservesOpaqueInput() ? kPreservesOpaqueInput_OptimizationFlag
-                                                       : kNone_OptimizationFlags;
-                }
+                flags = ProcessorOptimizationFlags(fp) &
+                        ~kConstantOutputForConstantInput_OptimizationFlag;
                 break;
 
             // Produces zero when both are opaque, indeterminate if one is opaque.
@@ -502,7 +493,7 @@ std::unique_ptr<GrFragmentProcessor> ComposeOneFragmentProcessor::clone() const 
 // that these factories could simply return the input FP. However, that doesn't have quite
 // the same effect as the returned compose FP will replace the FP's input with solid white and
 // ignore the original input. This could be implemented as:
-// RunInSeries(ConstColor(GrColor_WHITE, kIgnoreInput), inputFP).
+// RunInSeries(ConstColor(WHITE, kIgnoreInput), inputFP).
 
 std::unique_ptr<GrFragmentProcessor> GrXfermodeFragmentProcessor::MakeFromDstProcessor(
         std::unique_ptr<GrFragmentProcessor> dst, SkBlendMode mode) {

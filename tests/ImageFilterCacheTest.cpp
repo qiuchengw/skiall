@@ -5,16 +5,16 @@
   * found in the LICENSE file.
   */
 
-#include "Test.h"
+#include "tests/Test.h"
 
-#include "SkBitmap.h"
-#include "SkColorFilter.h"
-#include "SkColorFilterImageFilter.h"
-#include "SkImage.h"
-#include "SkImageFilter.h"
-#include "SkImageFilterCache.h"
-#include "SkMatrix.h"
-#include "SkSpecialImage.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkImageFilter.h"
+#include "include/core/SkMatrix.h"
+#include "include/effects/SkColorFilterImageFilter.h"
+#include "src/core/SkImageFilterCache.h"
+#include "src/core/SkSpecialImage.h"
 
 static const int kSmallerSize = 10;
 static const int kPad = 3;
@@ -28,7 +28,7 @@ static SkBitmap create_bm() {
 }
 
 static sk_sp<SkImageFilter> make_filter() {
-    sk_sp<SkColorFilter> filter(SkColorFilter::MakeModeFilter(SK_ColorBLUE,
+    sk_sp<SkColorFilter> filter(SkColorFilters::Blend(SK_ColorBLUE,
                                                               SkBlendMode::kSrcIn));
     return SkColorFilterImageFilter::Make(std::move(filter), nullptr, nullptr);
 }
@@ -166,14 +166,16 @@ DEF_TEST(ImageFilterCache_RasterBacked, reporter) {
 
 
 // Shared test code for both the raster and gpu-backed image cases
-static void test_image_backed(skiatest::Reporter* reporter, const sk_sp<SkImage>& srcImage) {
+static void test_image_backed(skiatest::Reporter* reporter,
+                              GrContext* context,
+                              const sk_sp<SkImage>& srcImage) {
     const SkIRect& full = SkIRect::MakeWH(kFullSize, kFullSize);
 
-    sk_sp<SkSpecialImage> fullImg(SkSpecialImage::MakeFromImage(full, srcImage));
+    sk_sp<SkSpecialImage> fullImg(SkSpecialImage::MakeFromImage(context, full, srcImage));
 
     const SkIRect& subset = SkIRect::MakeXYWH(kPad, kPad, kSmallerSize, kSmallerSize);
 
-    sk_sp<SkSpecialImage> subsetImg(SkSpecialImage::MakeFromImage(subset, srcImage));
+    sk_sp<SkSpecialImage> subsetImg(SkSpecialImage::MakeFromImage(context, subset, srcImage));
 
     test_find_existing(reporter, fullImg, subsetImg);
     test_dont_find_if_diff_key(reporter, fullImg, subsetImg);
@@ -186,16 +188,16 @@ DEF_TEST(ImageFilterCache_ImageBackedRaster, reporter) {
 
     sk_sp<SkImage> srcImage(SkImage::MakeFromBitmap(srcBM));
 
-    test_image_backed(reporter, srcImage);
+    test_image_backed(reporter, nullptr, srcImage);
 }
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrProxyProvider.h"
-#include "GrResourceProvider.h"
-#include "GrSurfaceProxyPriv.h"
-#include "GrTexture.h"
-#include "GrTextureProxy.h"
+#include "include/gpu/GrContext.h"
+#include "include/gpu/GrTexture.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSurfaceProxyPriv.h"
 
 static sk_sp<GrTextureProxy> create_proxy(GrProxyProvider* proxyProvider) {
     SkBitmap srcBM = create_bm();
@@ -207,12 +209,12 @@ static sk_sp<GrTextureProxy> create_proxy(GrProxyProvider* proxyProvider) {
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ImageFilterCache_ImageBackedGPU, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
 
-    sk_sp<GrTextureProxy> srcProxy(create_proxy(context->contextPriv().proxyProvider()));
+    sk_sp<GrTextureProxy> srcProxy(create_proxy(context->priv().proxyProvider()));
     if (!srcProxy) {
         return;
     }
 
-    if (!srcProxy->instantiate(context->contextPriv().resourceProvider())) {
+    if (!srcProxy->instantiate(context->priv().resourceProvider())) {
         return;
     }
     GrTexture* tex = srcProxy->peekTexture();
@@ -242,13 +244,13 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ImageFilterCache_ImageBackedGPU, reporter, ct
     }
     REPORTER_ASSERT(reporter, readBackOrigin == texOrigin);
 
-    test_image_backed(reporter, srcImage);
+    test_image_backed(reporter, context, srcImage);
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ImageFilterCache_GPUBacked, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
 
-    sk_sp<GrTextureProxy> srcProxy(create_proxy(context->contextPriv().proxyProvider()));
+    sk_sp<GrTextureProxy> srcProxy(create_proxy(context->priv().proxyProvider()));
     if (!srcProxy) {
         return;
     }

@@ -5,25 +5,28 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
-#include "TestUtils.h"
+#include "tests/Test.h"
+#include "tests/TestUtils.h"
 
-#include "GrClip.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrProxyProvider.h"
-#include "GrRenderTargetContext.h"
-#include "GrSurfacePriv.h"
-#include "GrTexturePriv.h"
-#include "GrTextureProxyPriv.h"
-#include "gl/GLTestContext.h"
-#include "gl/GrGLGpu.h"
-#include "gl/GrGLUtil.h"
+#include "include/gpu/GrContext.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfacePriv.h"
+#include "src/gpu/GrTexturePriv.h"
+#include "src/gpu/GrTextureProxyPriv.h"
+#include "src/gpu/gl/GrGLGpu.h"
+#include "src/gpu/gl/GrGLUtil.h"
+#include "tools/gpu/gl/GLTestContext.h"
 
 // skbug.com/5932
 static void test_basic_draw_as_src(skiatest::Reporter* reporter, GrContext* context,
                                    sk_sp<GrTextureProxy> rectProxy, uint32_t expectedPixelValues[]) {
-    sk_sp<GrRenderTargetContext> rtContext(context->contextPriv().makeDeferredRenderTargetContext(
+    GrBackendFormat format = rectProxy->backendFormat().makeTexture2D();
+    SkASSERT(format.isValid());
+    sk_sp<GrRenderTargetContext> rtContext(context->priv().makeDeferredRenderTargetContext(
+                                                     format,
                                                      SkBackingFit::kExact, rectProxy->width(),
                                                      rectProxy->height(), rectProxy->config(),
                                                      nullptr));
@@ -90,7 +93,7 @@ static void test_clear(skiatest::Reporter* reporter, GrSurfaceContext* rectConte
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrProxyProvider* proxyProvider = context->contextPriv().proxyProvider();
+    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
     sk_gpu_test::GLTestContext* glContext = ctxInfo.glContext();
     static const int kWidth = 13;
     static const int kHeight = 13;
@@ -132,7 +135,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
             }
         }
 
-        sk_sp<GrTextureProxy> rectProxy = proxyProvider->wrapBackendTexture(rectangleTex, origin);
+        sk_sp<GrTextureProxy> rectProxy = proxyProvider->wrapBackendTexture(
+                rectangleTex, origin, kBorrow_GrWrapOwnership, GrWrapCacheable::kNo, kRW_GrIOType);
 
         if (!rectProxy) {
             ERRORF(reporter, "Error creating proxy for rectangle texture.");
@@ -155,14 +159,13 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
         test_copy_from_surface(reporter, context, rectProxy.get(), refPixels,
                                false, "RectangleTexture-copy-from");
 
-        sk_sp<GrSurfaceContext> rectContext = context->contextPriv().makeWrappedSurfaceContext(
+        sk_sp<GrSurfaceContext> rectContext = context->priv().makeWrappedSurfaceContext(
                                                                             std::move(rectProxy));
         SkASSERT(rectContext);
 
         test_read_pixels(reporter, rectContext.get(), refPixels, "RectangleTexture-read");
 
-        test_copy_to_surface(reporter, context->contextPriv().proxyProvider(),
-                              rectContext.get(), "RectangleTexture-copy-to");
+        test_copy_to_surface(reporter, context, rectContext.get(), "RectangleTexture-copy-to");
 
         test_write_pixels(reporter, rectContext.get(), true, "RectangleTexture-write");
 

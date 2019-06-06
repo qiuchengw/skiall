@@ -5,26 +5,29 @@
  * found in the LICENSE file.
  */
 
-#include "SkTypes.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTypes.h"
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrContext.h"
+#include "include/gpu/GrContextOptions.h"
+#include "include/private/GrColor.h"
+#include "include/private/GrTypesPriv.h"
+#include "include/private/SkColorData.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "tests/Test.h"
+#include "tools/gpu/GrContextFactory.h"
 
-#include "GrColor.h"
-#include "GrContext.h"
-#include "GrContextFactory.h"
-#include "GrContextOptions.h"
-#include "GrContextPriv.h"
-#include "GrRenderTargetContext.h"
-#include "GrTypes.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkColor.h"
-#include "SkColorSpace.h"
-#include "SkImageInfo.h"
-#include "SkPaint.h"
-#include "SkRect.h"
-#include "SkRefCnt.h"
-#include "SkSurface.h"
-#include "Test.h"
-
+#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -56,9 +59,10 @@ static bool check_rect(GrRenderTargetContext* rtc, const SkIRect& rect, uint32_t
 }
 
 sk_sp<GrRenderTargetContext> newRTC(GrContext* context, int w, int h) {
-    return context->contextPriv().makeDeferredRenderTargetContext(
-                                                                SkBackingFit::kExact, w, h,
-                                                                kRGBA_8888_GrPixelConfig, nullptr);
+    const GrBackendFormat format =
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+    return context->priv().makeDeferredRenderTargetContext(format, SkBackingFit::kExact, w, h,
+                                                           kRGBA_8888_GrPixelConfig, nullptr);
 }
 
 static void clear_op_test(skiatest::Reporter* reporter, GrContext* context) {
@@ -223,13 +227,14 @@ static void clear_op_test(skiatest::Reporter* reporter, GrContext* context) {
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ClearOp, reporter, ctxInfo) {
+    // Regular clear
     clear_op_test(reporter, ctxInfo.grContext());
-    if (ctxInfo.backend() == GrBackendApi::kOpenGL) {
-        GrContextOptions options(ctxInfo.options());
-        options.fUseDrawInsteadOfGLClear = GrContextOptions::Enable::kYes;
-        sk_gpu_test::GrContextFactory workaroundFactory(options);
-        clear_op_test(reporter, workaroundFactory.get(ctxInfo.type()));
-    }
+
+    // Force drawing for clears
+    GrContextOptions options(ctxInfo.options());
+    options.fUseDrawInsteadOfClear = GrContextOptions::Enable::kYes;
+    sk_gpu_test::GrContextFactory workaroundFactory(options);
+    clear_op_test(reporter, workaroundFactory.get(ctxInfo.type()));
 }
 
 void fullscreen_clear_with_layer_test(skiatest::Reporter* reporter, GrContext* context) {
@@ -288,11 +293,12 @@ void fullscreen_clear_with_layer_test(skiatest::Reporter* reporter, GrContext* c
 }
 // From crbug.com/768134
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(FullScreenClearWithLayers, reporter, ctxInfo) {
+    // Regular clear
     fullscreen_clear_with_layer_test(reporter, ctxInfo.grContext());
-    if (ctxInfo.backend() == GrBackendApi::kOpenGL) {
-        GrContextOptions options(ctxInfo.options());
-        options.fUseDrawInsteadOfGLClear = GrContextOptions::Enable::kYes;
-        sk_gpu_test::GrContextFactory workaroundFactory(options);
-        fullscreen_clear_with_layer_test(reporter, workaroundFactory.get(ctxInfo.type()));
-    }
+
+    // Use draws for clears
+    GrContextOptions options(ctxInfo.options());
+    options.fUseDrawInsteadOfClear = GrContextOptions::Enable::kYes;
+    sk_gpu_test::GrContextFactory workaroundFactory(options);
+    fullscreen_clear_with_layer_test(reporter, workaroundFactory.get(ctxInfo.type()));
 }

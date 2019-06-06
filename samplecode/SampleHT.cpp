@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkDrawable.h"
-#include "SkInterpolator.h"
-#include "SkPictureRecorder.h"
-#include "SkPointPriv.h"
-#include "SkRandom.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkDrawable.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/utils/SkInterpolator.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/Sample.h"
+#include "src/core/SkPointPriv.h"
+#include "tools/timer/AnimTimer.h"
 
 const SkRect gUnitSquare = { -1, -1, 1, 1 };
 
@@ -154,7 +154,7 @@ protected:
         canvas->drawDrawable(fRoot.get());
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         fTime = timer.msec();
         for (int i = 0; i < N; ++i) {
             fArray[i].fDrawable->setTime(fTime);

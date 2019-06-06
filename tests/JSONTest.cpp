@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "Test.h"
+#include "tests/Test.h"
 
-#include "SkArenaAlloc.h"
-#include "SkJSON.h"
-#include "SkString.h"
-#include "SkStream.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkString.h"
+#include "src/core/SkArenaAlloc.h"
+#include "src/utils/SkJSON.h"
 
 using namespace skjson;
 
@@ -413,4 +413,44 @@ DEF_TEST(JSON_DOM_build, reporter) {
                                                                 "}"
                                                             "]"
                                             "}");
+}
+
+DEF_TEST(JSON_ParseNumber, reporter) {
+    static constexpr struct {
+        const char* string;
+        SkScalar    value,
+                    tolerance;
+    } gTests[] = {
+        { "0", 0, 0 },
+        { "1", 1, 0 },
+
+        { "00000000", 0, 0 },
+        { "00000001", 1, 0 },
+
+        { "0.001", 0.001f, 0 },
+        { "1.001", 1.001f, 0 },
+
+        { "0.000001"   ,    0.000001f, 0 },
+        { "1.000001"   ,    1.000001f, 0 },
+        { "1000.000001", 1000.000001f, 0 },
+
+        { "0.0000000001"   ,    0.0000000001f, 0 },
+        { "1.0000000001"   ,    1.0000000001f, 0 },
+        { "1000.0000000001", 1000.0000000001f, 0 },
+
+        { "20.001111814444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444473",
+          20.001f, 0.001f },
+    };
+
+    for (const auto& test : gTests) {
+        const auto json = SkStringPrintf("{ \"key\": %s }", test.string);
+        const DOM dom(json.c_str(), json.size());
+        const ObjectValue* jroot = dom.root();
+
+        REPORTER_ASSERT(reporter, jroot);
+
+        const NumberValue* jnumber = (*jroot)["key"];
+        REPORTER_ASSERT(reporter, jnumber);
+        REPORTER_ASSERT(reporter, SkScalarNearlyEqual(**jnumber, test.value, test.tolerance));
+    }
 }

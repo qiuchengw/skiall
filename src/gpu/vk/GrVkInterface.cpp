@@ -5,16 +5,17 @@
  * found in the LICENSE file.
  */
 
-#include "GrVkInterface.h"
-#include "vk/GrVkBackendContext.h"
-#include "vk/GrVkExtensions.h"
-#include "vk/GrVkUtil.h"
+#include "include/gpu/vk/GrVkBackendContext.h"
+#include "include/gpu/vk/GrVkExtensions.h"
+#include "src/gpu/vk/GrVkInterface.h"
+#include "src/gpu/vk/GrVkUtil.h"
 
-#define ACQUIRE_PROC(name, instance, device) fFunctions.f##name = \
-    reinterpret_cast<PFN_vk##name>(getProc("vk"#name, instance, device));
+#define ACQUIRE_PROC(name, instance, device) \
+    fFunctions.f##name = reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device))
 
-#define ACQUIRE_PROC_SUFFIX(name, suffix, instance, device) fFunctions.f##name = \
-    reinterpret_cast<PFN_vk##name##suffix>(getProc("vk"#name#suffix, instance, device));
+#define ACQUIRE_PROC_SUFFIX(name, suffix, instance, device) \
+    fFunctions.f##name =                                    \
+            reinterpret_cast<PFN_vk##name##suffix>(getProc("vk" #name #suffix, instance, device))
 
 GrVkInterface::GrVkInterface(GrVkGetProc getProc,
                              VkInstance instance,

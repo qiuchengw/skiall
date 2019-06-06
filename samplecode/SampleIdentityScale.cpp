@@ -5,17 +5,18 @@
  * found in the LICENSE file.
  */
 
-#include "DecodeFile.h"
-#include "Resources.h"
-#include "Sample.h"
-#include "SkBlurMaskFilter.h"
-#include "SkCanvas.h"
-#include "SkColorPriv.h"
-#include "SkPath.h"
-#include "SkRandom.h"
-#include "SkStream.h"
-#include "SkTime.h"
-#include "SkClipOpPriv.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTime.h"
+#include "include/effects/SkBlurMaskFilter.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/DecodeFile.h"
+#include "samplecode/Sample.h"
+#include "src/core/SkClipOpPriv.h"
+#include "tools/Resources.h"
 
 // Intended to exercise pixel snapping observed with scaled images (and
 // with non-scaled images, but for a different reason):  Bug 1145
@@ -42,10 +43,10 @@ protected:
 
     void onDrawContent(SkCanvas* canvas) override {
 
+        SkFont font(nullptr, 48);
         SkPaint paint;
 
         paint.setAntiAlias(true);
-        paint.setTextSize(48);
         paint.setFilterQuality(kHigh_SkFilterQuality);
 
         SkTime::DateTime time;
@@ -67,7 +68,7 @@ protected:
         }
         canvas->drawBitmap( fBM, 100, 100, &paint );
         canvas->restore();
-        canvas->drawString(text, 100, 400, paint );
+        canvas->drawString(text, 100, 400, font, paint);
     }
 
 private:

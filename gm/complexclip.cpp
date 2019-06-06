@@ -5,10 +5,24 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
-#include "SkCanvas.h"
-#include "SkPath.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkClipOp.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontTypes.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypeface.h"
+#include "include/core/SkTypes.h"
+#include "src/core/SkClipOpPriv.h"
+#include "tools/ToolUtils.h"
+
+#include <string.h>
 
 namespace skiagm {
 
@@ -68,10 +82,7 @@ protected:
         SkPath clipB;
         clipB.addPoly({{40,  10}, {190, 15}, {195, 190}, {40,  185}, {155, 100}}, false).close();
 
-        SkPaint paint;
-        paint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&paint);
-        paint.setTextSize(20);
+        SkFont font(ToolUtils::create_portable_typeface(), 20);
 
         constexpr struct {
             SkClipOp fOp;
@@ -137,17 +148,19 @@ protected:
                 canvas->restore();
 
 
+                SkPaint paint;
                 SkScalar txtX = 45;
                 paint.setColor(gClipAColor);
                 const char* aTxt = doInvA ? "InvA " : "A ";
-                canvas->drawString(aTxt, txtX, 220, paint);
-                txtX += paint.measureText(aTxt, strlen(aTxt));
+                canvas->drawSimpleText(aTxt, strlen(aTxt), SkTextEncoding::kUTF8, txtX, 220, font, paint);
+                txtX += font.measureText(aTxt, strlen(aTxt), SkTextEncoding::kUTF8);
                 paint.setColor(SK_ColorBLACK);
-                canvas->drawString(gOps[op].fName, txtX, 220, paint);
-                txtX += paint.measureText(gOps[op].fName, strlen(gOps[op].fName));
+                canvas->drawSimpleText(gOps[op].fName, strlen(gOps[op].fName), SkTextEncoding::kUTF8, txtX, 220,
+                                       font, paint);
+                txtX += font.measureText(gOps[op].fName, strlen(gOps[op].fName), SkTextEncoding::kUTF8);
                 paint.setColor(gClipBColor);
                 const char* bTxt = doInvB ? "InvB " : "B ";
-                canvas->drawString(bTxt, txtX, 220, paint);
+                canvas->drawSimpleText(bTxt, strlen(bTxt), SkTextEncoding::kUTF8, txtX, 220, font, paint);
 
                 canvas->translate(250,0);
             }

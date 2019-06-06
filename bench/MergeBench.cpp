@@ -5,11 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "Benchmark.h"
-#include "SkCanvas.h"
-#include "SkImageSource.h"
-#include "SkMergeImageFilter.h"
-#include "SkSurface.h"
+#include "bench/Benchmark.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkSurface.h"
+#include "include/effects/SkImageSource.h"
+#include "include/effects/SkMergeImageFilter.h"
 
 #define FILTER_WIDTH_SMALL  SkIntToScalar(32)
 #define FILTER_HEIGHT_SMALL SkIntToScalar(32)
@@ -20,11 +21,10 @@ static sk_sp<SkImage> make_bitmap() {
     sk_sp<SkSurface> surface(SkSurface::MakeRasterN32Premul(80, 80));
     surface->getCanvas()->clear(0x00000000);
     SkPaint paint;
-    paint.setAntiAlias(true);
     paint.setColor(0xFF884422);
-    paint.setTextSize(SkIntToScalar(96));
-    const char* str = "g";
-    surface->getCanvas()->drawString(str, 15, 55, paint);
+    SkFont font;
+    font.setSize(SkIntToScalar(96));
+    surface->getCanvas()->drawSimpleText("g", 1, SkTextEncoding::kUTF8, 15, 55, font, paint);
     return surface->makeImageSnapshot();
 }
 

@@ -8,12 +8,12 @@
 #ifndef Fuzz_DEFINED
 #define Fuzz_DEFINED
 
-#include "../tools/Registry.h"
-#include "SkData.h"
-#include "SkImageFilter.h"
-#include "SkMalloc.h"
-#include "SkRegion.h"
-#include "SkTypes.h"
+#include "include/core/SkData.h"
+#include "include/core/SkImageFilter.h"
+#include "include/core/SkRegion.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkMalloc.h"
+#include "tools/Registry.h"
 
 #include <limits>
 #include <cmath>
@@ -48,7 +48,7 @@ public:
     // next() in a way that does not consume fuzzed bytes in a single
     // platform-independent order.
     template <typename T>
-    void next(T* t);
+    void next(T* t) { this->nextBytes(t, sizeof(T)); }
 
     // This is a convenient way to initialize more than one argument at a time.
     template <typename Arg, typename... Args>
@@ -58,10 +58,9 @@ public:
     template <typename T, typename Min, typename Max>
     void nextRange(T*, Min, Max);
 
-    // Explicit version of nextRange for enums.
-    // Again, values are in [min, max].
-    template <typename T, typename Min, typename Max>
-    void nextEnum(T*, Min, Max);
+    // nextEnum is a wrapper around nextRange for enums.
+    template <typename T>
+    void nextEnum(T* ptr, T max);
 
     // nextN loads n * sizeof(T) bytes into ptr
     template <typename T>
@@ -87,19 +86,9 @@ private:
     sk_sp<SkData> fBytes;
     size_t fNextByte;
     friend void fuzz__MakeEncoderCorpus(Fuzz*);
-};
 
-template <typename T>
-inline void Fuzz::next(T* n) {
-    if ((fNextByte + sizeof(T)) > fBytes->size()) {
-        sk_bzero(n, sizeof(T));
-        memcpy(n, fBytes->bytes() + fNextByte, fBytes->size() - fNextByte);
-        fNextByte = fBytes->size();
-        return;
-    }
-    memcpy(n, fBytes->bytes() + fNextByte, sizeof(T));
-    fNextByte += sizeof(T);
-}
+    void nextBytes(void* ptr, size_t size);
+};
 
 template <typename Arg, typename... Args>
 inline void Fuzz::next(Arg* first, Args... rest) {
@@ -108,32 +97,23 @@ inline void Fuzz::next(Arg* first, Args... rest) {
 }
 
 template <typename T, typename Min, typename Max>
-inline void Fuzz::nextRange(T* n, Min min, Max max) {
-    this->next<T>(n);
-    if (min == max) {
-        *n = min;
-        return;
-    }
-    if (min > max) {
-        // Avoid misuse of nextRange
-        SkDebugf("min > max (%d > %d) \n", min, max);
-        this->signalBug();
-    }
-    if (*n < 0) { // Handle negatives
-        if (*n != std::numeric_limits<T>::lowest()) {
-            *n *= -1;
-        }
-        else {
-            *n = std::numeric_limits<T>::max();
-        }
-    }
-    *n = min + (*n % ((size_t)max - min + 1));
+inline void Fuzz::nextRange(T* value, Min min, Max max) {
+    this->next(value);
+    if (*value < (T)min) { *value = (T)min; }
+    if (*value > (T)max) { *value = (T)max; }
 }
 
-template <typename T, typename Min, typename Max>
-inline void Fuzz::nextEnum(T* value, Min rmin, Max rmax) {
-    using U = skstd::underlying_type_t<T>;
-    this->nextRange((U*)value, (U)rmin, (U)rmax);
+template <typename T>
+inline void Fuzz::nextEnum(T* value, T max) {
+    // This works around the fact that UBSAN will assert if we put an invalid
+    // value into an enum. We might see issues with enums being represented
+    // on Windows differently than Linux, but that's not a thing we can fix here.
+    using U = typename std::underlying_type<T>::type;
+    U v;
+    this->next(&v);
+    if (v < (U)0) { *value = (T)0; return;}
+    if (v > (U)max) { *value = (T)max; return;}
+    *value = (T)v;
 }
 
 template <typename T>

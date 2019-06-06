@@ -8,8 +8,8 @@
 #ifndef GrTextureContext_DEFINED
 #define GrTextureContext_DEFINED
 
-#include "GrSurfaceContext.h"
-#include "../private/GrTextureProxy.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/gpu/GrSurfaceContext.h"
 
 class GrContext;
 class GrDrawingManager;
@@ -39,8 +39,7 @@ public:
     sk_sp<GrRenderTargetProxy> asRenderTargetProxyRef() override;
 
 protected:
-    GrTextureContext(GrContext*, GrDrawingManager*, sk_sp<GrTextureProxy>,
-                     sk_sp<SkColorSpace>, GrAuditTrail*, GrSingleOwner*);
+    GrTextureContext(GrRecordingContext*, sk_sp<GrTextureProxy>, sk_sp<SkColorSpace>);
 
     SkDEBUGCODE(void validate() const override;)
 
@@ -49,11 +48,11 @@ private:
 
     GrOpList* getOpList() override;
 
-    sk_sp<GrTextureProxy>        fTextureProxy;
+    sk_sp<GrTextureProxy>  fTextureProxy;
 
     // In MDB-mode the GrOpList can be closed by some other renderTargetContext that has picked
     // it up. For this reason, the GrOpList should only ever be accessed via 'getOpList'.
-    sk_sp<GrTextureOpList>       fOpList;
+    sk_sp<GrTextureOpList> fOpList;
 
     typedef GrSurfaceContext INHERITED;
 };

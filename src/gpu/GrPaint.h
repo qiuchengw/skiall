@@ -10,12 +10,12 @@
 #ifndef GrPaint_DEFINED
 #define GrPaint_DEFINED
 
-#include "GrColor.h"
-#include "GrFragmentProcessor.h"
-#include "SkBlendMode.h"
-#include "SkRefCnt.h"
-#include "SkRegion.h"
-#include "SkTLazy.h"
+#include "include/core/SkBlendMode.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkRegion.h"
+#include "include/private/GrColor.h"
+#include "src/core/SkTLazy.h"
+#include "src/gpu/GrFragmentProcessor.h"
 
 class GrTextureProxy;
 class GrXPFactory;
@@ -115,6 +115,10 @@ public:
      **/
     bool isTrivial() const { return fTrivial; }
 
+    friend void assert_alive(GrPaint& p) {
+        SkASSERT(p.fAlive);
+    }
+
 private:
     // Since paint copying is expensive if there are fragment processors, we require going through
     // the Clone() method.
@@ -128,6 +132,7 @@ private:
     SkSTArray<2, std::unique_ptr<GrFragmentProcessor>> fCoverageFragmentProcessors;
     bool fTrivial = true;
     SkPMColor4f fColor = SK_PMColor4fWHITE;
+    SkDEBUGCODE(bool fAlive = true;)  // Set false after moved from.
 };
 
 #endif

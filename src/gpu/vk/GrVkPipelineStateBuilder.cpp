@@ -5,19 +5,25 @@
 * found in the LICENSE file.
 */
 
-#include "vk/GrVkPipelineStateBuilder.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrShaderCaps.h"
-#include "GrStencilSettings.h"
-#include "GrVkRenderTarget.h"
-#include "vk/GrVkDescriptorSetManager.h"
-#include "vk/GrVkGpu.h"
-#include "vk/GrVkRenderPass.h"
+#include "include/gpu/GrContext.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrPersistentCacheUtils.h"
+#include "src/gpu/GrShaderCaps.h"
+#include "src/gpu/GrShaderUtils.h"
+#include "src/gpu/GrStencilSettings.h"
+#include "src/gpu/vk/GrVkDescriptorSetManager.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkPipelineStateBuilder.h"
+#include "src/gpu/vk/GrVkRenderPass.h"
+#include "src/gpu/vk/GrVkRenderTarget.h"
+
+typedef size_t shader_size;
 
 GrVkPipelineState* GrVkPipelineStateBuilder::CreatePipelineState(
         GrVkGpu* gpu,
+        GrRenderTarget* renderTarget, GrSurfaceOrigin origin,
         const GrPrimitiveProcessor& primProc,
+        const GrTextureProxy* const primProcProxies[],
         const GrPipeline& pipeline,
         const GrStencilSettings& stencil,
         GrPrimitiveType primitiveType,
@@ -25,7 +31,8 @@ GrVkPipelineState* GrVkPipelineStateBuilder::CreatePipelineState(
         VkRenderPass compatibleRenderPass) {
     // create a builder.  This will be handed off to effects so they can use it to add
     // uniforms, varyings, textures, etc
-    GrVkPipelineStateBuilder builder(gpu, pipeline, primProc, desc);
+    GrVkPipelineStateBuilder builder(gpu, renderTarget, origin, pipeline, primProc,
+                                     primProcProxies, desc);
 
     if (!builder.emitAndInstallProcs()) {
         return nullptr;
@@ -35,10 +42,13 @@ GrVkPipelineState* GrVkPipelineStateBuilder::CreatePipelineState(
 }
 
 GrVkPipelineStateBuilder::GrVkPipelineStateBuilder(GrVkGpu* gpu,
+                                                   GrRenderTarget* renderTarget,
+                                                   GrSurfaceOrigin origin,
                                                    const GrPipeline& pipeline,
                                                    const GrPrimitiveProcessor& primProc,
+                                                   const GrTextureProxy* const primProcProxies[],
                                                    GrProgramDesc* desc)
-        : INHERITED(primProc, pipeline, desc)
+        : INHERITED(renderTarget, origin, primProc, primProcProxies, pipeline, desc)
         , fGpu(gpu)
         , fVaryingHandler(this)
         , fUniformHandler(this) {}
@@ -56,34 +66,92 @@ void GrVkPipelineStateBuilder::finalizeFragmentSecondaryColor(GrShaderVar& outpu
 }
 
 bool GrVkPipelineStateBuilder::createVkShaderModule(VkShaderStageFlagBits stage,
-                                                    const GrGLSLShaderBuilder& builder,
+                                                    const SkSL::String& sksl,
                                                     VkShaderModule* shaderModule,
                                                     VkPipelineShaderStageCreateInfo* stageInfo,
                                                     const SkSL::Program::Settings& settings,
-                                                    Desc* desc) {
-    SkString shaderString;
-    for (int i = 0; i < builder.fCompilerStrings.count(); ++i) {
-        if (builder.fCompilerStrings[i]) {
-            shaderString.append(builder.fCompilerStrings[i]);
-            shaderString.append("\n");
-        }
+                                                    Desc* desc,
+                                                    SkSL::String* outSPIRV,
+                                                    SkSL::Program::Inputs* outInputs) {
+    if (!GrCompileVkShaderModule(fGpu, sksl, stage, shaderModule,
+                                 stageInfo, settings, outSPIRV, outInputs)) {
+        return false;
     }
+    if (outInputs->fRTHeight) {
+        this->addRTHeightUniform(SKSL_RTHEIGHT_NAME);
+    }
+    if (outInputs->fFlipY) {
+        desc->setSurfaceOriginKey(GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(
+                                                     this->origin()));
+    }
+    return true;
+}
 
-    SkSL::Program::Inputs inputs;
-    bool result = GrCompileVkShaderModule(fGpu, shaderString.c_str(), stage, shaderModule,
-                                          stageInfo, settings, &inputs);
-    if (!result) {
+bool GrVkPipelineStateBuilder::installVkShaderModule(VkShaderStageFlagBits stage,
+                                                     const GrGLSLShaderBuilder& builder,
+                                                     VkShaderModule* shaderModule,
+                                                     VkPipelineShaderStageCreateInfo* stageInfo,
+                                                     SkSL::String spirv,
+                                                     SkSL::Program::Inputs inputs) {
+    if (!GrInstallVkShaderModule(fGpu, spirv, stage, shaderModule, stageInfo)) {
         return false;
     }
     if (inputs.fRTHeight) {
         this->addRTHeightUniform(SKSL_RTHEIGHT_NAME);
     }
-    if (inputs.fFlipY) {
-        desc->setSurfaceOriginKey(GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(
-                                                     this->pipeline().proxy()->origin()));
-        desc->finalize();
+    return true;
+}
+
+static constexpr SkFourByteTag kSPIRV_Tag = SkSetFourByteTag('S', 'P', 'R', 'V');
+static constexpr SkFourByteTag kSKSL_Tag = SkSetFourByteTag('S', 'K', 'S', 'L');
+
+int GrVkPipelineStateBuilder::loadShadersFromCache(const SkData& cached,
+                                                   VkShaderModule outShaderModules[],
+                                                   VkPipelineShaderStageCreateInfo* outStageInfo) {
+    SkSL::String shaders[kGrShaderTypeCount];
+    SkSL::Program::Inputs inputs[kGrShaderTypeCount];
+
+    if (kSPIRV_Tag != GrPersistentCacheUtils::UnpackCachedShaders(&cached, shaders,
+                                                                  inputs, kGrShaderTypeCount)) {
+        return 0;
     }
-    return result;
+
+    SkAssertResult(this->installVkShaderModule(VK_SHADER_STAGE_VERTEX_BIT,
+                                               fVS,
+                                               &outShaderModules[kVertex_GrShaderType],
+                                               &outStageInfo[0],
+                                               shaders[kVertex_GrShaderType],
+                                               inputs[kVertex_GrShaderType]));
+
+    SkAssertResult(this->installVkShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT,
+                                               fFS,
+                                               &outShaderModules[kFragment_GrShaderType],
+                                               &outStageInfo[1],
+                                               shaders[kFragment_GrShaderType],
+                                               inputs[kFragment_GrShaderType]));
+
+    if (!shaders[kGeometry_GrShaderType].empty()) {
+        SkAssertResult(this->installVkShaderModule(VK_SHADER_STAGE_GEOMETRY_BIT,
+                                                   fGS,
+                                                   &outShaderModules[kGeometry_GrShaderType],
+                                                   &outStageInfo[2],
+                                                   shaders[kGeometry_GrShaderType],
+                                                   inputs[kGeometry_GrShaderType]));
+        return 3;
+    } else {
+        return 2;
+    }
+}
+
+void GrVkPipelineStateBuilder::storeShadersInCache(const SkSL::String shaders[],
+                                                   const SkSL::Program::Inputs inputs[],
+                                                   bool isSkSL) {
+    Desc* desc = static_cast<Desc*>(this->desc());
+    sk_sp<SkData> key = SkData::MakeWithoutCopy(desc->asKey(), desc->shaderKeyLength());
+    sk_sp<SkData> data = GrPersistentCacheUtils::PackCachedShaders(isSkSL ? kSKSL_Tag : kSPIRV_Tag,
+                                                                   shaders,
+                                                                   inputs, kGrShaderTypeCount);
+    this->gpu()->getContext()->priv().getPersistentCache()->store(*key, *data);
 }
 
 GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrStencilSettings& stencil,
@@ -92,9 +160,9 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrStencilSettings& s
                                                       Desc* desc) {
     VkDescriptorSetLayout dsLayout[2];
     VkPipelineLayout pipelineLayout;
-    VkShaderModule vertShaderModule = VK_NULL_HANDLE;
-    VkShaderModule geomShaderModule = VK_NULL_HANDLE;
-    VkShaderModule fragShaderModule = VK_NULL_HANDLE;
+    VkShaderModule shaderModules[kGrShaderTypeCount] = { VK_NULL_HANDLE,
+                                                         VK_NULL_HANDLE,
+                                                         VK_NULL_HANDLE };
 
     GrVkResourceProvider& resourceProvider = fGpu->resourceProvider();
     // These layouts are not owned by the PipelineStateBuilder and thus should not be destroyed
@@ -134,51 +202,113 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrStencilSettings& s
     VkPipelineShaderStageCreateInfo shaderStageInfo[3];
     SkSL::Program::Settings settings;
     settings.fCaps = this->caps()->shaderCaps();
-    settings.fFlipY = this->pipeline().proxy()->origin() != kTopLeft_GrSurfaceOrigin;
-    settings.fSharpenTextures = this->gpu()->getContext()->contextPriv().sharpenMipmappedTextures();
+    settings.fFlipY = this->origin() != kTopLeft_GrSurfaceOrigin;
+    settings.fSharpenTextures =
+                        this->gpu()->getContext()->priv().options().fSharpenMipmappedTextures;
     SkASSERT(!this->fragColorIsInOut());
-    SkAssertResult(this->createVkShaderModule(VK_SHADER_STAGE_VERTEX_BIT,
-                                              fVS,
-                                              &vertShaderModule,
-                                              &shaderStageInfo[0],
-                                              settings,
-                                              desc));
 
-    SkAssertResult(this->createVkShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT,
-                                              fFS,
-                                              &fragShaderModule,
-                                              &shaderStageInfo[1],
-                                              settings,
-                                              desc));
-
-    int numShaderStages = 2; // We always have at least vertex and fragment stages.
-    if (this->primitiveProcessor().willUseGeoShader()) {
-        SkAssertResult(this->createVkShaderModule(VK_SHADER_STAGE_GEOMETRY_BIT,
-                                                  fGS,
-                                                  &geomShaderModule,
-                                                  &shaderStageInfo[2],
-                                                  settings,
-                                                  desc));
-        ++numShaderStages;
+    sk_sp<SkData> cached;
+    auto persistentCache = fGpu->getContext()->priv().getPersistentCache();
+    if (persistentCache) {
+        sk_sp<SkData> key = SkData::MakeWithoutCopy(desc->asKey(), desc->shaderKeyLength());
+        cached = persistentCache->load(*key);
+    }
+    bool binaryCache = true;
+#if GR_TEST_UTILS
+    binaryCache = !fGpu->getContext()->priv().options().fCacheSKSL;
+#endif
+    int numShaderStages = 0;
+    if (cached && binaryCache) {
+        numShaderStages = this->loadShadersFromCache(*cached, shaderModules, shaderStageInfo);
     }
 
-    GrVkPipeline* pipeline = resourceProvider.createPipeline(fPrimProc,
-                                                             fPipeline,
-                                                             stencil,
-                                                             shaderStageInfo,
-                                                             numShaderStages,
-                                                             primitiveType,
-                                                             compatibleRenderPass,
-                                                             pipelineLayout);
-    GR_VK_CALL(fGpu->vkInterface(), DestroyShaderModule(fGpu->device(), vertShaderModule,
-                                                        nullptr));
-    GR_VK_CALL(fGpu->vkInterface(), DestroyShaderModule(fGpu->device(), fragShaderModule,
-                                                        nullptr));
-    // This if check should not be needed since calling destroy on a VK_NULL_HANDLE is allowed.
-    // However this is causing a crash in certain drivers (e.g. NVidia).
-    if (this->primitiveProcessor().willUseGeoShader()) {
-        GR_VK_CALL(fGpu->vkInterface(), DestroyShaderModule(fGpu->device(), geomShaderModule,
-                                                            nullptr));
+    if (!numShaderStages) {
+        numShaderStages = 2; // We always have at least vertex and fragment stages.
+        SkSL::String shaders[kGrShaderTypeCount];
+        SkSL::Program::Inputs inputs[kGrShaderTypeCount];
+
+        SkSL::String* sksl[kGrShaderTypeCount] = {
+            &fVS.fCompilerString,
+            &fGS.fCompilerString,
+            &fFS.fCompilerString,
+        };
+#if GR_TEST_UTILS
+        SkSL::String cached_sksl[kGrShaderTypeCount];
+        if (cached) {
+            if (kSKSL_Tag == GrPersistentCacheUtils::UnpackCachedShaders(
+                    cached.get(), cached_sksl, inputs, kGrShaderTypeCount)) {
+                for (int i = 0; i < kGrShaderTypeCount; ++i) {
+                    sksl[i] = &cached_sksl[i];
+                }
+            }
+        }
+#endif
+
+        bool success = this->createVkShaderModule(VK_SHADER_STAGE_VERTEX_BIT,
+                                                  *sksl[kVertex_GrShaderType],
+                                                  &shaderModules[kVertex_GrShaderType],
+                                                  &shaderStageInfo[0],
+                                                  settings,
+                                                  desc,
+                                                  &shaders[kVertex_GrShaderType],
+                                                  &inputs[kVertex_GrShaderType]);
+
+        success = success && this->createVkShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT,
+                                                        *sksl[kFragment_GrShaderType],
+                                                        &shaderModules[kFragment_GrShaderType],
+                                                        &shaderStageInfo[1],
+                                                        settings,
+                                                        desc,
+                                                        &shaders[kFragment_GrShaderType],
+                                                        &inputs[kFragment_GrShaderType]);
+
+        if (this->primitiveProcessor().willUseGeoShader()) {
+            success = success && this->createVkShaderModule(VK_SHADER_STAGE_GEOMETRY_BIT,
+                                                            *sksl[kGeometry_GrShaderType],
+                                                            &shaderModules[kGeometry_GrShaderType],
+                                                            &shaderStageInfo[2],
+                                                            settings,
+                                                            desc,
+                                                            &shaders[kGeometry_GrShaderType],
+                                                            &inputs[kGeometry_GrShaderType]);
+            ++numShaderStages;
+        }
+
+        if (!success) {
+            for (int i = 0; i < kGrShaderTypeCount; ++i) {
+                if (shaderModules[i]) {
+                    GR_VK_CALL(fGpu->vkInterface(), DestroyShaderModule(fGpu->device(),
+                                                                        shaderModules[i], nullptr));
+                }
+            }
+            GR_VK_CALL(fGpu->vkInterface(), DestroyPipelineLayout(fGpu->device(), pipelineLayout,
+                                                                  nullptr));
+            return nullptr;
+        }
+
+        if (persistentCache && !cached) {
+            bool isSkSL = false;
+#if GR_TEST_UTILS
+            if (fGpu->getContext()->priv().options().fCacheSKSL) {
+                for (int i = 0; i < kGrShaderTypeCount; ++i) {
+                    shaders[i] = GrShaderUtils::PrettyPrint(*sksl[i]);
+                }
+                isSkSL = true;
+            }
+#endif
+            this->storeShadersInCache(shaders, inputs, isSkSL);
+        }
+    }
+    GrVkPipeline* pipeline = resourceProvider.createPipeline(
+            this->renderTarget()->numColorSamples(), fPrimProc, fPipeline, stencil, this->origin(),
+            shaderStageInfo, numShaderStages, primitiveType, compatibleRenderPass, pipelineLayout);
+    for (int i = 0; i < kGrShaderTypeCount; ++i) {
+        // This if check should not be needed since calling destroy on a VK_NULL_HANDLE is allowed.
+        // However this is causing a crash in certain drivers (e.g. NVidia).
+        if (shaderModules[i]) {
+            GR_VK_CALL(fGpu->vkInterface(), DestroyShaderModule(fGpu->device(), shaderModules[i],
+                                                                nullptr));
+        }
     }
 
     if (!pipeline) {
@@ -195,7 +325,7 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrStencilSettings& s
                                  fUniformHandler.fUniforms,
                                  fUniformHandler.fCurrentGeometryUBOOffset,
                                  fUniformHandler.fCurrentFragmentUBOOffset,
-                                 (uint32_t)fUniformHandler.numSamplers(),
+                                 fUniformHandler.fSamplers,
                                  std::move(fGeometryProcessor),
                                  std::move(fXferProcessor),
                                  std::move(fFragmentProcessors),
@@ -204,41 +334,31 @@ GrVkPipelineState* GrVkPipelineStateBuilder::finalize(const GrStencilSettings& s
 
 //////////////////////////////////////////////////////////////////////////////
 
-uint32_t get_blend_info_key(const GrPipeline& pipeline) {
-    GrXferProcessor::BlendInfo blendInfo;
-    pipeline.getXferProcessor().getBlendInfo(&blendInfo);
-
-    static const uint32_t kBlendWriteShift = 1;
-    static const uint32_t kBlendCoeffShift = 5;
-    GR_STATIC_ASSERT(kLast_GrBlendCoeff < (1 << kBlendCoeffShift));
-    GR_STATIC_ASSERT(kFirstAdvancedGrBlendEquation - 1 < 4);
-
-    uint32_t key = blendInfo.fWriteColor;
-    key |= (blendInfo.fSrcBlend << kBlendWriteShift);
-    key |= (blendInfo.fDstBlend << (kBlendWriteShift + kBlendCoeffShift));
-    key |= (blendInfo.fEquation << (kBlendWriteShift + 2 * kBlendCoeffShift));
-
-    return key;
-}
-
 bool GrVkPipelineStateBuilder::Desc::Build(Desc* desc,
+                                           GrRenderTarget* renderTarget,
                                            const GrPrimitiveProcessor& primProc,
                                            const GrPipeline& pipeline,
                                            const GrStencilSettings& stencil,
                                            GrPrimitiveType primitiveType,
-                                           const GrShaderCaps& caps) {
-    if (!INHERITED::Build(desc, primProc, primitiveType == GrPrimitiveType::kPoints, pipeline,
-                          caps)) {
+                                           GrVkGpu* gpu) {
+    if (!INHERITED::Build(desc, renderTarget, primProc,
+                          primitiveType == GrPrimitiveType::kPoints, pipeline, gpu)) {
         return false;
     }
 
     GrProcessorKeyBuilder b(&desc->key());
-    GrVkRenderTarget* vkRT = (GrVkRenderTarget*)pipeline.renderTarget();
+
+    b.add32(GrVkGpu::kShader_PersistentCacheKeyType);
+    int keyLength = desc->key().count();
+    SkASSERT(0 == (keyLength % 4));
+    desc->fShaderKeyLength = SkToU32(keyLength);
+
+    GrVkRenderTarget* vkRT = (GrVkRenderTarget*)renderTarget;
     vkRT->simpleRenderPass()->genKey(&b);
 
     stencil.genKey(&b);
 
-    b.add32(get_blend_info_key(pipeline));
+    b.add32(pipeline.getBlendInfoKey());
 
     b.add32((uint32_t)primitiveType);
 

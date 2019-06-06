@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "SkMatrix.h"
-#include "gl/GrGLProgramDataManager.h"
-#include "gl/GrGLGpu.h"
-#include "glsl/GrGLSLUniformHandler.h"
+#include "include/core/SkMatrix.h"
+#include "src/gpu/gl/GrGLGpu.h"
+#include "src/gpu/gl/GrGLProgramDataManager.h"
+#include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 #define ASSERT_ARRAY_UPLOAD_IN_BOUNDS(UNI, COUNT) \
          SkASSERT((COUNT) <= (UNI).fArrayCount || \
@@ -29,7 +29,7 @@ GrGLProgramDataManager::GrGLProgramDataManager(GrGLGpu* gpu, GrGLuint programID,
         SkDEBUGCODE(
             uniform.fArrayCount = builderUniform.fVariable.getArrayCount();
             uniform.fType = builderUniform.fVariable.getType();
-        );
+        )
         uniform.fLocation = builderUniform.fLocation;
     }
 
@@ -45,7 +45,7 @@ GrGLProgramDataManager::GrGLProgramDataManager(GrGLGpu* gpu, GrGLuint programID,
         SkDEBUGCODE(
             pathProcVarying.fArrayCount = builderPathProcVarying.fVariable.getArrayCount();
             pathProcVarying.fType = builderPathProcVarying.fVariable.getType();
-        );
+        )
         pathProcVarying.fLocation = builderPathProcVarying.fLocation;
     }
 }

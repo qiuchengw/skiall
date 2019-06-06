@@ -69,6 +69,9 @@ def nanobench_flags(api, bot):
           'enarrow',
       ]
 
+    if 'Nexus7' in bot:
+      args.append('--purgeBetweenBenches')  # Debugging skia:8929
+
   elif api.vars.builder_cfg.get('cpu_or_gpu') == 'GPU':
     args.append('--nocpu')
 
@@ -93,7 +96,7 @@ def nanobench_flags(api, bot):
       gl_prefix = 'gles'
 
     configs.extend([gl_prefix, gl_prefix + 'srgb'])
-    if sample_count is not '':
+    if sample_count:
       configs.append(gl_prefix + 'msaa' + sample_count)
       if ('TegraX1' in bot or
           'Quadro' in bot or
@@ -111,15 +114,18 @@ def nanobench_flags(api, bot):
     if 'Vulkan' in bot:
       configs = ['vk']
 
+    if 'Metal' in bot:
+      configs = ['mtl']
+
     if 'ANGLE' in bot:
       # Test only ANGLE configs.
       configs = ['angle_d3d11_es2']
-      if sample_count is not '':
+      if sample_count:
         configs.append('angle_d3d11_es2_msaa' + sample_count)
       if 'QuadroP400' in bot:
         # See skia:7823 and chromium:693090.
         configs.append('angle_gl_es2')
-        if sample_count is not '':
+        if sample_count:
           configs.append('angle_gl_es2_msaa' + sample_count)
 
     if 'ChromeOS' in bot:
@@ -141,18 +147,9 @@ def nanobench_flags(api, bot):
     # Ensure that the bot framework does not think we have timed out.
     args.extend(['--keepAlive', 'true'])
 
-  if ('QuadroP400' in bot or
-      'Adreno540' in bot or
-      'IntelHD2000' in bot or   # gen 6 - sandy bridge
-      'IntelHD4400' in bot or   # gen 7 - haswell
-      'IntelHD405' in bot or    # gen 8 - cherryview braswell
-      'IntelIris6100' in bot or # gen 8 - broadwell
-      'IntelIris540' in bot or  # gen 9 - skylake
-      'IntelIris640' in bot or  # gen 9 - kaby lake
-      'MaliT760' in bot or
-      'MaliT860' in bot or
-      'MaliT880' in bot):
-    args.extend(['--reduceOpListSplitting'])
+  # skia:9036
+  if 'NVIDIA_Shield' in bot or 'Chorizo' in bot:
+    args.extend(['--dontReduceOpListSplitting'])
 
   # Some people don't like verbose output.
   verbose = False
@@ -182,24 +179,78 @@ def nanobench_flags(api, bot):
   if 'IntelHD405' in bot and api.vars.is_linux and 'Vulkan' in bot:
     # skia:7322
     match.append('~desk_carsvg.skp_1')
+    match.append('~desk_googlehome.skp')
     match.append('~desk_tiger8svg.skp_1')
     match.append('~desk_wowwiki.skp')
+    match.append('~desk_ynevsvg.skp_1.1')
+    match.append('~desk_nostroke_tiger8svg.skp')
     match.append('~keymobi_booking_com.skp_1')
     match.append('~keymobi_booking_com.skp_1_mpd')
+    match.append('~keymobi_cnn_article.skp_1')
+    match.append('~keymobi_cnn_article.skp_1_mpd')
+    match.append('~keymobi_forecast_io.skp_1')
+    match.append('~keymobi_forecast_io.skp_1_mpd')
     match.append('~keymobi_sfgate.skp_1')
     match.append('~keymobi_techcrunch_com.skp_1.1')
     match.append('~keymobi_techcrunch.skp_1.1')
     match.append('~keymobi_techcrunch.skp_1.1_mpd')
+    match.append('~svgparse_Seal_of_California.svg_1.1')
+    match.append('~svgparse_NewYork-StateSeal.svg_1.1')
+    match.append('~svgparse_Vermont_state_seal.svg_1')
     match.append('~tabl_gamedeksiam.skp_1.1')
     match.append('~tabl_pravda.skp_1')
     match.append('~top25desk_ebay_com.skp_1.1')
     match.append('~top25desk_ebay.skp_1.1')
     match.append('~top25desk_ebay.skp_1.1_mpd')
-    # skia:8408
-    match.append('~svgparse_Vermont_state_seal.svg_1')
+  if 'MacBook10.1' in bot and 'CommandBuffer' in bot:
+    match.append('~^desk_micrographygirlsvg.skp_1.1$')
+  if 'IntelIris655' in bot and 'Win10' in bot and 'Vulkan' in bot:
+    # skia:8587
+    match.append('~^GM_varied_text_clipped_lcd$')
+    match.append('~^GM_varied_text_ignorable_clip_lcd$')
+    match.append('~^fontscaler_lcd$')
+    match.append('~^rotated_rects_aa_changing_transparent_src$')
+    match.append('~^rotated_rects_aa_same_transparent_src$')
+    match.append('~^srcmode_rects_1_aa$')
+    match.append('~^desk_skbug6850overlay2.skp_1$')
+    match.append('~^desk_skbug6850overlay2.skp_1.1$')
+    match.append('~^desk_skbug6850overlay2.skp_1.1_mpd$')
+    match.append('~^desk_skbug6850overlay2.skp_1_mpd$')
+    # skia:8659
+    match.append('~^blendmode_mask_DstATop$')
+    match.append('~^blendmode_mask_Src$')
+    match.append('~^blendmode_mask_SrcIn$')
+    match.append('~^blendmode_mask_SrcOut$')
+    match.append('~^desk_carsvg.skp_1$')
+    match.append('~^desk_carsvg.skp_1.1$')
+    match.append('~^desk_carsvg.skp_1.1_mpd$')
+    match.append('~^desk_carsvg.skp_1_mpd$')
+    match.append('~^desk_googlespreadsheet.skp_1$')
+    match.append('~^desk_googlespreadsheet.skp_1.1$')
+    match.append('~^desk_googlespreadsheet.skp_1.1_mpd$')
+    match.append('~^desk_googlespreadsheet.skp_1_mpd$')
+    if 'Release' in bot:
+      match.append('~^rotated_rects_aa_alternating_transparent_and_opaque_src$')
+      match.append('~^shadermask_LCD_FF$')
+      match.append('~^text_16_LCD_88$')
+      match.append('~^text_16_LCD_BK$')
+      match.append('~^text_16_LCD_FF$')
+      match.append('~^text_16_LCD_WT$')
   if ('ASAN' in bot or 'UBSAN' in bot) and 'CPU' in bot:
     # floor2int_undef benches undefined behavior, so ASAN correctly complains.
     match.append('~^floor2int_undef$')
+  if (('Iris655' in bot or 'Iris540' in bot) and 'Release' in bot and
+      'Win10' in bot and 'Vulkan' not in bot and 'ANGLE' not in bot):
+    # skia:8706
+    match.append('~^top25desk_techcrunch.skp_1_mpd$')
+    match.append('~^top25desk_techcrunch.skp_1$')
+    match.append('~^top25desk_techcrunch.skp_1.1_mpd$')
+    match.append('~^top25desk_techcrunch.skp_1.1$')
+    # skia:skia:8706
+    match.append('~^mobi_wsj.skp_1_mpd$')
+    match.append('~^mobi_wsj.skp_1$')
+    match.append('~^mobi_wsj.skp_1.1_mpd$')
+    match.append('~^mobi_wsj.skp_1.1$')
 
   # We do not need or want to benchmark the decodes of incomplete images.
   # In fact, in nanobench we assert that the full image decode succeeds.
@@ -282,6 +333,7 @@ def perf_steps(api):
           api.flavor.device_dirs.resource_dir, 'images', 'color_wheel.jpg'),
       '--skps',  api.flavor.device_dirs.skp_dir,
       '--pre_log',
+      '--dontReduceOpListSplitting',
       '--match', # skia:6687
       '~matrixconvolution',
       '~blur_image_filter',
@@ -308,10 +360,6 @@ def perf_steps(api):
     for k in sorted(api.vars.builder_cfg.keys()):
       if not k in keys_blacklist:
         args.extend([k, api.vars.builder_cfg[k]])
-
-  # See skia:2789.
-  if 'AbandonGpuContext' in api.vars.extra_tokens:
-    args.extend(['--abandonGpuContext'])
 
   api.run(api.flavor.step, target, cmd=args,
           abort_on_failure=False)
@@ -348,9 +396,11 @@ def RunSteps(api):
 
 
 TEST_BUILDERS = [
+  'Perf-Android-Clang-Nexus7-CPU-Tegra3-arm-Debug-All-Android',
   'Perf-Android-Clang-Nexus5-GPU-Adreno330-arm-Debug-All-Android',
   ('Perf-Android-Clang-Nexus5x-GPU-Adreno418-arm64-Release-All-'
    'Android_NoGPUThreads'),
+  'Perf-Android-Clang-NVIDIA_Shield-GPU-TegraX1-arm64-Release-All-Android',
   'Perf-ChromeOS-Clang-ASUSChromebookFlipC100-GPU-MaliT764-arm-Release-All',
   'Perf-Chromecast-Clang-Chorizo-CPU-Cortex_A7-arm-Debug-All',
   'Perf-Chromecast-Clang-Chorizo-GPU-Cortex_A7-arm-Release-All',
@@ -359,13 +409,19 @@ TEST_BUILDERS = [
   'Perf-Debian9-Clang-GCE-CPU-AVX2-x86_64-Release-All-BonusConfigs',
   'Perf-Debian9-Clang-NUC5PPYH-GPU-IntelHD405-x86_64-Debug-All-Vulkan',
   'Perf-Debian9-Clang-NUC7i5BNK-GPU-IntelIris640-x86_64-Release-All',
-  ('Perf-Mac-Clang-MacMini7.1-GPU-IntelIris5100-x86_64-Release-All-'
-    'CommandBuffer'),
-  ('Perf-Mac-Clang-MacBookPro11.5-GPU-RadeonHD8870M-x86_64-Release-All-'
+  ('Perf-Mac10.13-Clang-MacBook10.1-GPU-IntelHD615-x86_64-Release-All-'
+   'CommandBuffer'),
+  ('Perf-Mac10.13-Clang-MacBookPro11.5-GPU-RadeonHD8870M-x86_64-Release-All-'
+   'Metal'),
+  ('Perf-Mac10.13-Clang-MacBookPro11.5-GPU-RadeonHD8870M-x86_64-Release-All-'
    'MoltenVK_Vulkan'),
+  ('Perf-Mac10.13-Clang-MacMini7.1-GPU-IntelIris5100-x86_64-Release-All-'
+   'CommandBuffer'),
   ('Perf-Ubuntu17-GCC-Golo-GPU-QuadroP400-x86_64-Release-All-'
-    'Valgrind_AbandonGpuContext_SK_CPU_LIMIT_SSE41'),
+    'Valgrind_SK_CPU_LIMIT_SSE41'),
   'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-ANGLE',
+  'Perf-Win10-Clang-NUC8i5BEK-GPU-IntelIris655-x86_64-Release-All-Vulkan',
+  'Perf-Win10-Clang-NUC8i5BEK-GPU-IntelIris655-x86_64-Release-All',
   'Perf-iOS-Clang-iPadPro-GPU-PowerVRGT7800-arm64-Release-All',
 ]
 
@@ -398,11 +454,6 @@ def GenTests(api):
       test += api.step_data(
           'read chromecast ip',
           stdout=api.raw_io.output('192.168.1.2:5555'))
-
-    if 'ChromeOS' in builder:
-      test += api.step_data(
-          'read chromeos ip',
-          stdout=api.raw_io.output('{"user_ip":"foo@127.0.0.1"}'))
 
     yield test
 

@@ -6,8 +6,8 @@
  */
 
 
-#include "Fuzz.h"
-#include "FuzzCommon.h"
+#include "fuzz/Fuzz.h"
+#include "fuzz/FuzzCommon.h"
 
 // UBSAN reminds us that bool can only legally hold 0 or 1.
 void Fuzz::next(bool* b) {
@@ -22,6 +22,17 @@ void Fuzz::next(SkImageFilter::CropRect* cropRect) {
     this->next(&rect);
     this->nextRange(&flags, 0, 0xF);
     *cropRect = SkImageFilter::CropRect(rect, flags);
+}
+
+void Fuzz::nextBytes(void* n, size_t size) {
+    if ((fNextByte + size) > fBytes->size()) {
+        sk_bzero(n, size);
+        memcpy(n, fBytes->bytes() + fNextByte, fBytes->size() - fNextByte);
+        fNextByte = fBytes->size();
+        return;
+    }
+    memcpy(n, fBytes->bytes() + fNextByte, size);
+    fNextByte += size;
 }
 
 void Fuzz::next(SkRegion* region) {

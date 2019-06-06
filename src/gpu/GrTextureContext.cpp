@@ -5,26 +5,22 @@
  * found in the LICENSE file.
  */
 
-#include "GrTextureContext.h"
+#include "src/gpu/GrTextureContext.h"
 
-#include "GrContextPriv.h"
-#include "GrDrawingManager.h"
-#include "GrTextureOpList.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDrawingManager.h"
+#include "src/gpu/GrTextureOpList.h"
 
-#include "../private/GrAuditTrail.h"
+#include "include/private/GrAuditTrail.h"
 
 #define ASSERT_SINGLE_OWNER \
     SkDEBUGCODE(GrSingleOwner::AutoEnforce debug_SingleOwner(this->singleOwner());)
 #define RETURN_FALSE_IF_ABANDONED  if (this->drawingManager()->wasAbandoned()) { return false; }
 
-GrTextureContext::GrTextureContext(GrContext* context,
-                                   GrDrawingManager* drawingMgr,
+GrTextureContext::GrTextureContext(GrRecordingContext* context,
                                    sk_sp<GrTextureProxy> textureProxy,
-                                   sk_sp<SkColorSpace> colorSpace,
-                                   GrAuditTrail* auditTrail,
-                                   GrSingleOwner* singleOwner)
-        : GrSurfaceContext(context, drawingMgr, textureProxy->config(), std::move(colorSpace),
-                           auditTrail, singleOwner)
+                                   sk_sp<SkColorSpace> colorSpace)
+        : GrSurfaceContext(context, textureProxy->config(), std::move(colorSpace))
         , fTextureProxy(std::move(textureProxy))
         , fOpList(sk_ref_sp(fTextureProxy->getLastTextureOpList())) {
     SkDEBUGCODE(this->validate();)
@@ -62,7 +58,7 @@ GrOpList* GrTextureContext::getOpList() {
     SkDEBUGCODE(this->validate();)
 
     if (!fOpList || fOpList->isClosed()) {
-        fOpList = this->drawingManager()->newTextureOpList(fTextureProxy.get());
+        fOpList = this->drawingManager()->newTextureOpList(fTextureProxy);
     }
 
     return fOpList.get();

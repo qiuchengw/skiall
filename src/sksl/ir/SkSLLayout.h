@@ -8,8 +8,8 @@
 #ifndef SKSL_LAYOUT
 #define SKSL_LAYOUT
 
-#include "SkSLString.h"
-#include "SkSLUtil.h"
+#include "src/sksl/SkSLString.h"
+#include "src/sksl/SkSLUtil.h"
 
 namespace SkSL {
 
@@ -64,6 +64,7 @@ struct Layout {
         kR8,
         kRGBA8I,
         kR8I,
+        kRG16F,
     };
 
     // used by SkSL processors
@@ -78,12 +79,14 @@ struct Layout {
 
     enum class CType {
         kDefault,
+        kBool,
         kFloat,
         kInt32,
         kSkRect,
         kSkIRect,
         kSkPMColor4f,
         kSkPMColor,
+        kSkVector4,
         kSkPoint,
         kSkIPoint,
         kSkMatrix,
@@ -103,6 +106,7 @@ struct Layout {
             case Format::kR8:           return "r8";
             case Format::kRGBA8I:       return "rgba8i";
             case Format::kR8I:          return "r8i";
+            case Format::kRG16F:        return "rg16f";
         }
         ABORT("Unexpected format");
     }
@@ -132,6 +136,9 @@ struct Layout {
         } else if (str == "r8i") {
             *format = Format::kR8I;
             return true;
+        } else if (str == "rg16f") {
+            *format = Format::kRG16F;
+            return true;
         }
         return false;
     }
@@ -152,6 +159,8 @@ struct Layout {
                 return "SkPMColor4f";
             case CType::kSkPMColor:
                 return "SkPMColor";
+            case CType::kSkVector4:
+                return "SkVector4";
             case CType::kSkPoint:
                 return "SkPoint";
             case CType::kSkIPoint:

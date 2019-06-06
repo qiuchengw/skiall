@@ -8,7 +8,7 @@
 #ifndef GrSamplerState_DEFINED
 #define GrSamplerState_DEFINED
 
-#include "GrTypes.h"
+#include "include/gpu/GrTypes.h"
 
 /**
  * Represents the filtering and tile modes used to access a texture.
@@ -16,7 +16,7 @@
 class GrSamplerState {
 public:
     enum class Filter : uint8_t { kNearest, kBilerp, kMipMap };
-    enum class WrapMode : uint8_t { kClamp, kRepeat, kMirrorRepeat };
+    enum class WrapMode : uint8_t { kClamp, kRepeat, kMirrorRepeat, kClampToBorder };
 
     static constexpr GrSamplerState ClampNearest() { return GrSamplerState(); }
     static constexpr GrSamplerState ClampBilerp() {
@@ -51,7 +51,8 @@ public:
     WrapMode wrapModeY() const { return fWrapModes[1]; }
 
     bool isRepeated() const {
-        return WrapMode::kClamp != fWrapModes[0] || WrapMode::kClamp != fWrapModes[1];
+        return (WrapMode::kClamp != fWrapModes[0] && WrapMode::kClampToBorder != fWrapModes[0]) ||
+               (WrapMode::kClamp != fWrapModes[1] && WrapMode::kClampToBorder != fWrapModes[1]);
     }
 
     bool operator==(const GrSamplerState& that) const {

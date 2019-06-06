@@ -5,14 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkAAClip.h"
-#include "SkCanvas.h"
-#include "SkColorPriv.h"
-#include "SkPaint.h"
-#include "SkPath.h"
-#include "SkRandom.h"
-#include "SkClipOpPriv.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/Sample.h"
+#include "src/core/SkAAClip.h"
+#include "src/core/SkClipOpPriv.h"
 
 constexpr int W = 150;
 constexpr int H = 200;
@@ -20,15 +21,13 @@ constexpr int H = 200;
 static void show_text(SkCanvas* canvas, bool doAA) {
     SkRandom rand;
     SkPaint paint;
-    paint.setAntiAlias(doAA);
-    paint.setLCDRenderText(true);
-    paint.setTextSize(SkIntToScalar(20));
+    SkFont font(nullptr, 20);
+    font.setEdging(doAA ? SkFont::Edging::kSubpixelAntiAlias : SkFont::Edging::kAlias);
 
     for (int i = 0; i < 200; ++i) {
         paint.setColor((SK_A32_MASK << SK_A32_SHIFT) | rand.nextU());
-        canvas->drawString("Hamburgefons",
-                         rand.nextSScalar1() * W, rand.nextSScalar1() * H + 20,
-                         paint);
+        canvas->drawString("Hamburgefons", rand.nextSScalar1() * W, rand.nextSScalar1() * H + 20,
+                           font, paint);
     }
 }
 

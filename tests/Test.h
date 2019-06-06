@@ -7,12 +7,12 @@
 #ifndef skiatest_Test_DEFINED
 #define skiatest_Test_DEFINED
 
-#include "../tools/Registry.h"
-#include "GrContextFactory.h"
-#include "SkClipOpPriv.h"
-#include "SkString.h"
-#include "SkTraceEvent.h"
-#include "SkTypes.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "src/core/SkClipOpPriv.h"
+#include "src/core/SkTraceEvent.h"
+#include "tools/Registry.h"
+#include "tools/gpu/GrContextFactory.h"
 
 namespace skiatest {
 
@@ -37,20 +37,8 @@ public:
     virtual bool verbose() const;
     virtual void* stats() const { return nullptr; }
 
-    void reportFailedWithContext(const skiatest::Failure& f) {
-        SkString fullMessage = f.message;
-        if (!fContextStack.empty()) {
-            fullMessage.append(" [");
-            for (int i = 0; i < fContextStack.count(); ++i) {
-                if (i > 0) {
-                    fullMessage.append(", ");
-                }
-                fullMessage.append(fContextStack[i]);
-            }
-            fullMessage.append("]");
-        }
-        this->reportFailed(skiatest::Failure(f.fileName, f.lineNo, f.condition, fullMessage));
-    }
+    void reportFailedWithContext(const skiatest::Failure&);
+
     void push(const SkString& message) {
         fContextStack.push_back(message);
     }
@@ -106,7 +94,7 @@ typedef sk_tools::Registry<Test> TestRegistry;
 /*
     Use the following macros to make use of the skiatest classes, e.g.
 
-    #include "Test.h"
+    #include "tests/Test.h"
 
     DEF_TEST(TestName, reporter) {
         ...
@@ -131,7 +119,7 @@ extern bool IsGLContextType(GrContextFactoryContextType);
 extern bool IsVulkanContextType(GrContextFactoryContextType);
 extern bool IsMetalContextType(GrContextFactoryContextType);
 extern bool IsRenderingGLContextType(GrContextFactoryContextType);
-extern bool IsNullGLContextType(GrContextFactoryContextType);
+extern bool IsMockContextType(GrContextFactoryContextType);
 void RunWithGPUTestContexts(GrContextTestFn*, GrContextTypeFilterFn*, Reporter*,
                             const GrContextOptions&);
 
@@ -208,8 +196,8 @@ private:
 #define DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(name, reporter, context_info)                 \
         DEF_GPUTEST_FOR_CONTEXTS(name, &skiatest::IsRenderingGLContextType,                 \
                                  reporter, context_info, nullptr)
-#define DEF_GPUTEST_FOR_NULLGL_CONTEXT(name, reporter, context_info)                        \
-        DEF_GPUTEST_FOR_CONTEXTS(name, &skiatest::IsNullGLContextType,                      \
+#define DEF_GPUTEST_FOR_MOCK_CONTEXT(name, reporter, context_info)                          \
+        DEF_GPUTEST_FOR_CONTEXTS(name, &skiatest::IsMockContextType,                        \
                                  reporter, context_info, nullptr)
 #define DEF_GPUTEST_FOR_VULKAN_CONTEXT(name, reporter, context_info)                        \
         DEF_GPUTEST_FOR_CONTEXTS(name, &skiatest::IsVulkanContextType,                      \
@@ -220,8 +208,8 @@ private:
 
 #define REQUIRE_PDF_DOCUMENT(TEST_NAME, REPORTER)                          \
     do {                                                                   \
-        SkDynamicMemoryWStream testStream;                                 \
-        sk_sp<SkDocument> testDoc(SkPDF::MakeDocument(&testStream));       \
+        SkNullWStream testStream;                                          \
+        auto testDoc = SkPDF::MakeDocument(&testStream);                   \
         if (!testDoc) {                                                    \
             INFOF(REPORTER, "PDF disabled; %s test skipped.", #TEST_NAME); \
             return;                                                        \

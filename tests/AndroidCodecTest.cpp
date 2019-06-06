@@ -5,26 +5,29 @@
  * found in the LICENSE file.
  */
 
-#include "Resources.h"
-#include "SkAndroidCodec.h"
-#include "SkBitmap.h"
-#include "SkCodec.h"
-#include "SkCodecImageGenerator.h"
-#include "SkColor.h"
-#include "SkData.h"
-#include "SkEncodedImageFormat.h"
-#include "SkImageGenerator.h"
-#include "SkImageInfo.h"
-#include "SkMatrix44.h"
-#include "SkPixmapPriv.h"
-#include "SkRefCnt.h"
-#include "SkSize.h"
-#include "SkString.h"
-#include "SkTypes.h"
-#include "Test.h"
+#include "include/codec/SkAndroidCodec.h"
+#include "include/codec/SkCodec.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkData.h"
+#include "include/core/SkEncodedImageFormat.h"
+#include "include/core/SkImageGenerator.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "include/third_party/skcms/skcms.h"
+#include "src/codec/SkCodecImageGenerator.h"
+#include "src/core/SkPixmapPriv.h"
+#include "tests/Test.h"
+#include "tools/Resources.h"
 
-#include <algorithm>
+#include <string.h>
+#include <initializer_list>
 #include <memory>
+#include <utility>
 
 static SkISize times(const SkISize& size, float factor) {
     return { (int) (size.width() * factor), (int) (size.height() * factor) };
@@ -157,8 +160,7 @@ DEF_TEST(AndroidCodec_wide, r) {
         return;
     }
 
-    auto expected = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                          SkColorSpace::kDCIP3_D65_Gamut);
+    auto expected = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
     REPORTER_ASSERT(r, SkColorSpace::Equals(cs.get(), expected.get()));
 }
 
@@ -190,17 +192,15 @@ DEF_TEST(AndroidCodec_P3, r) {
     REPORTER_ASSERT(r, !cs->isSRGB());
     REPORTER_ASSERT(r, cs->gammaCloseToSRGB());
 
-    SkMatrix44 matrix;
+    skcms_Matrix3x3 matrix;
     cs->toXYZD50(&matrix);
 
-    SkMatrix44 expected;
-    static constexpr float kExpected[] = {
-        0.426254272f,  0.369018555f,  0.168914795f,
-        0.226013184f,  0.685974121f,  0.0880126953f,
-        0.0116729736f, 0.0950927734f, 0.71812439f,
-    };
-    expected.set3x3RowMajorf(kExpected);
-    REPORTER_ASSERT(r, matrix == expected);
+    static constexpr skcms_Matrix3x3 kExpected = {{
+        { 0.426254272f,  0.369018555f,  0.168914795f  },
+        { 0.226013184f,  0.685974121f,  0.0880126953f },
+        { 0.0116729736f, 0.0950927734f, 0.71812439f   },
+    }};
+    REPORTER_ASSERT(r, 0 == memcmp(&matrix, &kExpected, sizeof(skcms_Matrix3x3)));
 }
 
 DEF_TEST(AndroidCodec_orientation, r) {
@@ -266,5 +266,36 @@ DEF_TEST(AndroidCodec_orientation, r) {
                 return;
             }
         }
+    }
+}
+
+DEF_TEST(AndroidCodec_sampledOrientation, r) {
+    if (GetResourcePath().isEmpty()) {
+        return;
+    }
+
+    // kRightTop_SkEncodedOrigin    = 6, // Rotated 90 CW
+    auto path = "images/orientation/6.jpg";
+    auto data = GetResourceAsData(path);
+    if (!data) {
+        ERRORF(r, "Failed to get resource %s", path);
+        return;
+    }
+
+    auto androidCodec = SkAndroidCodec::MakeFromCodec(SkCodec::MakeFromData(std::move(data)),
+                SkAndroidCodec::ExifOrientationBehavior::kRespect);
+    constexpr int sampleSize = 7;
+    auto sampledDims = androidCodec->getSampledDimensions(sampleSize);
+
+    SkAndroidCodec::AndroidOptions options;
+    options.fSampleSize = sampleSize;
+
+    SkBitmap bm;
+    auto info = androidCodec->getInfo().makeWH(sampledDims.width(), sampledDims.height());
+    bm.allocPixels(info);
+
+    auto result = androidCodec->getAndroidPixels(info, bm.getPixels(), bm.rowBytes(), &options);
+    if (result != SkCodec::kSuccess) {
+        ERRORF(r, "got result \"%s\"\n", SkCodec::ResultToString(result));
     }
 }

@@ -5,17 +5,19 @@
 * found in the LICENSE file.
 */
 
-#include "Window_win.h"
+#include "include/gpu/vk/GrVkVulkan.h"
+
+#include "tools/sk_app/win/Window_win.h"
 
 #include <tchar.h>
 #include <windows.h>
 #include <windowsx.h>
 
-#include "SkUtils.h"
-#include "../WindowContext.h"
-#include "WindowContextFactory_win.h"
+#include "src/core/SkUtils.h"
+#include "tools/sk_app/WindowContext.h"
+#include "tools/sk_app/win/WindowContextFactory_win.h"
 #ifdef SK_VULKAN
-#include "../VulkanWindowContext.h"
+#include "tools/sk_app/VulkanWindowContext.h"
 #endif
 
 namespace sk_app {
@@ -72,11 +74,11 @@ bool Window_win::init(HINSTANCE hInstance) {
         wcex.cbWndExtra = 0;
         wcex.hInstance = fHInstance;
         wcex.hIcon = LoadIcon(fHInstance, (LPCTSTR)IDI_WINLOGO);
-        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);;
+        wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
         wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
         wcex.lpszMenuName = nullptr;
         wcex.lpszClassName = gSZWindowClass;
-        wcex.hIconSm = LoadIcon(fHInstance, (LPCTSTR)IDI_WINLOGO);;
+        wcex.hIconSm = LoadIcon(fHInstance, (LPCTSTR)IDI_WINLOGO);
 
         if (!RegisterClassEx(&wcex)) {
             return false;

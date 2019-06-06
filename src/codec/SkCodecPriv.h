@@ -8,18 +8,22 @@
 #ifndef SkCodecPriv_DEFINED
 #define SkCodecPriv_DEFINED
 
-#include "SkColorData.h"
-#include "SkColorTable.h"
-#include "SkEncodedInfo.h"
-#include "SkEncodedOrigin.h"
-#include "SkImageInfo.h"
-#include "SkTypes.h"
+#include "include/codec/SkEncodedOrigin.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkColorData.h"
+#include "include/private/SkEncodedInfo.h"
+#include "src/codec/SkColorTable.h"
 
 #ifdef SK_PRINT_CODEC_MESSAGES
     #define SkCodecPrintf SkDebugf
 #else
     #define SkCodecPrintf(...)
 #endif
+
+// Defined in SkCodec.cpp
+bool sk_select_xform_format(SkColorType colorType, bool forColorTable,
+                            skcms_PixelFormat* outFormat);
 
 // FIXME: Consider sharing with dm, nanbench, and tools.
 static inline float get_scale_from_sample_size(int sampleSize) {

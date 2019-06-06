@@ -8,11 +8,11 @@
 #ifndef SkWriteBuffer_DEFINED
 #define SkWriteBuffer_DEFINED
 
-#include "SkData.h"
-#include "SkFlattenable.h"
-#include "SkSerialProcs.h"
-#include "SkWriter32.h"
-#include "../private/SkTHash.h"
+#include "include/core/SkData.h"
+#include "include/core/SkFlattenable.h"
+#include "include/core/SkSerialProcs.h"
+#include "include/private/SkTHash.h"
+#include "src/core/SkWriter32.h"
 
 class SkFactorySet;
 class SkImage;
@@ -48,6 +48,7 @@ public:
     virtual void writeColor4fArray(const SkColor4f* color, uint32_t count) = 0;
     virtual void writePoint(const SkPoint& point) = 0;
     virtual void writePointArray(const SkPoint* point, uint32_t count) = 0;
+    virtual void writePoint3(const SkPoint3& point) = 0;
     virtual void writeMatrix(const SkMatrix& matrix) = 0;
     virtual void writeIRect(const SkIRect& rect) = 0;
     virtual void writeRect(const SkRect& rect) = 0;
@@ -108,6 +109,7 @@ public:
     void writeColor4fArray(const SkColor4f* color, uint32_t count) override;
     void writePoint(const SkPoint& point) override;
     void writePointArray(const SkPoint* point, uint32_t count) override;
+    void writePoint3(const SkPoint3& point) override;
     void writeMatrix(const SkMatrix& matrix) override;
     void writeIRect(const SkIRect& rect) override;
     void writeRect(const SkRect& rect) override;

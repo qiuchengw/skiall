@@ -5,11 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "GrVkCopyPipeline.h"
+#include "src/gpu/vk/GrVkCopyPipeline.h"
 
-#include "GrVkGpu.h"
-#include "GrVkUtil.h"
-#include "SkOnce.h"
+#include "include/private/SkOnce.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkUtil.h"
+
+#if defined(SK_ENABLE_SCOPED_LSAN_SUPPRESSIONS)
+#include <sanitizer/lsan_interface.h>
+#endif
 
 static void setup_multisample_state(int numSamples,
                                     VkPipelineMultisampleStateCreateInfo* multisampleInfo) {
@@ -174,10 +178,17 @@ GrVkCopyPipeline* GrVkCopyPipeline::Create(GrVkGpu* gpu,
     pipelineCreateInfo.basePipelineIndex = -1;
 
     VkPipeline vkPipeline;
-    VkResult err = GR_VK_CALL(gpu->vkInterface(), CreateGraphicsPipelines(gpu->device(),
-                                                                          cache, 1,
-                                                                          &pipelineCreateInfo,
-                                                                          nullptr, &vkPipeline));
+    VkResult err;
+    {
+#if defined(SK_ENABLE_SCOPED_LSAN_SUPPRESSIONS)
+        // skia:8712
+        __lsan::ScopedDisabler lsanDisabler;
+#endif
+        err = GR_VK_CALL(gpu->vkInterface(), CreateGraphicsPipelines(gpu->device(),
+                                                                     cache, 1,
+                                                                     &pipelineCreateInfo,
+                                                                     nullptr, &vkPipeline));
+    }
     if (err) {
         SkDebugf("Failed to create copy pipeline. Error: %d\n", err);
         return nullptr;

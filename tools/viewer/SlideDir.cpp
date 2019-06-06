@@ -5,22 +5,22 @@
  * found in the LICENSE file.
  */
 
-#include "SlideDir.h"
+#include "tools/viewer/SlideDir.h"
 
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkCubicMap.h"
-#include "SkMakeUnique.h"
-#include "SkSGColor.h"
-#include "SkSGDraw.h"
-#include "SkSGGroup.h"
-#include "SkSGPlane.h"
-#include "SkSGRect.h"
-#include "SkSGRenderNode.h"
-#include "SkSGScene.h"
-#include "SkSGText.h"
-#include "SkSGTransform.h"
-#include "SkTypeface.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkCubicMap.h"
+#include "include/core/SkTypeface.h"
+#include "modules/sksg/include/SkSGDraw.h"
+#include "modules/sksg/include/SkSGGroup.h"
+#include "modules/sksg/include/SkSGPaint.h"
+#include "modules/sksg/include/SkSGPlane.h"
+#include "modules/sksg/include/SkSGRect.h"
+#include "modules/sksg/include/SkSGRenderNode.h"
+#include "modules/sksg/include/SkSGScene.h"
+#include "modules/sksg/include/SkSGText.h"
+#include "modules/sksg/include/SkSGTransform.h"
+#include "src/core/SkMakeUnique.h"
+#include "tools/timer/AnimTimer.h"
 
 #include <cmath>
 #include <utility>
@@ -80,9 +80,11 @@ protected:
         fSlide->draw(canvas);
     }
 
+    const RenderNode* onNodeAt(const SkPoint&) const override { return nullptr; }
+
 private:
     void tick(SkMSec t) {
-        fSlide->animate(SkAnimTimer(0, t * 1e6, SkAnimTimer::kRunning_State));
+        fSlide->animate(AnimTimer(t * 1e6));
         this->invalidate();
     }
 
@@ -101,9 +103,10 @@ SkMatrix SlideMatrix(const sk_sp<Slide>& slide, const SkRect& dst) {
 } // namespace
 
 struct SlideDir::Rec {
-    sk_sp<Slide>           fSlide;
-    sk_sp<sksg::Transform> fTransform;
-    SkRect                 fRect;
+    sk_sp<Slide>                  fSlide;
+    sk_sp<sksg::RenderNode>       fSlideRoot;
+    sk_sp<sksg::Matrix<SkMatrix>> fMatrix;
+    SkRect                        fRect;
 };
 
 class SlideDir::FocusController final : public sksg::Animator {
@@ -112,9 +115,8 @@ public:
         : fDir(dir)
         , fRect(focusRect)
         , fTarget(nullptr)
+        , fMap(kFocusCtrl1, kFocusCtrl0)
         , fState(State::kIdle) {
-        fMap.setPts(kFocusCtrl1, kFocusCtrl0);
-
         fShadePaint = sksg::Color::Make(kFocusShade);
         fShade = sksg::Draw::Make(sksg::Plane::Make(), fShadePaint);
     }
@@ -128,9 +130,9 @@ public:
         fTarget = target;
 
         // Move the shade & slide to front.
-        fDir->fRoot->removeChild(fTarget->fTransform);
+        fDir->fRoot->removeChild(fTarget->fSlideRoot);
         fDir->fRoot->addChild(fShade);
-        fDir->fRoot->addChild(fTarget->fTransform);
+        fDir->fRoot->addChild(fTarget->fSlideRoot);
 
         fM0 = SlideMatrix(fTarget->fSlide, fTarget->fRect);
         fM1 = SlideMatrix(fTarget->fSlide, fRect);
@@ -197,7 +199,7 @@ protected:
         }
 
         SkASSERT(fTarget);
-        fTarget->fTransform->getMatrix()->setMatrix(m);
+        fTarget->fMatrix->setMatrix(m);
 
         const auto shadeOpacity = fOpacity0 + map_t * (fOpacity1 - fOpacity0);
         fShadePaint->setOpacity(shadeOpacity);
@@ -260,7 +262,7 @@ static sk_sp<sksg::RenderNode> MakeLabel(const SkString& txt,
                                          const SkMatrix& dstXform) {
     const auto size = kLabelSize / std::sqrt(dstXform.getScaleX() * dstXform.getScaleY());
     auto text = sksg::Text::Make(nullptr, txt);
-    text->setFlags(SkPaint::kAntiAlias_Flag);
+    text->setEdging(SkFont::Edging::kAntiAlias);
     text->setSize(size);
     text->setAlign(SkTextUtils::kCenter_Align);
     text->setPosition(pos + SkPoint::Make(0, size));
@@ -305,7 +307,7 @@ void SlideDir::load(SkScalar winWidth, SkScalar winHeight) {
                                                  fCellSize.height()),
                     slideRect = cell.makeInset(kPadding.width(), kPadding.height());
 
-        auto slideMatrix = SlideMatrix(slide, slideRect);
+        auto slideMatrix = sksg::Matrix<SkMatrix>::Make(SlideMatrix(slide, slideRect));
         auto adapter     = sk_make_sp<SlideAdapter>(slide);
         auto slideGrp    = sksg::Group::Make();
         slideGrp->addChild(sksg::Draw::Make(sksg::Rect::Make(SkRect::MakeIWH(slideSize.width(),
@@ -314,13 +316,13 @@ void SlideDir::load(SkScalar winWidth, SkScalar winHeight) {
         slideGrp->addChild(adapter);
         slideGrp->addChild(MakeLabel(slide->getName(),
                                      SkPoint::Make(slideSize.width() / 2, slideSize.height()),
-                                     slideMatrix));
-        auto slideTransform = sksg::Transform::Make(std::move(slideGrp), slideMatrix);
+                                     slideMatrix->getMatrix()));
+        auto slideRoot = sksg::TransformEffect::Make(std::move(slideGrp), slideMatrix);
 
         sceneAnimators.push_back(adapter->makeForwardingAnimator());
 
-        fRoot->addChild(slideTransform);
-        fRecs.push_back({ slide, slideTransform, slideRect });
+        fRoot->addChild(slideRoot);
+        fRecs.push_back({ slide, slideRoot, slideMatrix, slideRect });
     }
 
     fScene = sksg::Scene::Make(fRoot, std::move(sceneAnimators));
@@ -351,7 +353,7 @@ void SlideDir::draw(SkCanvas* canvas) {
     fScene->render(canvas);
 }
 
-bool SlideDir::animate(const SkAnimTimer& timer) {
+bool SlideDir::animate(const AnimTimer& timer) {
     if (fTimeBase == 0) {
         // Reset the animation time.
         fTimeBase = timer.msec();

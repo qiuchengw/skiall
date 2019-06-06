@@ -8,9 +8,9 @@
 #ifndef GrMtlCaps_DEFINED
 #define GrMtlCaps_DEFINED
 
-#include "GrCaps.h"
-#include "GrMtlStencilAttachment.h"
-#include "SkTDArray.h"
+#include "include/private/SkTDArray.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/mtl/GrMtlStencilAttachment.h"
 
 #import <Metal/Metal.h>
 
@@ -33,7 +33,6 @@ public:
     int getRenderTargetSampleCount(int requestedCount, GrPixelConfig) const override;
     int maxRenderTargetSampleCount(GrPixelConfig) const override;
 
-    bool surfaceSupportsWritePixels(const GrSurface*) const override { return true; }
     bool surfaceSupportsReadPixels(const GrSurface*) const override { return true; }
 
     bool isConfigCopyable(GrPixelConfig config) const override {
@@ -58,41 +57,23 @@ public:
     bool canCopyAsDrawThenBlit(GrPixelConfig dstConfig, GrPixelConfig srcConfig,
                                bool srcIsTextureable) const;
 
-    bool canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
-                        const SkIRect& srcRect, const SkIPoint& dstPoint) const override;
-
     bool initDescForDstCopy(const GrRenderTargetProxy* src, GrSurfaceDesc* desc, GrSurfaceOrigin*,
                             bool* rectsMustMatch, bool* disallowSubrect) const override {
         return false;
     }
 
-    bool validateBackendTexture(const GrBackendTexture&, SkColorType,
-                                GrPixelConfig*) const override {
-        return false;
-    }
-    bool validateBackendRenderTarget(const GrBackendRenderTarget&, SkColorType,
-                                     GrPixelConfig*) const override {
-        return false;
-    }
+    GrPixelConfig validateBackendRenderTarget(const GrBackendRenderTarget&,
+                                              SkColorType) const override;
 
-    bool getConfigFromBackendFormat(const GrBackendFormat&, SkColorType,
-                                    GrPixelConfig*) const override {
-        return false;
-    }
+    GrPixelConfig getConfigFromBackendFormat(const GrBackendFormat&, SkColorType) const override;
 
-    bool getYUVAConfigFromBackendTexture(const GrBackendTexture&,
-                                         GrPixelConfig*) const override {
-        return false;
-    }
+    GrPixelConfig getYUVAConfigFromBackendFormat(const GrBackendFormat&) const override;
 
-    bool getYUVAConfigFromBackendFormat(const GrBackendFormat&,
-                                        GrPixelConfig*) const override {
-        return false;
-    }
+    GrBackendFormat getBackendFormatFromGrColorType(GrColorType ct,
+                                                    GrSRGBEncoded srgbEncoded) const override;
 
-    bool performPartialClearsAsDraws() const override {
-        return true;
-    }
+    GrSwizzle getTextureSwizzle(const GrBackendFormat&, GrColorType) const override;
+    GrSwizzle getOutputSwizzle(const GrBackendFormat&, GrColorType) const override;
 
 private:
     void initFeatureSet(MTLFeatureSet featureSet);
@@ -102,11 +83,15 @@ private:
     void initGrCaps(const id<MTLDevice> device);
     void initShaderCaps();
 
-#ifdef GR_TEST_UTILS
-    GrBackendFormat onCreateFormatFromBackendTexture(const GrBackendTexture&) const override;
-#endif
-
     void initConfigTable();
+
+    bool onSurfaceSupportsWritePixels(const GrSurface*) const override;
+    bool onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
+                          const SkIRect& srcRect, const SkIPoint& dstPoint) const override;
+    size_t onTransferFromOffsetAlignment(GrColorType bufferColorType) const override {
+        // Transfer buffers not yet supported.
+        return 0;
+    }
 
     struct ConfigInfo {
         ConfigInfo() : fFlags(0) {}

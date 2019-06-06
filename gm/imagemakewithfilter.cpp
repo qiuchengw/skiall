@@ -5,14 +5,29 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
-#include "SkBlurImageFilter.h"
-#include "SkCanvas.h"
-#include "SkColorFilter.h"
-#include "SkColorFilterImageFilter.h"
-#include "SkDropShadowImageFilter.h"
-#include "SkSurface.h"
+#include "gm/gm.h"
+#include "include/core/SkBlendMode.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkImage.h"
+#include "include/core/SkImageFilter.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkSurface.h"
+#include "include/core/SkTypes.h"
+#include "include/effects/SkBlurImageFilter.h"
+#include "include/effects/SkColorFilterImageFilter.h"
+#include "include/effects/SkDropShadowImageFilter.h"
+#include "tools/ToolUtils.h"
+
+#include <utility>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +60,7 @@ protected:
     SkISize onISize() override { return SkISize::Make(440, 530); }
 
     void onDraw(SkCanvas* canvas) override {
-        auto cf = SkColorFilter::MakeModeFilter(SK_ColorGREEN, SkBlendMode::kSrc);
+        auto cf = SkColorFilters::Blend(SK_ColorGREEN, SkBlendMode::kSrc);
         sk_sp<SkImageFilter> filters[] = {
             SkColorFilterImageFilter::Make(std::move(cf), nullptr),
             SkBlurImageFilter::Make(2.0f, 2.0f, nullptr),
@@ -70,8 +85,8 @@ protected:
 
         canvas->translate(MARGIN, MARGIN);
 
-        sk_sp<SkSurface> surface = sk_tool_utils::makeSurface(canvas, info);
-        sk_tool_utils::draw_checkerboard(surface->getCanvas());
+        sk_sp<SkSurface> surface = ToolUtils::makeSurface(canvas, info);
+        ToolUtils::draw_checkerboard(surface->getCanvas());
         sk_sp<SkImage> source = surface->makeImageSnapshot();
 
         for (auto clipBound : clipBounds) {

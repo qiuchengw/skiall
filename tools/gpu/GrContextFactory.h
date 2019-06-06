@@ -8,11 +8,11 @@
 #ifndef GrContextFactory_DEFINED
 #define GrContextFactory_DEFINED
 
-#include "GrContext.h"
-#include "GrContextOptions.h"
+#include "include/gpu/GrContext.h"
+#include "include/gpu/GrContextOptions.h"
 
-#include "gl/GLTestContext.h"
-#include "SkTArray.h"
+#include "include/private/SkTArray.h"
+#include "tools/gpu/gl/GLTestContext.h"
 
 struct GrVkBackendContext;
 
@@ -39,7 +39,6 @@ public:
         kANGLE_GL_ES2_ContextType,   //! ANGLE on OpenGL OpenGL ES 2 context.
         kANGLE_GL_ES3_ContextType,   //! ANGLE on OpenGL OpenGL ES 3 context.
         kCommandBuffer_ContextType,  //! Chromium command buffer OpenGL ES context.
-        kNullGL_ContextType,         //! Non-rendering OpenGL mock context.
         kVulkan_ContextType,         //! Vulkan
         kMetal_ContextType,          //! Metal
         kMock_ContextType,           //! Mock context that does not draw.
@@ -62,7 +61,6 @@ public:
 
     static bool IsRenderingContext(ContextType type) {
         switch (type) {
-            case kNullGL_ContextType:
             case kMock_ContextType:
                 return false;
             default:
@@ -101,8 +99,6 @@ public:
                 return "ANGLE GL ES3";
             case kCommandBuffer_ContextType:
                 return "Command Buffer";
-            case kNullGL_ContextType:
-                return "Null GL";
             case kVulkan_ContextType:
                 return "Vulkan";
             case kMetal_ContextType:
@@ -150,13 +146,13 @@ private:
         ContextType       fType;
         ContextOverrides  fOverrides;
         GrContextOptions  fOptions;
-        GrBackendApi         fBackend;
+        GrBackendApi      fBackend;
         TestContext*      fTestContext;
         GrContext*        fGrContext;
         GrContext*        fShareContext;
         uint32_t          fShareIndex;
 
-        bool            fAbandoned;
+        bool              fAbandoned;
     };
     SkTArray<Context, true>         fContexts;
     std::unique_ptr<GLTestContext>  fSentinelGLContext;

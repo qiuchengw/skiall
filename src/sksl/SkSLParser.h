@@ -12,9 +12,9 @@
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
-#include "SkSLErrorReporter.h"
-#include "ir/SkSLLayout.h"
-#include "SkSLLexer.h"
+#include "src/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLLexer.h"
+#include "src/sksl/ir/SkSLLayout.h"
 
 struct yy_buffer_state;
 #define YY_TYPEDEF_YY_BUFFER_STATE
@@ -92,9 +92,14 @@ public:
         TRACKED,
         CTYPE,
         SKPMCOLOR4F,
+        SKVECTOR4,
         SKRECT,
         SKIRECT,
         SKPMCOLOR,
+        SKMATRIX44,
+        BOOL,
+        INT,
+        FLOAT,
     };
 
     Parser(const char* text, size_t length, SymbolTable& types, ErrorReporter& errors);

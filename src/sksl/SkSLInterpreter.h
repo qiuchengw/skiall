@@ -8,40 +8,40 @@
 #ifndef SKSL_INTERPRETER
 #define SKSL_INTERPRETER
 
-#include "ir/SkSLAppendStage.h"
-#include "ir/SkSLExpression.h"
-#include "ir/SkSLFunctionCall.h"
-#include "ir/SkSLFunctionDefinition.h"
-#include "ir/SkSLProgram.h"
-#include "ir/SkSLStatement.h"
+#include "src/sksl/SkSLByteCode.h"
+#include "src/sksl/ir/SkSLAppendStage.h"
+#include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLFunctionCall.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
+#include "src/sksl/ir/SkSLProgram.h"
+#include "src/sksl/ir/SkSLStatement.h"
 
 #include <stack>
-
-class SkRasterPipeline;
 
 namespace SkSL {
 
 class Interpreter {
     typedef int StackIndex;
 
-    struct StatementIndex {
-        const Statement* fStatement;
-        size_t fIndex;
-    };
-
 public:
     union Value {
+        Value() {}
+
         Value(float f)
         : fFloat(f) {}
 
-        Value(int i)
-        : fInt(i) {}
+        Value(int32_t s)
+        : fSigned(s) {}
+
+        Value(uint32_t u)
+        : fUnsigned(u) {}
 
         Value(bool b)
         : fBool(b) {}
 
         float fFloat;
-        int fInt;
+        int32_t fSigned;
+        uint32_t fUnsigned;
         bool fBool;
     };
 
@@ -51,37 +51,35 @@ public:
         kBool_TypeKind
     };
 
-    Interpreter(std::unique_ptr<Program> program, SkRasterPipeline* pipeline, std::vector<Value>* stack)
-    : fProgram(std::move(program))
-    , fPipeline(*pipeline)
-    , fStack(*stack) {}
+    /**
+     * 'inputs' contains the values of global 'in' variables in source order.
+     */
+    Interpreter(std::unique_ptr<Program> program, std::unique_ptr<ByteCode> byteCode,
+                Value inputs[] = nullptr);
 
-    void run();
+    /**
+     * Invokes the specified function with the given arguments. 'out' and 'inout' parameters will
+     * result in the 'args' array being modified. The return value is stored in 'outReturn' (may be
+     * null, in which case the return value is discarded).
+     */
+    void run(const ByteCodeFunction& f, Value args[], Value* outReturn);
 
-    void run(const FunctionDefinition& f);
+    /**
+     * Updates the global inputs.
+     */
+    void setInputs(Value inputs[]);
 
-    void push(Value value);
-
-    Value pop();
-
-    StackIndex stackAlloc(int count);
-
-    void runStatement();
-
-    StackIndex getLValue(const Expression& expr);
-
-    Value call(const FunctionCall& c);
-
-    void appendStage(const AppendStage& c);
-
-    Value evaluate(const Expression& expr);
-
+    /**
+     * Print bytecode disassembly to stdout.
+     */
+    void disassemble(const ByteCodeFunction&);
 private:
+    void innerRun(const ByteCodeFunction& f, Value* stack, Value* outReturn);
+
+
     std::unique_ptr<Program> fProgram;
-    SkRasterPipeline& fPipeline;
-    std::vector<StatementIndex> fCurrentIndex;
-    std::vector<std::unordered_map<const Variable*, StackIndex>> fVars;
-    std::vector<Value> &fStack;
+    std::unique_ptr<ByteCode> fByteCode;
+    std::vector<Value> fGlobals;
 };
 
 } // namespace

@@ -8,19 +8,20 @@
 #ifndef SkReadBuffer_DEFINED
 #define SkReadBuffer_DEFINED
 
-#include "SkColorFilter.h"
-#include "SkSerialProcs.h"
-#include "SkDrawLooper.h"
-#include "SkImageFilter.h"
-#include "SkMaskFilterBase.h"
-#include "SkPaintPriv.h"
-#include "SkPath.h"
-#include "SkPathEffect.h"
-#include "SkPicture.h"
-#include "SkReader32.h"
-#include "SkRefCnt.h"
-#include "SkShaderBase.h"
-#include "SkWriteBuffer.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkDrawLooper.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkImageFilter.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPathEffect.h"
+#include "include/core/SkPicture.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkSerialProcs.h"
+#include "src/core/SkMaskFilterBase.h"
+#include "src/core/SkPaintPriv.h"
+#include "src/core/SkReader32.h"
+#include "src/core/SkWriteBuffer.h"
+#include "src/shaders/SkShaderBase.h"
 
 class SkData;
 class SkImage;
@@ -43,6 +44,9 @@ public:
         kStoreImageBounds_Version          = 63,
         kRemoveOccluderFromBlurMaskFilter  = 64,
         kFloat4PaintColor_Version          = 65,
+        kSaveBehind_Version                = 66,
+        kSerializeFonts_Version            = 67,
+        kPaintDoesntSerializeFonts_Version = 68,
     };
 
     /**
@@ -94,7 +98,6 @@ public:
     // peek
     uint8_t peekByte();
 
-    // strings -- the caller is responsible for freeing the string contents
     void readString(SkString* string);
 
     // common data structures
@@ -109,7 +112,10 @@ public:
     void readRegion(SkRegion* region);
 
     void readPath(SkPath* path);
-    bool readPaint(SkPaint* paint) { return SkPaintPriv::Unflatten(paint, *this); }
+
+    SkReadPaintResult readPaint(SkPaint* paint, SkFont* font) {
+        return SkPaintPriv::Unflatten(paint, *this, font);
+    }
 
     SkFlattenable* readFlattenable(SkFlattenable::Type);
     template <typename T> sk_sp<T> readFlattenable() {
@@ -201,6 +207,8 @@ public:
     SkFilterQuality checkFilterQuality();
 
 private:
+    const char* readString(size_t* length);
+
     void setInvalid();
     bool readArray(void* value, size_t size, size_t elementSize);
     void setMemory(const void*, size_t);
@@ -245,6 +253,9 @@ public:
         kStoreImageBounds_Version          = 63,
         kRemoveOccluderFromBlurMaskFilter  = 64,
         kFloat4PaintColor_Version          = 65,
+        kSaveBehind_Version                = 66,
+        kSerializeFonts_Version            = 67,
+        kPaintDoesntSerializeFonts_Version = 68,
     };
 
     bool isVersionLT(Version) const { return false; }
@@ -282,7 +293,13 @@ public:
     void readRegion (SkRegion*  out) { *out = SkRegion();         }
     void readString (SkString*  out) { *out = SkString();         }
     void readPath   (SkPath*    out) { *out = SkPath();           }
-    bool readPaint  (SkPaint*   out) { *out = SkPaint(); return false; }
+    SkReadPaintResult readPaint  (SkPaint*   out, SkFont* font) {
+        *out = SkPaint();
+        if (font) {
+            *font = SkFont();
+        }
+        return kFailed_ReadPaint;
+    }
 
     SkPoint readPoint() { return {0,0}; }
 

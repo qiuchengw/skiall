@@ -5,11 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "Benchmark.h"
-#include "SkCanvas.h"
-#include "SkDisplacementMapEffect.h"
-#include "SkImageSource.h"
-#include "SkSurface.h"
+#include "bench/Benchmark.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkSurface.h"
+#include "include/effects/SkDisplacementMapEffect.h"
+#include "include/effects/SkImageSource.h"
 
 #define FILTER_WIDTH_SMALL  32
 #define FILTER_HEIGHT_SMALL 32
@@ -31,21 +32,21 @@ protected:
 
     void makeBitmap() {
         const int w = this->isSmall() ? FILTER_WIDTH_SMALL : FILTER_WIDTH_LARGE;
-        const int h = this->isSmall() ? FILTER_HEIGHT_LARGE : FILTER_HEIGHT_LARGE;
+        const int h = this->isSmall() ? FILTER_HEIGHT_SMALL : FILTER_HEIGHT_LARGE;
         fBitmap.allocN32Pixels(w, h);
         SkCanvas canvas(fBitmap);
         canvas.clear(0x00000000);
         SkPaint paint;
-        paint.setAntiAlias(true);
         paint.setColor(0xFF884422);
-        paint.setTextSize(SkIntToScalar(96));
-        const char* str = "g";
-        canvas.drawString(str, SkIntToScalar(15), SkIntToScalar(55), paint);
+
+        SkFont font;
+        font.setSize(SkIntToScalar(96));
+        canvas.drawSimpleText("g", 1, SkTextEncoding::kUTF8, SkIntToScalar(15), SkIntToScalar(55), font, paint);
     }
 
     void makeCheckerboard() {
         const int w = this->isSmall() ? FILTER_WIDTH_SMALL : FILTER_WIDTH_LARGE;
-        const int h = this->isSmall() ? FILTER_HEIGHT_LARGE : FILTER_HEIGHT_LARGE;
+        const int h = this->isSmall() ? FILTER_HEIGHT_SMALL : FILTER_HEIGHT_LARGE;
         auto surface(SkSurface::MakeRasterN32Premul(w, h));
         SkCanvas* canvas = surface->getCanvas();
         canvas->clear(0x00000000);

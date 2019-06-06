@@ -4,10 +4,21 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "gm.h"
-#include "SkPath.h"
-#include "SkRandom.h"
-#include "SkTArray.h"
+
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkNoncopyable.h"
+#include "include/private/SkTArray.h"
+#include "include/utils/SkRandom.h"
 
 class SkDoOnce : SkNoncopyable {
 public:
@@ -252,6 +263,16 @@ protected:
                                    0, 0,
                                    100 * SK_Scalar1, 100 * SK_Scalar1);
 
+        // skbug.com/8928
+        fPaths.push_back().moveTo(16.875f, 192.594f);
+        fPaths.back().cubicTo(45.625f, 192.594f, 74.375f, 192.594f, 103.125f, 192.594f);
+        fPaths.back().cubicTo(88.75f, 167.708f, 74.375f, 142.823f, 60, 117.938f);
+        fPaths.back().cubicTo(45.625f, 142.823f, 31.25f, 167.708f, 16.875f, 192.594f);
+        fPaths.back().close();
+        SkMatrix m;
+        m.setAll(0.1f, 0, -1, 0, 0.115207f, -2.64977f, 0, 0, 1);
+        fPaths.back().transform(m);
+
         // small circle. This is listed last so that it has device coords far
         // from the origin (small area relative to x,y values).
         fPaths.push_back().addCircle(0, 0, 1.2f);
@@ -292,7 +313,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new ConvexPathsGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new ConvexPathsGM; )
 
 }

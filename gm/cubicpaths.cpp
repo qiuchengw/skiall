@@ -5,12 +5,22 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
-#include "SkCanvas.h"
-#include "SkPaint.h"
-#include "SkPath.h"
-#include "SkRandom.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypeface.h"
+#include "include/core/SkTypes.h"
+#include "include/utils/SkRandom.h"
+#include "tools/ToolUtils.h"
 
 // https://bug.skia.org/1316 shows that this cubic, when slightly clipped, creates big
 // (incorrect) changes to its control points.
@@ -198,14 +208,10 @@ protected:
         SkPaint titlePaint;
         titlePaint.setColor(SK_ColorBLACK);
         titlePaint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&titlePaint);
-        titlePaint.setTextSize(15 * SK_Scalar1);
+        SkFont     font(ToolUtils::create_portable_typeface(), 15);
         const char title[] = "Cubic Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, with stroke width 10";
-        canvas->drawString(title,
-                           20 * SK_Scalar1,
-                           20 * SK_Scalar1,
-                           titlePaint);
+        canvas->drawString(title, 20, 20, font, titlePaint);
 
         SkRandom rand;
         SkRect rect = SkRect::MakeWH(100*SK_Scalar1, 30*SK_Scalar1);
@@ -241,18 +247,10 @@ protected:
 
                     SkPaint labelPaint;
                     labelPaint.setColor(color);
-                    labelPaint.setAntiAlias(true);
-                    sk_tool_utils::set_portable_typeface(&labelPaint);
-                    labelPaint.setTextSize(10 * SK_Scalar1);
-                    canvas->drawString(gStyles[style].fName,
-                                       0, rect.height() + 12 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gFills[fill].fName,
-                                       0, rect.height() + 24 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gCaps[cap].fName,
-                                       0, rect.height() + 36 * SK_Scalar1,
-                                       labelPaint);
+                    font.setSize(10);
+                    canvas->drawString(gStyles[style].fName, 0, rect.height() + 12, font, labelPaint);
+                    canvas->drawString(gFills[fill].fName, 0, rect.height() + 24, font, labelPaint);
+                    canvas->drawString(gCaps[cap].fName, 0, rect.height() + 36, font, labelPaint);
                 }
                 canvas->restore();
             }
@@ -340,14 +338,10 @@ protected:
         SkPaint titlePaint;
         titlePaint.setColor(SK_ColorBLACK);
         titlePaint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&titlePaint);
-        titlePaint.setTextSize(15 * SK_Scalar1);
+        SkFont     font(ToolUtils::create_portable_typeface(), 15);
         const char title[] = "Cubic Closed Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, with stroke width 10";
-        canvas->drawString(title,
-                           20 * SK_Scalar1,
-                           20 * SK_Scalar1,
-                           titlePaint);
+        canvas->drawString(title, 20, 20, font, titlePaint);
 
         SkRandom rand;
         SkRect rect = SkRect::MakeWH(100*SK_Scalar1, 30*SK_Scalar1);
@@ -384,17 +378,10 @@ protected:
                     SkPaint labelPaint;
                     labelPaint.setColor(color);
                     labelPaint.setAntiAlias(true);
-                    sk_tool_utils::set_portable_typeface(&labelPaint);
-                    labelPaint.setTextSize(10 * SK_Scalar1);
-                    canvas->drawString(gStyles[style].fName,
-                                       0, rect.height() + 12 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gFills[fill].fName,
-                                       0, rect.height() + 24 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gCaps[cap].fName,
-                                       0, rect.height() + 36 * SK_Scalar1,
-                                       labelPaint);
+                    font.setSize(10);
+                    canvas->drawString(gStyles[style].fName, 0, rect.height() + 12, font, labelPaint);
+                    canvas->drawString(gFills[fill].fName, 0, rect.height() + 24, font, labelPaint);
+                    canvas->drawString(gCaps[cap].fName, 0, rect.height() + 36, font, labelPaint);
                 }
                 canvas->restore();
             }

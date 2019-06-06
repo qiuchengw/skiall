@@ -5,24 +5,24 @@
  * found in the LICENSE file.
  */
 
-#include "Benchmark.h"
+#include "bench/Benchmark.h"
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrGeometryProcessor.h"
-#include "GrMemoryPool.h"
-#include "GrRenderTargetContext.h"
-#include "GrRenderTargetContextPriv.h"
-#include "SkColorSpacePriv.h"
-#include "SkGr.h"
-#include "SkHalf.h"
-#include "SkString.h"
-#include "glsl/GrGLSLColorSpaceXformHelper.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "glsl/GrGLSLGeometryProcessor.h"
-#include "glsl/GrGLSLVarying.h"
-#include "glsl/GrGLSLVertexGeoBuilder.h"
-#include "ops/GrMeshDrawOp.h"
+#include "include/core/SkString.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/SkHalf.h"
+#include "src/core/SkColorSpacePriv.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/SkGr.h"
+#include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
+#include "src/gpu/glsl/GrGLSLVarying.h"
+#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
+#include "src/gpu/ops/GrMeshDrawOp.h"
 
 namespace {
 
@@ -151,8 +151,9 @@ public:
         return FixedFunctionFlags::kNone;
     }
 
-    RequiresDstTexture finalize(const GrCaps&, const GrAppliedClip*) override {
-        return RequiresDstTexture::kNo;
+    GrProcessorSet::Analysis finalize(
+            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+        return GrProcessorSet::EmptySetAnalysis();
     }
 
 private:
@@ -163,7 +164,7 @@ private:
 
         size_t vertexStride = gp->vertexStride();
         const int kVertexCount = 1024;
-        const GrBuffer* vertexBuffer = nullptr;
+        sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex = 0;
         void* verts = target->makeVertexSpace(vertexStride, kVertexCount, &vertexBuffer,
                                               &firstVertex);
@@ -221,10 +222,13 @@ private:
 
         GrMesh* mesh = target->allocMesh(GrPrimitiveType::kTriangleStrip);
         mesh->setNonIndexedNonInstanced(kVertexCount);
-        mesh->setVertexData(vertexBuffer, firstVertex);
-        auto pipe = target->makePipeline(0, GrProcessorSet::MakeEmptySet(),
-                                         target->detachAppliedClip());
-        target->draw(gp, pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+        mesh->setVertexData(std::move(vertexBuffer), firstVertex);
+        target->recordDraw(gp, mesh);
+    }
+
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        flushState->executeDrawsAndUploadsForMeshDrawOp(
+                this, chainBounds, GrProcessorSet::MakeEmptySet());
     }
 
     Mode fMode;
@@ -251,24 +255,26 @@ public:
         SkASSERT(context);
 
         if (kHalf_Mode == fMode &&
-            !context->contextPriv().caps()->halfFloatVertexAttributeSupport()) {
+            !context->priv().caps()->halfFloatVertexAttributeSupport()) {
             return;
         }
 
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
-        auto p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                        SkColorSpace::kDCIP3_D65_Gamut);
+        auto p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
+                                        SkNamedGamut::kDCIP3);
         auto xform = GrColorSpaceXform::Make(sk_srgb_singleton(), kUnpremul_SkAlphaType,
                                              p3.get(),            kUnpremul_SkAlphaType);
 
         SkRandom r;
         const int kDrawsPerLoop = 32;
 
+        const GrBackendFormat format =
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
         for (int i = 0; i < loops; ++i) {
             sk_sp<GrRenderTargetContext> rtc(
-                    context->contextPriv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
-                    100, 100, kRGBA_8888_GrPixelConfig, p3));
+                    context->priv().makeDeferredRenderTargetContext(
+                            format, SkBackingFit::kApprox, 100, 100, kRGBA_8888_GrPixelConfig, p3));
             SkASSERT(rtc);
 
             for (int j = 0; j < kDrawsPerLoop; ++j) {

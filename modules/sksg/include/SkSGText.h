@@ -8,13 +8,13 @@
 #ifndef SkSGText_DEFINED
 #define SkSGText_DEFINED
 
-#include "SkSGGeometryNode.h"
+#include "modules/sksg/include/SkSGGeometryNode.h"
 
-#include "SkPaintDefaults.h"
-#include "SkPoint.h"
-#include "SkString.h"
-#include "SkTextBlob.h"
-#include "SkTextUtils.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTextBlob.h"
+#include "include/utils/SkTextUtils.h"
 
 class SkCanvas;
 class SkPaint;
@@ -30,21 +30,22 @@ public:
     static sk_sp<Text> Make(sk_sp<SkTypeface> tf, const SkString& text);
     ~Text() override;
 
-    SG_ATTRIBUTE(Typeface, sk_sp<SkTypeface>, fTypeface)
-    SG_ATTRIBUTE(Text    , SkString         , fText    )
-    SG_ATTRIBUTE(Flags   , uint32_t         , fFlags   )
-    SG_ATTRIBUTE(Position, SkPoint          , fPosition)
-    SG_ATTRIBUTE(Size    , SkScalar         , fSize    )
-    SG_ATTRIBUTE(ScaleX  , SkScalar         , fScaleX  )
-    SG_ATTRIBUTE(SkewX   , SkScalar         , fSkewX   )
-    SG_ATTRIBUTE(Align   , SkTextUtils::Align   , fAlign   )
-    SG_ATTRIBUTE(Hinting , SkFontHinting    , fHinting )
+    SG_ATTRIBUTE(Typeface, sk_sp<SkTypeface> , fTypeface)
+    SG_ATTRIBUTE(Text    , SkString          , fText    )
+    SG_ATTRIBUTE(Position, SkPoint           , fPosition)
+    SG_ATTRIBUTE(Size    , SkScalar          , fSize    )
+    SG_ATTRIBUTE(ScaleX  , SkScalar          , fScaleX  )
+    SG_ATTRIBUTE(SkewX   , SkScalar          , fSkewX   )
+    SG_ATTRIBUTE(Align   , SkTextUtils::Align, fAlign   )
+    SG_ATTRIBUTE(Edging  , SkFont::Edging    , fEdging  )
+    SG_ATTRIBUTE(Hinting , SkFontHinting     , fHinting )
 
     // TODO: add shaping functionality.
 
 protected:
     void onClip(SkCanvas*, bool antiAlias) const override;
     void onDraw(SkCanvas*, const SkPaint&) const override;
+    bool onContains(const SkPoint&)        const override;
 
     SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
     SkPath onAsPath() const override;
@@ -56,13 +57,13 @@ private:
 
     sk_sp<SkTypeface> fTypeface;
     SkString                fText;
-    uint32_t                fFlags    = SkPaintDefaults_Flags;
     SkPoint                 fPosition = SkPoint::Make(0, 0);
-    SkScalar                fSize     = SkPaintDefaults_TextSize;
+    SkScalar                fSize     = 12;
     SkScalar                fScaleX   = 1;
     SkScalar                fSkewX    = 0;
     SkTextUtils::Align      fAlign    = SkTextUtils::kLeft_Align;
-    SkFontHinting           fHinting  = SkPaintDefaults_Hinting;
+    SkFont::Edging          fEdging   = SkFont::Edging::kAntiAlias;
+    SkFontHinting           fHinting  = SkFontHinting::kNormal;
 
     sk_sp<SkTextBlob> fBlob; // cached text blob
 
@@ -83,6 +84,7 @@ public:
 protected:
     void onClip(SkCanvas*, bool antiAlias) const override;
     void onDraw(SkCanvas*, const SkPaint&) const override;
+    bool onContains(const SkPoint&)        const override;
 
     SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
     SkPath onAsPath() const override;

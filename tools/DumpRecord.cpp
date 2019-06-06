@@ -7,12 +7,12 @@
 
 #include <stdio.h>
 
-#include "SkPicturePriv.h"
-#include "SkRecord.h"
-#include "SkRecordDraw.h"
+#include "src/core/SkPicturePriv.h"
+#include "src/core/SkRecord.h"
+#include "src/core/SkRecordDraw.h"
 
-#include "DumpRecord.h"
-#include "SkTime.h"
+#include "include/core/SkTime.h"
+#include "tools/DumpRecord.h"
 
 namespace {
 
@@ -115,8 +115,8 @@ private:
     template <typename T>
     static const char* NameOf(const T&) {
     #define CASE(U) case SkRecords::U##_Type: return #U;
-        switch(T::kType) { SK_RECORD_TYPES(CASE); }
-    #undef CASE
+        switch (T::kType) { SK_RECORD_TYPES(CASE) }
+#undef CASE
         SkDEBUGFAIL("Unknown T");
         return "Unknown T";
     }

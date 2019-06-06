@@ -8,8 +8,8 @@
 #ifndef GrMtlTextureRenderTarget_DEFINED
 #define GrMtlTextureRenderTarget_DEFINED
 
-#include "GrMtlRenderTarget.h"
-#include "GrMtlTexture.h"
+#include "src/gpu/mtl/GrMtlRenderTarget.h"
+#include "src/gpu/mtl/GrMtlTexture.h"
 
 class GrMtlTextureRenderTarget: public GrMtlTexture, public GrMtlRenderTarget {
 public:
@@ -21,7 +21,11 @@ public:
 
     static sk_sp<GrMtlTextureRenderTarget> MakeWrappedTextureRenderTarget(GrMtlGpu*,
                                                                           const GrSurfaceDesc&,
-                                                                          id<MTLTexture>);
+                                                                          id<MTLTexture>,
+                                                                          GrWrapCacheable);
+    GrBackendFormat backendFormat() const override {
+        return GrMtlTexture::backendFormat();
+    }
 
 protected:
     void onAbandon() override {
@@ -57,14 +61,8 @@ private:
     GrMtlTextureRenderTarget(GrMtlGpu* gpu,
                              const GrSurfaceDesc& desc,
                              id<MTLTexture> renderTexture,
-                             GrMipMapsStatus);
-
-    static sk_sp<GrMtlTextureRenderTarget> Make(GrMtlGpu*,
-                                                const GrSurfaceDesc&,
-                                                id<MTLTexture> resolveTexture,
-                                                GrMipMapsStatus,
-                                                SkBudgeted budgeted,
-                                                bool isWrapped);
+                             GrMipMapsStatus,
+                             GrWrapCacheable cacheable);
 
     size_t onGpuMemorySize() const override {
         // TODO: When used as render targets certain formats may actually have a larger size than

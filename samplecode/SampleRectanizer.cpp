@@ -5,14 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkCanvas.h"
-#include "SkRandom.h"
-#include "SkPaint.h"
-#include "SkUTF.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPaint.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/Sample.h"
+#include "src/utils/SkUTF.h"
 #if SK_SUPPORT_GPU
-#include "GrRectanizer_pow2.h"
-#include "GrRectanizer_skyline.h"
+#include "src/gpu/GrRectanizer_pow2.h"
+#include "src/gpu/GrRectanizer_skyline.h"
 
 // This slide visualizes the various GrRectanizer-derived classes behavior
 // for various input sets
@@ -88,8 +89,8 @@ protected:
             }
         }
 
-        SkPaint blackBigFont;
-        blackBigFont.setTextSize(20);
+        SkFont blackBigFont;
+        blackBigFont.setSize(20);
         SkPaint blackStroke;
         blackStroke.setStyle(SkPaint::kStroke_Style);
         SkPaint redFill;
@@ -121,13 +122,13 @@ protected:
                    100.0f * totArea / ((float)kWidth*kHeight),
                    fCurRandRect,
                    kNumRandRects);
-        canvas->drawString(str, 50, kHeight + 50, blackBigFont);
+        canvas->drawString(str, 50, kHeight + 50, blackBigFont, SkPaint());
 
         str.printf("Press \'j\' to toggle rectanizer");
-        canvas->drawString(str, 50, kHeight + 100, blackBigFont);
+        canvas->drawString(str, 50, kHeight + 100, blackBigFont, SkPaint());
 
         str.printf("Press \'h\' to toggle rects");
-        canvas->drawString(str, 50, kHeight + 150, blackBigFont);
+        canvas->drawString(str, 50, kHeight + 150, blackBigFont, SkPaint());
     }
 
 private:

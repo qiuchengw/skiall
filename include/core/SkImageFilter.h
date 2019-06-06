@@ -8,21 +8,20 @@
 #ifndef SkImageFilter_DEFINED
 #define SkImageFilter_DEFINED
 
-#include "../private/SkTArray.h"
-#include "../private/SkTemplates.h"
-#include "../private/SkMutex.h"
-#include "SkColorSpace.h"
-#include "SkFilterQuality.h"
-#include "SkFlattenable.h"
-#include "SkImageInfo.h"
-#include "SkMatrix.h"
-#include "SkRect.h"
+#include "include/core/SkColorSpace.h"
+#include "include/core/SkFilterQuality.h"
+#include "include/core/SkFlattenable.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkRect.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkTArray.h"
+#include "include/private/SkTemplates.h"
 
-class GrContext;
 class GrFragmentProcessor;
 class SkColorFilter;
-class SkColorSpaceXformer;
 struct SkIPoint;
+class GrRecordingContext;
 class SkSpecialImage;
 class SkImageFilterCache;
 struct SkImageFilterCacheKey;
@@ -167,7 +166,7 @@ public:
                          MapDirection, const SkIRect* inputRect = nullptr) const;
 
 #if SK_SUPPORT_GPU
-    static sk_sp<SkSpecialImage> DrawWithFP(GrContext* context,
+    static sk_sp<SkSpecialImage> DrawWithFP(GrRecordingContext* context,
                                             std::unique_ptr<GrFragmentProcessor> fp,
                                             const SkIRect& bounds,
                                             const OutputProperties& outputProperties);
@@ -433,14 +432,6 @@ protected:
     static sk_sp<SkSpecialImage> ImageToColorSpace(SkSpecialImage* src, const OutputProperties&);
 #endif
 
-    /**
-     *  Returns an image filter transformed into a new color space via the |xformer|.
-     */
-    sk_sp<SkImageFilter> makeColorSpace(SkColorSpaceXformer* xformer) const {
-        return this->onMakeColorSpace(xformer);
-    }
-    virtual sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const = 0;
-
     sk_sp<SkImageFilter> refMe() const {
         return sk_ref_sp(const_cast<SkImageFilter*>(this));
     }
@@ -455,10 +446,8 @@ protected:
                                              const SkIRect& originalSrcBounds);
 
 private:
-    // For makeColorSpace().
-    friend class SkColorSpaceXformer;
-
     friend class SkGraphics;
+    friend bool SkIsSameFilter(const SkImageFilter* a, const SkImageFilter* b);
 
     static void PurgeCache();
 

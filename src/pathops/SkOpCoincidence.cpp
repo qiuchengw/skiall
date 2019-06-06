@@ -4,9 +4,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "SkOpCoincidence.h"
-#include "SkOpSegment.h"
-#include "SkPathOpsTSect.h"
+#include "src/pathops/SkOpCoincidence.h"
+#include "src/pathops/SkOpSegment.h"
+#include "src/pathops/SkPathOpsTSect.h"
 
 #include <utility>
 
@@ -347,9 +347,7 @@ bool SkOpCoincidence::addEndMovedSpans(const SkOpSpan* base, const SkOpSpanBase*
                 swap(oppTs, oppTe);
             }
             bool added;
-            if (!this->addOrOverlap(coinSeg, oppSeg, coinTs, coinTe, oppTs, oppTe, &added)) {
-                return false;
-            }
+            FAIL_IF(!this->addOrOverlap(coinSeg, oppSeg, coinTs, coinTe, oppTs, oppTe, &added));
         }
     }
     return true;
@@ -744,7 +742,7 @@ bool SkOpCoincidence::addOrOverlap(SkOpSegment* coinSeg, SkOpSegment* oppSeg,
             : coinSeg->addT(coinTe);
         SkOpPtT* oeWritable = oe ? const_cast<SkOpPtT*>(oe)
             : oppSeg->addT(oppTe);
-        ceWritable->span()->addOpp(oeWritable->span());
+        FAIL_IF(!ceWritable->span()->addOpp(oeWritable->span()));
         ce = ceWritable;
         oe = oeWritable;
     }
@@ -1031,7 +1029,7 @@ bool SkOpCoincidence::apply(DEBUG_COIN_DECLARE_ONLY_PARAMS()) {
             continue;
         }
         const SkOpSpanBase* end = coin->coinPtTEnd()->span();
-        SkASSERT(start == start->starter(end));
+        FAIL_IF(start != start->starter(end));
         bool flipped = coin->flipped();
         SkOpSpanBase* oStartBase = (flipped ? coin->oppPtTEndWritable()
                 : coin->oppPtTStartWritable())->span();

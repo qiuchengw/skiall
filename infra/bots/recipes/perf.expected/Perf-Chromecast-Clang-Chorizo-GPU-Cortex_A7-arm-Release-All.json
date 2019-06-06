@@ -21,7 +21,6 @@
       "import os\nprint os.environ.get('SWARMING_BOT_ID', '')\n"
     ],
     "name": "get swarming bot id",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
       "@@@STEP_LOG_LINE@python.inline@print os.environ.get('SWARMING_BOT_ID', '')@@@",
@@ -36,11 +35,10 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "read chromecast ip",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@@@@",
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
@@ -58,7 +56,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "adb connect 192.168.1.2:5555"
@@ -74,7 +72,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "mkdir /cache/skia/resources"
@@ -90,7 +88,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "mkdir /cache/skia/bin"
@@ -105,7 +103,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "push [START_DIR]/skia/resources/* /cache/skia/resources",
@@ -169,11 +167,10 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "read /cache/skia/SKP_VERSION",
-    "stdout": "/path/to/tmp/"
+    "name": "read /cache/skia/SKP_VERSION"
   },
   {
     "cmd": [
@@ -186,7 +183,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "rm /cache/skia/SKP_VERSION"
@@ -202,7 +199,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "rm /cache/skia/skps"
@@ -218,7 +215,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "mkdir /cache/skia/skps"
@@ -233,7 +230,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "push [START_DIR]/skp/* /cache/skia/skps",
@@ -269,7 +266,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "push [START_DIR]/tmp/SKP_VERSION /cache/skia/SKP_VERSION"
@@ -285,7 +282,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "rm /cache/skia/perf"
@@ -301,7 +298,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "mkdir /cache/skia/perf"
@@ -313,7 +310,6 @@
       "import os\nprint os.environ.get('SWARMING_TASK_ID', '')\n"
     ],
     "name": "get swarming task id",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
       "@@@STEP_LOG_LINE@python.inline@print os.environ.get('SWARMING_TASK_ID', '')@@@",
@@ -330,7 +326,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "push nanobench"
@@ -353,6 +349,7 @@
       "--skps",
       "/cache/skia/skps",
       "--pre_log",
+      "--dontReduceOpListSplitting",
       "--match",
       "~matrixconvolution",
       "~blur_image_filter",
@@ -388,7 +385,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "nanobench"
   },
@@ -416,12 +413,12 @@
       "adb",
       "pull",
       "/cache/skia/perf",
-      "[TMP_BASE]/adb_pull_tmp_1"
+      "[CLEANUP]/adb_pull_tmp_1"
     ],
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "adb pull.pull /cache/skia/perf",
@@ -437,16 +434,15 @@
       "--json-output",
       "/path/to/tmp/json",
       "glob",
-      "[TMP_BASE]/adb_pull_tmp_1",
+      "[CLEANUP]/adb_pull_tmp_1",
       "perf/*"
     ],
     "infra_step": true,
     "name": "adb pull.list pulled files",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@glob@[TMP_BASE]/adb_pull_tmp_1/1.png@@@",
-      "@@@STEP_LOG_LINE@glob@[TMP_BASE]/adb_pull_tmp_1/2.png@@@",
+      "@@@STEP_LOG_LINE@glob@[CLEANUP]/adb_pull_tmp_1/1.png@@@",
+      "@@@STEP_LOG_LINE@glob@[CLEANUP]/adb_pull_tmp_1/2.png@@@",
       "@@@STEP_LOG_END@glob@@@"
     ]
   },
@@ -458,7 +454,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[TMP_BASE]/adb_pull_tmp_1/1.png",
+      "[CLEANUP]/adb_pull_tmp_1/1.png",
       "[START_DIR]/[SWARM_OUT_DIR]"
     ],
     "infra_step": true,
@@ -475,7 +471,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[TMP_BASE]/adb_pull_tmp_1/2.png",
+      "[CLEANUP]/adb_pull_tmp_1/2.png",
       "[START_DIR]/[SWARM_OUT_DIR]"
     ],
     "infra_step": true,
@@ -492,10 +488,10 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[TMP_BASE]/adb_pull_tmp_1"
+      "[CLEANUP]/adb_pull_tmp_1"
     ],
     "infra_step": true,
-    "name": "adb pull.rmtree [TMP_BASE]/adb_pull_tmp_1",
+    "name": "adb pull.rmtree [CLEANUP]/adb_pull_tmp_1",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -513,7 +509,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "Delete executables"
@@ -526,7 +522,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "disconnect"
@@ -539,7 +535,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "adb connect 192.168.1.2:5555 (2)"
@@ -553,7 +549,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "dump log",
@@ -584,7 +580,7 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "disconnect (2)"
@@ -597,13 +593,12 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "kill adb server"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

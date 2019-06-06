@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkColorPriv.h"
-#include "SkCanvas.h"
-#include "SkMaskFilter.h"
-#include "SkRandom.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkMaskFilter.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/Sample.h"
+#include "tools/timer/AnimTimer.h"
 
 SkScalar get_anim_sin(double secs, SkScalar amplitude, SkScalar periodInSec, SkScalar phaseInSec) {
     if (!periodInSec) {
@@ -55,7 +55,7 @@ protected:
         }
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         fBlurSigma = get_anim_sin(timer.secs(), 100, 4, 5);
         fCircleRadius = 3 + get_anim_sin(timer.secs(), 150, 25, 3);
         return true;

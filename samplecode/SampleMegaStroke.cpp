@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkCanvas.h"
-#include "SkPath.h"
-#include "SkRandom.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkPath.h"
+#include "include/utils/SkRandom.h"
+#include "samplecode/Sample.h"
 
 class MegaStrokeView : public Sample {
 public:
@@ -78,9 +78,7 @@ protected:
         fClip.set(0, 0, 950, 600);
     }
 
-    bool onAnimate(const SkAnimTimer& ) override {
-        return true;
-    }
+    bool onAnimate(const AnimTimer&) override { return true; }
 
 private:
     SkPath      fMegaPath;

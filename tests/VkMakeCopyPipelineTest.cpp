@@ -7,19 +7,21 @@
 
 // This is a GPU-backend specific test. It relies on static intializers to work
 
-#include "SkTypes.h"
+#include "include/core/SkTypes.h"
 
 #if defined(SK_VULKAN)
 
-#include "GrBackendSurface.h"
-#include "GrContextFactory.h"
-#include "GrContextPriv.h"
-#include "GrTexture.h"
-#include "Test.h"
-#include "vk/GrVkCopyPipeline.h"
-#include "vk/GrVkGpu.h"
-#include "vk/GrVkRenderTarget.h"
-#include "vk/GrVkUtil.h"
+#include "include/gpu/vk/GrVkVulkan.h"
+
+#include "include/gpu/GrBackendSurface.h"
+#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/vk/GrVkCopyPipeline.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkRenderTarget.h"
+#include "src/gpu/vk/GrVkUtil.h"
+#include "tests/Test.h"
+#include "tools/gpu/GrContextFactory.h"
 
 using sk_gpu_test::GrContextFactory;
 
@@ -44,7 +46,7 @@ public:
 
             "// Copy Program VS\n"
             "void main() {"
-            "vTexCoord = inPosition * uTexCoordXform.xy + uTexCoordXform.zw;"
+            "vTexCoord = half2(inPosition * uTexCoordXform.xy + uTexCoordXform.zw);"
             "sk_Position.xy = inPosition * uPosXform.xy + uPosXform.zw;"
             "sk_Position.zw = half2(0, 1);"
             "}";
@@ -62,9 +64,11 @@ public:
             "}";
 
         SkSL::Program::Settings settings;
+        SkSL::String spirv;
         SkSL::Program::Inputs inputs;
         if (!GrCompileVkShaderModule(gpu, vertShaderText, VK_SHADER_STAGE_VERTEX_BIT,
-                                     &fVertShaderModule, &fShaderStageInfo[0], settings, &inputs)) {
+                                     &fVertShaderModule, &fShaderStageInfo[0], settings,
+                                     &spirv, &inputs)) {
             this->destroyResources(gpu);
             REPORTER_ASSERT(reporter, false);
             return;
@@ -72,7 +76,8 @@ public:
         SkASSERT(inputs.isEmpty());
 
         if (!GrCompileVkShaderModule(gpu, fragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT,
-                                     &fFragShaderModule, &fShaderStageInfo[1], settings, &inputs)) {
+                                     &fFragShaderModule, &fShaderStageInfo[1], settings,
+                                     &spirv, &inputs)) {
             this->destroyResources(gpu);
             REPORTER_ASSERT(reporter, false);
             return;
@@ -176,7 +181,7 @@ public:
 
 DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkMakeCopyPipelineTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrVkGpu* gpu = static_cast<GrVkGpu*>(context->contextPriv().getGpu());
+    GrVkGpu* gpu = static_cast<GrVkGpu*>(context->priv().getGpu());
 
     TestVkCopyProgram copyProgram;
     copyProgram.test(gpu, reporter);

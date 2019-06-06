@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkColorFilter.h"
-#include "SkColorPriv.h"
-#include "SkCornerPathEffect.h"
-#include "SkDrawable.h"
-#include "SkGradientShader.h"
-#include "SkPath.h"
-#include "SkPathMeasure.h"
-#include "SkPictureRecorder.h"
-#include "SkRandom.h"
-#include "SkRegion.h"
-#include "SkShader.h"
-#include "SkString.h"
-#include "SkTextUtils.h"
-#include "SkUTF.h"
-#include "Sk1DPathEffect.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkDrawable.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPathMeasure.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/core/SkRegion.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkString.h"
+#include "include/effects/Sk1DPathEffect.h"
+#include "include/effects/SkCornerPathEffect.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/utils/SkRandom.h"
+#include "include/utils/SkTextUtils.h"
+#include "samplecode/Sample.h"
+#include "src/utils/SkUTF.h"
+#include "tools/timer/AnimTimer.h"
 
-#include "SkParsePath.h"
+#include "include/utils/SkParsePath.h"
 static void testparse() {
     SkRect r;
     r.set(0, 0, 10, 10.5f);
@@ -84,19 +84,7 @@ public:
     sk_sp<MyDrawable> fAnimatingDrawable;
     sk_sp<SkDrawable> fRootDrawable;
 
-    ArcsView() {
-        testparse();
-        fSweep = SkIntToScalar(100);
-        this->setBGColor(0xFFDDDDDD);
-
-        fRect.set(0, 0, SkIntToScalar(200), SkIntToScalar(200));
-        fRect.offset(SkIntToScalar(20), SkIntToScalar(20));
-        fAnimatingDrawable = sk_make_sp<MyDrawable>(fRect);
-
-        SkPictureRecorder recorder;
-        this->drawRoot(recorder.beginRecording(SkRect::MakeWH(800, 500)));
-        fRootDrawable = recorder.finishRecordingAsDrawable();
-    }
+    ArcsView() { }
 
 protected:
     bool onQuery(Sample::Event* evt) override {
@@ -116,15 +104,13 @@ protected:
     }
 
     static void DrawLabel(SkCanvas* canvas, const SkRect& rect, SkScalar start, SkScalar sweep) {
-        SkPaint paint;
-        paint.setAntiAlias(true);
-
+        SkFont font;
         SkString    str;
         str.appendScalar(start);
         str.append(", ");
         str.appendScalar(sweep);
-        SkTextUtils::DrawString(canvas, str, rect.centerX(),
-                         rect.fBottom + paint.getTextSize() * 5/4, paint,
+        SkTextUtils::DrawString(canvas, str.c_str(), rect.centerX(),
+                         rect.fBottom + font.getSize() * 5/4, font, SkPaint(),
                                 SkTextUtils::kCenter_Align);
     }
 
@@ -183,13 +169,29 @@ protected:
         DrawArcs(canvas);
     }
 
+    void onOnceBeforeDraw() override {
+        testparse();
+        fSweep = SkIntToScalar(100);
+        this->setBGColor(0xFFDDDDDD);
+
+        fRect.set(0, 0, SkIntToScalar(200), SkIntToScalar(200));
+        fRect.offset(SkIntToScalar(20), SkIntToScalar(20));
+        fAnimatingDrawable = sk_make_sp<MyDrawable>(fRect);
+
+        SkPictureRecorder recorder;
+        this->drawRoot(recorder.beginRecording(SkRect::MakeWH(800, 500)));
+        fRootDrawable = recorder.finishRecordingAsDrawable();
+    }
+
     void onDrawContent(SkCanvas* canvas) override {
         canvas->drawDrawable(fRootDrawable.get());
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
-        fAnimatingDrawable->setSweep(angle);
+        if (fAnimatingDrawable) {
+            fAnimatingDrawable->setSweep(angle);
+        }
         return true;
     }
 

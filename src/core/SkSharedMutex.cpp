@@ -5,11 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "SkSharedMutex.h"
+#include "src/core/SkSharedMutex.h"
 
-#include "SkAtomics.h"
-#include "SkTypes.h"
-#include "SkSemaphore.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkSemaphore.h"
 
 #if !defined(__has_feature)
     #define __has_feature(x) 0
@@ -72,8 +71,8 @@
 
 #ifdef SK_DEBUG
 
-    #include "SkThreadID.h"
-    #include "SkTDArray.h"
+    #include "include/private/SkTDArray.h"
+    #include "include/private/SkThreadID.h"
 
     class SkSharedMutex::ThreadIDSet {
     public:
@@ -130,7 +129,7 @@
         int currentSharedCount;
         int waitingExclusiveCount;
         {
-            SkAutoMutexAcquire l(&fMu);
+            SkAutoMutexExclusive l(fMu);
 
             SkASSERTF(!fCurrentShared->find(threadID),
                       "Thread %lx already has an shared lock\n", threadID);
@@ -160,7 +159,7 @@
         int exclusiveWaitingCount;
         int sharedQueueSelect;
         {
-            SkAutoMutexAcquire l(&fMu);
+            SkAutoMutexExclusive l(fMu);
             SkASSERT(0 == fCurrentShared->count());
             if (!fWaitingExclusive->tryRemove(threadID)) {
                 SkDEBUGFAILF("Thread %lx did not have the lock held.\n", threadID);
@@ -183,7 +182,7 @@
 
     void SkSharedMutex::assertHeld() const {
         SkThreadID threadID(SkGetThreadID());
-        SkAutoMutexAcquire l(&fMu);
+        SkAutoMutexExclusive l(fMu);
         SkASSERT(0 == fCurrentShared->count());
         SkASSERT(fWaitingExclusive->find(threadID));
     }
@@ -193,7 +192,7 @@
         int exclusiveWaitingCount;
         int sharedQueueSelect;
         {
-            SkAutoMutexAcquire l(&fMu);
+            SkAutoMutexExclusive l(fMu);
             exclusiveWaitingCount = fWaitingExclusive->count();
             if (exclusiveWaitingCount > 0) {
                 if (!fWaitingShared->tryAdd(threadID)) {
@@ -221,7 +220,7 @@
         int currentSharedCount;
         int waitingExclusiveCount;
         {
-            SkAutoMutexAcquire l(&fMu);
+            SkAutoMutexExclusive l(fMu);
             if (!fCurrentShared->tryRemove(threadID)) {
                 SkDEBUGFAILF("Thread %lx does not hold a shared lock.\n", threadID);
             }
@@ -236,7 +235,7 @@
 
     void SkSharedMutex::assertHeldShared() const {
         SkThreadID threadID(SkGetThreadID());
-        SkAutoMutexAcquire l(&fMu);
+        SkAutoMutexExclusive l(fMu);
         SkASSERT(fCurrentShared->find(threadID));
     }
 

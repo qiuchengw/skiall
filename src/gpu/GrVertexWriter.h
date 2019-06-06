@@ -8,8 +8,9 @@
 #ifndef GrVertexWriter_DEFINED
 #define GrVertexWriter_DEFINED
 
-#include "GrQuad.h"
-#include "SkTemplates.h"
+#include "include/private/GrColor.h"
+#include "include/private/SkTemplates.h"
+#include "src/gpu/geometry/GrQuad.h"
 #include <type_traits>
 
 /**
@@ -23,6 +24,26 @@
  */
 struct GrVertexWriter {
     void* fPtr;
+
+    template <typename T>
+    class Conditional {
+    public:
+        explicit Conditional(bool condition, const T& value)
+            : fCondition(condition), fValue(value) {}
+    private:
+        friend struct GrVertexWriter;
+
+        bool fCondition;
+        T fValue;
+    };
+
+    template <typename T>
+    static Conditional<T> If(bool condition, const T& value) {
+        return Conditional<T>(condition, value);
+    }
+
+    template <typename T>
+    struct Skip {};
 
     template <typename T, typename... Args>
     void write(const T& val, const Args&... remainder) {
@@ -45,6 +66,37 @@ struct GrVertexWriter {
         this->write(remainder...);
     }
 
+    template <typename... Args>
+    void write(const GrVertexColor& color, const Args&... remainder) {
+        this->write(color.fColor[0]);
+        if (color.fWideColor) {
+            this->write(color.fColor[1]);
+        }
+        this->write(remainder...);
+    }
+
+    template <typename T, typename... Args>
+    void write(const Conditional<T>& val, const Args&... remainder) {
+        if (val.fCondition) {
+            this->write(val.fValue);
+        }
+        this->write(remainder...);
+    }
+
+    template <typename T, typename... Args>
+    void write(const Skip<T>& val, const Args&... remainder) {
+        fPtr = SkTAddOffset<void>(fPtr, sizeof(T));
+        this->write(remainder...);
+    }
+
+    template <typename... Args>
+    void write(const Sk4f& vector, const Args&... remainder) {
+        float buffer[4];
+        vector.store(buffer);
+        this->write<float, 4>(buffer);
+        this->write(remainder...);
+    }
+
     void write() {}
 
     /**
@@ -62,6 +114,13 @@ struct GrVertexWriter {
     struct TriStrip { T l, t, r, b; };
 
     static TriStrip<float> TriStripFromRect(const SkRect& r) {
+        return { r.fLeft, r.fTop, r.fRight, r.fBottom };
+    }
+
+    template <typename T>
+    struct TriFan { T l, t, r, b; };
+
+    static TriFan<float> TriFanFromRect(const SkRect& r) {
         return { r.fLeft, r.fTop, r.fRight, r.fBottom };
     }
 
@@ -95,6 +154,16 @@ private:
             case 1: this->write(r.l, r.b); break;
             case 2: this->write(r.r, r.t); break;
             case 3: this->write(r.r, r.b); break;
+        }
+    }
+
+    template <int corner, typename T>
+    void writeQuadValue(const TriFan<T>& r) {
+        switch (corner) {
+        case 0: this->write(r.l, r.t); break;
+        case 1: this->write(r.l, r.b); break;
+        case 2: this->write(r.r, r.b); break;
+        case 3: this->write(r.r, r.t); break;
         }
     }
 

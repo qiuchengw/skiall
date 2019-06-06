@@ -8,8 +8,8 @@
 #ifndef GrTextureProxy_DEFINED
 #define GrTextureProxy_DEFINED
 
-#include "GrSamplerState.h"
-#include "GrSurfaceProxy.h"
+#include "include/gpu/GrSamplerState.h"
+#include "include/private/GrSurfaceProxy.h"
 
 class GrCaps;
 class GrDeferredProxyUploader;
@@ -40,15 +40,24 @@ public:
     // been instantiated or not.
     GrMipMapped proxyMipMapped() const { return fMipMapped; }
 
-    GrTextureType textureType() const { return fTextureType; }
+    GrTextureType textureType() const { return this->backendFormat().textureType(); }
+
     /** If true then the texture does not support MIP maps and only supports clamp wrap mode. */
-    bool hasRestrictedSampling() const { return GrTextureTypeHasRestrictedSampling(fTextureType); }
+    bool hasRestrictedSampling() const {
+        return GrTextureTypeHasRestrictedSampling(this->textureType());
+    }
+
+    // Returns true if the passed in proxies can be used as dynamic state together when flushing
+    // draws to the gpu.
+    static bool ProxiesAreCompatibleAsDynamicState(const GrTextureProxy* first,
+                                                   const GrTextureProxy* second);
+
     /**
      * Return the texture proxy's unique key. It will be invalid if the proxy doesn't have one.
      */
     const GrUniqueKey& getUniqueKey() const {
 #ifdef SK_DEBUG
-        if (fTarget && fUniqueKey.isValid()) {
+        if (fTarget && fUniqueKey.isValid() && fSyncTargetKey) {
             SkASSERT(fTarget->getUniqueKey().isValid());
             // It is possible for a non-keyed proxy to have a uniquely keyed resource assigned to
             // it. This just means that a future user of the resource will be filling it with unique
@@ -74,17 +83,18 @@ public:
 
 protected:
     // DDL TODO: rm the GrSurfaceProxy friending
-    friend class GrSurfaceProxy; // for ctors
-    friend class GrProxyProvider; // for ctors
+    friend class GrSurfaceProxy;   // for ctors
+    friend class GrProxyProvider;  // for ctors
     friend class GrTextureProxyPriv;
+    friend class GrSurfaceProxyPriv;  // ability to change key sync state after lazy instantiation.
 
     // Deferred version - when constructed with data the origin is always kTopLeft.
-    GrTextureProxy(const GrSurfaceDesc& srcDesc, GrMipMapped, GrTextureType, SkBackingFit,
+    GrTextureProxy(const GrBackendFormat&, const GrSurfaceDesc& srcDesc, GrMipMapped, SkBackingFit,
                    SkBudgeted, const void* srcData, size_t srcRowBytes, GrInternalSurfaceFlags);
 
     // Deferred version - no data.
-    GrTextureProxy(const GrSurfaceDesc& srcDesc, GrSurfaceOrigin, GrMipMapped, GrTextureType,
-                   SkBackingFit, SkBudgeted, GrInternalSurfaceFlags);
+    GrTextureProxy(const GrBackendFormat&, const GrSurfaceDesc& srcDesc, GrSurfaceOrigin,
+                   GrMipMapped, SkBackingFit, SkBudgeted, GrInternalSurfaceFlags);
 
     // Lazy-callback version
     // There are two main use cases for lazily-instantiated proxies:
@@ -96,9 +106,9 @@ protected:
     //
     // The minimal knowledge version is used for CCPR where we are generating an atlas but we do not
     // know the final size until flush time.
-    GrTextureProxy(LazyInstantiateCallback&&, LazyInstantiationType, const GrSurfaceDesc& desc,
-                   GrSurfaceOrigin, GrMipMapped, GrTextureType, SkBackingFit, SkBudgeted,
-                   GrInternalSurfaceFlags);
+    GrTextureProxy(LazyInstantiateCallback&&, LazyInstantiationType, const GrBackendFormat&,
+                   const GrSurfaceDesc& desc, GrSurfaceOrigin, GrMipMapped, SkBackingFit,
+                   SkBudgeted, GrInternalSurfaceFlags);
 
     // Wrapped version
     GrTextureProxy(sk_sp<GrSurface>, GrSurfaceOrigin);
@@ -106,6 +116,8 @@ protected:
     ~GrTextureProxy() override;
 
     sk_sp<GrSurface> createSurface(GrResourceProvider*) const override;
+
+    void setTargetKeySync(bool sync) { fSyncTargetKey = sync; }
 
 private:
     // WARNING: Be careful when adding or removing fields here. ASAN is likely to trigger warnings
@@ -117,7 +129,7 @@ private:
     // address of other types, leading to this problem.
 
     GrMipMapped      fMipMapped;
-    GrTextureType    fTextureType;
+    bool             fSyncTargetKey = true;  // Should target's unique key be sync'ed with ours.
 
     GrUniqueKey      fUniqueKey;
     GrProxyProvider* fProxyProvider; // only set when fUniqueKey is valid

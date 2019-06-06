@@ -5,10 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "GrVkUtil.h"
+#include "src/gpu/vk/GrVkUtil.h"
 
-#include "vk/GrVkGpu.h"
-#include "SkSLCompiler.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrDataUtils.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/sksl/SkSLCompiler.h"
 
 bool GrPixelConfigToVkFormat(GrPixelConfig config, VkFormat* format) {
     VkFormat dontCare;
@@ -24,6 +26,12 @@ bool GrPixelConfigToVkFormat(GrPixelConfig config, VkFormat* format) {
             return true;
         case kRGB_888_GrPixelConfig:
             *format = VK_FORMAT_R8G8B8_UNORM;
+            return true;
+        case kRGB_888X_GrPixelConfig:
+            *format = VK_FORMAT_R8G8B8A8_UNORM;
+            return true;
+        case kRG_88_GrPixelConfig:
+            *format = VK_FORMAT_R8G8_UNORM;
             return true;
         case kBGRA_8888_GrPixelConfig:
             *format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -64,7 +72,12 @@ bool GrPixelConfigToVkFormat(GrPixelConfig config, VkFormat* format) {
             *format = VK_FORMAT_R32G32_SFLOAT;
             return true;
         case kRGBA_half_GrPixelConfig:
+        case kRGBA_half_Clamped_GrPixelConfig:
             *format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            return true;
+        case kRGB_ETC1_GrPixelConfig:
+            // converting to ETC2 which is a superset of ETC1
+            *format = VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
             return true;
         case kAlpha_half_GrPixelConfig: // fall through
         case kAlpha_half_as_Red_GrPixelConfig:
@@ -75,10 +88,12 @@ bool GrPixelConfigToVkFormat(GrPixelConfig config, VkFormat* format) {
     return false;
 }
 
+#ifdef SK_DEBUG
 bool GrVkFormatPixelConfigPairIsValid(VkFormat format, GrPixelConfig config) {
     switch (format) {
         case VK_FORMAT_R8G8B8A8_UNORM:
-            return kRGBA_8888_GrPixelConfig == config;
+            return kRGBA_8888_GrPixelConfig == config ||
+                   kRGB_888X_GrPixelConfig == config;
         case VK_FORMAT_B8G8R8A8_UNORM:
             return kBGRA_8888_GrPixelConfig == config;
         case VK_FORMAT_R8G8B8A8_SRGB:
@@ -87,6 +102,8 @@ bool GrVkFormatPixelConfigPairIsValid(VkFormat format, GrPixelConfig config) {
             return kSBGRA_8888_GrPixelConfig == config;
         case VK_FORMAT_R8G8B8_UNORM:
             return kRGB_888_GrPixelConfig == config;
+        case VK_FORMAT_R8G8_UNORM:
+            return kRG_88_GrPixelConfig == config;
         case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
             return kRGBA_1010102_GrPixelConfig == config;
         case VK_FORMAT_R5G6B5_UNORM_PACK16:
@@ -100,12 +117,15 @@ bool GrVkFormatPixelConfigPairIsValid(VkFormat format, GrPixelConfig config) {
                    kAlpha_8_as_Red_GrPixelConfig == config ||
                    kGray_8_GrPixelConfig == config ||
                    kGray_8_as_Red_GrPixelConfig == config;
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+            return kRGB_ETC1_GrPixelConfig == config;
         case VK_FORMAT_R32G32B32A32_SFLOAT:
             return kRGBA_float_GrPixelConfig == config;
         case VK_FORMAT_R32G32_SFLOAT:
             return kRG_float_GrPixelConfig == config;
         case VK_FORMAT_R16G16B16A16_SFLOAT:
-            return kRGBA_half_GrPixelConfig == config;
+            return kRGBA_half_GrPixelConfig == config ||
+                   kRGBA_half_Clamped_GrPixelConfig == config;
         case VK_FORMAT_R16_SFLOAT:
             return kAlpha_half_GrPixelConfig == config ||
                    kAlpha_half_as_Red_GrPixelConfig == config;
@@ -113,6 +133,7 @@ bool GrVkFormatPixelConfigPairIsValid(VkFormat format, GrPixelConfig config) {
             return false;
     }
 }
+#endif
 
 bool GrVkFormatIsSupported(VkFormat format) {
     switch (format) {
@@ -122,10 +143,12 @@ bool GrVkFormatIsSupported(VkFormat format) {
         case VK_FORMAT_B8G8R8A8_SRGB:
         case VK_FORMAT_R8G8B8A8_SINT:
         case VK_FORMAT_R8G8B8_UNORM:
+        case VK_FORMAT_R8G8_UNORM:
         case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
         case VK_FORMAT_R5G6B5_UNORM_PACK16:
         case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
         case VK_FORMAT_R8_UNORM:
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
         case VK_FORMAT_R32G32B32A32_SFLOAT:
         case VK_FORMAT_R32G32_SFLOAT:
         case VK_FORMAT_R16G16B16A16_SFLOAT:
@@ -176,46 +199,44 @@ SkSL::Program::Kind vk_shader_stage_to_skiasl_kind(VkShaderStageFlagBits stage) 
     return SkSL::Program::kFragment_Kind;
 }
 
-VkShaderStageFlagBits skiasl_kind_to_vk_shader_stage(SkSL::Program::Kind kind) {
-    if (SkSL::Program::kVertex_Kind == kind) {
-        return VK_SHADER_STAGE_VERTEX_BIT;
-    }
-    if (SkSL::Program::kGeometry_Kind == kind) {
-        return VK_SHADER_STAGE_GEOMETRY_BIT;
-    }
-    SkASSERT(SkSL::Program::kFragment_Kind == kind);
-    return VK_SHADER_STAGE_FRAGMENT_BIT;
-}
-
 bool GrCompileVkShaderModule(const GrVkGpu* gpu,
-                             const char* shaderString,
+                             const SkSL::String& shaderString,
                              VkShaderStageFlagBits stage,
                              VkShaderModule* shaderModule,
                              VkPipelineShaderStageCreateInfo* stageInfo,
                              const SkSL::Program::Settings& settings,
+                             SkSL::String* outSPIRV,
                              SkSL::Program::Inputs* outInputs) {
+    auto errorHandler = gpu->getContext()->priv().getShaderErrorHandler();
     std::unique_ptr<SkSL::Program> program = gpu->shaderCompiler()->convertProgram(
-                                                              vk_shader_stage_to_skiasl_kind(stage),
-                                                              SkSL::String(shaderString),
-                                                              settings);
+            vk_shader_stage_to_skiasl_kind(stage), shaderString, settings);
     if (!program) {
-        SkDebugf("SkSL error:\n%s\n", gpu->shaderCompiler()->errorText().c_str());
-        SkASSERT(false);
+        errorHandler->compileError(shaderString.c_str(),
+                                   gpu->shaderCompiler()->errorText().c_str());
+        return false;
     }
     *outInputs = program->fInputs;
-    SkSL::String code;
-    if (!gpu->shaderCompiler()->toSPIRV(*program, &code)) {
-        SkDebugf("%s\n", gpu->shaderCompiler()->errorText().c_str());
+    if (!gpu->shaderCompiler()->toSPIRV(*program, outSPIRV)) {
+        errorHandler->compileError(shaderString.c_str(),
+                                   gpu->shaderCompiler()->errorText().c_str());
         return false;
     }
 
+    return GrInstallVkShaderModule(gpu, *outSPIRV, stage, shaderModule, stageInfo);
+}
+
+bool GrInstallVkShaderModule(const GrVkGpu* gpu,
+                             const SkSL::String& spirv,
+                             VkShaderStageFlagBits stage,
+                             VkShaderModule* shaderModule,
+                             VkPipelineShaderStageCreateInfo* stageInfo) {
     VkShaderModuleCreateInfo moduleCreateInfo;
     memset(&moduleCreateInfo, 0, sizeof(VkShaderModuleCreateInfo));
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     moduleCreateInfo.pNext = nullptr;
     moduleCreateInfo.flags = 0;
-    moduleCreateInfo.codeSize = code.size();
-    moduleCreateInfo.pCode = (const uint32_t*)code.c_str();
+    moduleCreateInfo.codeSize = spirv.size();
+    moduleCreateInfo.pCode = (const uint32_t*)spirv.c_str();
 
     VkResult err = GR_VK_CALL(gpu->vkInterface(), CreateShaderModule(gpu->device(),
                                                                      &moduleCreateInfo,
@@ -229,10 +250,89 @@ bool GrCompileVkShaderModule(const GrVkGpu* gpu,
     stageInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     stageInfo->pNext = nullptr;
     stageInfo->flags = 0;
-    stageInfo->stage = skiasl_kind_to_vk_shader_stage(program->fKind);
+    stageInfo->stage = stage;
     stageInfo->module = *shaderModule;
     stageInfo->pName = "main";
     stageInfo->pSpecializationInfo = nullptr;
 
     return true;
 }
+
+size_t GrVkBytesPerFormat(VkFormat vkFormat) {
+    switch (vkFormat) {
+        case VK_FORMAT_R8_UNORM:
+            return 1;
+
+        case VK_FORMAT_R5G6B5_UNORM_PACK16:
+        case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+        case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+        case VK_FORMAT_R8G8_UNORM:
+        case VK_FORMAT_R16_SFLOAT:
+            return 2;
+
+        case VK_FORMAT_R8G8B8_UNORM:
+            return 3;
+
+        case VK_FORMAT_R8G8B8A8_UNORM:
+        case VK_FORMAT_R8G8B8A8_SRGB:
+        case VK_FORMAT_B8G8R8A8_UNORM:
+        case VK_FORMAT_B8G8R8A8_SRGB:
+        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+            return 4;
+
+        case VK_FORMAT_R16G16B16A16_SFLOAT:
+        case VK_FORMAT_R32G32_SFLOAT:
+            return 8;
+
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
+            return 16;
+
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+            return 0;
+
+        default:
+            SK_ABORT("Invalid Vk format");
+            return 0;
+    }
+
+    SK_ABORT("Invalid Vk format");
+    return 0;
+}
+
+bool GrVkFormatIsCompressed(VkFormat vkFormat) {
+    switch (vkFormat) {
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+            return true;
+        default:
+            return false;
+    }
+    SK_ABORT("Invalid format");
+    return false;
+}
+
+GrCompression GrVkFormat2Compression(VkFormat vkFormat) {
+    switch (vkFormat) {
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+            return GrCompression::kETC1;
+        default:
+            return GrCompression::kNone;
+    }
+    SK_ABORT("Invalid format");
+    return GrCompression::kNone;
+}
+
+size_t GrVkFormatCompressedDataSize(VkFormat vkFormat, int width, int height) {
+    SkASSERT(GrVkFormatIsCompressed(vkFormat));
+
+    switch (vkFormat) {
+        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+            return GrETC1CompressedDataSize(width, height);
+        default:
+            SK_ABORT("Unknown compressed format");
+            return 4 * width * height;
+    }
+
+    SK_ABORT("Unknown compressed format");
+    return 4 * width * height;
+}
+

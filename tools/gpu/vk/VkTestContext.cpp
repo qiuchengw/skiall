@@ -5,21 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "VkTestContext.h"
+#include "tools/gpu/vk/VkTestContext.h"
 
 #ifdef SK_VULKAN
 
-#include "GrContext.h"
-#include "VkTestUtils.h"
-#include "vk/GrVkExtensions.h"
-#include "vk/GrVkInterface.h"
-#include "vk/GrVkUtil.h"
+#include "include/gpu/GrContext.h"
+#include "include/gpu/vk/GrVkExtensions.h"
+#include "tools/gpu/vk/VkTestUtils.h"
 
 namespace {
 
 #define ACQUIRE_VK_PROC(name, device)                                               \
     f##name = reinterpret_cast<PFN_vk##name>(getProc("vk" #name, nullptr, device)); \
-    SkASSERT(f##name);
+    SkASSERT(f##name)
 
 /**
  * Implements sk_gpu_test::FenceSync for Vulkan. It creates a single command
@@ -182,6 +180,7 @@ public:
                                                      features, &debugCallback)) {
                 sk_gpu_test::FreeVulkanFeaturesStructs(features);
                 delete features;
+                delete extensions;
                 return nullptr;
             }
             if (debugCallback != VK_NULL_HANDLE) {
@@ -207,13 +206,15 @@ public:
     }
 
 protected:
-#define ACQUIRE_VK_PROC_LOCAL(name, inst)                                          \
-    PFN_vk##name grVk##name =                                                      \
-        reinterpret_cast<PFN_vk##name>(fVk.fGetProc("vk" #name, inst, nullptr));   \
-    if (grVk##name == nullptr) {                                                   \
-        SkDebugf("Function ptr for vk%s could not be acquired\n", #name);          \
-        return;                                                                    \
-    }
+#define ACQUIRE_VK_PROC_LOCAL(name, inst)                                            \
+    PFN_vk##name grVk##name =                                                        \
+            reinterpret_cast<PFN_vk##name>(fVk.fGetProc("vk" #name, inst, nullptr)); \
+    do {                                                                             \
+        if (grVk##name == nullptr) {                                                 \
+            SkDebugf("Function ptr for vk%s could not be acquired\n", #name);        \
+            return;                                                                  \
+        }                                                                            \
+    } while (0)
 
     void teardown() override {
         INHERITED::teardown();
@@ -226,8 +227,7 @@ protected:
             grVkDestroyDevice(fVk.fDevice, nullptr);
 #ifdef SK_ENABLE_VK_LAYERS
             if (fDebugCallback != VK_NULL_HANDLE) {
-                ACQUIRE_VK_PROC_LOCAL(DestroyDebugReportCallbackEXT, fVk.fInstance);
-                grVkDestroyDebugReportCallbackEXT(fVk.fInstance, fDebugCallback, nullptr);
+                fDestroyDebugReportCallbackEXT(fVk.fInstance, fDebugCallback, nullptr);
             }
 #endif
             grVkDestroyInstance(fVk.fInstance, nullptr);

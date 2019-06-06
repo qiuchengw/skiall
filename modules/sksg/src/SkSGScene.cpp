@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "SkSGScene.h"
+#include "modules/sksg/include/SkSGScene.h"
 
-#include "SkCanvas.h"
-#include "SkMatrix.h"
-#include "SkPaint.h"
-#include "SkSGInvalidationController.h"
-#include "SkSGRenderNode.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkPaint.h"
+#include "modules/sksg/include/SkSGInvalidationController.h"
+#include "modules/sksg/include/SkSGRenderNode.h"
 
 namespace sksg {
 
@@ -42,8 +42,10 @@ Scene::Scene(sk_sp<RenderNode> root, AnimatorList&& animators)
 Scene::~Scene() = default;
 
 void Scene::render(SkCanvas* canvas) const {
+    // TODO: externalize the inval controller.
+    // TODO: relocate the revalidation to tick()?
     InvalidationController ic;
-    fRoot->revalidate(&ic, SkMatrix::I());
+    fRoot->revalidate(fShowInval ? &ic : nullptr, SkMatrix::I());
     fRoot->render(canvas);
 
     if (fShowInval) {
@@ -65,6 +67,10 @@ void Scene::animate(float t) {
     for (const auto& anim : fAnimators) {
         anim->tick(t);
     }
+}
+
+const RenderNode* Scene::nodeAt(const SkPoint& p) const {
+    return fRoot->nodeAt(p);
 }
 
 } // namespace sksg

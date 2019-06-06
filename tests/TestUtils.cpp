@@ -5,17 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "TestUtils.h"
+#include "tests/TestUtils.h"
 
-#include "GrProxyProvider.h"
-#include "GrSurfaceContext.h"
-#include "GrSurfaceContextPriv.h"
-#include "GrSurfaceProxy.h"
-#include "GrTextureProxy.h"
-#include "ProxyUtils.h"
-#include "SkGr.h"
-#include "SkBase64.h"
-#include "SkPngEncoder.h"
+#include "include/encode/SkPngEncoder.h"
+#include "include/private/GrSurfaceProxy.h"
+#include "include/private/GrTextureProxy.h"
+#include "include/utils/SkBase64.h"
+#include "src/core/SkUtils.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrSurfaceContextPriv.h"
+#include "src/gpu/SkGr.h"
+#include "tools/gpu/ProxyUtils.h"
 
 void test_read_pixels(skiatest::Reporter* reporter,
                       GrSurfaceContext* srcContext, uint32_t expectedPixelValues[],
@@ -94,8 +96,10 @@ void test_copy_from_surface(skiatest::Reporter* reporter, GrContext* context,
     }
 }
 
-void test_copy_to_surface(skiatest::Reporter* reporter, GrProxyProvider* proxyProvider,
-                          GrSurfaceContext* dstContext, const char* testName) {
+void test_copy_to_surface(skiatest::Reporter* reporter,
+                          GrContext* context,
+                          GrSurfaceContext* dstContext,
+                          const char* testName) {
 
     int pixelCnt = dstContext->width() * dstContext->height();
     SkAutoTMalloc<uint32_t> pixels(pixelCnt);
@@ -106,11 +110,11 @@ void test_copy_to_surface(skiatest::Reporter* reporter, GrProxyProvider* proxyPr
         }
     }
 
-    for (auto isRT : {false, true}) {
+    for (auto renderable : {GrRenderable::kNo, GrRenderable::kYes}) {
         for (auto origin : {kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin}) {
             auto src = sk_gpu_test::MakeTextureProxyFromData(
-                    dstContext->surfPriv().getContext(), isRT, dstContext->width(),
-                    dstContext->height(), GrColorType::kRGBA_8888, origin, pixels.get(), 0);
+                    context, renderable, dstContext->width(),
+                    dstContext->height(), kRGBA_8888_SkColorType, origin, pixels.get(), 0);
             dstContext->copy(src.get());
             test_read_pixels(reporter, dstContext, pixels.get(), testName);
         }
@@ -126,6 +130,36 @@ void fill_pixel_data(int width, int height, GrColor* data) {
                                                   0xff, 0xff);
         }
     }
+}
+
+bool create_backend_texture(GrContext* context, GrBackendTexture* backendTex,
+                            const SkImageInfo& ii, GrMipMapped mipMapped, SkColor color,
+                            GrRenderable renderable) {
+    GrGpu* gpu = context->priv().getGpu();
+    if (!gpu) {
+        return false;
+    }
+
+    SkBitmap bm;
+    bm.allocPixels(ii);
+    // TODO: a SkBitmap::eraseColor would be better here
+    sk_memset32(bm.getAddr32(0, 0), color, ii.width() * ii.height());
+
+    *backendTex = gpu->createTestingOnlyBackendTexture(ii.width(), ii.height(), ii.colorType(),
+                                                       mipMapped, renderable,
+                                                       bm.getPixels(), bm.rowBytes());
+    if (!backendTex->isValid() || !gpu->isTestingOnlyBackendTexture(*backendTex)) {
+        return false;
+    }
+
+    return true;
+}
+
+void delete_backend_texture(GrContext* context, const GrBackendTexture& backendTex) {
+    GrFlushInfo flushInfo;
+    flushInfo.fFlags = kSyncCpu_GrFlushFlag;
+    context->flush(flushInfo);
+    context->deleteBackendTexture(backendTex);
 }
 
 bool does_full_buffer_contain_correct_color(GrColor* srcBuffer,
@@ -179,4 +213,53 @@ bool bitmap_to_base64_data_uri(const SkBitmap& bitmap, SkString* dst) {
     SkBase64::Encode(pngData->data(), pngData->size(), dst->writable_str());
     dst->prepend("data:image/png;base64,");
     return true;
+}
+
+#include "src/utils/SkCharToGlyphCache.h"
+
+static SkGlyphID hash_to_glyph(uint32_t value) {
+    return SkToU16(((value >> 16) ^ value) & 0xFFFF);
+}
+
+namespace {
+class UnicharGen {
+    SkUnichar fU;
+    const int fStep;
+public:
+    UnicharGen(int step) : fU(0), fStep(step) {}
+
+    SkUnichar next() {
+        fU += fStep;
+        return fU;
+    }
+};
+}
+
+DEF_TEST(chartoglyph_cache, reporter) {
+    SkCharToGlyphCache cache;
+    const int step = 3;
+
+    UnicharGen gen(step);
+    for (int i = 0; i < 500; ++i) {
+        SkUnichar c = gen.next();
+        SkGlyphID glyph = hash_to_glyph(c);
+
+        int index = cache.findGlyphIndex(c);
+        if (index >= 0) {
+            index = cache.findGlyphIndex(c);
+        }
+        REPORTER_ASSERT(reporter, index < 0);
+        cache.insertCharAndGlyph(~index, c, glyph);
+
+        UnicharGen gen2(step);
+        for (int j = 0; j <= i; ++j) {
+            c = gen2.next();
+            glyph = hash_to_glyph(c);
+            index = cache.findGlyphIndex(c);
+            if ((unsigned)index != glyph) {
+                index = cache.findGlyphIndex(c);
+            }
+            REPORTER_ASSERT(reporter, (unsigned)index == glyph);
+        }
+    }
 }

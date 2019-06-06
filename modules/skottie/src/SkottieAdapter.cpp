@@ -5,26 +5,27 @@
  * found in the LICENSE file.
  */
 
-#include "SkottieAdapter.h"
+#include "modules/skottie/src/SkottieAdapter.h"
 
-#include "SkFont.h"
-#include "SkMatrix.h"
-#include "SkPath.h"
-#include "SkRRect.h"
-#include "SkSGColor.h"
-#include "SkSGDraw.h"
-#include "SkSGGradient.h"
-#include "SkSGGroup.h"
-#include "SkSGPath.h"
-#include "SkSGRect.h"
-#include "SkSGText.h"
-#include "SkSGTransform.h"
-#include "SkSGTrimEffect.h"
-#include "SkTextBlob.h"
-#include "SkTextUtils.h"
-#include "SkTo.h"
-#include "SkUTF.h"
-#include "SkottieValue.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkMatrix.h"
+#include "include/core/SkMatrix44.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRRect.h"
+#include "include/effects/SkTableColorFilter.h"
+#include "include/private/SkTo.h"
+#include "include/utils/Sk3D.h"
+#include "modules/skottie/src/SkottieValue.h"
+#include "modules/sksg/include/SkSGColorFilter.h"
+#include "modules/sksg/include/SkSGDraw.h"
+#include "modules/sksg/include/SkSGGradient.h"
+#include "modules/sksg/include/SkSGGroup.h"
+#include "modules/sksg/include/SkSGPaint.h"
+#include "modules/sksg/include/SkSGPath.h"
+#include "modules/sksg/include/SkSGRect.h"
+#include "modules/sksg/include/SkSGRenderEffect.h"
+#include "modules/sksg/include/SkSGTransform.h"
+#include "modules/sksg/include/SkSGTrimEffect.h"
 
 #include <cmath>
 #include <utility>
@@ -33,6 +34,8 @@ namespace skottie {
 
 RRectAdapter::RRectAdapter(sk_sp<sksg::RRect> wrapped_node)
     : fRRectNode(std::move(wrapped_node)) {}
+
+RRectAdapter::~RRectAdapter() = default;
 
 void RRectAdapter::apply() {
     // BM "position" == "center position"
@@ -44,10 +47,12 @@ void RRectAdapter::apply() {
    fRRectNode->setRRect(rr);
 }
 
-TransformAdapter::TransformAdapter(sk_sp<sksg::Matrix> matrix)
+TransformAdapter2D::TransformAdapter2D(sk_sp<sksg::Matrix<SkMatrix>> matrix)
     : fMatrixNode(std::move(matrix)) {}
 
-SkMatrix TransformAdapter::totalMatrix() const {
+TransformAdapter2D::~TransformAdapter2D() = default;
+
+SkMatrix TransformAdapter2D::totalMatrix() const {
     SkMatrix t = SkMatrix::MakeTrans(-fAnchorPoint.x(), -fAnchorPoint.y());
 
     t.postScale(fScale.x() / 100, fScale.y() / 100); // 100% based
@@ -58,13 +63,149 @@ SkMatrix TransformAdapter::totalMatrix() const {
     return t;
 }
 
-void TransformAdapter::apply() {
+void TransformAdapter2D::apply() {
     fMatrixNode->setMatrix(this->totalMatrix());
+}
+
+TransformAdapter3D::Vec3::Vec3(const VectorValue& v) {
+    fX = v.size() > 0 ? v[0] : 0;
+    fY = v.size() > 1 ? v[1] : 0;
+    fZ = v.size() > 2 ? v[2] : 0;
+}
+
+TransformAdapter3D::TransformAdapter3D()
+    : fMatrixNode(sksg::Matrix<SkMatrix44>::Make(SkMatrix::I())) {}
+
+TransformAdapter3D::~TransformAdapter3D() = default;
+
+sk_sp<sksg::Transform> TransformAdapter3D::refTransform() const {
+    return fMatrixNode;
+}
+
+SkMatrix44 TransformAdapter3D::totalMatrix() const {
+    SkMatrix44 t;
+
+    t.setTranslate(-fAnchorPoint.fX, -fAnchorPoint.fY, -fAnchorPoint.fZ);
+    t.postScale(fScale.fX / 100, fScale.fY / 100, fScale.fZ / 100);
+
+    SkMatrix44 r;
+    r.setRotateDegreesAbout(0, 0, 1, fRotation.fZ);
+    t.postConcat(r);
+    r.setRotateDegreesAbout(0, 1, 0, fRotation.fY);
+    t.postConcat(r);
+    r.setRotateDegreesAbout(1, 0, 0, fRotation.fX);
+    t.postConcat(r);
+
+    t.postTranslate(fPosition.fX, fPosition.fY, fPosition.fZ);
+
+    return t;
+}
+
+void TransformAdapter3D::apply() {
+    fMatrixNode->setMatrix(this->totalMatrix());
+}
+
+CameraAdapter:: CameraAdapter(const SkSize& viewport_size)
+    : fViewportSize(viewport_size) {}
+
+CameraAdapter::~CameraAdapter() = default;
+
+SkMatrix44 CameraAdapter::totalMatrix() const {
+    // Camera parameters:
+    //
+    //   * location          -> position attribute
+    //   * point of interest -> anchor point attribute
+    //   * orientation       -> rotation attribute
+    //
+    SkPoint3 pos = { this->getPosition().fX,
+                     this->getPosition().fY,
+                    -this->getPosition().fZ },
+             poi = { this->getAnchorPoint().fX,
+                     this->getAnchorPoint().fY,
+                    -this->getAnchorPoint().fZ },
+              up = { 0, 1, 0 };
+
+    // Initial camera vector.
+    SkMatrix44 cam_t;
+    Sk3LookAt(&cam_t, pos, poi, up);
+
+    // Rotation origin is camera position.
+    {
+        SkMatrix44 rot;
+        rot.setRotateDegreesAbout(1, 0, 0,  this->getRotation().fX);
+        cam_t.postConcat(rot);
+        rot.setRotateDegreesAbout(0, 1, 0,  this->getRotation().fY);
+        cam_t.postConcat(rot);
+        rot.setRotateDegreesAbout(0, 0, 1, -this->getRotation().fZ);
+        cam_t.postConcat(rot);
+    }
+
+    // Flip world Z, as it is opposite of what Sk3D expects.
+    cam_t.preScale(1, 1, -1);
+
+    // View parameters:
+    //
+    //   * size     -> composition size (TODO: AE seems to base it on width only?)
+    //   * distance -> "zoom" camera attribute
+    //
+    const auto view_size     = SkTMax(fViewportSize.width(), fViewportSize.height()),
+               view_distance = this->getZoom(),
+               view_angle    = std::atan(view_size * 0.5f / view_distance);
+
+    SkMatrix44 persp_t;
+    Sk3Perspective(&persp_t, 0, view_distance, 2 * view_angle);
+    persp_t.postScale(view_size * 0.5f, view_size * 0.5f, 1);
+
+    SkMatrix44 t;
+    t.setTranslate(fViewportSize.width() * 0.5f, fViewportSize.height() * 0.5f, 0);
+    t.preConcat(persp_t);
+    t.preConcat(cam_t);
+
+    return t;
+}
+
+RepeaterAdapter::RepeaterAdapter(sk_sp<sksg::RenderNode> repeater_node, Composite composite)
+    : fRepeaterNode(repeater_node)
+    , fComposite(composite)
+    , fRoot(sksg::Group::Make()) {}
+
+RepeaterAdapter::~RepeaterAdapter() = default;
+
+void RepeaterAdapter::apply() {
+    static constexpr SkScalar kMaxCount = 512;
+    const auto count = static_cast<size_t>(SkTPin(fCount, 0.0f, kMaxCount) + 0.5f);
+
+    const auto& compute_transform = [this] (size_t index) {
+        const auto t = fOffset + index;
+
+        // Position, scale & rotation are "scaled" by index/offset.
+        SkMatrix m = SkMatrix::MakeTrans(-fAnchorPoint.x(),
+                                         -fAnchorPoint.y());
+        m.postScale(std::pow(fScale.x() * .01f, fOffset),
+                    std::pow(fScale.y() * .01f, fOffset));
+        m.postRotate(t * fRotation);
+        m.postTranslate(t * fPosition.x() + fAnchorPoint.x(),
+                        t * fPosition.y() + fAnchorPoint.y());
+
+        return m;
+    };
+
+    // TODO: start/end opacity support.
+
+    // TODO: we can avoid rebuilding all the fragments in most cases.
+    fRoot->clear();
+    for (size_t i = 0; i < count; ++i) {
+        const auto insert_index = (fComposite == Composite::kAbove) ? i : count - i - 1;
+        fRoot->addChild(sksg::TransformEffect::Make(fRepeaterNode,
+                                                    compute_transform(insert_index)));
+    }
 }
 
 PolyStarAdapter::PolyStarAdapter(sk_sp<sksg::Path> wrapped_node, Type t)
     : fPathNode(std::move(wrapped_node))
     , fType(t) {}
+
+PolyStarAdapter::~PolyStarAdapter() = default;
 
 void PolyStarAdapter::apply() {
     static constexpr int kMaxPointCount = 100000;
@@ -147,10 +288,64 @@ void RadialGradientAdapter::onApply() {
     grad->setEndRadius(SkPoint::Distance(this->startPoint(), this->endPoint()));
 }
 
+GradientRampEffectAdapter::GradientRampEffectAdapter(sk_sp<sksg::RenderNode> child)
+    : fRoot(sksg::ShaderEffect::Make(std::move(child))) {}
+
+GradientRampEffectAdapter::~GradientRampEffectAdapter() = default;
+
+void GradientRampEffectAdapter::apply() {
+    // This adapter manages a SG fragment with the following structure:
+    //
+    // - ShaderEffect [fRoot]
+    //     \  GradientShader [fGradient]
+    //     \  child/wrapped fragment
+    //
+    // The gradient shader is updated based on the (animatable) intance type (linear/radial).
+
+    auto update_gradient = [this] (InstanceType new_type) {
+        if (new_type != fInstanceType) {
+            fGradient = new_type == InstanceType::kLinear
+                    ? sk_sp<sksg::Gradient>(sksg::LinearGradient::Make())
+                    : sk_sp<sksg::Gradient>(sksg::RadialGradient::Make());
+
+            fRoot->setShader(fGradient);
+            fInstanceType = new_type;
+        }
+
+        fGradient->setColorStops({ {0, fStartColor}, {1, fEndColor} });
+    };
+
+    static constexpr int kLinearShapeValue = 1;
+    const auto instance_type = (SkScalarRoundToInt(fShape) == kLinearShapeValue)
+            ? InstanceType::kLinear
+            : InstanceType::kRadial;
+
+    // Sync the gradient shader instance if needed.
+    update_gradient(instance_type);
+
+    // Sync instance-dependent gradient params.
+    if (instance_type == InstanceType::kLinear) {
+        auto* lg = static_cast<sksg::LinearGradient*>(fGradient.get());
+        lg->setStartPoint(fStartPoint);
+        lg->setEndPoint(fEndPoint);
+    } else {
+        SkASSERT(instance_type == InstanceType::kRadial);
+
+        auto* rg = static_cast<sksg::RadialGradient*>(fGradient.get());
+        rg->setStartCenter(fStartPoint);
+        rg->setEndCenter(fStartPoint);
+        rg->setEndRadius(SkPoint::Distance(fStartPoint, fEndPoint));
+    }
+
+    // TODO: blend, scatter
+}
+
 TrimEffectAdapter::TrimEffectAdapter(sk_sp<sksg::TrimEffect> trimEffect)
     : fTrimEffect(std::move(trimEffect)) {
     SkASSERT(fTrimEffect);
 }
+
+TrimEffectAdapter::~TrimEffectAdapter() = default;
 
 void TrimEffectAdapter::apply() {
     // BM semantics: start/end are percentages, offset is "degrees" (?!).
@@ -181,134 +376,158 @@ void TrimEffectAdapter::apply() {
     fTrimEffect->setMode(mode);
 }
 
-TextAdapter::TextAdapter(sk_sp<sksg::Group> root)
-    : fRoot(std::move(root))
-    , fTextNode(sksg::TextBlob::Make())
-    , fFillColor(sksg::Color::Make(SK_ColorTRANSPARENT))
-    , fStrokeColor(sksg::Color::Make(SK_ColorTRANSPARENT))
-    , fFillNode(sksg::Draw::Make(fTextNode, fFillColor))
-    , fStrokeNode(sksg::Draw::Make(fTextNode, fStrokeColor))
-    , fHadFill(false)
-    , fHadStroke(false) {
-    // Build a SG fragment with the following general format:
-    //
-    // [Group]
-    //   [Draw]
-    //     [FillPaint]
-    //     [Text]*
-    //   [Draw]
-    //     [StrokePaint]
-    //     [Text]*
-    //
-    // * where the text node is shared
-
-    fFillColor->setAntiAlias(true);
-    fStrokeColor->setAntiAlias(true);
-    fStrokeColor->setStyle(SkPaint::kStroke_Style);
+DropShadowEffectAdapter::DropShadowEffectAdapter(sk_sp<sksg::DropShadowImageFilter> dropShadow)
+    : fDropShadow(std::move(dropShadow)) {
+    SkASSERT(fDropShadow);
 }
 
-sk_sp<SkTextBlob> TextAdapter::makeBlob() const {
-    // TODO: convert to SkFont (missing getFontSpacing, measureText).
-    SkPaint font;
-    font.setTypeface(fText.fTypeface);
-    font.setTextSize(fText.fTextSize);
-    font.setHinting(kNo_SkFontHinting);
-    font.setSubpixelText(true);
-    font.setAntiAlias(true);
-    font.setTextEncoding(SkPaint::kUTF8_TextEncoding);
+DropShadowEffectAdapter::~DropShadowEffectAdapter() = default;
 
-    const auto align_fract = [](SkTextUtils::Align align) {
-        switch (align) {
-        case SkTextUtils::kLeft_Align:   return  0.0f;
-        case SkTextUtils::kCenter_Align: return -0.5f;
-        case SkTextUtils::kRight_Align:  return -1.0f;
-        }
-        return 0.0f; // go home, msvc...
-    }(fText.fAlign);
+void DropShadowEffectAdapter::apply() {
+    // fColor -> RGB, fOpacity -> A
+    fDropShadow->setColor(SkColorSetA(fColor, SkTPin(SkScalarRoundToInt(fOpacity), 0, 255)));
 
-    const auto line_spacing = font.getFontSpacing();
-    const auto blob_font    = SkFont::LEGACY_ExtractFromPaint(font);
-    float y_off             = 0;
-    SkSTArray<256, SkGlyphID, true> line_glyph_buffer;
-    SkTextBlobBuilder builder;
+    // The offset is specified in terms of a bearing angle + distance.
+    SkScalar rad = SkDegreesToRadians(90 - fDirection);
+    fDropShadow->setOffset(SkVector::Make( fDistance * SkScalarCos(rad),
+                                          -fDistance * SkScalarSin(rad)));
 
-    const auto& push_line = [&](const char* start, const char* end) {
-        if (end > start) {
-            const auto len   = SkToSizeT(end - start);
-            line_glyph_buffer.reset(font.textToGlyphs(start, len, nullptr));
-            SkAssertResult(font.textToGlyphs(start, len, line_glyph_buffer.data())
-                           == line_glyph_buffer.count());
+    // Close enough to AE.
+    static constexpr SkScalar kSoftnessToSigmaFactor = 0.3f;
+    const auto sigma = fSoftness * kSoftnessToSigmaFactor;
+    fDropShadow->setSigma(SkVector::Make(sigma, sigma));
 
-            const auto x_off = align_fract != 0
-                    ? align_fract * font.measureText(start, len)
-                    : 0;
-            const auto& buf  = builder.allocRun(blob_font, line_glyph_buffer.count(), x_off, y_off);
-            if (!buf.glyphs) {
-                return;
-            }
-
-            memcpy(buf.glyphs, line_glyph_buffer.data(),
-                   SkToSizeT(line_glyph_buffer.count()) * sizeof(SkGlyphID));
-
-            y_off += line_spacing;
-        }
-    };
-
-    const auto& is_line_break = [](SkUnichar uch) {
-        // TODO: other explicit breaks?
-        return uch == '\r';
-    };
-
-    const char* ptr        = fText.fText.c_str();
-    const char* line_start = ptr;
-    const char* end        = ptr + fText.fText.size();
-
-    while (ptr < end) {
-        if (is_line_break(SkUTF::NextUTF8(&ptr, end))) {
-            push_line(line_start, ptr - 1);
-            line_start = ptr;
-        }
-    }
-    push_line(line_start, ptr);
-
-    return builder.make();
+    fDropShadow->setMode(fShadowOnly ? sksg::DropShadowImageFilter::Mode::kShadowOnly
+                                     : sksg::DropShadowImageFilter::Mode::kShadowAndForeground);
 }
 
-void TextAdapter::apply() {
-    fTextNode->setBlob(this->makeBlob());
-    fFillColor->setColor(fText.fFillColor);
-    fStrokeColor->setColor(fText.fStrokeColor);
-    fStrokeColor->setStrokeWidth(fText.fStrokeWidth);
+GaussianBlurEffectAdapter::GaussianBlurEffectAdapter(sk_sp<sksg::BlurImageFilter> blur)
+    : fBlur(std::move(blur)) {
+    SkASSERT(fBlur);
+}
 
-    // Turn the state transition into a tri-state value:
-    //   -1: detach node
-    //    0: no change
-    //    1: attach node
-    const auto   fill_change = SkToInt(fText.fHasFill) - SkToInt(fHadFill);
-    const auto stroke_change = SkToInt(fText.fHasStroke) - SkToInt(fHadStroke);
+GaussianBlurEffectAdapter::~GaussianBlurEffectAdapter() = default;
 
-    // Sync SG topology.
-    if (fill_change || stroke_change) {
-        // This is trickier than it should be because sksg::Group only allows adding children
-        // in paint-order.
-        if (stroke_change < 0 || (fHadStroke && fill_change > 0)) {
-            fRoot->removeChild(fStrokeNode);
-        }
+void GaussianBlurEffectAdapter::apply() {
+    static constexpr SkVector kDimensionsMap[] = {
+        { 1, 1 }, // 1 -> horizontal and vertical
+        { 1, 0 }, // 2 -> horizontal
+        { 0, 1 }, // 3 -> vertical
+    };
 
-        if (fill_change < 0) {
-            fRoot->removeChild(fFillNode);
-        } else if (fill_change > 0) {
-            fRoot->addChild(fFillNode);
-        }
+    const auto dim_index = SkTPin<size_t>(static_cast<size_t>(fDimensions),
+                                          1, SK_ARRAY_COUNT(kDimensionsMap)) - 1;
 
-        if (stroke_change > 0 || (fHadStroke && fill_change > 0)) {
-            fRoot->addChild(fStrokeNode);
-        }
+    // Close enough to AE.
+    static constexpr SkScalar kBlurrinessToSigmaFactor = 0.3f;
+    const auto sigma = fBlurriness * kBlurrinessToSigmaFactor;
+
+    fBlur->setSigma({ sigma * kDimensionsMap[dim_index].x(),
+                      sigma * kDimensionsMap[dim_index].y() });
+
+    static constexpr SkBlurImageFilter::TileMode kRepeatEdgeMap[] = {
+        SkBlurImageFilter::kClampToBlack_TileMode, // 0 -> repeat edge pixels: off
+        SkBlurImageFilter::       kClamp_TileMode, // 1 -> repeat edge pixels: on
+    };
+
+    const auto repeat_index = SkTPin<size_t>(static_cast<size_t>(fRepeatEdge),
+                                             0, SK_ARRAY_COUNT(kRepeatEdgeMap) - 1);
+    fBlur->setTileMode(kRepeatEdgeMap[repeat_index]);
+}
+
+
+// Levels color correction effect.
+//
+// Maps the selected channels from [inBlack...inWhite] to [outBlack, outWhite],
+// based on a gamma exponent.
+//
+// For [i0..i1] -> [o0..o1]:
+//
+//   c' = o0 + (o1 - o0) * ((c - i0) / (i1 - i0)) ^ G
+//
+// The output is optionally clipped to the output range.
+//
+// In/out intervals are clampped to [0..1].  Inversion is allowed.
+LevelsEffectAdapter::LevelsEffectAdapter(sk_sp<sksg::RenderNode> child)
+    : fEffect(sksg::ExternalColorFilter::Make(std::move(child))) {
+    SkASSERT(fEffect);
+}
+
+LevelsEffectAdapter::~LevelsEffectAdapter() = default;
+
+void LevelsEffectAdapter::apply() {
+    enum LottieChannel {
+        kRGB_Channel = 1,
+          kR_Channel = 2,
+          kG_Channel = 3,
+          kB_Channel = 4,
+          kA_Channel = 5,
+    };
+
+    const auto channel = SkScalarTruncToInt(fChannel);
+    if (channel < kRGB_Channel || channel > kA_Channel) {
+        fEffect->setColorFilter(nullptr);
+        return;
     }
 
-    // Track current state.
-    fHadFill   = fText.fHasFill;
-    fHadStroke = fText.fHasStroke;
+    auto in_0 = SkTPin(fInBlack,  0.0f, 1.0f),
+         in_1 = SkTPin(fInWhite,  0.0f, 1.0f),
+        out_0 = SkTPin(fOutBlack, 0.0f, 1.0f),
+        out_1 = SkTPin(fOutWhite, 0.0f, 1.0f),
+            g = 1 / SkTMax(fGamma, 0.0f);
+
+    float clip[] = {0, 1};
+    const auto kLottieDoClip = 1;
+    if (SkScalarTruncToInt(fClipBlack) == kLottieDoClip) {
+        const auto idx = fOutBlack <= fOutWhite ? 0 : 1;
+        clip[idx] = out_0;
+    }
+    if (SkScalarTruncToInt(fClipWhite) == kLottieDoClip) {
+        const auto idx = fOutBlack <= fOutWhite ? 1 : 0;
+        clip[idx] = out_1;
+    }
+    SkASSERT(clip[0] <= clip[1]);
+
+    auto dIn  =  in_1 -  in_0,
+         dOut = out_1 - out_0;
+
+    if (SkScalarNearlyZero(dIn)) {
+        // Degenerate dIn == 0 makes the arithmetic below explode.
+        //
+        // We could specialize the builder to deal with that case, or we could just
+        // nudge by epsilon to make it all work.  The latter approach is simpler
+        // and doesn't have any noticeable downsides.
+        //
+        // Also nudge in_0 towards 0.5, in case it was sqashed against an extremity.
+        // This allows for some abrupt transition when the output interval is not
+        // collapsed, and produces results closer to AE.
+        static constexpr auto kEpsilon = 2 * SK_ScalarNearlyZero;
+        dIn  += std::copysign(kEpsilon, dIn);
+        in_0 += std::copysign(kEpsilon, .5f - in_0);
+        SkASSERT(!SkScalarNearlyZero(dIn));
+    }
+
+    uint8_t lut[256];
+
+    auto t =      -in_0 / dIn,
+        dT = 1 / 255.0f / dIn;
+
+    // TODO: is linear gamma common-enough to warrant a fast path?
+    for (size_t i = 0; i < 256; ++i) {
+        const auto out = out_0 + dOut * std::pow(std::max(t, 0.0f), g);
+        SkASSERT(!SkScalarIsNaN(out));
+
+        lut[i] = static_cast<uint8_t>(std::round(SkTPin(out, clip[0], clip[1]) * 255));
+
+        t += dT;
+    }
+
+    fEffect->setColorFilter(SkTableColorFilter::MakeARGB(
+        channel == kA_Channel                            ? lut : nullptr,
+        channel == kR_Channel || channel == kRGB_Channel ? lut : nullptr,
+        channel == kG_Channel || channel == kRGB_Channel ? lut : nullptr,
+        channel == kB_Channel || channel == kRGB_Channel ? lut : nullptr
+    ));
 }
 
 } // namespace skottie

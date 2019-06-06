@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkColorPriv.h"
-#include "SkShader.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkShader.h"
+#include "samplecode/Sample.h"
 
 static const SkBlendMode gModes[] = {
     SkBlendMode::kClear,
@@ -64,8 +64,7 @@ static sk_sp<SkShader> make_bg_shader() {
     SkMatrix m;
     m.setScale(SkIntToScalar(6), SkIntToScalar(6));
 
-    return SkShader::MakeBitmapShader(bm, SkShader::kRepeat_TileMode,
-                                      SkShader::kRepeat_TileMode, &m);
+    return bm.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &m);
 }
 
 class HairModesView : public Sample {

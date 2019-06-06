@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "GrVkSemaphore.h"
+#include "src/gpu/vk/GrVkSemaphore.h"
 
-#include "GrBackendSemaphore.h"
-#include "GrVkGpu.h"
-#include "GrVkUtil.h"
+#include "include/gpu/GrBackendSemaphore.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkUtil.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 // windows wants to define this as CreateSemaphoreA or CreateSemaphoreW
@@ -46,12 +46,13 @@ GrVkSemaphore::GrVkSemaphore(GrVkGpu* gpu, VkSemaphore semaphore, bool prohibitS
                              bool prohibitWait, bool isOwned)
         : INHERITED(gpu) {
     fResource = new Resource(semaphore, prohibitSignal, prohibitWait, isOwned);
-    isOwned ? this->registerWithCache(SkBudgeted::kNo) : this->registerWithCacheWrapped();
+    isOwned ? this->registerWithCache(SkBudgeted::kNo)
+            : this->registerWithCacheWrapped(GrWrapCacheable::kNo);
 }
 
 void GrVkSemaphore::onRelease() {
     if (fResource) {
-        fResource->unref(static_cast<const GrVkGpu*>(this->getGpu()));
+        fResource->unref(static_cast<GrVkGpu*>(this->getGpu()));
         fResource = nullptr;
     }
     INHERITED::onRelease();
@@ -65,7 +66,7 @@ void GrVkSemaphore::onAbandon() {
     INHERITED::onAbandon();
 }
 
-void GrVkSemaphore::Resource::freeGPUData(const GrVkGpu* gpu) const {
+void GrVkSemaphore::Resource::freeGPUData(GrVkGpu* gpu) const {
     if (fIsOwned) {
         GR_VK_CALL(gpu->vkInterface(),
                    DestroySemaphore(gpu->device(), fSemaphore, nullptr));

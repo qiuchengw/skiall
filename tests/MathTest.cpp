@@ -5,16 +5,16 @@
  * found in the LICENSE file.
  */
 
-#include "SkColorData.h"
-#include "SkEndian.h"
-#include "SkFDot6.h"
-#include "SkFixed.h"
-#include "SkHalf.h"
-#include "SkMathPriv.h"
-#include "SkPoint.h"
-#include "SkRandom.h"
-#include "SkTo.h"
-#include "Test.h"
+#include "include/core/SkPoint.h"
+#include "include/private/SkColorData.h"
+#include "include/private/SkFixed.h"
+#include "include/private/SkHalf.h"
+#include "include/private/SkTo.h"
+#include "include/utils/SkRandom.h"
+#include "src/core/SkEndian.h"
+#include "src/core/SkFDot6.h"
+#include "src/core/SkMathPriv.h"
+#include "tests/Test.h"
 
 static void test_clz(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 32 == SkCLZ(0));
@@ -522,6 +522,7 @@ DEF_TEST(TestEndian, reporter) {
 
 template <typename T>
 static void test_divmod(skiatest::Reporter* r) {
+#if !defined(__MSVC_RUNTIME_CHECKS)
     const struct {
         T numer;
         T denom;
@@ -557,6 +558,7 @@ static void test_divmod(skiatest::Reporter* r) {
         REPORTER_ASSERT(r, numer/denom == div);
         REPORTER_ASSERT(r, numer%denom == mod);
     }
+#endif
 }
 
 DEF_TEST(divmod_u8, r) {
@@ -727,3 +729,38 @@ DEF_TEST(DoubleSaturate32, reporter) {
     }
 
 #endif
+
+DEF_TEST(unit_floats, r) {
+    // pick a non-trivial, non-pow-2 value, to test the loop
+    float v[13];
+    constexpr int N = SK_ARRAY_COUNT(v);
+
+    // empty array reports true
+    REPORTER_ASSERT(r, sk_floats_are_unit(v, 0));
+
+    SkRandom rand;
+    for (int outer = 0; outer < 1000; ++outer) {
+        // check some good values
+        for (int i = 0; i < N; ++i) {
+            v[i] = rand.nextUScalar1();
+        }
+        const int index = rand.nextU() % N;
+
+        REPORTER_ASSERT(r, sk_floats_are_unit(v, N));
+        v[index] = -0.f;
+        REPORTER_ASSERT(r, sk_floats_are_unit(v, N));
+        v[index] = 1.0f;
+        REPORTER_ASSERT(r, sk_floats_are_unit(v, N));
+
+        // check some bad values
+        const float non_norms[] = {
+            1.0000001f, 2, SK_ScalarInfinity, SK_ScalarNaN
+        };
+        for (float bad : non_norms) {
+            v[index] = bad;
+            REPORTER_ASSERT(r, !sk_floats_are_unit(v, N));
+            v[index] = -bad;
+            REPORTER_ASSERT(r, !sk_floats_are_unit(v, N));
+        }
+    }
+}

@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "SkCamera.h"
+#include "include/utils/SkCamera.h"
 
 static SkScalar SkScalarDotDiv(int count, const SkScalar a[], int step_a,
                                const SkScalar b[], int step_b,
@@ -105,27 +105,27 @@ void SkMatrix3D::setTranslate(SkScalar x, SkScalar y, SkScalar z) {
 }
 
 void SkMatrix3D::setRotateX(SkScalar degX) {
-    SkScalar    s, c;
-
-    s = SkScalarSinCos(SkDegreesToRadians(degX), &c);
+    SkScalar r = SkDegreesToRadians(degX),
+             s = SkScalarSin(r),
+             c = SkScalarCos(r);
     this->setRow(0, SK_Scalar1, 0, 0);
     this->setRow(1, 0, c, -s);
     this->setRow(2, 0, s, c);
 }
 
 void SkMatrix3D::setRotateY(SkScalar degY) {
-    SkScalar    s, c;
-
-    s = SkScalarSinCos(SkDegreesToRadians(degY), &c);
+    SkScalar r = SkDegreesToRadians(degY),
+             s = SkScalarSin(r),
+             c = SkScalarCos(r);
     this->setRow(0, c, 0, -s);
     this->setRow(1, 0, SK_Scalar1, 0);
     this->setRow(2, s, 0, c);
 }
 
 void SkMatrix3D::setRotateZ(SkScalar degZ) {
-    SkScalar    s, c;
-
-    s = SkScalarSinCos(SkDegreesToRadians(degZ), &c);
+    SkScalar r = SkDegreesToRadians(degZ),
+             s = SkScalarSin(r),
+             c = SkScalarCos(r);
     this->setRow(0, c, -s, 0);
     this->setRow(1, s, c, 0);
     this->setRow(2, 0, 0, SK_Scalar1);
@@ -334,7 +334,7 @@ void Sk3DView::restore() {
     fRec = next;
 }
 
-#ifdef SK_BUILD_FOR_ANDROID
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
 void Sk3DView::setCameraLocation(SkScalar x, SkScalar y, SkScalar z) {
     // the camera location is passed in inches, set in pt
     SkScalar lz = z * 72.0f;
@@ -344,15 +344,15 @@ void Sk3DView::setCameraLocation(SkScalar x, SkScalar y, SkScalar z) {
 
 }
 
-SkScalar Sk3DView::getCameraLocationX() {
+SkScalar Sk3DView::getCameraLocationX() const {
     return fCamera.fLocation.fX / 72.0f;
 }
 
-SkScalar Sk3DView::getCameraLocationY() {
+SkScalar Sk3DView::getCameraLocationY() const {
     return fCamera.fLocation.fY / 72.0f;
 }
 
-SkScalar Sk3DView::getCameraLocationZ() {
+SkScalar Sk3DView::getCameraLocationZ() const {
     return fCamera.fLocation.fZ / 72.0f;
 }
 #endif
@@ -387,7 +387,7 @@ void Sk3DView::getMatrix(SkMatrix* matrix) const {
     }
 }
 
-#include "SkCanvas.h"
+#include "include/core/SkCanvas.h"
 
 void Sk3DView::applyToCanvas(SkCanvas* canvas) const {
     SkMatrix    matrix;

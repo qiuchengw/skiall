@@ -8,26 +8,17 @@
 #ifndef SkPixmapPriv_DEFINED
 #define SkPixmapPriv_DEFINED
 
-#include "SkPixmap.h"
-#include "SkEncodedOrigin.h"
-#include "SkAutoPixmapStorage.h"
+#include "include/codec/SkEncodedOrigin.h"
+#include "include/core/SkPixmap.h"
+#include "src/core/SkAutoPixmapStorage.h"
 
 class SkPixmapPriv {
 public:
-    // These flag are applied in this order (swap is applied last)
-    enum OrientFlags {
-        kMirrorX = 1 << 0,
-        kMirrorY = 1 << 1,
-        kSwapXY  = 1 << 2,
-    };
-
-    static OrientFlags OriginToOrient(SkEncodedOrigin);
-
     /**
      *  Copy the pixels in this pixmap into dst, applying the orientation transformations specified
      *  by the flags. If the inputs are invalid, this returns false and no copy is made.
      */
-    static bool Orient(const SkPixmap& dst, const SkPixmap& src, OrientFlags);
+    static bool Orient(const SkPixmap& dst, const SkPixmap& src, SkEncodedOrigin);
 
     static bool ShouldSwapWidthHeight(SkEncodedOrigin o);
     static SkImageInfo SwapWidthHeight(const SkImageInfo& info);
@@ -59,7 +50,7 @@ public:
             return false;
         }
         if (tmp != &dst) {
-            return Orient(dst, *tmp, OriginToOrient(origin));
+            return Orient(dst, *tmp, origin);
         }
         return true;
     }
@@ -71,4 +62,3 @@ public:
 };
 
 #endif
-

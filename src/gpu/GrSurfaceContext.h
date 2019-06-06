@@ -8,14 +8,14 @@
 #ifndef GrSurfaceContext_DEFINED
 #define GrSurfaceContext_DEFINED
 
-#include "../private/GrSurfaceProxy.h"
-#include "GrColorSpaceInfo.h"
-#include "SkRefCnt.h"
+#include "include/core/SkRefCnt.h"
+#include "include/private/GrSurfaceProxy.h"
+#include "src/gpu/GrColorSpaceInfo.h"
 
 class GrAuditTrail;
-class GrContext;
 class GrDrawingManager;
 class GrOpList;
+class GrRecordingContext;
 class GrRenderTargetContext;
 class GrRenderTargetProxy;
 class GrSingleOwner;
@@ -59,6 +59,15 @@ public:
                           SkIPoint::Make(0, 0));
     }
 
+   /**
+    * These flags can be used with the read/write pixels functions below.
+    */
+    enum PixelOpsFlags {
+        /** The src for write or dst read is unpremultiplied. This is only respected if both the
+            config src and dst configs are an RGBA/BGRA 8888 format. */
+        kUnpremul_PixelOpsFlag  = 0x4,
+    };
+
     /**
      * Reads a rectangle of pixels from the render target context.
      * @param dstInfo       image info for the destination
@@ -88,6 +97,23 @@ public:
     bool writePixels(const SkImageInfo& srcInfo, const void* srcBuffer, size_t srcRowBytes,
                      int x, int y, uint32_t flags = 0);
 
+#if GR_TEST_UTILS
+    // Accessors for tests to directly call read/writePixelsImpl
+    bool writePixels(GrContext* direct, int left, int top, int width, int height,
+                     GrColorType srcColorType, SkColorSpace* srcColorSpace,
+                     const void* srcBuffer, size_t srcRowBytes = 0, uint32_t pixelOpsFlags = 0) {
+        return writePixelsImpl(direct, left, top, width, height, srcColorType, srcColorSpace,
+                               srcBuffer, srcRowBytes, pixelOpsFlags);
+    }
+
+    bool readPixels(GrContext* direct, int left, int top, int width, int height,
+                    GrColorType dstColorType, SkColorSpace* dstColorSpace, void* buffer,
+                    size_t rowBytes = 0, uint32_t pixelOpsFlags = 0) {
+        return readPixelsImpl(direct, left, top, width, height, dstColorType, dstColorSpace,
+                              buffer, rowBytes, pixelOpsFlags);
+    }
+#endif
+
     // TODO: this is virtual b.c. this object doesn't have a pointer to the wrapped GrSurfaceProxy?
     virtual GrSurfaceProxy* asSurfaceProxy() = 0;
     virtual const GrSurfaceProxy* asSurfaceProxy() const = 0;
@@ -102,7 +128,7 @@ public:
 
     virtual GrRenderTargetContext* asRenderTargetContext() { return nullptr; }
 
-    GrAuditTrail* auditTrail() { return fAuditTrail; }
+    GrAuditTrail* auditTrail();
 
     // Provides access to functions that aren't part of the public API.
     GrSurfaceContextPriv surfPriv();
@@ -111,27 +137,29 @@ public:
 protected:
     friend class GrSurfaceContextPriv;
 
-    GrSurfaceContext(GrContext*, GrDrawingManager*, GrPixelConfig, sk_sp<SkColorSpace>,
-                     GrAuditTrail*, GrSingleOwner*);
+    GrSurfaceContext(GrRecordingContext*, GrPixelConfig, sk_sp<SkColorSpace>);
 
-    GrDrawingManager* drawingManager() { return fDrawingManager; }
-    const GrDrawingManager* drawingManager() const { return fDrawingManager; }
+    GrDrawingManager* drawingManager();
+    const GrDrawingManager* drawingManager() const;
 
     virtual GrOpList* getOpList() = 0;
     SkDEBUGCODE(virtual void validate() const = 0;)
 
-    SkDEBUGCODE(GrSingleOwner* singleOwner() { return fSingleOwner; })
+    SkDEBUGCODE(GrSingleOwner* singleOwner();)
 
-    GrContext* fContext;
-    GrAuditTrail* fAuditTrail;
+    GrRecordingContext* fContext;
 
 private:
-    GrColorSpaceInfo fColorSpaceInfo;
+    bool writePixelsImpl(GrContext* direct, int left, int top, int width, int height,
+                         GrColorType srcColorType, SkColorSpace* srcColorSpace,
+                         const void* srcBuffer, size_t srcRowBytes, uint32_t pixelOpsFlags);
 
-    GrDrawingManager* fDrawingManager;
+    bool readPixelsImpl(GrContext* direct, int left, int top, int width,
+                        int height, GrColorType dstColorType,
+                        SkColorSpace* dstColorSpace, void* buffer, size_t rowBytes,
+                        uint32_t pixelOpsFlags);
 
-    // In debug builds we guard against improper thread handling
-    SkDEBUGCODE(mutable GrSingleOwner* fSingleOwner;)
+    GrColorSpaceInfo    fColorSpaceInfo;
 
     typedef SkRefCnt INHERITED;
 };

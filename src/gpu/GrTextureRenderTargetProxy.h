@@ -8,8 +8,8 @@
 #ifndef GrTextureRenderTargetProxy_DEFINED
 #define GrTextureRenderTargetProxy_DEFINED
 
-#include "GrRenderTargetProxy.h"
-#include "GrTextureProxy.h"
+#include "include/private/GrRenderTargetProxy.h"
+#include "include/private/GrTextureProxy.h"
 
 #ifdef SK_BUILD_FOR_WIN
 // Windows gives warnings about inheriting asTextureProxy/asRenderTargetProxy via dominance.
@@ -28,13 +28,14 @@ private:
     friend class GrProxyProvider; // for ctors
 
     // Deferred version
-    GrTextureRenderTargetProxy(const GrCaps&, const GrSurfaceDesc&, GrSurfaceOrigin, GrMipMapped,
-                               GrTextureType, SkBackingFit, SkBudgeted, GrInternalSurfaceFlags);
+    GrTextureRenderTargetProxy(const GrCaps&, const GrBackendFormat&, const GrSurfaceDesc&,
+                               GrSurfaceOrigin, GrMipMapped, SkBackingFit, SkBudgeted,
+                               GrInternalSurfaceFlags);
 
     // Lazy-callback version
     GrTextureRenderTargetProxy(LazyInstantiateCallback&&, LazyInstantiationType,
-                               const GrSurfaceDesc& desc, GrSurfaceOrigin, GrMipMapped,
-                               GrTextureType, SkBackingFit, SkBudgeted, GrInternalSurfaceFlags);
+                               const GrBackendFormat&, const GrSurfaceDesc& desc, GrSurfaceOrigin,
+                               GrMipMapped, SkBackingFit, SkBudgeted, GrInternalSurfaceFlags);
 
     // Wrapped version
     GrTextureRenderTargetProxy(sk_sp<GrSurface>, GrSurfaceOrigin);

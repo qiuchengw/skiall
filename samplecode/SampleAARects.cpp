@@ -4,11 +4,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Sample.h"
-#include "SkBitmap.h"
-#include "SkCanvas.h"
-#include "SkPaint.h"
-#include "SkShader.h"
+#include "include/core/SkBitmap.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkShader.h"
+#include "samplecode/Sample.h"
 
 static SkBitmap createBitmap(int n) {
     SkBitmap bitmap;
@@ -59,8 +59,7 @@ protected:
         SkPaint bluePaint;
         bluePaint.setARGB(0xff, 0x0, 0x0, 0xff);
         SkPaint bmpPaint;
-        bmpPaint.setShader(SkShader::MakeBitmapShader(fBitmap, SkShader::kRepeat_TileMode,
-                                                      SkShader::kRepeat_TileMode));
+        bmpPaint.setShader(fBitmap.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat));
         bluePaint.setStrokeWidth(3);
         bmpPaint.setStrokeWidth(3);
 

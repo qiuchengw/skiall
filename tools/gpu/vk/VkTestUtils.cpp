@@ -5,14 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "VkTestUtils.h"
+#include "tools/gpu/vk/VkTestUtils.h"
 
 #ifdef SK_VULKAN
 
-#include "SkAutoMalloc.h"
-#include "vk/GrVkBackendContext.h"
-#include "vk/GrVkExtensions.h"
-#include "../ports/SkOSLibrary.h"
+#ifndef SK_GPU_TOOLS_VK_LIBRARY_NAME
+    #if defined _WIN32
+        #define SK_GPU_TOOLS_VK_LIBRARY_NAME "vulkan-1.dll"
+    #else
+        #define SK_GPU_TOOLS_VK_LIBRARY_NAME "libvulkan.so"
+    #endif
+#endif
+
+#include "include/gpu/vk/GrVkBackendContext.h"
+#include "include/gpu/vk/GrVkExtensions.h"
+#include "src/core/SkAutoMalloc.h"
+#include "src/ports/SkOSLibrary.h"
+
+#if defined(SK_ENABLE_SCOPED_LSAN_SUPPRESSIONS)
+#include <sanitizer/lsan_interface.h>
+#endif
 
 namespace sk_gpu_test {
 
@@ -28,11 +40,7 @@ bool LoadVkLibraryAndGetProcAddrFuncs(PFN_vkGetInstanceProcAddr* instProc,
     static PFN_vkGetInstanceProcAddr localInstProc = nullptr;
     static PFN_vkGetDeviceProcAddr localDevProc = nullptr;
     if (!vkLib) {
-#if defined _WIN32
-        vkLib = DynamicLoadLibrary("vulkan-1.dll");
-#else
-        vkLib = DynamicLoadLibrary("libvulkan.so");
-#endif
+        vkLib = DynamicLoadLibrary(SK_GPU_TOOLS_VK_LIBRARY_NAME);
         if (!vkLib) {
             return false;
         }
@@ -294,29 +302,31 @@ static bool init_device_extensions_and_layers(GrVkGetProc getProc, uint32_t spec
     return true;
 }
 
-#define ACQUIRE_VK_PROC_NOCHECK(name, instance, device)                        \
-    PFN_vk##name grVk##name =                                                  \
-        reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device));
+#define ACQUIRE_VK_PROC_NOCHECK(name, instance, device) \
+    PFN_vk##name grVk##name = reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device))
 
+#define ACQUIRE_VK_PROC(name, instance, device)                                    \
+    PFN_vk##name grVk##name =                                                      \
+            reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device)); \
+    do {                                                                           \
+        if (grVk##name == nullptr) {                                               \
+            SkDebugf("Function ptr for vk%s could not be acquired\n", #name);      \
+            if (device != VK_NULL_HANDLE) {                                        \
+                destroy_instance(getProc, inst, debugCallback, hasDebugExtension); \
+            }                                                                      \
+            return false;                                                          \
+        }                                                                          \
+    } while (0)
 
-#define ACQUIRE_VK_PROC(name, instance, device)                                \
-    PFN_vk##name grVk##name =                                                  \
-        reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device)); \
-    if (grVk##name == nullptr) {                                               \
-        SkDebugf("Function ptr for vk%s could not be acquired\n", #name);      \
-        if (device != VK_NULL_HANDLE) {                                        \
-            destroy_instance(getProc, inst, debugCallback, hasDebugExtension); \
-        }                                                                      \
-        return false;                                                          \
-    }
-
-#define ACQUIRE_VK_PROC_LOCAL(name, instance, device)                          \
-    PFN_vk##name grVk##name =                                                  \
-        reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device)); \
-    if (grVk##name == nullptr) {                                               \
-        SkDebugf("Function ptr for vk%s could not be acquired\n", #name);      \
-        return;                                                                \
-    }
+#define ACQUIRE_VK_PROC_LOCAL(name, instance, device)                              \
+    PFN_vk##name grVk##name =                                                      \
+            reinterpret_cast<PFN_vk##name>(getProc("vk" #name, instance, device)); \
+    do {                                                                           \
+        if (grVk##name == nullptr) {                                               \
+            SkDebugf("Function ptr for vk%s could not be acquired\n", #name);      \
+            return;                                                                \
+        }                                                                          \
+    } while (0)
 
 static void destroy_instance(GrVkGetProc getProc, VkInstance inst,
                              VkDebugReportCallbackEXT* debugCallback,
@@ -348,6 +358,17 @@ static void setup_extension_features(GrVkGetProc getProc, VkInstance inst, VkPhy
         blend->pNext = nullptr;
         *tailPNext = blend;
         tailPNext = &blend->pNext;
+    }
+
+    VkPhysicalDeviceSamplerYcbcrConversionFeatures* ycbcrFeature = nullptr;
+    if (physDeviceVersion >= VK_MAKE_VERSION(1, 1, 0) ||
+        extensions->hasExtension(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME, 1)) {
+        ycbcrFeature = (VkPhysicalDeviceSamplerYcbcrConversionFeatures*) sk_malloc_throw(
+                sizeof(VkPhysicalDeviceSamplerYcbcrConversionFeatures));
+        ycbcrFeature->sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+        ycbcrFeature->pNext = nullptr;
+        *tailPNext = ycbcrFeature;
+        tailPNext = &ycbcrFeature->pNext;
     }
 
     if (physDeviceVersion >= VK_MAKE_VERSION(1, 1, 0)) {
@@ -384,6 +405,16 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
         }
     }
     SkASSERT(instanceVersion >= VK_MAKE_VERSION(1, 0, 0));
+    uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
+    if (instanceVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+        // If the instance version is 1.0 we must have the apiVersion also be 1.0. However, if the
+        // instance version is 1.1 or higher, we can set the apiVersion to be whatever the highest
+        // api we may use in skia (technically it can be arbitrary). So for now we set it to 1.1
+        // since that is the highest vulkan version.
+        apiVersion = VK_MAKE_VERSION(1, 1, 0);
+    }
+
+    instanceVersion = SkTMin(instanceVersion, apiVersion);
 
     VkPhysicalDevice physDev;
     VkDevice device;
@@ -396,7 +427,7 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
         0,                                  // applicationVersion
         "vktest",                           // pEngineName
         0,                                  // engineVerison
-        instanceVersion,                    // apiVersion
+        apiVersion,                         // apiVersion
     };
 
     SkTArray<VkLayerProperties> instanceLayers;
@@ -499,7 +530,7 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
 
     VkPhysicalDeviceProperties physDeviceProperties;
     grVkGetPhysicalDeviceProperties(physDev, &physDeviceProperties);
-    int physDeviceVersion = physDeviceProperties.apiVersion;
+    int physDeviceVersion = SkTMin(physDeviceProperties.apiVersion, apiVersion);
 
     // query to get the initial queue props size
     uint32_t queueCount;
@@ -638,7 +669,13 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
         pointerToFeatures ? nullptr : deviceFeatures // ppEnabledFeatures
     };
 
-    err = grVkCreateDevice(physDev, &deviceInfo, nullptr, &device);
+    {
+#if defined(SK_ENABLE_SCOPED_LSAN_SUPPRESSIONS)
+        // skia:8712
+        __lsan::ScopedDisabler lsanDisabler;
+#endif
+        err = grVkCreateDevice(physDev, &deviceInfo, nullptr, &device);
+    }
     if (err) {
         SkDebugf("CreateDevice failed: %d\n", err);
         destroy_instance(getProc, inst, debugCallback, hasDebugExtension);
@@ -653,7 +690,7 @@ bool CreateVkBackendContext(GrVkGetProc getProc,
     ctx->fDevice = device;
     ctx->fQueue = queue;
     ctx->fGraphicsQueueIndex = graphicsQueueIndex;
-    ctx->fInstanceVersion = instanceVersion;
+    ctx->fMaxAPIVersion = apiVersion;
     ctx->fVkExtensions = extensions;
     ctx->fDeviceFeatures2 = features;
     ctx->fGetProc = getProc;

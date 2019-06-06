@@ -5,36 +5,49 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontTypes.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTextBlob.h"
+#include "include/core/SkTileMode.h"
+#include "include/core/SkTypeface.h"
+#include "include/core/SkTypes.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/private/SkTDArray.h"
+#include "tools/ToolUtils.h"
 
-#include "SkCanvas.h"
-#include "SkGradientShader.h"
-#include "SkPoint.h"
-#include "SkShader.h"
-#include "SkTextBlob.h"
-#include "SkTDArray.h"
-#include "SkTypeface.h"
+#include <math.h>
+#include <string.h>
 
 // This GM exercises drawTextBlob offset vs. shader space behavior.
 class TextBlobShaderGM : public skiagm::GM {
 public:
-    TextBlobShaderGM(const char* txt) {
-        SkPaint p;
-        sk_tool_utils::set_portable_typeface(&p);
-        size_t txtLen = strlen(txt);
-        fGlyphs.append(p.textToGlyphs(txt, txtLen, nullptr));
-        p.textToGlyphs(txt, txtLen, fGlyphs.begin());
-    }
+    TextBlobShaderGM() {}
 
-protected:
-
+private:
     void onOnceBeforeDraw() override {
+        {
+            SkFont      font(ToolUtils::create_portable_typeface());
+            const char* txt = "Blobber";
+            size_t txtLen = strlen(txt);
+            fGlyphs.append(font.countText(txt, txtLen, SkTextEncoding::kUTF8));
+            font.textToGlyphs(txt, txtLen, SkTextEncoding::kUTF8, fGlyphs.begin(), fGlyphs.count());
+        }
+
         SkFont font;
         font.setSubpixel(true);
         font.setEdging(SkFont::Edging::kAntiAlias);
         font.setSize(30);
-        font.setTypeface(sk_tool_utils::create_portable_typeface());
+        font.setTypeface(ToolUtils::create_portable_typeface());
 
         SkTextBlobBuilder builder;
         int glyphCount = fGlyphs.count();
@@ -72,7 +85,7 @@ protected:
                                                SkIntToScalar(sz.height() / 2)),
                                                sz.width() * .66f, colors, pos,
                                                SK_ARRAY_COUNT(colors),
-                                               SkShader::kRepeat_TileMode);
+                                               SkTileMode::kRepeat);
     }
 
     SkString onShortName() override {
@@ -102,7 +115,6 @@ protected:
         }
     }
 
-private:
     SkTDArray<uint16_t> fGlyphs;
     sk_sp<SkTextBlob>   fBlob;
     sk_sp<SkShader>     fShader;
@@ -110,4 +122,4 @@ private:
     typedef skiagm::GM INHERITED;
 };
 
-DEF_GM(return new TextBlobShaderGM("Blobber");)
+DEF_GM(return new TextBlobShaderGM;)

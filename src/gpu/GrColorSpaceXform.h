@@ -8,9 +8,9 @@
 #ifndef GrColorSpaceXform_DEFINED
 #define GrColorSpaceXform_DEFINED
 
-#include "GrFragmentProcessor.h"
-#include "SkColorSpaceXformSteps.h"
-#include "SkRefCnt.h"
+#include "include/core/SkRefCnt.h"
+#include "src/core/SkColorSpaceXformSteps.h"
+#include "src/gpu/GrFragmentProcessor.h"
 
 class SkColorSpace;
 
@@ -60,6 +60,13 @@ public:
     static std::unique_ptr<GrFragmentProcessor> Make(std::unique_ptr<GrFragmentProcessor> child,
                                                      SkColorSpace* src, SkAlphaType srcAT,
                                                      SkColorSpace* dst);
+
+    /**
+     * Returns a fragment processor that calls the passed in FP and then converts it with the given
+     * color xform. Returns null if child is null, returns child if the xform is null (e.g. noop).
+     */
+    static std::unique_ptr<GrFragmentProcessor> Make(std::unique_ptr<GrFragmentProcessor> child,
+                                                     sk_sp<GrColorSpaceXform> colorXform);
 
     const char* name() const override { return "ColorSpaceXform"; }
     std::unique_ptr<GrFragmentProcessor> clone() const override;

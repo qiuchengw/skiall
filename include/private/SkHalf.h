@@ -8,8 +8,8 @@
 #ifndef SkHalf_DEFINED
 #define SkHalf_DEFINED
 
-#include "SkNx.h"
-#include "SkTypes.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkNx.h"
 
 // 16-bit floating point value
 // format is 1 bit sign, 5 bits exponent, 10 bits mantissa
@@ -23,7 +23,7 @@ static constexpr uint16_t SK_Half1       = 0x3C00; // 1
 
 // convert between half and single precision floating point
 float SkHalfToFloat(SkHalf h);
-SkHalf SK_API SkFloatToHalf(float f);
+SkHalf SkFloatToHalf(float f);
 
 // Convert between half and single precision floating point,
 // assuming inputs and outputs are both finite, and may

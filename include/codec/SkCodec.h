@@ -8,19 +8,19 @@
 #ifndef SkCodec_DEFINED
 #define SkCodec_DEFINED
 
-#include "../private/SkNoncopyable.h"
-#include "../private/SkTemplates.h"
-#include "../private/SkEncodedInfo.h"
-#include "SkCodecAnimation.h"
-#include "SkColor.h"
-#include "SkEncodedImageFormat.h"
-#include "SkEncodedOrigin.h"
-#include "SkImageInfo.h"
-#include "SkPixmap.h"
-#include "SkSize.h"
-#include "SkStream.h"
-#include "SkTypes.h"
-#include "SkYUVASizeInfo.h"
+#include "include/codec/SkCodecAnimation.h"
+#include "include/codec/SkEncodedOrigin.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkEncodedImageFormat.h"
+#include "include/core/SkImageInfo.h"
+#include "include/core/SkPixmap.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkTypes.h"
+#include "include/core/SkYUVASizeInfo.h"
+#include "include/private/SkEncodedInfo.h"
+#include "include/private/SkNoncopyable.h"
+#include "include/private/SkTemplates.h"
 
 #include <vector>
 
@@ -403,6 +403,9 @@ public:
      *
      *  This may require a rewind.
      *
+     *  If kIncompleteInput is returned, may be called again after more data has
+     *  been provided to the source SkStream.
+     *
      *  @param dstInfo Info of the destination. If the dimensions do not match
      *      those of getInfo, this implies a scale.
      *  @param dst Memory to write to. Needs to be large enough to hold the subset,
@@ -421,10 +424,11 @@ public:
     /**
      *  Start/continue the incremental decode.
      *
-     *  Not valid to call before calling startIncrementalDecode().
+     *  Not valid to call before a call to startIncrementalDecode() returns
+     *  kSuccess.
      *
-     *  After the first call, should only be called again if more data has been
-     *  provided to the source SkStream.
+     *  If kIncompleteInput is returned, may be called again after more data has
+     *  been provided to the source SkStream.
      *
      *  Unlike getPixels and getScanlines, this does not do any filling. This is
      *  left up to the caller, since they may be skipping lines or continuing the
@@ -605,7 +609,8 @@ public:
     struct FrameInfo {
         /**
          *  The frame that this frame needs to be blended with, or
-         *  kNoFrame if this frame is independent.
+         *  kNoFrame if this frame is independent (so it can be
+         *  drawn over an uninitialized buffer).
          *
          *  Note that this is the *earliest* frame that can be used
          *  for blending. Any frame from [fRequiredFrame, i) can be
@@ -683,6 +688,14 @@ public:
     int getRepetitionCount() {
         return this->onGetRepetitionCount();
     }
+
+    // Register a decoder at runtime by passing two function pointers:
+    //    - peek() to return true if the span of bytes appears to be your encoded format;
+    //    - make() to attempt to create an SkCodec from the given stream.
+    // Not thread safe.
+    static void Register(
+            bool                     (*peek)(const void*, size_t),
+            std::unique_ptr<SkCodec> (*make)(std::unique_ptr<SkStream>, SkCodec::Result*));
 
 protected:
     const SkEncodedInfo& getEncodedInfo() const { return fEncodedInfo; }
@@ -785,6 +798,14 @@ protected:
 
     virtual int onOutputScanline(int inputScanline) const;
 
+    /**
+     *  Return whether we can convert to dst.
+     *
+     *  Will be called for the appropriate frame, prior to initializing the colorXform.
+     */
+    virtual bool conversionSupported(const SkImageInfo& dst, bool srcIsOpaque,
+                                     bool needsColorXform);
+
     // Some classes never need a colorXform e.g.
     // - ICO uses its embedded codec's colorXform
     // - WBMP is just Black/White
@@ -830,14 +851,6 @@ private:
     int                                fCurrScanline;
 
     bool                               fStartedIncrementalDecode;
-
-    /**
-     *  Return whether we can convert to dst.
-     *
-     *  Will be called for the appropriate frame, prior to initializing the colorXform.
-     */
-    virtual bool conversionSupported(const SkImageInfo& dst, bool srcIsOpaque,
-                                     bool needsColorXform);
 
     bool initializeColorXform(const SkImageInfo& dstInfo, SkEncodedInfo::Alpha, bool srcIsOpaque);
 

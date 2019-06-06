@@ -32,13 +32,10 @@ DEADLINE_SECS = 60 * 60  # 60 minutes.
 
 INFRA_FAILURE_ERROR_MSG = (
       '\n\n'
-      'Your run failed due to infra failures. '
-      'It could be due to any of the following:\n\n'
-      '* Need to rebase\n\n'
-      '* Failure when running "python -c from gn import gn_to_bp"\n\n'
-      '* Problem with syncing Android repository.\n\n'
-      'See go/skia-android-framework-compile-bot-cloud-logs-errors for the '
-      'compile server\'s logs.'
+      'Your run failed due to unknown infrastructure failures.\n'
+      'Please contact rmistry@ or the trooper from '
+      'http://skia-tree-status.appspot.com/trooper\n'
+      'Sorry for the inconvenience!\n'
 )
 
 
@@ -49,6 +46,8 @@ class AndroidCompileException(Exception):
 def _create_task_dict(options):
   """Creates a dict representation of the requested task."""
   params = {}
+  params['lunch_target'] = options.lunch_target
+  params['mmma_targets'] = options.mmma_targets
   params['issue'] = options.issue
   params['patchset'] = options.patchset
   params['hash'] = options.hash
@@ -72,7 +71,8 @@ def _write_to_storage(task):
 
 def _get_task_file_name(task):
   """Returns the file name of the compile task. Eg: ${issue}-${patchset}.json"""
-  return '%s-%s.json' % (task['issue'], task['patchset'])
+  return '%s-%s-%s.json' % (task['lunch_target'], task['issue'],
+                            task['patchset'])
 
 
 # Checks to see if task already exists in Google storage.
@@ -148,7 +148,11 @@ def trigger_and_wait(options):
         time.sleep(waittime)
 
     if ret.get('infra_failure'):
-      raise AndroidCompileException(INFRA_FAILURE_ERROR_MSG)
+      if ret.get('error'):
+        raise AndroidCompileException('Run failed with:\n\n%s\n' % ret['error'])
+      else:
+        # Use a general purpose error message.
+        raise AndroidCompileException(INFRA_FAILURE_ERROR_MSG)
 
     if ret.get('done'):
       if not ret.get('is_master_branch', True):
@@ -164,8 +168,10 @@ def trigger_and_wait(options):
                'build without the patch succeeded. This means that the patch '
                'causes Android to fail compilation.\n\n'
                'With patch logs are here: %s\n\n'
-               'No patch logs are here: %s\n\n' % (
-                   ret['withpatch_log'], ret['nopatch_log']))
+               'No patch logs are here: %s\n\n'
+               'You can force sync of the checkout if needed here: %s\n\n' % (
+                   ret['withpatch_log'], ret['nopatch_log'],
+                   'https://skia-android-compile.corp.goog/'))
       else:
         print ('Both with patch and no patch builds failed. This means that the'
                ' Android tree is currently broken. Marking this bot as '
@@ -191,6 +197,13 @@ def pretty_task_str(task):
 
 def main():
   option_parser = optparse.OptionParser()
+  option_parser.add_option(
+      '', '--lunch_target', type=str, default='',
+      help='The lunch target the android compile bot should build with.')
+  option_parser.add_option(
+      '', '--mmma_targets', type=str, default='',
+      help='The comma-separated mmma targets the android compile bot should '
+           'build.')
   option_parser.add_option(
       '', '--issue', type=int, default=0,
       help='The Gerrit change number to get the patch from.')

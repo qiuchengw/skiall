@@ -8,24 +8,25 @@
 #ifndef GrVkUtil_DEFINED
 #define GrVkUtil_DEFINED
 
-#include "GrColor.h"
-#include "GrTypes.h"
-#include "GrVkInterface.h"
-#include "SkMacros.h"
-#include "ir/SkSLProgram.h"
-#include "vk/GrVkDefines.h"
+#include "include/gpu/GrTypes.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "include/private/GrColor.h"
+#include "include/private/SkMacros.h"
+#include "src/gpu/GrDataUtils.h"
+#include "src/gpu/vk/GrVkInterface.h"
+#include "src/sksl/ir/SkSLProgram.h"
 
 class GrVkGpu;
 
 // makes a Vk call on the interface
-#define GR_VK_CALL(IFACE, X) (IFACE)->fFunctions.f##X;
+#define GR_VK_CALL(IFACE, X) (IFACE)->fFunctions.f##X
 // same as GR_VK_CALL but checks for success
 #ifdef SK_DEBUG
-#define GR_VK_CALL_ERRCHECK(IFACE, X) \
+#define GR_VK_CALL_ERRCHECK(IFACE, X)                          \
     VkResult SK_MACRO_APPEND_LINE(ret) = GR_VK_CALL(IFACE, X); \
-    SkASSERT(VK_SUCCESS == SK_MACRO_APPEND_LINE(ret));
+    SkASSERT(VK_SUCCESS == SK_MACRO_APPEND_LINE(ret))
 #else
-#define GR_VK_CALL_ERRCHECK(IFACE, X)  (void) GR_VK_CALL(IFACE, X);
+#define GR_VK_CALL_ERRCHECK(IFACE, X)  (void) GR_VK_CALL(IFACE, X)
 #endif
 
 /**
@@ -35,19 +36,45 @@ bool GrPixelConfigToVkFormat(GrPixelConfig config, VkFormat* format);
 
 bool GrVkFormatIsSupported(VkFormat);
 
+#ifdef SK_DEBUG
 /**
  * Returns true if the passed in VkFormat and GrPixelConfig are compatible with each other.
  */
 bool GrVkFormatPixelConfigPairIsValid(VkFormat, GrPixelConfig);
+#endif
 
 bool GrSampleCountToVkSampleCount(uint32_t samples, VkSampleCountFlagBits* vkSamples);
 
 bool GrCompileVkShaderModule(const GrVkGpu* gpu,
-                             const char* shaderString,
+                             const SkSL::String& shaderString,
                              VkShaderStageFlagBits stage,
                              VkShaderModule* shaderModule,
                              VkPipelineShaderStageCreateInfo* stageInfo,
                              const SkSL::Program::Settings& settings,
+                             SkSL::String* outSPIRV,
                              SkSL::Program::Inputs* outInputs);
+
+bool GrInstallVkShaderModule(const GrVkGpu* gpu,
+                             const SkSL::String& spirv,
+                             VkShaderStageFlagBits stage,
+                             VkShaderModule* shaderModule,
+                             VkPipelineShaderStageCreateInfo* stageInfo);
+
+size_t GrVkBytesPerFormat(VkFormat);
+
+/**
+ * Returns true if the format is compressed.
+ */
+bool GrVkFormatIsCompressed(VkFormat);
+
+/**
+ * Returns the data size for the given compressed format
+ */
+size_t GrVkFormatCompressedDataSize(VkFormat, int width, int height);
+
+/**
+ * Maps a vk format into the GrCompressed enum.
+ */
+GrCompression GrVkFormat2Compression(VkFormat);
 
 #endif

@@ -9,11 +9,11 @@
 #define GrCoverageCountingPathRenderer_DEFINED
 
 #include <map>
-#include "GrCCPerOpListPaths.h"
-#include "GrOnFlushResourceProvider.h"
-#include "GrPathRenderer.h"
-#include "GrRenderTargetOpList.h"
-#include "ccpr/GrCCPerFlushResources.h"
+#include "src/gpu/GrOnFlushResourceProvider.h"
+#include "src/gpu/GrPathRenderer.h"
+#include "src/gpu/GrRenderTargetOpList.h"
+#include "src/gpu/ccpr/GrCCPerFlushResources.h"
+#include "src/gpu/ccpr/GrCCPerOpListPaths.h"
 
 class GrCCDrawPathsOp;
 class GrCCPathCache;
@@ -34,7 +34,8 @@ public:
         kYes = true
     };
 
-    static sk_sp<GrCoverageCountingPathRenderer> CreateIfSupported(const GrCaps&, AllowCaching);
+    static sk_sp<GrCoverageCountingPathRenderer> CreateIfSupported(const GrCaps&, AllowCaching,
+                                                                   uint32_t contextUniqueID);
 
     using PendingPathsMap = std::map<uint32_t, sk_sp<GrCCPerOpListPaths>>;
 
@@ -65,10 +66,7 @@ public:
                   SkTArray<sk_sp<GrRenderTargetContext>>* out) override;
     void postFlush(GrDeferredUploadToken, const uint32_t* opListIDs, int numOpListIDs) override;
 
-    void purgeCacheEntriesOlderThan(const GrStdSteadyClock::time_point& purgeTime);
-
-    void testingOnly_drawPathDirectly(const DrawPathArgs&);
-    const GrUniqueKey& testingOnly_getStashedAtlasKey() const;
+    void purgeCacheEntriesOlderThan(GrProxyProvider*, const GrStdSteadyClock::time_point&);
 
     // If a path spans more pixels than this, we need to crop it or else analytic AA can run out of
     // fp32 precision.
@@ -84,7 +82,7 @@ public:
                                    float* inflationRadius = nullptr);
 
 private:
-    GrCoverageCountingPathRenderer(AllowCaching);
+    GrCoverageCountingPathRenderer(AllowCaching, uint32_t contextUniqueID);
 
     // GrPathRenderer overrides.
     StencilSupport onGetStencilSupport(const GrShape&) const override {
@@ -106,9 +104,13 @@ private:
     SkSTArray<4, sk_sp<GrCCPerOpListPaths>> fFlushingPaths;
 
     std::unique_ptr<GrCCPathCache> fPathCache;
-    GrUniqueKey fStashedAtlasKey;
 
     SkDEBUGCODE(bool fFlushing = false);
+
+public:
+    void testingOnly_drawPathDirectly(const DrawPathArgs&);
+    const GrCCPerFlushResources* testingOnly_getCurrentFlushResources();
+    const GrCCPathCache* testingOnly_getPathCache() const;
 };
 
 #endif

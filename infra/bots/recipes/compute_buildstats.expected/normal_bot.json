@@ -50,7 +50,7 @@
     "cwd": "[START_DIR]/cache/work",
     "env_prefixes": {
       "PATH": [
-        "RECIPE_PACKAGE_REPO[depot_tools]"
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -122,7 +122,6 @@
     "cwd": "[START_DIR]/build",
     "infra_step": true,
     "name": "find WASM binaries",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@glob@[START_DIR]/build/pathkit.wasm@@@",
       "@@@STEP_LOG_END@glob@@@"
@@ -136,7 +135,6 @@
     ],
     "cwd": "[START_DIR]/build",
     "name": "get swarming bot id",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
       "@@@STEP_LOG_LINE@python.inline@print os.environ.get('SWARMING_BOT_ID', '')@@@",
@@ -151,7 +149,6 @@
     ],
     "cwd": "[START_DIR]/build",
     "name": "get swarming task id",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
       "@@@STEP_LOG_LINE@python.inline@print os.environ.get('SWARMING_TASK_ID', '')@@@",
@@ -172,10 +169,9 @@
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Analyze wasm",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@bloaty_symbol_short@@@@",
       "@@@STEP_LOG_LINE@bloaty_symbol_short@Report A@@@",
@@ -209,7 +205,6 @@
     "cwd": "[START_DIR]/build",
     "infra_step": true,
     "name": "find JS files",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@glob@[START_DIR]/build/pathkit.js@@@",
       "@@@STEP_LOG_END@glob@@@"
@@ -228,7 +223,7 @@
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Analyze [START_DIR]/build/pathkit.js"
   },
@@ -246,7 +241,6 @@
     "cwd": "[START_DIR]/build",
     "infra_step": true,
     "name": "find JS mem files",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@glob@[START_DIR]/build/pathkit.js.mem@@@",
       "@@@STEP_LOG_END@glob@@@"
@@ -265,7 +259,7 @@
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Analyze [START_DIR]/build/pathkit.js.mem"
   },
@@ -283,7 +277,6 @@
     "cwd": "[START_DIR]/build",
     "infra_step": true,
     "name": "find flutter library",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@glob@[START_DIR]/build/libflutter.so@@@",
       "@@@STEP_LOG_END@glob@@@"
@@ -304,10 +297,9 @@
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Analyze flutter",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@bloaty_file_symbol_short@@@@",
       "@@@STEP_LOG_LINE@bloaty_file_symbol_short@Report A@@@",
@@ -351,7 +343,6 @@
     "cwd": "[START_DIR]/build",
     "infra_step": true,
     "name": "find skia library",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@glob@[START_DIR]/build/libskia.so@@@",
       "@@@STEP_LOG_END@glob@@@"
@@ -371,12 +362,46 @@
     "cwd": "[START_DIR]/cache/work/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Analyze [START_DIR]/build/libskia.so"
   },
   {
-    "jsonResult": null,
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "glob",
+      "[START_DIR]/build",
+      "skottie_tool"
+    ],
+    "cwd": "[START_DIR]/build",
+    "infra_step": true,
+    "name": "find skottie_tool",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@glob@[START_DIR]/build/skottie_tool@@@",
+      "@@@STEP_LOG_END@glob@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "[START_DIR]/cache/work/skia/infra/bots/buildstats/make_treemap.py",
+      "[START_DIR]/build/skottie_tool",
+      "[START_DIR]/[SWARM_OUT_DIR]"
+    ],
+    "cwd": "[START_DIR]/cache/work/skia",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DOCKER_CONFIG": "/home/chrome-bot/.docker",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "name": "Make code size treemap"
+  },
+  {
     "name": "$result"
   }
 ]

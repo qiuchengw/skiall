@@ -133,7 +133,6 @@
       "import os\nprint os.environ.get('SWARMING_BOT_ID', '')\n"
     ],
     "name": "get swarming bot id",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
       "@@@STEP_LOG_LINE@python.inline@print os.environ.get('SWARMING_BOT_ID', '')@@@",
@@ -147,7 +146,6 @@
       "import os\nprint os.environ.get('SWARMING_TASK_ID', '')\n"
     ],
     "name": "get swarming task id",
-    "stdout": "/path/to/tmp/",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@python.inline@import os@@@",
       "@@@STEP_LOG_LINE@python.inline@print os.environ.get('SWARMING_TASK_ID', '')@@@",
@@ -183,7 +181,6 @@
       "glsrgb",
       "gles",
       "glessrgb",
-      "--reduceOpListSplitting",
       "--match",
       "~inc0.gif",
       "~inc1.gif",
@@ -233,7 +230,7 @@
       "CHROME_HEADLESS": "1",
       "LD_LIBRARY_PATH": "[START_DIR]/mesa_intel_driver_linux",
       "LIBGL_DRIVERS_PATH": "[START_DIR]/mesa_intel_driver_linux",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]",
       "VK_ICD_FILENAMES": "[START_DIR]/mesa_intel_driver_linux/intel_icd.x86_64.json"
     },
     "name": "symbolized nanobench"
@@ -254,7 +251,6 @@
     "name": "makedirs perf_dir"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

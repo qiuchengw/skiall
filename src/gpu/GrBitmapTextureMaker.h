@@ -8,15 +8,16 @@
 #ifndef GrBitmapTextureMaker_DEFINED
 #define GrBitmapTextureMaker_DEFINED
 
-#include "GrTextureMaker.h"
-#include "SkBitmap.h"
+#include "include/core/SkBitmap.h"
+#include "src/gpu/GrTextureMaker.h"
 
 /** This class manages the conversion of SW-backed bitmaps to GrTextures. If the input bitmap is
     non-volatile the texture is cached using a key created from the pixels' image id and the
     subset of the pixelref specified by the bitmap. */
 class GrBitmapTextureMaker : public GrTextureMaker {
 public:
-    GrBitmapTextureMaker(GrContext* context, const SkBitmap& bitmap);
+    GrBitmapTextureMaker(GrRecordingContext* context, const SkBitmap& bitmap,
+                         bool useDecal = false);
 
 protected:
     sk_sp<GrTextureProxy> refOriginalTextureProxy(bool willBeMipped,

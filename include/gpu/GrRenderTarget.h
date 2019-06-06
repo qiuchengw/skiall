@@ -8,8 +8,8 @@
 #ifndef GrRenderTarget_DEFINED
 #define GrRenderTarget_DEFINED
 
-#include "GrSurface.h"
-#include "SkRect.h"
+#include "include/core/SkRect.h"
+#include "include/gpu/GrSurface.h"
 
 class GrCaps;
 class GrRenderTargetOpList;
@@ -125,10 +125,10 @@ private:
 
     friend class GrRenderTargetPriv;
 
-    int                  fSampleCnt;
+    int fSampleCnt;
+    int fSamplePatternKey;
     sk_sp<GrStencilAttachment> fStencilAttachment;
-
-    SkIRect              fResolveRect;
+    SkIRect fResolveRect;
 
     typedef GrSurface INHERITED;
 };

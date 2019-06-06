@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "GrGaussianConvolutionFragmentProcessor.h"
+#include "src/gpu/effects/GrGaussianConvolutionFragmentProcessor.h"
 
-#include "GrTexture.h"
-#include "GrTextureProxy.h"
-#include "glsl/GrGLSLFragmentProcessor.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "glsl/GrGLSLProgramDataManager.h"
-#include "glsl/GrGLSLUniformHandler.h"
+#include "include/gpu/GrTexture.h"
+#include "include/private/GrTextureProxy.h"
+#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLProgramDataManager.h"
+#include "src/gpu/glsl/GrGLSLUniformHandler.h"
 
 // For brevity
 using UniformHandle = GrGLSLProgramDataManager::UniformHandle;
@@ -216,12 +216,16 @@ GrGaussianConvolutionFragmentProcessor::GrGaussianConvolutionFragmentProcessor(
                                                             GrTextureDomain::Mode mode,
                                                             int bounds[2])
         : INHERITED(kGrGaussianConvolutionFragmentProcessor_ClassID,
-                    ModulateByConfigOptimizationFlags(proxy->config()))
+                    ModulateForSamplerOptFlags(proxy->config(),
+                                               mode == GrTextureDomain::kDecal_Mode))
         , fCoordTransform(proxy.get())
         , fTextureSampler(std::move(proxy))
         , fRadius(radius)
         , fDirection(direction)
         , fMode(mode) {
+    // Make sure the sampler's ctor uses the clamp wrap mode
+    SkASSERT(fTextureSampler.samplerState().wrapModeX() == GrSamplerState::WrapMode::kClamp &&
+             fTextureSampler.samplerState().wrapModeY() == GrSamplerState::WrapMode::kClamp);
     this->addCoordTransform(&fCoordTransform);
     this->setTextureSamplerCnt(1);
     SkASSERT(radius <= kMaxKernelRadius);

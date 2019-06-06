@@ -14,6 +14,7 @@ DEPS = [
   'recipe_engine/context',
   'recipe_engine/file',
   'recipe_engine/path',
+  'recipe_engine/platform',
   'recipe_engine/properties',
   'recipe_engine/python',
   'recipe_engine/raw_io',
@@ -77,8 +78,7 @@ def skpbench_steps(api):
         '--adb_binary', ADB_BINARY]
   if 'CCPR' in api.vars.builder_name:
     skpbench_args += [
-        '--pr', 'ccpr',
-        '--nocache',
+        '--pr', 'ccpr', '--cc', '--nocache',
         api.path.join(api.flavor.device_dirs.skp_dir, 'desk_*svg.skp'),
         api.path.join(api.flavor.device_dirs.skp_dir, 'desk_chalkboard.skp')]
   else:
@@ -166,7 +166,8 @@ def GenTests(api):
       api.step_data('get swarming task id',
           stdout=api.raw_io.output('123456'))
     )
-
+    if 'Win' in builder and not 'LenovoYogaC630' in builder:
+      test += api.platform('win', 64)
     yield test
 
   b = ('Perf-Android-Clang-Pixel2XL-GPU-Adreno540-arm64-Release-All-'

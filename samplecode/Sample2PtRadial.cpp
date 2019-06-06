@@ -4,9 +4,9 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Sample.h"
-#include "SkCanvas.h"
-#include "SkGradientShader.h"
+#include "include/core/SkCanvas.h"
+#include "include/effects/SkGradientShader.h"
+#include "samplecode/Sample.h"
 
 
 class TwoPtConicalView : public Sample {
@@ -33,7 +33,7 @@ protected:
         SkPaint paint;
         paint.setShader(SkGradientShader::MakeTwoPointConical(c0, r0, c1, r1, colors,
                                                              nullptr, 2,
-                                                             SkShader::kClamp_TileMode));
+                                                             SkTileMode::kClamp));
         canvas->drawPaint(paint);
     }
 

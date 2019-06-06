@@ -7,10 +7,34 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "push_file file.txt"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/skia/platform_tools/ios/bin/ios_cat_file",
+      "file.txt"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "cat_file file.txt"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/skia/platform_tools/ios/bin/ios_rm",
+      "file.txt"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "rm file.txt"
   },
   {
     "cmd": [
@@ -47,7 +71,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "rm device_results_dir"
@@ -59,7 +83,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "mkdir device_results_dir"
@@ -70,7 +94,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "setup_device"
@@ -83,12 +107,11 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "install_dm",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },
@@ -100,7 +123,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "uninstall_dm"
@@ -113,21 +136,17 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "name": "install_dm (attempt 2)",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_EXCEPTION@@@"
     ]
   },
   {
     "failure": {
-      "failure": {
-        "step": "install_dm (attempt 2)"
-      },
-      "humanReason": "Infra Failure: Step('install_dm (attempt 2)') returned 1"
+      "humanReason": "Infra Failure: Step('install_dm (attempt 2)') (retcode: 1)"
     },
     "name": "$result"
   }

@@ -7,9 +7,9 @@
 #ifndef SkOpSpan_DEFINED
 #define SkOpSpan_DEFINED
 
-#include "SkPathOpsDebug.h"
-#include "SkPathOpsTypes.h"
-#include "SkPoint.h"
+#include "include/core/SkPoint.h"
+#include "src/pathops/SkPathOpsDebug.h"
+#include "src/pathops/SkPathOpsTypes.h"
 
 class SkArenaAlloc;
 class SkOpAngle;
@@ -183,7 +183,7 @@ public:
         kError,
     };
 
-    void addOpp(SkOpSpanBase* opp);
+    bool addOpp(SkOpSpanBase* opp);
 
     void bumpSpanAdds() {
         ++fSpanAdds;
@@ -293,7 +293,7 @@ public:
     }
 
     void merge(SkOpSpan* span);
-    void mergeMatches(SkOpSpanBase* opp);
+    bool mergeMatches(SkOpSpanBase* opp);
 
     const SkOpSpan* prev() const {
         return fPrev;

@@ -5,15 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "SkRegion.h"
+#include "include/core/SkRegion.h"
 
-#include "SkAtomics.h"
-#include "SkMacros.h"
-#include "SkRegionPriv.h"
-#include "SkSafeMath.h"
-#include "SkTemplates.h"
-#include "SkTo.h"
-#include "SkUTF.h"
+#include "include/private/SkMacros.h"
+#include "include/private/SkTemplates.h"
+#include "include/private/SkTo.h"
+#include "src/core/SkRegionPriv.h"
+#include "src/core/SkSafeMath.h"
+#include "src/utils/SkUTF.h"
 
 #include <utility>
 
@@ -26,8 +25,6 @@
  *
  *  Y-Sentinel
  */
-
-SkDEBUGCODE(int32_t gRgnAllocCounter;)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -139,9 +136,6 @@ void SkRegion::freeRuns() {
     if (this->isComplex()) {
         SkASSERT(fRunHead->fRefCnt >= 1);
         if (--fRunHead->fRefCnt == 0) {
-            //SkASSERT(gRgnAllocCounter > 0);
-            //SkDEBUGCODE(sk_atomic_dec(&gRgnAllocCounter));
-            //SkDEBUGF("************** gRgnAllocCounter::free %d\n", gRgnAllocCounter);
             sk_free(fRunHead);
         }
     }
@@ -227,7 +221,7 @@ bool SkRegion::op(const SkRegion& rgn, const SkIRect& rect, Op op) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef SK_BUILD_FOR_ANDROID
+#ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
 #include <stdio.h>
 char* SkRegion::toString() {
     Iterator iter(*this);
@@ -1146,7 +1140,7 @@ bool SkRegion::op(const SkRegion& rgna, const SkRegion& rgnb, Op op) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "SkBuffer.h"
+#include "src/core/SkBuffer.h"
 
 size_t SkRegion::writeToMemory(void* storage) const {
     if (nullptr == storage) {

@@ -5,18 +5,19 @@
  * found in the LICENSE file.
  */
 
-#include "SkAndroidCodec.h"
-#include "SkAnimatedImage.h"
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkPaint.h"
-#include "SkPictureRecorder.h"
-#include "SkRect.h"
-#include "SkScalar.h"
-#include "SkString.h"
+#include "include/android/SkAnimatedImage.h"
+#include "include/codec/SkAndroidCodec.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPictureRecorder.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkString.h"
+#include "tools/timer/AnimTimer.h"
 
-#include "Sample.h"
-#include "Resources.h"
+#include "samplecode/Sample.h"
+#include "tools/Resources.h"
 
 static constexpr char kPauseKey = 'p';
 static constexpr char kResetKey = 'r';
@@ -30,19 +31,17 @@ public:
 
 protected:
     void onDrawBackground(SkCanvas* canvas) override {
-        SkPaint paint;
-        paint.setAntiAlias(true);
-        constexpr SkScalar kTextSize = 20;
-        paint.setTextSize(kTextSize);
+        SkFont font;
+        font.setSize(20);
 
         SkString str = SkStringPrintf("Press '%c' to start/pause; '%c' to reset.",
                 kPauseKey, kResetKey);
         const char* text = str.c_str();
         SkRect bounds;
-        paint.measureText(text, strlen(text), &bounds);
+        font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds);
         fYOffset = bounds.height();
 
-        canvas->drawText(text, strlen(text), 5, fYOffset, paint);
+        canvas->drawSimpleText(text, strlen(text), SkTextEncoding::kUTF8, 5, fYOffset, font, SkPaint());
         fYOffset *= 2;
     }
 
@@ -57,7 +56,7 @@ protected:
         canvas->drawDrawable(fDrawable.get(), fImage->getBounds().width(), 0);
     }
 
-    bool onAnimate(const SkAnimTimer& animTimer) override {
+    bool onAnimate(const AnimTimer& animTimer) override {
         if (!fImage) {
             return false;
         }

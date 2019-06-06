@@ -8,12 +8,11 @@
 #ifndef GrVkSemaphore_DEFINED
 #define GrVkSemaphore_DEFINED
 
-#include "GrSemaphore.h"
+#include "src/gpu/GrSemaphore.h"
 
-#include "GrResourceProvider.h"
-#include "GrVkResource.h"
-
-#include "vk/GrVkTypes.h"
+#include "include/gpu/vk/GrVkTypes.h"
+#include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/vk/GrVkResource.h"
 
 class GrBackendSemaphore;
 class GrVkGpu;
@@ -44,9 +43,6 @@ public:
 
         VkSemaphore semaphore() const { return fSemaphore; }
 
-        static void AcquireMutex() { GetMutex()->acquire(); }
-        static void ReleaseMutex() { GetMutex()->release(); }
-
         bool shouldSignal() const {
             return !fHasBeenSubmittedToQueueForSignal;
         }
@@ -55,11 +51,9 @@ public:
         }
 
         void markAsSignaled() {
-            GetMutex()->assertHeld();
             fHasBeenSubmittedToQueueForSignal = true;
         }
         void markAsWaited() {
-            GetMutex()->assertHeld();
             fHasBeenSubmittedToQueueForWait = true;
         }
 
@@ -69,12 +63,7 @@ public:
         }
 #endif
     private:
-        void freeGPUData(const GrVkGpu* gpu) const override;
-
-        static SkMutex* GetMutex() {
-            static SkMutex kMutex;
-            return &kMutex;
-        }
+        void freeGPUData(GrVkGpu* gpu) const override;
 
         VkSemaphore fSemaphore;
         bool        fHasBeenSubmittedToQueueForSignal;

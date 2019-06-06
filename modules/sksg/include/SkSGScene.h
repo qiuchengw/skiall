@@ -8,13 +8,14 @@
 #ifndef SkSGScene_DEFINED
 #define SkSGScene_DEFINED
 
-#include "SkRefCnt.h"
-#include "SkTypes.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkTypes.h"
 
 #include <memory>
 #include <vector>
 
 class SkCanvas;
+struct SkPoint;
 
 namespace sksg {
 
@@ -67,6 +68,7 @@ public:
 
     void render(SkCanvas*) const;
     void animate(float t);
+    const RenderNode* nodeAt(const SkPoint&) const;
 
     void setShowInval(bool show) { fShowInval = show; }
 

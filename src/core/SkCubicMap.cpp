@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "SkCubicMap.h"
-#include "SkNx.h"
+#include "include/core/SkCubicMap.h"
+#include "include/private/SkNx.h"
 
 //#define CUBICMAP_TRACK_MAX_ERROR
 
 #ifdef CUBICMAP_TRACK_MAX_ERROR
-#include "../../src/pathops/SkPathOpsCubic.h"
+#include "src/pathops/SkPathOpsCubic.h"
 #endif
 
 static float eval_poly3(float a, float b, float c, float d, float t) {
@@ -181,20 +181,21 @@ float SkCubicMap::computeYFromX(float x) const {
     float b = fCoeff[1].fY;
     float c = fCoeff[2].fY;
     float y = ((a * t + b) * t + c) * t;
-    SkASSERT(y >= 0);
-    return std::min(y, 1.0f);
+
+    return y;
 }
 
 static inline bool coeff_nearly_zero(float delta) {
     return sk_float_abs(delta) <= 0.0000001f;
 }
 
-void SkCubicMap::setPts(SkPoint p1, SkPoint p2) {
+SkCubicMap::SkCubicMap(SkPoint p1, SkPoint p2) {
+    // Clamp X values only (we allow Ys outside [0..1]).
+    p1.fX = SkTMin(SkTMax(p1.fX, 0.0f), 1.0f);
+    p2.fX = SkTMin(SkTMax(p2.fX, 0.0f), 1.0f);
+
     Sk2s s1 = Sk2s::Load(&p1) * 3;
     Sk2s s2 = Sk2s::Load(&p2) * 3;
-
-    s1 = Sk2s::Min(Sk2s::Max(s1, 0), 3);
-    s2 = Sk2s::Min(Sk2s::Max(s2, 0), 3);
 
     (Sk2s(1) + s1 - s2).store(&fCoeff[0]);
     (s2 - s1 - s1).store(&fCoeff[1]);

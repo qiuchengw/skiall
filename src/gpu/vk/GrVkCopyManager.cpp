@@ -5,28 +5,29 @@
  * found in the LICENSE file.
 */
 
-#include "GrVkCopyManager.h"
+#include "src/gpu/vk/GrVkCopyManager.h"
 
-#include "GrRenderTargetPriv.h"
-#include "GrSamplerState.h"
-#include "GrShaderCaps.h"
-#include "GrSurface.h"
-#include "GrTexturePriv.h"
-#include "GrVkCommandBuffer.h"
-#include "GrVkCopyPipeline.h"
-#include "GrVkDescriptorSet.h"
-#include "GrVkGpu.h"
-#include "GrVkImageView.h"
-#include "GrVkPipelineLayout.h"
-#include "GrVkRenderTarget.h"
-#include "GrVkResourceProvider.h"
-#include "GrVkSampler.h"
-#include "GrVkTexture.h"
-#include "GrVkUniformBuffer.h"
-#include "GrVkVertexBuffer.h"
-#include "SkPoint.h"
-#include "SkRect.h"
-#include "SkTraceEvent.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkRect.h"
+#include "include/gpu/GrSamplerState.h"
+#include "include/gpu/GrSurface.h"
+#include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrRenderTargetPriv.h"
+#include "src/gpu/GrShaderCaps.h"
+#include "src/gpu/GrTexturePriv.h"
+#include "src/gpu/vk/GrVkCommandBuffer.h"
+#include "src/gpu/vk/GrVkCommandPool.h"
+#include "src/gpu/vk/GrVkCopyPipeline.h"
+#include "src/gpu/vk/GrVkDescriptorSet.h"
+#include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkImageView.h"
+#include "src/gpu/vk/GrVkPipelineLayout.h"
+#include "src/gpu/vk/GrVkRenderTarget.h"
+#include "src/gpu/vk/GrVkResourceProvider.h"
+#include "src/gpu/vk/GrVkSampler.h"
+#include "src/gpu/vk/GrVkTexture.h"
+#include "src/gpu/vk/GrVkUniformBuffer.h"
+#include "src/gpu/vk/GrVkVertexBuffer.h"
 
 GrVkCopyManager::GrVkCopyManager()
     : fVertShaderModule(VK_NULL_HANDLE)
@@ -40,7 +41,7 @@ bool GrVkCopyManager::createCopyProgram(GrVkGpu* gpu) {
 
     const GrShaderCaps* shaderCaps = gpu->caps()->shaderCaps();
     const char* version = shaderCaps->versionDeclString();
-    SkString vertShaderText(version);
+    SkSL::String vertShaderText(version);
     vertShaderText.append(
         "#extension GL_ARB_separate_shader_objects : enable\n"
         "#extension GL_ARB_shading_language_420pack : enable\n"
@@ -54,13 +55,13 @@ bool GrVkCopyManager::createCopyProgram(GrVkGpu* gpu) {
 
         "// Copy Program VS\n"
         "void main() {"
-            "vTexCoord = inPosition * uTexCoordXform.xy + uTexCoordXform.zw;"
+            "vTexCoord = half2(inPosition * uTexCoordXform.xy + uTexCoordXform.zw);"
             "sk_Position.xy = inPosition * uPosXform.xy + uPosXform.zw;"
             "sk_Position.zw = half2(0, 1);"
         "}"
     );
 
-    SkString fragShaderText(version);
+    SkSL::String fragShaderText(version);
     fragShaderText.append(
         "#extension GL_ARB_separate_shader_objects : enable\n"
         "#extension GL_ARB_shading_language_420pack : enable\n"
@@ -75,16 +76,19 @@ bool GrVkCopyManager::createCopyProgram(GrVkGpu* gpu) {
     );
 
     SkSL::Program::Settings settings;
+    SkSL::String spirv;
     SkSL::Program::Inputs inputs;
-    if (!GrCompileVkShaderModule(gpu, vertShaderText.c_str(), VK_SHADER_STAGE_VERTEX_BIT,
-                                 &fVertShaderModule, &fShaderStageInfo[0], settings, &inputs)) {
+    if (!GrCompileVkShaderModule(gpu, vertShaderText, VK_SHADER_STAGE_VERTEX_BIT,
+                                 &fVertShaderModule, &fShaderStageInfo[0], settings, &spirv,
+                                 &inputs)) {
         this->destroyResources(gpu);
         return false;
     }
     SkASSERT(inputs.isEmpty());
 
-    if (!GrCompileVkShaderModule(gpu, fragShaderText.c_str(), VK_SHADER_STAGE_FRAGMENT_BIT,
-                                 &fFragShaderModule, &fShaderStageInfo[1], settings, &inputs)) {
+    if (!GrCompileVkShaderModule(gpu, fragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT,
+                                 &fFragShaderModule, &fShaderStageInfo[1], settings, &spirv,
+                                 &inputs)) {
         this->destroyResources(gpu);
         return false;
     }
@@ -133,7 +137,7 @@ bool GrVkCopyManager::createCopyProgram(GrVkGpu* gpu) {
         1, 0,
         1, 1
     };
-    fVertexBuffer.reset(GrVkVertexBuffer::Create(gpu, sizeof(vdata), false));
+    fVertexBuffer = GrVkVertexBuffer::Make(gpu, sizeof(vdata), false);
     SkASSERT(fVertexBuffer.get());
     fVertexBuffer->updateData(vdata, sizeof(vdata));
 
@@ -154,11 +158,6 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
     if (gpu->caps()->shaderCaps()->configOutputSwizzle(src->config()) !=
         gpu->caps()->shaderCaps()->configOutputSwizzle(dst->config())) {
         return false;
-    }
-
-    if (gpu->vkCaps().newCBOnPipelineChange()) {
-        // We bind a new pipeline here for the copy so we must start a new command buffer.
-        gpu->finishFlush(0, nullptr);
     }
 
     GrVkRenderTarget* rt = static_cast<GrVkRenderTarget*>(dst->asRenderTarget());
@@ -262,7 +261,7 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
     GrSamplerState samplerState = GrSamplerState::ClampNearest();
 
     GrVkSampler* sampler = resourceProv.findOrCreateCompatibleSampler(
-            samplerState, srcTex->texturePriv().maxMipMapLevel());
+            samplerState, GrVkYcbcrConversionInfo());
 
     VkDescriptorImageInfo imageInfo;
     memset(&imageInfo, 0, sizeof(VkDescriptorImageInfo));
@@ -292,10 +291,8 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
 
     GrVkRenderTarget* texRT = static_cast<GrVkRenderTarget*>(srcTex->asRenderTarget());
     if (texRT) {
-        gpu->onResolveRenderTarget(texRT);
+        gpu->resolveRenderTargetNoFlush(texRT);
     }
-
-    GrVkPrimaryCommandBuffer* cmdBuffer = gpu->currentCommandBuffer();
 
     // TODO: Make tighter bounds and then adjust bounds for origin and granularity if we see
     //       any perf issues with using the whole bounds
@@ -355,9 +352,16 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
 
     SkASSERT(renderPass->isCompatible(*rt->simpleRenderPass()));
 
+    GrVkPrimaryCommandBuffer* cmdBuffer = gpu->currentCommandBuffer();
+    cmdBuffer->beginRenderPass(gpu, renderPass, nullptr, *rt, bounds, true);
 
-    cmdBuffer->beginRenderPass(gpu, renderPass, nullptr, *rt, bounds, false);
-    cmdBuffer->bindPipeline(gpu, pipeline);
+    GrVkSecondaryCommandBuffer* secondary = gpu->cmdPool()->findOrCreateSecondaryCommandBuffer(gpu);
+    if (!secondary) {
+        return false;
+    }
+    secondary->begin(gpu, rt->framebuffer(), renderPass);
+
+    secondary->bindPipeline(gpu, pipeline);
 
     // Uniform DescriptorSet, Sampler DescriptorSet, and vertex shader uniformBuffer
     SkSTArray<3, const GrVkRecycledResource*> descriptorRecycledResources;
@@ -371,7 +375,7 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
     descriptorResources.push_back(srcTex->textureView());
     descriptorResources.push_back(srcTex->resource());
 
-    cmdBuffer->bindDescriptorSets(gpu,
+    secondary->bindDescriptorSets(gpu,
                                   descriptorRecycledResources,
                                   descriptorResources,
                                   fPipelineLayout,
@@ -390,7 +394,7 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
     viewport.height = SkIntToScalar(rt->height());
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    cmdBuffer->setViewport(gpu, 0, 1, &viewport);
+    secondary->setViewport(gpu, 0, 1, &viewport);
 
     // We assume the scissor is not enabled so just set it to the whole RT
     VkRect2D scissor;
@@ -398,11 +402,14 @@ bool GrVkCopyManager::copySurfaceAsDraw(GrVkGpu* gpu,
     scissor.extent.height = rt->height();
     scissor.offset.x = 0;
     scissor.offset.y = 0;
-    cmdBuffer->setScissor(gpu, 0, 1, &scissor);
+    secondary->setScissor(gpu, 0, 1, &scissor);
 
-    cmdBuffer->bindInputBuffer(gpu, 0, fVertexBuffer.get());
-    cmdBuffer->draw(gpu, 4, 1, 0, 0);
+    secondary->bindInputBuffer(gpu, 0, fVertexBuffer.get());
+    secondary->draw(gpu, 4, 1, 0, 0);
+    secondary->end(gpu);
+    cmdBuffer->executeCommands(gpu, secondary);
     cmdBuffer->endRenderPass(gpu);
+    secondary->unref(gpu);
 
     // Release all temp resources which should now be reffed by the cmd buffer
     pipeline->unref(gpu);

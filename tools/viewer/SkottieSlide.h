@@ -8,10 +8,10 @@
 #ifndef SkottieSlide_DEFINED
 #define SkottieSlide_DEFINED
 
-#include "Slide.h"
+#include "tools/viewer/Slide.h"
 
 #if defined(SK_ENABLE_SKOTTIE)
-#include "Skottie.h"
+#include "modules/skottie/include/Skottie.h"
 
 namespace sksg    { class Scene;     }
 
@@ -26,7 +26,7 @@ public:
     SkISize getDimensions() const override;
 
     void draw(SkCanvas*) override;
-    bool animate(const SkAnimTimer&) override;
+    bool animate(const AnimTimer&) override;
 
     bool onChar(SkUnichar) override;
     bool onMouse(SkScalar x, SkScalar y, sk_app::Window::InputState, uint32_t modifiers) override;

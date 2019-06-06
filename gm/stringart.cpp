@@ -5,11 +5,17 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
-#include "SkAnimTimer.h"
-#include "SkCanvas.h"
-#include "SkPath.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkPoint.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypes.h"
+#include "tools/ToolUtils.h"
+#include "tools/timer/AnimTimer.h"
 
 // Reproduces https://code.google.com/p/chromium/issues/detail?id=279014
 
@@ -56,12 +62,12 @@ protected:
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setStyle(SkPaint::kStroke_Style);
-        paint.setColor(sk_tool_utils::color_to_565(0xFF007700));
+        paint.setColor(ToolUtils::color_to_565(0xFF007700));
 
         canvas->drawPath(path, paint);
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         constexpr SkScalar kDesiredDurationSecs = 3.0f;
 
         // Make the animation ping-pong back and forth but start in the fully drawn state
@@ -87,7 +93,7 @@ DEF_GM( return new StringArtGM; )
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if 0
-#include "Skottie.h"
+#include "modules/skottie/include/Skottie.h"
 
 class SkottieGM : public skiagm::GM {
     enum {
@@ -141,7 +147,7 @@ protected:
         }
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         SkScalar time = (float)(fmod(timer.secs(), fDur) / fDur);
         for (auto anim : fAnims) {
             anim->seek(time);

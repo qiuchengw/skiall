@@ -5,15 +5,22 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include "gm/gm.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColor.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkFontTypes.h"
+#include "include/core/SkPaint.h"
+#include "include/core/SkRect.h"
+#include "include/core/SkRefCnt.h"
+#include "include/core/SkScalar.h"
+#include "include/core/SkSize.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTextBlob.h"
+#include "include/core/SkTypeface.h"
+#include "tools/ToolUtils.h"
 
-#include "Resources.h"
-#include "SkCanvas.h"
-#include "SkGradientShader.h"
-#include "SkStream.h"
-#include "SkTextBlob.h"
-#include "SkTypeface.h"
+#include <string.h>
 
 namespace skiagm {
 class TextBlobTransforms : public GM {
@@ -26,28 +33,27 @@ protected:
         SkTextBlobBuilder builder;
 
         // make textblob.  To stress distance fields, we choose sizes appropriately
-        SkPaint paint;
-        paint.setTextSize(162);
+        SkFont font(ToolUtils::create_portable_typeface(), 162);
+        font.setEdging(SkFont::Edging::kAlias);
         const char* text = "A";
-        sk_tool_utils::set_portable_typeface(&paint);
 
         SkRect bounds;
-        paint.measureText(text, strlen(text), &bounds);
-        sk_tool_utils::add_to_text_blob(&builder, text, paint, 0, 0);
+        font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds);
+        ToolUtils::add_to_text_blob(&builder, text, font, 0, 0);
 
         // Medium
         SkScalar xOffset = bounds.width() + 5;
-        paint.setTextSize(72);
+        font.setSize(72);
         text = "B";
-        sk_tool_utils::add_to_text_blob(&builder, text, paint, xOffset, 0);
+        ToolUtils::add_to_text_blob(&builder, text, font, xOffset, 0);
 
-        paint.measureText(text, strlen(text), &bounds);
+        font.measureText(text, strlen(text), SkTextEncoding::kUTF8, &bounds);
         SkScalar yOffset = bounds.height();
 
         // Small
-        paint.setTextSize(32);
+        font.setSize(32);
         text = "C";
-        sk_tool_utils::add_to_text_blob(&builder, text, paint, xOffset, -yOffset - 10);
+        ToolUtils::add_to_text_blob(&builder, text, font, xOffset, -yOffset - 10);
 
         // build
         fBlob = builder.make();

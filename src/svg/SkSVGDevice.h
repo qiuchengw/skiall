@@ -8,14 +8,14 @@
 #ifndef SkSVGDevice_DEFINED
 #define SkSVGDevice_DEFINED
 
-#include "SkClipStackDevice.h"
-#include "SkTemplates.h"
+#include "include/private/SkTemplates.h"
+#include "src/core/SkClipStackDevice.h"
 
 class SkXMLWriter;
 
 class SkSVGDevice : public SkClipStackDevice {
 public:
-    static SkBaseDevice* Create(const SkISize& size, SkXMLWriter* writer);
+    static sk_sp<SkBaseDevice> Make(const SkISize& size, std::unique_ptr<SkXMLWriter>);
 
 protected:
     void drawPaint(const SkPaint& paint) override;
@@ -29,7 +29,6 @@ protected:
                   const SkPaint& paint,
                   bool pathIsMutable = false) override;
 
-    void drawBitmap(const SkBitmap& bitmap, SkScalar x, SkScalar y, const SkPaint& paint) override;
     void drawSprite(const SkBitmap& bitmap,
                     int x, int y, const SkPaint& paint) override;
     void drawBitmapRect(const SkBitmap&,
@@ -43,7 +42,7 @@ protected:
                     const SkPaint&) override;
 
 private:
-    SkSVGDevice(const SkISize& size, SkXMLWriter* writer);
+    SkSVGDevice(const SkISize& size, std::unique_ptr<SkXMLWriter>);
     ~SkSVGDevice() override;
 
     struct MxCp;
@@ -52,7 +51,7 @@ private:
     class AutoElement;
     class ResourceBucket;
 
-    SkXMLWriter*                    fWriter;
+    std::unique_ptr<SkXMLWriter>    fWriter;
     std::unique_ptr<AutoElement>    fRootElement;
     std::unique_ptr<ResourceBucket> fResourceBucket;
 

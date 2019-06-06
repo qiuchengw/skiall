@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "GrSDFMaskFilter.h"
-#include "SkDistanceFieldGen.h"
-#include "SkMaskFilterBase.h"
-#include "SkReadBuffer.h"
-#include "SkSafeMath.h"
-#include "SkWriteBuffer.h"
-#include "SkString.h"
+#include "include/core/SkString.h"
+#include "src/core/SkDistanceFieldGen.h"
+#include "src/core/SkMaskFilterBase.h"
+#include "src/core/SkReadBuffer.h"
+#include "src/core/SkSafeMath.h"
+#include "src/core/SkWriteBuffer.h"
+#include "src/gpu/text/GrSDFMaskFilter.h"
 
 class SK_API GrSDFMaskFilterImpl : public SkMaskFilterBase {
 public:
@@ -91,9 +91,7 @@ sk_sp<SkFlattenable> GrSDFMaskFilterImpl::CreateProc(SkReadBuffer& buffer) {
     return GrSDFMaskFilter::Make();
 }
 
-void gr_register_sdf_maskfilter_createproc() {
-    SK_REGISTER_FLATTENABLE(GrSDFMaskFilterImpl)
-}
+void gr_register_sdf_maskfilter_createproc() { SK_REGISTER_FLATTENABLE(GrSDFMaskFilterImpl); }
 
 ///////////////////////////////////////////////////////////////////////////////
 

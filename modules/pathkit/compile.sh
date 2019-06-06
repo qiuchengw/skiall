@@ -97,6 +97,7 @@ echo "Compiling bitcode"
   is_debug=false \
   is_official_build=true \
   is_component_build=false \
+  werror=true \
   target_cpu=\"wasm\" "
 
 ${NINJA} -C ${BUILD_DIR} libpathkit.a
@@ -104,26 +105,16 @@ ${NINJA} -C ${BUILD_DIR} libpathkit.a
 echo "Generating WASM"
 
 ${EMCXX} $RELEASE_CONF -std=c++14 \
--Iinclude/config \
--Iinclude/core \
--Iinclude/effects \
--Iinclude/gpu \
--Iinclude/pathops \
--Iinclude/private \
--Iinclude/utils \
--Isrc/core \
--Isrc/gpu \
--Isrc/shaders \
--Isrc/opts \
--Isrc/utils \
+-I. \
+-Ithird_party/skcms \
 -std=c++14 \
 --bind \
 --pre-js $BASE_DIR/helper.js \
 --pre-js $BASE_DIR/chaining.js \
+--post-js $BASE_DIR/ready.js \
 -DSK_DISABLE_READBUFFER=1 \
 -fno-rtti -fno-exceptions -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 \
 $WASM_CONF \
--s BINARYEN_IGNORE_IMPLICIT_TRAPS=1 \
 -s ERROR_ON_MISSING_LIBRARIES=1 \
 -s ERROR_ON_UNDEFINED_SYMBOLS=1 \
 -s EXPORT_NAME="PathKitInit" \

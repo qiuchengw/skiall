@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "Fuzz.h"
-#include "FuzzCommon.h"
-#include "SkPath.h"
-#include "SkPathOps.h"
-#include "SkRect.h"
+#include "fuzz/Fuzz.h"
+#include "fuzz/FuzzCommon.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRect.h"
+#include "include/pathops/SkPathOps.h"
 
 const uint8_t MAX_OPS = 20;
 
@@ -26,11 +26,11 @@ DEF_FUZZ(Pathop, fuzz) {
                 SkPath path;
                 FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
                 SkPath::FillType ft;
-                fuzz->nextEnum(&ft, 0, SkPath::kInverseEvenOdd_FillType);
+                fuzz->nextRange(&ft, 0, SkPath::kInverseEvenOdd_FillType);
                 path.setFillType(ft);
 
                 SkPathOp op;
-                fuzz->nextEnum(&op, 0, SkPathOp::kReverseDifference_SkPathOp);
+                fuzz->nextRange(&op, 0, SkPathOp::kReverseDifference_SkPathOp);
                 builder.add(path, op);
             }
 
@@ -42,7 +42,7 @@ DEF_FUZZ(Pathop, fuzz) {
             SkPath path;
             FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
             SkPath::FillType ft;
-            fuzz->nextEnum(&ft, 0, SkPath::kInverseEvenOdd_FillType);
+            fuzz->nextRange(&ft, 0, SkPath::kInverseEvenOdd_FillType);
             path.setFillType(ft);
 
             SkPath result;
@@ -58,16 +58,16 @@ DEF_FUZZ(Pathop, fuzz) {
             SkPath path;
             FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
             SkPath::FillType ft;
-            fuzz->nextEnum(&ft, 0, SkPath::kInverseEvenOdd_FillType);
+            fuzz->nextRange(&ft, 0, SkPath::kInverseEvenOdd_FillType);
             path.setFillType(ft);
 
             SkPath path2;
             FuzzEvilPath(fuzz, &path2, SkPath::Verb::kDone_Verb);
-            fuzz->nextEnum(&ft, 0, SkPath::kInverseEvenOdd_FillType);
+            fuzz->nextRange(&ft, 0, SkPath::kInverseEvenOdd_FillType);
             path.setFillType(ft);
 
             SkPathOp op;
-            fuzz->nextEnum(&op, 0, SkPathOp::kReverseDifference_SkPathOp);
+            fuzz->nextRange(&op, 0, SkPathOp::kReverseDifference_SkPathOp);
 
             SkPath result;
             uint8_t pickOutput;
@@ -84,7 +84,7 @@ DEF_FUZZ(Pathop, fuzz) {
             SkPath path;
             FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
             SkPath::FillType ft;
-            fuzz->nextEnum(&ft, 0, SkPath::kInverseEvenOdd_FillType);
+            fuzz->nextRange(&ft, 0, SkPath::kInverseEvenOdd_FillType);
             path.setFillType(ft);
 
             SkPath result;
@@ -100,7 +100,7 @@ DEF_FUZZ(Pathop, fuzz) {
             SkPath path;
             FuzzEvilPath(fuzz, &path, SkPath::Verb::kDone_Verb);
             SkPath::FillType ft;
-            fuzz->nextEnum(&ft, 0, SkPath::kInverseEvenOdd_FillType);
+            fuzz->nextRange(&ft, 0, SkPath::kInverseEvenOdd_FillType);
             path.setFillType(ft);
 
             SkRect result;

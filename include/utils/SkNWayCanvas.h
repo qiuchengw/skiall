@@ -9,9 +9,9 @@
 #ifndef SkNWayCanvas_DEFINED
 #define SkNWayCanvas_DEFINED
 
-#include "../private/SkTDArray.h"
-#include "SkCanvasVirtualEnforcer.h"
-#include "SkNoDrawCanvas.h"
+#include "include/core/SkCanvasVirtualEnforcer.h"
+#include "include/private/SkTDArray.h"
+#include "include/utils/SkNoDrawCanvas.h"
 
 class SK_API SkNWayCanvas : public SkCanvasVirtualEnforcer<SkNoDrawCanvas> {
 public:
@@ -27,27 +27,21 @@ protected:
 
     void willSave() override;
     SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec&) override;
+    bool onDoSaveBehind(const SkRect*) override;
     void willRestore() override;
 
     void didConcat(const SkMatrix&) override;
     void didSetMatrix(const SkMatrix&) override;
 
     void onDrawDRRect(const SkRRect&, const SkRRect&, const SkPaint&) override;
-    virtual void onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
-                            const SkPaint&) override;
-    virtual void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[],
-                               const SkPaint&) override;
-    virtual void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[],
-                                SkScalar constY, const SkPaint&) override;
     virtual void onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                                 const SkPaint& paint) override;
-    void onDrawTextRSXform(const void* text, size_t byteLength, const SkRSXform xform[],
-                           const SkRect* cull, const SkPaint& paint) override;
     virtual void onDrawPatch(const SkPoint cubics[12], const SkColor colors[4],
                              const SkPoint texCoords[4], SkBlendMode,
                              const SkPaint& paint) override;
 
     void onDrawPaint(const SkPaint&) override;
+    void onDrawBehind(const SkPaint&) override;
     void onDrawPoints(PointMode, size_t count, const SkPoint pts[], const SkPaint&) override;
     void onDrawRect(const SkRect&, const SkPaint&) override;
     void onDrawRegion(const SkRegion&, const SkPaint&) override;
@@ -66,8 +60,6 @@ protected:
     void onDrawImageLattice(const SkImage*, const Lattice&, const SkRect&, const SkPaint*) override;
     void onDrawImageNine(const SkImage*, const SkIRect& center, const SkRect& dst,
                          const SkPaint*) override;
-    void onDrawImageSet(const SkCanvas::ImageSetEntry[], int count, float alpha, SkFilterQuality,
-                        SkBlendMode) override;
     void onDrawBitmapNine(const SkBitmap&, const SkIRect& center, const SkRect& dst,
                           const SkPaint*) override;
     void onDrawVerticesObject(const SkVertices*, const SkVertices::Bone bones[], int boneCount,
@@ -84,6 +76,11 @@ protected:
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override;
     void onDrawDrawable(SkDrawable*, const SkMatrix*) override;
     void onDrawAnnotation(const SkRect&, const char[], SkData*) override;
+
+    void onDrawEdgeAAQuad(const SkRect&, const SkPoint[4], QuadAAFlags, SkColor,
+                          SkBlendMode) override;
+    void onDrawEdgeAAImageSet(const ImageSetEntry[], int count, const SkPoint[], const SkMatrix[],
+                              const SkPaint*, SrcRectConstraint) override;
 
     void onFlush() override;
 

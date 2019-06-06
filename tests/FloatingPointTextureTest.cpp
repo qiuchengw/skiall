@@ -12,14 +12,14 @@
  * have been selected to require 32 bits of precision and full IEEE conformance
  */
 
-#include "Test.h"
+#include "tests/Test.h"
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrProxyProvider.h"
-#include "GrTextureProxy.h"
-#include "ProxyUtils.h"
-#include "SkHalf.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/GrTextureProxy.h"
+#include "include/private/SkHalf.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrProxyProvider.h"
+#include "tools/gpu/ProxyUtils.h"
 
 #include <float.h>
 
@@ -46,19 +46,20 @@ void runFPTest(skiatest::Reporter* reporter, GrContext* context, T min, T max, T
     }
 
     for (auto origin : {kTopLeft_GrSurfaceOrigin, kBottomLeft_GrSurfaceOrigin}) {
-        auto fpProxy = sk_gpu_test::MakeTextureProxyFromData(context, true, DEV_W, DEV_H, colorType,
-                                                             origin, controlPixelData.begin(), 0);
+        auto fpProxy = sk_gpu_test::MakeTextureProxyFromData(context, GrRenderable::kYes,
+                                                             DEV_W, DEV_H, colorType, origin,
+                                                             controlPixelData.begin(), 0);
         // Floating point textures are NOT supported everywhere
         if (!fpProxy) {
             continue;
         }
 
-        sk_sp<GrSurfaceContext> sContext = context->contextPriv().makeWrappedSurfaceContext(
+        sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(
                                                                             std::move(fpProxy));
         REPORTER_ASSERT(reporter, sContext);
 
-        bool result = context->contextPriv().readSurfacePixels(
-                sContext.get(), 0, 0, DEV_W, DEV_H, colorType, nullptr, readBuffer.begin(), 0);
+        bool result = sContext->readPixels(context, 0, 0, DEV_W, DEV_H, colorType, nullptr,
+                                           readBuffer.begin(), 0);
         REPORTER_ASSERT(reporter, result);
         REPORTER_ASSERT(reporter,
                         0 == memcmp(readBuffer.begin(), controlPixelData.begin(), readBuffer.bytes()));

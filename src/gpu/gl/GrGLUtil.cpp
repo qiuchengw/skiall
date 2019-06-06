@@ -6,9 +6,10 @@
  */
 
 
-#include "GrGLUtil.h"
-#include "GrTypesPriv.h"
-#include "SkMatrix.h"
+#include "include/core/SkMatrix.h"
+#include "include/private/GrTypesPriv.h"
+#include "src/gpu/GrDataUtils.h"
+#include "src/gpu/gl/GrGLUtil.h"
 #include <stdio.h>
 
 void GrGLClearErr(const GrGLInterface* gl) {
@@ -77,6 +78,13 @@ GrGLStandard GrGLGetStandardInUseFromString(const char* versionString) {
         return kGL_GrGLStandard;
     }
 
+    // WebGL might look like "OpenGL ES 2.0 (WebGL 1.0 (OpenGL ES 2.0 Chromium))"
+    int esMajor, esMinor;
+    n = sscanf(versionString, "OpenGL ES %d.%d (WebGL %d.%d", &esMajor, &esMinor, &major, &minor);
+    if (4 == n) {
+        return kWebGL_GrGLStandard;
+    }
+
     // check for ES 1
     char profile[2];
     n = sscanf(versionString, "OpenGL ES-%c%c %d.%d", profile, profile+1, &major, &minor);
@@ -121,7 +129,7 @@ void GrGLGetDriverInfo(GrGLStandard standard,
         return;
     }
 
-    if (standard == kGL_GrGLStandard) {
+    if (GR_IS_GR_GL(standard)) {
         if (kNVIDIA_GrGLVendor == vendor) {
             *outDriver = kNVIDIA_GrGLDriver;
             int n = sscanf(versionString, "%d.%d.%d NVIDIA %d.%d",
@@ -143,8 +151,7 @@ void GrGLGetDriverInfo(GrGLStandard standard,
             *outVersion = GR_GL_DRIVER_VER(driverMajor, driverMinor, 0);
             return;
         }
-    }
-    else {
+    } else if (GR_IS_GR_GL_ES(standard)) {
         if (kNVIDIA_GrGLVendor == vendor) {
             *outDriver = kNVIDIA_GrGLDriver;
             int n = sscanf(versionString, "OpenGL ES %d.%d NVIDIA %d.%d",
@@ -233,6 +240,13 @@ GrGLVersion GrGLGetVersionFromString(const char* versionString) {
         return GR_GL_VER(major, minor);
     }
 
+    // WebGL might look like "OpenGL ES 2.0 (WebGL 1.0 (OpenGL ES 2.0 Chromium))"
+    int esMajor, esMinor;
+    n = sscanf(versionString, "OpenGL ES %d.%d (WebGL %d.%d", &esMajor, &esMinor, &major, &minor);
+    if (4 == n) {
+        return GR_GL_VER(major, minor);
+    }
+
     char profile[2];
     n = sscanf(versionString, "OpenGL ES-%c%c %d.%d", profile, profile+1,
                &major, &minor);
@@ -307,7 +321,7 @@ GrGLVendor GrGLGetVendorFromString(const char* vendorString) {
 static bool is_renderer_angle(const char* rendererString) {
     static constexpr char kHeader[] = "ANGLE ";
     static constexpr size_t kHeaderLength = SK_ARRAY_COUNT(kHeader) - 1;
-    return 0 == strncmp(rendererString, kHeader, kHeaderLength);
+    return rendererString && 0 == strncmp(rendererString, kHeader, kHeaderLength);
 }
 
 GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString,
@@ -547,3 +561,80 @@ GrGLenum GrToGLStencilFunc(GrStencilTest test) {
     return gTable[(int)test];
 }
 
+bool GrGLFormatIsCompressed(GrGLenum glFormat) {
+    switch (glFormat) {
+        case GR_GL_COMPRESSED_RGB8_ETC2: // fall through
+        case GR_GL_COMPRESSED_ETC1_RGB8:
+            return true;
+        default:
+            return false;
+    }
+    SK_ABORT("Invalid format");
+    return false;
+}
+
+GrCompression GrGLFormat2Compression(GrGLenum glFormat) {
+    switch (glFormat) {
+        case GR_GL_COMPRESSED_RGB8_ETC2: // fall through
+        case GR_GL_COMPRESSED_ETC1_RGB8:
+            return GrCompression::kETC1;
+        default:
+            return GrCompression::kNone;
+    }
+    SK_ABORT("Invalid format");
+    return GrCompression::kNone;
+}
+
+size_t GrGLFormatCompressedDataSize(GrGLenum glFormat, int width, int height) {
+    SkASSERT(GrGLFormatIsCompressed(glFormat));
+
+    switch (glFormat) {
+        case GR_GL_COMPRESSED_RGB8_ETC2:  // fall through
+        case GR_GL_COMPRESSED_ETC1_RGB8:
+            return GrETC1CompressedDataSize(width, height);
+        default:
+            SK_ABORT("Unknown compressed format");
+            return 4 * width * height;
+    }
+
+    SK_ABORT("Unknown compressed format");
+    return 4 * width * height;
+}
+
+size_t GrGLBytesPerFormat(GrGLenum glFormat) {
+    switch (glFormat) {
+        case GR_GL_LUMINANCE8:
+        case GR_GL_ALPHA8:
+        case GR_GL_R8:
+            return 1;
+
+        case GR_GL_RGB565:
+        case GR_GL_RGBA4:
+        case GR_GL_RG8:
+        case GR_GL_R16F:
+            return 2;
+
+        case GR_GL_RGB8:
+            return 3;
+
+        case GR_GL_RGBA8:
+        case GR_GL_SRGB8_ALPHA8:
+        case GR_GL_BGRA8:
+        case GR_GL_RGB10_A2:
+            return 4;
+
+        case GR_GL_RGBA16F:
+        case GR_GL_RG32F:
+            return 8;
+
+        case GR_GL_RGBA32F:
+            return 16;
+
+        case GR_GL_COMPRESSED_RGB8_ETC2: // fall through
+        case GR_GL_COMPRESSED_ETC1_RGB8:
+            return 0;
+    }
+
+    SK_ABORT("Invalid GL format");
+    return 0;
+}

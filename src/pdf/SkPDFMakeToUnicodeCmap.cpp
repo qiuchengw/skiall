@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "SkPDFMakeToUnicodeCmap.h"
+#include "src/pdf/SkPDFMakeToUnicodeCmap.h"
 
-#include "SkPDFUtils.h"
-#include "SkTo.h"
-#include "SkUTF.h"
+#include "include/private/SkTo.h"
+#include "src/pdf/SkPDFUtils.h"
+#include "src/utils/SkUTF.h"
 
 static void append_tounicode_header(SkDynamicMemoryWStream* cmap,
                                     bool multibyte) {
@@ -129,7 +129,7 @@ static void append_bfrange_section(const std::vector<BFRange>& bfrange,
 //
 // Current implementation guarantees bfchar and bfrange entries do not overlap.
 //
-// Current implementation does not attempt aggresive optimizations against
+// Current implementation does not attempt aggressive optimizations against
 // following case because the specification is not clear.
 //
 // 4 beginbfchar          1 beginbfchar
@@ -205,7 +205,7 @@ void SkPDFAppendCmapSections(const SkUnichar* glyphToUnicode,
     append_bfrange_section(bfrangeEntries, multiByteGlyphs, cmap);
 }
 
-sk_sp<SkPDFStream> SkPDFMakeToUnicodeCmap(
+std::unique_ptr<SkStreamAsset> SkPDFMakeToUnicodeCmap(
         const SkUnichar* glyphToUnicode,
         const SkPDFGlyphUse* subset,
         bool multiByteGlyphs,
@@ -216,6 +216,5 @@ sk_sp<SkPDFStream> SkPDFMakeToUnicodeCmap(
     SkPDFAppendCmapSections(glyphToUnicode, subset, &cmap, multiByteGlyphs,
                             firstGlyphID, lastGlyphID);
     append_cmap_footer(&cmap);
-    return sk_make_sp<SkPDFStream>(
-            std::unique_ptr<SkStreamAsset>(cmap.detachAsStream()));
+    return cmap.detachAsStream();
 }

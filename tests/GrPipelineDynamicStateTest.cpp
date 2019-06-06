@@ -5,23 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "SkTypes.h"
-#include "Test.h"
+#include "include/core/SkTypes.h"
+#include "tests/Test.h"
 
-#include "GrContext.h"
-#include "GrColor.h"
-#include "GrGeometryProcessor.h"
-#include "GrGpuCommandBuffer.h"
-#include "GrMemoryPool.h"
-#include "GrOpFlushState.h"
-#include "GrRenderTargetContext.h"
-#include "GrRenderTargetContextPriv.h"
-#include "GrResourceProvider.h"
-#include "SkMakeUnique.h"
-#include "glsl/GrGLSLVertexGeoBuilder.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "glsl/GrGLSLGeometryProcessor.h"
-#include "glsl/GrGLSLVarying.h"
+#include "include/gpu/GrContext.h"
+#include "include/private/GrColor.h"
+#include "include/private/GrRecordingContext.h"
+#include "src/core/SkMakeUnique.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrGpuCommandBuffer.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
+#include "src/gpu/glsl/GrGLSLVarying.h"
+#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 
 /**
  * This is a GPU-backend specific test for dynamic pipeline state. It draws boxes using dynamic
@@ -110,10 +113,10 @@ class GrPipelineDynamicStateTestOp : public GrDrawOp {
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrScissorTest scissorTest,
                                           sk_sp<const GrBuffer> vbuff) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
         return pool->allocate<GrPipelineDynamicStateTestOp>(scissorTest, std::move(vbuff));
     }
@@ -131,18 +134,18 @@ private:
 
     const char* name() const override { return "GrPipelineDynamicStateTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    RequiresDstTexture finalize(const GrCaps&, const GrAppliedClip*) override {
-        return RequiresDstTexture::kNo;
+    GrProcessorSet::Analysis finalize(
+            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+        return GrProcessorSet::EmptySetAnalysis();
     }
     void onPrepare(GrOpFlushState*) override {}
     void onExecute(GrOpFlushState* state, const SkRect& chainBounds) override {
-        GrRenderTargetProxy* proxy = state->drawOpArgs().fProxy;
-        GrPipeline pipeline(proxy, fScissorTest, SkBlendMode::kSrc);
+        GrPipeline pipeline(fScissorTest, SkBlendMode::kSrc);
         SkSTArray<kNumMeshes, GrMesh> meshes;
         for (int i = 0; i < kNumMeshes; ++i) {
             GrMesh& mesh = meshes.emplace_back(GrPrimitiveType::kTriangleStrip);
             mesh.setNonIndexedNonInstanced(4);
-            mesh.setVertexData(fVertexBuffer.get(), 4 * i);
+            mesh.setVertexData(fVertexBuffer, 4 * i);
         }
         GrPipeline::DynamicStateArrays dynamicState;
         dynamicState.fScissorRects = kDynamicScissors;
@@ -159,11 +162,14 @@ private:
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrResourceProvider* rp = context->contextPriv().resourceProvider();
+    GrResourceProvider* rp = context->priv().resourceProvider();
 
-    sk_sp<GrRenderTargetContext> rtc(context->contextPriv().makeDeferredRenderTargetContext(
-                                                 SkBackingFit::kExact, kScreenSize, kScreenSize,
-                                                 kRGBA_8888_GrPixelConfig, nullptr));
+    const GrBackendFormat format =
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+
+    sk_sp<GrRenderTargetContext> rtc(context->priv().makeDeferredRenderTargetContext(
+                                                 format, SkBackingFit::kExact, kScreenSize,
+                                                 kScreenSize, kRGBA_8888_GrPixelConfig, nullptr));
     if (!rtc) {
         ERRORF(reporter, "could not create render target context.");
         return;
@@ -192,11 +198,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo
         {d, d, kMeshColors[3]}
     };
 
-    sk_sp<const GrBuffer> vbuff(rp->createBuffer(sizeof(vdata), kVertex_GrBufferType,
-                                                 kDynamic_GrAccessPattern,
-                                                 GrResourceProvider::Flags::kNoPendingIO |
-                                                 GrResourceProvider::Flags::kRequireGpuMemory,
-                                                 vdata));
+    sk_sp<const GrBuffer> vbuff(rp->createBuffer(sizeof(vdata), GrGpuBufferType::kVertex,
+                                                 kDynamic_GrAccessPattern, vdata));
     if (!vbuff) {
         ERRORF(reporter, "vbuff is null.");
         return;

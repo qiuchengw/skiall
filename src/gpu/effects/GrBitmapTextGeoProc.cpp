@@ -5,18 +5,18 @@
  * found in the LICENSE file.
  */
 
-#include "GrBitmapTextGeoProc.h"
+#include "src/gpu/effects/GrBitmapTextGeoProc.h"
 
-#include "GrAtlasedShaderHelpers.h"
-#include "GrCaps.h"
-#include "GrShaderCaps.h"
-#include "GrTexture.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "glsl/GrGLSLGeometryProcessor.h"
-#include "glsl/GrGLSLProgramDataManager.h"
-#include "glsl/GrGLSLUniformHandler.h"
-#include "glsl/GrGLSLVarying.h"
-#include "glsl/GrGLSLVertexGeoBuilder.h"
+#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrShaderCaps.h"
+#include "src/gpu/effects/GrAtlasedShaderHelpers.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
+#include "src/gpu/glsl/GrGLSLProgramDataManager.h"
+#include "src/gpu/glsl/GrGLSLUniformHandler.h"
+#include "src/gpu/glsl/GrGLSLVarying.h"
+#include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 
 class GrGLBitmapTextGeoProc : public GrGLSLGeometryProcessor {
 public:
@@ -35,7 +35,6 @@ public:
         const char* atlasSizeInvName;
         fAtlasSizeInvUniform = uniformHandler->addUniform(kVertex_GrShaderFlag,
                                                           kFloat2_GrSLType,
-                                                          kHigh_GrSLPrecision,
                                                           "AtlasSizeInv",
                                                           &atlasSizeInvName);
 
@@ -121,6 +120,7 @@ private:
 
 GrBitmapTextGeoProc::GrBitmapTextGeoProc(const GrShaderCaps& caps,
                                          const SkPMColor4f& color,
+                                         bool wideColor,
                                          const sk_sp<GrTextureProxy>* proxies,
                                          int numActiveProxies,
                                          const GrSamplerState& params, GrMaskFormat format,
@@ -141,7 +141,7 @@ GrBitmapTextGeoProc::GrBitmapTextGeoProc(const GrShaderCaps& caps,
     bool hasVertexColor = kA8_GrMaskFormat == fMaskFormat ||
                           kA565_GrMaskFormat == fMaskFormat;
     if (hasVertexColor) {
-        fInColor = {"inColor", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
+        fInColor = MakeColorAttribute("inColor", wideColor);
     }
 
     fInTextureCoords = {"inTextureCoords", kUShort2_GrVertexAttribType,
@@ -225,6 +225,7 @@ sk_sp<GrGeometryProcessor> GrBitmapTextGeoProc::TestCreate(GrProcessorTestData* 
 
     return GrBitmapTextGeoProc::Make(*d->caps()->shaderCaps(),
                                      SkPMColor4f::FromBytes_RGBA(GrRandomColor(d->fRandom)),
+                                     d->fRandom->nextBool(),
                                      proxies, 1, samplerState, format,
                                      GrTest::TestMatrix(d->fRandom), d->fRandom->nextBool());
 }

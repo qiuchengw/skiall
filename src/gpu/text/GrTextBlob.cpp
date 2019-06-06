@@ -5,19 +5,17 @@
  * found in the LICENSE file.
  */
 
-#include "GrTextBlob.h"
-#include "GrBlurUtils.h"
-#include "GrClip.h"
-#include "GrContext.h"
-#include "GrShape.h"
-#include "GrStyle.h"
-#include "GrTextTarget.h"
-#include "SkColorFilter.h"
-#include "SkGlyphCache.h"
-#include "SkMaskFilterBase.h"
-#include "SkPaintPriv.h"
-#include "SkTextToPathIter.h"
-#include "ops/GrAtlasTextOp.h"
+#include "include/core/SkColorFilter.h"
+#include "include/gpu/GrContext.h"
+#include "src/core/SkMaskFilterBase.h"
+#include "src/core/SkPaintPriv.h"
+#include "src/gpu/GrBlurUtils.h"
+#include "src/gpu/GrClip.h"
+#include "src/gpu/GrStyle.h"
+#include "src/gpu/geometry/GrShape.h"
+#include "src/gpu/ops/GrAtlasTextOp.h"
+#include "src/gpu/text/GrTextBlob.h"
+#include "src/gpu/text/GrTextTarget.h"
 
 #include <new>
 
@@ -25,7 +23,10 @@ template <size_t N> static size_t sk_align(size_t s) {
     return ((s + (N-1)) / N) * N;
 }
 
-sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
+sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount,
+                                   int runCount,
+                                   GrColor color,
+                                   GrStrikeCache* strikeCache) {
     // We allocate size for the GrTextBlob itself, plus size for the vertices array,
     // and size for the glyphIds array.
     size_t verticesCount = glyphCount * kVerticesPerGlyph * kMaxVASize;
@@ -42,7 +43,7 @@ sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
         sk_bzero(allocation, size);
     }
 
-    sk_sp<GrTextBlob> blob{new (allocation) GrTextBlob{}};
+    sk_sp<GrTextBlob> blob{new (allocation) GrTextBlob{strikeCache}};
     blob->fSize = size;
 
     // setup offsets for vertices / glyphs
@@ -52,26 +53,19 @@ sk_sp<GrTextBlob> GrTextBlob::Make(int glyphCount, int runCount) {
 
     // Initialize runs
     for (int i = 0; i < runCount; i++) {
-        new (&blob->fRuns[i]) GrTextBlob::Run{blob.get()};
+        new (&blob->fRuns[i]) GrTextBlob::Run{blob.get(), color};
     }
     blob->fRunCountLimit = runCount;
     return blob;
 }
 
-SkExclusiveStrikePtr GrTextBlob::Run::setupCache(const SkPaint& skPaint,
-                                                 const SkSurfaceProps& props,
-                                                 SkScalerContextFlags scalerContextFlags,
-                                                 const SkMatrix& viewMatrix) {
+void GrTextBlob::Run::setupFont(const SkStrikeSpecStorage& strikeSpec) {
 
-    // if we have an override descriptor for the run, then we should use that
-    SkAutoDescriptor* desc = fOverrideDescriptor.get() ? fOverrideDescriptor.get() : &fDescriptor;
-    SkScalerContextEffects effects;
-    SkScalerContext::CreateDescriptorAndEffectsUsingPaint(
-        skPaint, props, scalerContextFlags, viewMatrix, desc, &effects);
-    fTypeface = SkPaintPriv::RefTypefaceOrDefault(skPaint);
-    fPathEffect = sk_ref_sp(effects.fPathEffect);
-    fMaskFilter = sk_ref_sp(effects.fMaskFilter);
-    return SkStrikeCache::FindOrCreateStrikeExclusive(*desc->getDesc(), effects, *fTypeface);
+    if (fFallbackStrikeSpec != nullptr) {
+        *fFallbackStrikeSpec = strikeSpec;
+    } else {
+        fStrikeSpec = strikeSpec;
+    }
 }
 
 void GrTextBlob::Run::appendPathGlyph(const SkPath& path, SkPoint position,
@@ -86,7 +80,7 @@ bool GrTextBlob::mustRegenerate(const SkPaint& paint, bool anyRunHasSubpixelPosi
     // to regenerate the blob on any color change
     // We use the grPaint to get any color filter effects
     if (fKey.fCanonicalColor == SK_ColorTRANSPARENT &&
-        fLuminanceColor != paint.computeLuminanceColor()) {
+        fLuminanceColor != SkPaintPriv::ComputeLuminanceColor(paint)) {
         return true;
     }
 
@@ -181,7 +175,8 @@ inline std::unique_ptr<GrAtlasTextOp> GrTextBlob::makeOp(
         // TODO: Can we be even smarter based on the dest transfer function?
         op = GrAtlasTextOp::MakeDistanceField(
                 target->getContext(), std::move(grPaint), glyphCount, distanceAdjustTable,
-                target->colorSpaceInfo().isLinearlyBlended(), paint.computeLuminanceColor(),
+                target->colorSpaceInfo().isLinearlyBlended(),
+                SkPaintPriv::ComputeLuminanceColor(paint),
                 props, info.isAntiAliased(), info.hasUseLCDText());
     } else {
         op = GrAtlasTextOp::MakeBitmap(target->getContext(), std::move(grPaint), format, glyphCount,
@@ -237,7 +232,7 @@ void GrTextBlob::flush(GrTextTarget* target, const SkSurfaceProps& props,
         // first flush any path glyphs
         if (run.fPathGlyphs.count()) {
             SkPaint runPaint{paint};
-            runPaint.setFlags((runPaint.getFlags() & ~Run::kPaintFlagsMask) | run.fPaintFlags);
+            runPaint.setAntiAlias(run.fAntiAlias);
 
             for (int i = 0; i < run.fPathGlyphs.count(); i++) {
                 GrTextBlob::Run::PathGlyph& pathGlyph = run.fPathGlyphs[i];
@@ -403,26 +398,7 @@ void GrTextBlob::AssertEqual(const GrTextBlob& l, const GrTextBlob& r) {
         const Run& lRun = l.fRuns[i];
         const Run& rRun = r.fRuns[i];
 
-        if (lRun.fTypeface.get()) {
-            SkASSERT_RELEASE(rRun.fTypeface.get());
-            SkASSERT_RELEASE(SkTypeface::Equal(lRun.fTypeface.get(), rRun.fTypeface.get()));
-        } else {
-            SkASSERT_RELEASE(!rRun.fTypeface.get());
-        }
-
-
-        SkASSERT_RELEASE(lRun.fDescriptor.getDesc());
-        SkASSERT_RELEASE(rRun.fDescriptor.getDesc());
-        SkASSERT_RELEASE(*lRun.fDescriptor.getDesc() == *rRun.fDescriptor.getDesc());
-
-        if (lRun.fOverrideDescriptor.get()) {
-            SkASSERT_RELEASE(lRun.fOverrideDescriptor->getDesc());
-            SkASSERT_RELEASE(rRun.fOverrideDescriptor.get() && rRun.fOverrideDescriptor->getDesc());
-            SkASSERT_RELEASE(*lRun.fOverrideDescriptor->getDesc() ==
-                             *rRun.fOverrideDescriptor->getDesc());
-        } else {
-            SkASSERT_RELEASE(!rRun.fOverrideDescriptor.get());
-        }
+        SkASSERT_RELEASE(lRun.fStrikeSpec.descriptor() == rRun.fStrikeSpec.descriptor());
 
         // color can be changed
         //SkASSERT(lRun.fColor == rRun.fColor);
@@ -468,8 +444,9 @@ void GrTextBlob::AssertEqual(const GrTextBlob& l, const GrTextBlob& r) {
 void GrTextBlob::SubRun::computeTranslation(const SkMatrix& viewMatrix,
                                                 SkScalar x, SkScalar y, SkScalar* transX,
                                                 SkScalar* transY) {
-    calculate_translation(!this->drawAsDistanceFields(), viewMatrix, x, y,
-                          fCurrentViewMatrix, fX, fY, transX, transY);
+    // Don't use the matrix to translate on distance field for fallback subruns.
+    calculate_translation(!this->drawAsDistanceFields() && !this->isFallback(), viewMatrix,
+            x, y, fCurrentViewMatrix, fX, fY, transX, transY);
     fCurrentViewMatrix = viewMatrix;
     fX = x;
     fY = y;

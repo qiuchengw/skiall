@@ -5,9 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "SkData.h"
-#include "Skottie.h"
-#include "SkStream.h"
+#include "include/core/SkData.h"
+#include "include/core/SkStream.h"
+#include "modules/skottie/include/Skottie.h"
+#include "src/core/SkFontMgrPriv.h"
+#include "tools/fonts/TestFontMgr.h"
 
 void FuzzSkottieJSON(sk_sp<SkData> bytes) {
     SkMemoryStream stream(bytes);
@@ -20,6 +22,7 @@ void FuzzSkottieJSON(sk_sp<SkData> bytes) {
 
 #if defined(IS_FUZZING_WITH_LIBFUZZER)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    gSkFontMgr_DefaultFactory = &ToolUtils::MakePortableFontMgr;
     auto bytes = SkData::MakeWithoutCopy(data, size);
     FuzzSkottieJSON(bytes);
     return 0;

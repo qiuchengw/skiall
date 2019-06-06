@@ -8,16 +8,17 @@
 #ifndef GrTextContext_DEFINED
 #define GrTextContext_DEFINED
 
-#include "GrDistanceFieldAdjustTable.h"
-#include "GrGeometryProcessor.h"
-#include "GrTextTarget.h"
-#include "SkGlyphRun.h"
+#include "src/core/SkGlyphRun.h"
+#include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/text/GrDistanceFieldAdjustTable.h"
+#include "src/gpu/text/GrTextTarget.h"
 
 #if GR_TEST_UTILS
-#include "GrDrawOpTest.h"
+#include "src/gpu/GrDrawOpTest.h"
 #endif
 
 class GrDrawOp;
+class GrRecordingContext;
 class GrTextBlobCache;
 class SkGlyph;
 class GrTextBlob;
@@ -44,29 +45,34 @@ public:
 
     static std::unique_ptr<GrTextContext> Make(const Options& options);
 
-    void drawGlyphRunList(GrContext*, GrTextTarget*, const GrClip&,
+    void drawGlyphRunList(GrRecordingContext*, GrTextTarget*, const GrClip&,
                           const SkMatrix& viewMatrix, const SkSurfaceProps&, const SkGlyphRunList&);
 
-    std::unique_ptr<GrDrawOp> createOp_TestingOnly(GrContext*,
+    std::unique_ptr<GrDrawOp> createOp_TestingOnly(GrRecordingContext*,
                                                    GrTextContext*,
                                                    GrRenderTargetContext*,
-                                                   const SkPaint&,
+                                                   const SkPaint&, const SkFont&,
                                                    const SkMatrix& viewMatrix,
                                                    const char* text,
                                                    int x,
                                                    int y);
 
     static void SanitizeOptions(Options* options);
-    static bool CanDrawAsDistanceFields(const SkPaint& skPaint, const SkMatrix& viewMatrix,
+    static bool CanDrawAsDistanceFields(const SkPaint&, const SkFont&, const SkMatrix& viewMatrix,
                                         const SkSurfaceProps& props,
                                         bool contextSupportsDistanceFieldText,
                                         const Options& options);
-    static void InitDistanceFieldPaint(GrTextBlob* blob,
-                                       SkPaint* skPaint,
-                                       const SkMatrix& viewMatrix,
-                                       const Options& options,
-                                       SkScalar* textRatio,
-                                       SkScalerContextFlags* flags);
+
+    static SkFont InitDistanceFieldFont(const SkFont& font,
+                                        const SkMatrix& viewMatrix,
+                                        const Options& options,
+                                        SkScalar* textRatio);
+
+    static SkPaint InitDistanceFieldPaint(const SkPaint& paint);
+
+    static std::pair<SkScalar, SkScalar> InitDistanceFieldMinMaxScale(SkScalar textSize,
+                                                                      const SkMatrix& viewMatrix,
+                                                                      const Options& options);
 
 private:
     GrTextContext(const Options& options);

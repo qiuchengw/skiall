@@ -4,24 +4,25 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Sample.h"
-#include "SkCanvas.h"
-#include "SkReadBuffer.h"
-#include "SkWriteBuffer.h"
-#include "SkGradientShader.h"
-#include "SkPath.h"
-#include "SkRegion.h"
-#include "SkShader.h"
-#include "SkUTF.h"
-#include "SkColorPriv.h"
-#include "SkColorFilter.h"
-#include "SkStrokeRec.h"
-#include "SkTypeface.h"
+#include "include/core/SkCanvas.h"
+#include "include/core/SkColorFilter.h"
+#include "include/core/SkColorPriv.h"
+#include "include/core/SkPath.h"
+#include "include/core/SkRegion.h"
+#include "include/core/SkShader.h"
+#include "include/core/SkStrokeRec.h"
+#include "include/core/SkTypeface.h"
+#include "include/effects/SkGradientShader.h"
+#include "include/utils/SkTextUtils.h"
+#include "samplecode/Sample.h"
+#include "src/core/SkReadBuffer.h"
+#include "src/core/SkWriteBuffer.h"
+#include "src/utils/SkUTF.h"
 
-#include "SkGradientShader.h"
-#include "SkBlurMaskFilter.h"
+#include "include/effects/SkBlurMaskFilter.h"
+#include "include/effects/SkGradientShader.h"
 
-#include "Sk2DPathEffect.h"
+#include "include/effects/Sk2DPathEffect.h"
 
 class Dot2DPathEffect : public Sk2DPathEffect {
 public:
@@ -128,13 +129,13 @@ protected:
         canvas->drawColor(SK_ColorWHITE);
     }
 
-    void drawdots(SkCanvas* canvas, SkString s, SkScalar x, SkScalar y, const SkPaint& p) {
+    void drawdots(SkCanvas* canvas, SkString s, SkScalar x, SkScalar y, const SkFont& font) {
         SkTDArray<SkPoint> pts;
         auto pe = makepe(fInterp, &pts);
 
         SkStrokeRec rec(SkStrokeRec::kFill_InitStyle);
         SkPath path, dstPath;
-        p.getTextPath(s.c_str(), s.size(), x, y, &path);
+        SkTextUtils::GetPath(s.c_str(), s.size(), SkTextEncoding::kUTF8, x, y, font, &path);
         pe->filterPath(&dstPath, path, &rec, nullptr);
 
         SkPaint paint;
@@ -150,16 +151,12 @@ protected:
         SkScalar x = SkIntToScalar(20);
         SkScalar y = SkIntToScalar(300);
 
-        SkPaint paint;
-        paint.setAntiAlias(true);
-        paint.setTextSize(SkIntToScalar(240));
-        paint.setTypeface(SkTypeface::MakeFromName("sans-serif", SkFontStyle::Bold()));
-        paint.setTypeface(fFace);
+        SkFont font(SkTypeface::MakeFromName("sans-serif", SkFontStyle::Bold()), 240);
 
         SkString str("9");
 
-        canvas->drawString(str, x, y, paint);
-        drawdots(canvas, str, x, y, paint);
+        canvas->drawString(str, x, y, font, SkPaint());
+        drawdots(canvas, str, x, y, font);
 
         if (false) {
             fInterp += fDx;

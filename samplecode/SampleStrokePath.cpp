@@ -4,13 +4,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "Sample.h"
-#include "SkBlurMask.h"
-#include "SkCanvas.h"
-#include "SkMaskFilter.h"
-#include "SkParsePath.h"
-#include "SkPath.h"
-#include "SkRandom.h"
+
+#include "samplecode/Sample.h"
+
+#include "include/core/SkCanvas.h"
+#include "include/core/SkFont.h"
+#include "include/core/SkMaskFilter.h"
+#include "include/core/SkPath.h"
+#include "include/utils/SkParsePath.h"
+#include "include/utils/SkRandom.h"
+#include "src/core/SkBlurMask.h"
 
 
 static void test_huge_stroke(SkCanvas* canvas) {
@@ -152,7 +155,7 @@ protected:
         if (true) {
             canvas->drawColor(SK_ColorBLACK);
 
-            paint.setTextSize(24);
+            SkFont font(nullptr, 24);
             paint.setColor(SK_ColorWHITE);
             canvas->translate(10, 30);
 
@@ -168,7 +171,7 @@ protected:
                     if (x) {
                         paint.setMaskFilter(SkMaskFilter::MakeBlur(gStyle[x - 1], sigma));
                     }
-                    canvas->drawString("Title Bar", x*SkIntToScalar(100), y*SkIntToScalar(30), paint);
+                    canvas->drawString("Title Bar", x * 100.0f, y * 30.0f, font, paint);
                     sigma *= 0.75f;
                 }
 

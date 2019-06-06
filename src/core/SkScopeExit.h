@@ -8,8 +8,8 @@
 #ifndef SkScopeExit_DEFINED
 #define SkScopeExit_DEFINED
 
-#include "SkTypes.h"
-#include "SkMacros.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkMacros.h"
 
 #include <functional>
 
@@ -24,6 +24,8 @@ public:
             fFn();
         }
     }
+
+    void clear() { fFn = {}; }
 
     SkScopeExit& operator=(SkScopeExit&& that) {
         fFn = std::move(that.fFn);

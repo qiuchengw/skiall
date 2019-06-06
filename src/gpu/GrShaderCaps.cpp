@@ -6,10 +6,10 @@
  */
 
 
-#include "GrShaderCaps.h"
+#include "src/gpu/GrShaderCaps.h"
 
-#include "GrContextOptions.h"
-#include "SkJSONWriter.h"
+#include "include/gpu/GrContextOptions.h"
+#include "src/utils/SkJSONWriter.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,6 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fDualSourceBlendingSupport = false;
     fIntegerSupport = false;
     fImageLoadStoreSupport = false;
-    fDropsTileOnZeroDivide = false;
     fFBFetchSupport = false;
     fFBFetchNeedsCustomOutput = false;
     fUsesPrecisionModifiers = false;
@@ -43,15 +42,22 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fEmulateAbsIntFunction = false;
     fRewriteDoWhileLoops = false;
     fRemovePowWithConstantExponent = false;
+    fMustWriteToFragColor = false;
     fFlatInterpolationSupport = false;
     fPreferFlatInterpolation = false;
     fNoPerspectiveInterpolationSupport = false;
+    fSampleVariablesSupport = false;
+    fSampleVariablesStencilSupport = false;
     fExternalTextureSupport = false;
     fVertexIDSupport = false;
     fFPManipulationSupport = false;
     fFloatIs32Bits = true;
     fHalfIs32Bits = false;
+    fHasLowFragmentPrecision = false;
     fUnsignedSupport = false;
+    // Backed API support is required to be able to make swizzle-neutral shaders (e.g.
+    // GL_ARB_texture_swizzle).
+    fTextureSwizzleAppliedInShader = true;
     fBuiltinFMASupport = false;
 
     fVersionDeclString = nullptr;
@@ -63,6 +69,7 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fExternalTextureExtensionString = nullptr;
     fSecondExternalTextureExtensionString = nullptr;
     fNoPerspectiveInterpolationExtensionString = nullptr;
+    fSampleVariablesExtensionString = nullptr;
     fFBFetchColorName = nullptr;
     fFBFetchExtensionString = nullptr;
     fImageLoadStoreExtensionString = nullptr;
@@ -96,7 +103,6 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     GR_STATIC_ASSERT(SK_ARRAY_COUNT(kAdvBlendEqInteractionStr) == kLast_AdvBlendEqInteraction + 1);
 
     writer->appendBool("FB Fetch Support", fFBFetchSupport);
-    writer->appendBool("Drops tile on zero divide", fDropsTileOnZeroDivide);
     writer->appendBool("Uses precision modifiers", fUsesPrecisionModifiers);
     writer->appendBool("Can use any() function", fCanUseAnyFunctionInShader);
     writer->appendBool("Can use min() and abs() together", fCanUseMinAndAbsTogether);
@@ -114,14 +120,21 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Emulate abs(int) function", fEmulateAbsIntFunction);
     writer->appendBool("Rewrite do while loops", fRewriteDoWhileLoops);
     writer->appendBool("Rewrite pow with constant exponent", fRemovePowWithConstantExponent);
+    writer->appendBool("Must write to sk_FragColor [workaround]", fMustWriteToFragColor);
     writer->appendBool("Flat interpolation support", fFlatInterpolationSupport);
     writer->appendBool("Prefer flat interpolation", fPreferFlatInterpolation);
     writer->appendBool("No perspective interpolation support", fNoPerspectiveInterpolationSupport);
+    writer->appendBool("Sample variables support", fSampleVariablesSupport);
+    writer->appendBool("Sample variables stencil support [workaround]",
+                       fSampleVariablesStencilSupport);
     writer->appendBool("External texture support", fExternalTextureSupport);
     writer->appendBool("sk_VertexID support", fVertexIDSupport);
     writer->appendBool("Floating point manipulation support", fFPManipulationSupport);
     writer->appendBool("float == fp32", fFloatIs32Bits);
     writer->appendBool("half == fp32", fHalfIs32Bits);
+    writer->appendBool("Has poor fragment precision", fHasLowFragmentPrecision);
+    writer->appendBool("Unsigned support", fUnsignedSupport);
+    writer->appendBool("Texture swizzle applied in shader", fTextureSwizzleAppliedInShader);
     writer->appendBool("Builtin fma() support", fBuiltinFMASupport);
 
     writer->appendS32("Max FS Samplers", fMaxFragmentSamplers);
@@ -152,6 +165,7 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fEmulateAbsIntFunction);
         SkASSERT(!fRewriteDoWhileLoops);
         SkASSERT(!fRemovePowWithConstantExponent);
+        SkASSERT(!fMustWriteToFragColor);
     }
 #if GR_TEST_UTILS
     fDualSourceBlendingSupport = fDualSourceBlendingSupport && !options.fSuppressDualSourceBlending;

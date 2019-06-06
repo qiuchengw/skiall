@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrMemoryPool.h"
-#include "GrOpFlushState.h"
-#include "GrRenderTargetOpList.h"
-#include "Test.h"
-#include "ops/GrOp.h"
+#include "include/gpu/GrContext.h"
+#include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrOpFlushState.h"
+#include "src/gpu/GrRenderTargetOpList.h"
+#include "src/gpu/ops/GrOp.h"
+#include "tests/Test.h"
 
 // We create Ops that write a value into a range of a buffer. We create ranges from
 // kNumOpPositions starting positions x kRanges canonical ranges. We repeat each range kNumRepeats
@@ -96,7 +96,7 @@ public:
 
     static std::unique_ptr<TestOp> Make(GrContext* context, int value, const Range& range,
                                         int result[], const Combinable* combinable) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
         return pool->allocate<TestOp>(value, range, result, combinable);
     }
 
@@ -168,11 +168,14 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
     desc.fHeight = 1;
     desc.fFlags = kRenderTarget_GrSurfaceFlag;
 
-    auto proxy = context->contextPriv().proxyProvider()->createProxy(
-            desc, kTopLeft_GrSurfaceOrigin, GrMipMapped::kNo, SkBackingFit::kExact, SkBudgeted::kNo,
-            GrInternalSurfaceFlags::kNone);
+    const GrBackendFormat format =
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+
+    auto proxy = context->priv().proxyProvider()->createProxy(
+            format, desc, kTopLeft_GrSurfaceOrigin, GrMipMapped::kNo, SkBackingFit::kExact,
+            SkBudgeted::kNo, GrInternalSurfaceFlags::kNone);
     SkASSERT(proxy);
-    proxy->instantiate(context->contextPriv().resourceProvider());
+    proxy->instantiate(context->priv().resourceProvider());
     int result[result_width()];
     int validResult[result_width()];
 
@@ -199,13 +202,13 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
             for (int c = 0; c < kNumCombinabilitiesPerGrouping; ++c) {
                 init_combinable(g, &combinable, &random);
                 GrTokenTracker tracker;
-                GrOpFlushState flushState(context->contextPriv().getGpu(),
-                                          context->contextPriv().resourceProvider(), &tracker,
-                                          nullptr, nullptr);
-                GrRenderTargetOpList opList(context->contextPriv().resourceProvider(),
-                                            sk_ref_sp(context->contextPriv().opMemoryPool()),
-                                            proxy->asRenderTargetProxy(),
-                                            context->contextPriv().getAuditTrail());
+                GrOpFlushState flushState(context->priv().getGpu(),
+                                          context->priv().resourceProvider(),
+                                          context->priv().getResourceCache(),
+                                          &tracker);
+                GrRenderTargetOpList opList(sk_ref_sp(context->priv().opMemoryPool()),
+                                            sk_ref_sp(proxy->asRenderTargetProxy()),
+                                            context->priv().auditTrail());
                 // This assumes the particular values of kRanges.
                 std::fill_n(result, result_width(), -1);
                 std::fill_n(validResult, result_width(), -1);
@@ -219,9 +222,9 @@ DEF_GPUTEST(OpChainTest, reporter, /*ctxInfo*/) {
                     range.fOffset += pos;
                     auto op = TestOp::Make(context.get(), value, range, result, &combinable);
                     op->writeResult(validResult);
-                    opList.addOp(std::move(op), *context->contextPriv().caps());
+                    opList.addOp(std::move(op), *context->priv().caps());
                 }
-                opList.makeClosed(*context->contextPriv().caps());
+                opList.makeClosed(*context->priv().caps());
                 opList.prepare(&flushState);
                 opList.execute(&flushState);
                 opList.endFlush();

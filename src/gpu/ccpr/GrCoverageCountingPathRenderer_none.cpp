@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "GrCoverageCountingPathRenderer.h"
+#include "src/gpu/ccpr/GrCoverageCountingPathRenderer.h"
 
 bool GrCoverageCountingPathRenderer::IsSupported(const GrCaps& caps) {
     return false;
 }
 
 sk_sp<GrCoverageCountingPathRenderer> GrCoverageCountingPathRenderer::CreateIfSupported(
-        const GrCaps& caps, AllowCaching allowCaching) {
+        const GrCaps& caps, AllowCaching allowCaching, uint32_t contextUniqueID) {
     return nullptr;
 }
 

@@ -11,8 +11,8 @@
 * found in the LICENSE file.
 */
 
-#include "GMSlide.h"
-#include "SkCanvas.h"
+#include "include/core/SkCanvas.h"
+#include "tools/viewer/GMSlide.h"
 
 GMSlide::GMSlide(skiagm::GM* gm) : fGM(gm) {
     fName.printf("GM_%s", gm->getName());
@@ -27,9 +27,7 @@ void GMSlide::draw(SkCanvas* canvas) {
     fGM->drawContent(canvas);
 }
 
-bool GMSlide::animate(const SkAnimTimer& timer) {
-    return fGM->animate(timer);
-}
+bool GMSlide::animate(const AnimTimer& timer) { return fGM->animate(timer); }
 
 bool GMSlide::onChar(SkUnichar c) {
     return fGM->handleKey(c);

@@ -5,11 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "SkSurfaceCharacterization.h"
+#include "include/core/SkSurfaceCharacterization.h"
 
 #if SK_SUPPORT_GPU
-#include "GrCaps.h"
-#include "GrContextThreadSafeProxyPriv.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrContextThreadSafeProxyPriv.h"
 
 bool SkSurfaceCharacterization::operator==(const SkSurfaceCharacterization& other) const {
     if (!this->isValid() || !other.isValid()) {
@@ -29,6 +29,7 @@ bool SkSurfaceCharacterization::operator==(const SkSurfaceCharacterization& othe
            fIsTextureable == other.fIsTextureable &&
            fIsMipMapped == other.fIsMipMapped &&
            fUsesGLFBO0 == other.fUsesGLFBO0 &&
+           fVulkanSecondaryCBCompatible == other.fVulkanSecondaryCBCompatible &&
            fSurfaceProps == other.fSurfaceProps;
 }
 
@@ -46,7 +47,7 @@ SkSurfaceCharacterization SkSurfaceCharacterization::createResized(int width, in
     return SkSurfaceCharacterization(fContextInfo, fCacheMaxResourceBytes,
                                      fImageInfo.makeWH(width, height), fOrigin, fConfig, fFSAAType,
                                      fStencilCnt, fIsTextureable, fIsMipMapped, fUsesGLFBO0,
-                                     fSurfaceProps);
+                                     fVulkanSecondaryCBCompatible, fSurfaceProps);
 }
 
 #endif

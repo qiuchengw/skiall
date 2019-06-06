@@ -121,12 +121,11 @@
     "cwd": "[START_DIR]/skia",
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Run calmbench"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

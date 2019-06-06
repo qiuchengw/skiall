@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "GrCopySurfaceOp.h"
+#include "src/gpu/ops/GrCopySurfaceOp.h"
 
-#include "GrContext.h"
-#include "GrContextPriv.h"
-#include "GrGpu.h"
-#include "GrMemoryPool.h"
+#include "include/private/GrRecordingContext.h"
+#include "src/gpu/GrGpu.h"
+#include "src/gpu/GrMemoryPool.h"
+#include "src/gpu/GrRecordingContextPriv.h"
 
 // returns true if the read/written rect intersects the src/dst and false if not.
 static bool clip_src_rect_and_dst_point(const GrSurfaceProxy* dst,
@@ -63,7 +63,7 @@ static bool clip_src_rect_and_dst_point(const GrSurfaceProxy* dst,
     return !clippedSrcRect->isEmpty();
 }
 
-std::unique_ptr<GrOp> GrCopySurfaceOp::Make(GrContext* context,
+std::unique_ptr<GrOp> GrCopySurfaceOp::Make(GrRecordingContext* context,
                                             GrSurfaceProxy* dstProxy,
                                             GrSurfaceProxy* srcProxy,
                                             const SkIRect& srcRect,
@@ -77,16 +77,17 @@ std::unique_ptr<GrOp> GrCopySurfaceOp::Make(GrContext* context,
                                      &clippedSrcRect, &clippedDstPoint)) {
         return nullptr;
     }
+    if (GrPixelConfigIsCompressed(dstProxy->config())) {
+        return nullptr;
+    }
 
-    GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+    GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
-    return pool->allocate<GrCopySurfaceOp>(dstProxy, srcProxy, clippedSrcRect, clippedDstPoint);
+    return pool->allocate<GrCopySurfaceOp>(srcProxy, clippedSrcRect, clippedDstPoint);
 }
 
 void GrCopySurfaceOp::onExecute(GrOpFlushState* state, const SkRect& chainBounds) {
-    if (!fSrc.get()->instantiate(state->resourceProvider())) {
-        return;
-    }
+    SkASSERT(fSrc.get()->isInstantiated());
 
     state->commandBuffer()->copy(fSrc.get()->peekSurface(), fSrc.get()->origin(), fSrcRect,
                                  fDstPoint);

@@ -8,9 +8,9 @@
 #ifndef GrMtlRenderTarget_DEFINED
 #define GrMtlRenderTarget_DEFINED
 
-#include "GrRenderTarget.h"
+#include "include/gpu/GrRenderTarget.h"
 
-#include "GrBackendSurface.h"
+#include "include/gpu/GrBackendSurface.h"
 
 #import <Metal/Metal.h>
 
@@ -43,12 +43,9 @@ public:
 
     GrBackendRenderTarget getBackendRenderTarget() const override;
 
-protected:
-    GrMtlRenderTarget(GrMtlGpu* gpu,
-                      const GrSurfaceDesc& desc,
-                      id<MTLTexture> renderTexture,
-                      id<MTLTexture> resolveTexture);
+    GrBackendFormat backendFormat() const override;
 
+protected:
     GrMtlRenderTarget(GrMtlGpu* gpu,
                       const GrSurfaceDesc& desc,
                       id<MTLTexture> renderTexture);
@@ -75,24 +72,16 @@ protected:
     id<MTLTexture> fResolveTexture;
 
 private:
+    // Extra param to disambiguate from constructor used by subclasses.
+    enum Wrapped { kWrapped };
     GrMtlRenderTarget(GrMtlGpu* gpu,
-                      SkBudgeted,
                       const GrSurfaceDesc& desc,
                       id<MTLTexture> renderTexture,
-                      id<MTLTexture> resolveTexture);
-
-    GrMtlRenderTarget(GrMtlGpu* gpu,
-                      SkBudgeted,
-                      const GrSurfaceDesc& desc,
-                      id<MTLTexture> renderTexture);
-
-    static sk_sp<GrMtlRenderTarget> Make(GrMtlGpu*,
-                                         SkBudgeted,
-                                         const GrSurfaceDesc&,
-                                         id<MTLTexture> renderTexture,
-                                         bool isWrapped);
+                      Wrapped);
 
     bool completeStencilAttachment() override;
+
+    typedef GrRenderTarget INHERITED;
 };
 
 

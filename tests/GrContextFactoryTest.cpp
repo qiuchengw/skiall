@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
-#include "SkTypes.h"
+#include "include/core/SkTypes.h"
 
-#include "GrContextFactory.h"
-#include "GrContextPriv.h"
-#include "GrCaps.h"
-#include "SkExecutor.h"
-#include "Test.h"
+#include "include/core/SkExecutor.h"
+#include "src/gpu/GrCaps.h"
+#include "src/gpu/GrContextPriv.h"
+#include "tests/Test.h"
+#include "tools/gpu/GrContextFactory.h"
 
 using namespace sk_gpu_test;
 
@@ -28,7 +28,7 @@ DEF_GPUTEST(GrContextFactory_NVPRContextOptionHasPathRenderingSupport, reporter,
             continue;
         }
         REPORTER_ASSERT(reporter,
-                        context->contextPriv().caps()->shaderCaps()->pathRenderingSupport());
+                        context->priv().caps()->shaderCaps()->pathRenderingSupport());
     }
 }
 
@@ -42,7 +42,7 @@ DEF_GPUTEST(GrContextFactory_NoPathRenderingIfNVPRDisabled, reporter, options) {
             testFactory.get(ctxType, GrContextFactory::ContextOverrides::kDisableNVPR);
         if (context) {
             REPORTER_ASSERT(reporter,
-                            !context->contextPriv().caps()->shaderCaps()->pathRenderingSupport());
+                            !context->priv().caps()->shaderCaps()->pathRenderingSupport());
         }
     }
 }
@@ -128,12 +128,12 @@ DEF_GPUTEST(GrContextFactory_executorAndTaskGroup, reporter, options) {
         GrContextFactory::ContextType ctxType = static_cast<GrContextFactory::ContextType>(i);
         ContextInfo serialInfo = serialFactory.getContextInfo(ctxType);
         if (GrContext* serialContext = serialInfo.grContext()) {
-            REPORTER_ASSERT(reporter, nullptr == serialContext->contextPriv().getTaskGroup());
+            REPORTER_ASSERT(reporter, nullptr == serialContext->priv().getTaskGroup());
         }
 
         ContextInfo threadedInfo = threadedFactory.getContextInfo(ctxType);
         if (GrContext* threadedContext = threadedInfo.grContext()) {
-            REPORTER_ASSERT(reporter, nullptr != threadedContext->contextPriv().getTaskGroup());
+            REPORTER_ASSERT(reporter, nullptr != threadedContext->priv().getTaskGroup());
         }
     }
 }
@@ -141,7 +141,7 @@ DEF_GPUTEST(GrContextFactory_executorAndTaskGroup, reporter, options) {
 #ifdef SK_ENABLE_DUMP_GPU
 DEF_GPUTEST_FOR_ALL_CONTEXTS(GrContextDump, reporter, ctxInfo) {
     // Ensure that GrContext::dump doesn't assert (which is possible, if the JSON code is wrong)
-    SkString result = ctxInfo.grContext()->contextPriv().dump();
+    SkString result = ctxInfo.grContext()->priv().dump();
     REPORTER_ASSERT(reporter, !result.isEmpty());
 }
 #endif

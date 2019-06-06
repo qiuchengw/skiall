@@ -5,28 +5,27 @@
  * found in the LICENSE file.
  */
 
-#include "SkMagnifierImageFilter.h"
+#include "include/effects/SkMagnifierImageFilter.h"
 
-#include "SkBitmap.h"
-#include "SkColorData.h"
-#include "SkColorSpaceXformer.h"
-#include "SkImageFilterPriv.h"
-#include "SkReadBuffer.h"
-#include "SkSpecialImage.h"
-#include "SkWriteBuffer.h"
-#include "SkValidationUtils.h"
+#include "include/core/SkBitmap.h"
+#include "include/private/SkColorData.h"
+#include "src/core/SkImageFilterPriv.h"
+#include "src/core/SkReadBuffer.h"
+#include "src/core/SkSpecialImage.h"
+#include "src/core/SkValidationUtils.h"
+#include "src/core/SkWriteBuffer.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 #if SK_SUPPORT_GPU
-#include "GrColorSpaceXform.h"
-#include "GrContext.h"
-#include "GrCoordTransform.h"
-#include "GrTexture.h"
-#include "effects/GrMagnifierEffect.h"
-#include "glsl/GrGLSLFragmentProcessor.h"
-#include "glsl/GrGLSLFragmentShaderBuilder.h"
-#include "glsl/GrGLSLProgramDataManager.h"
-#include "glsl/GrGLSLUniformHandler.h"
+#include "include/gpu/GrContext.h"
+#include "include/gpu/GrTexture.h"
+#include "src/gpu/GrColorSpaceXform.h"
+#include "src/gpu/GrCoordTransform.h"
+#include "src/gpu/effects/generated/GrMagnifierEffect.h"
+#include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
+#include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
+#include "src/gpu/glsl/GrGLSLProgramDataManager.h"
+#include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #endif
 
 sk_sp<SkImageFilter> SkMagnifierImageFilter::Make(const SkRect& srcRect, SkScalar inset,
@@ -97,7 +96,7 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilter::onFilterImage(SkSpecialImage* sour
 
 #if SK_SUPPORT_GPU
     if (source->isTextureBacked()) {
-        GrContext* context = source->getContext();
+        auto context = source->getContext();
 
         sk_sp<GrTextureProxy> inputProxy(input->asTextureProxyRef(context));
         SkASSERT(inputProxy);
@@ -187,14 +186,4 @@ sk_sp<SkSpecialImage> SkMagnifierImageFilter::onFilterImage(SkSpecialImage* sour
     offset->fY = bounds.top();
     return SkSpecialImage::MakeFromRaster(SkIRect::MakeWH(bounds.width(), bounds.height()),
                                           dst);
-}
-
-sk_sp<SkImageFilter> SkMagnifierImageFilter::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
-    SkASSERT(1 == this->countInputs());
-    auto input = xformer->apply(this->getInput(0));
-    if (input.get() != this->getInput(0)) {
-        return SkMagnifierImageFilter::Make(fSrcRect, fInset, std::move(input),
-                                            this->getCropRectIfSet());
-    }
-    return this->refMe();
 }
